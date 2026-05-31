@@ -125,6 +125,7 @@ async function guardarMedicion() {
     showCorreccion(id, '');
   });
   try { cargarUltimaMedicion(); } catch (_) {}
+  try { if (typeof refreshMonitorLive === 'function') refreshMonitorLive(); } catch (_) {}
 
   updateDashboard();
   updateRecargaBar();

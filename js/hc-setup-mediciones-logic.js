@@ -886,6 +886,7 @@ function cargarUltimaMedicion() {
   const info = document.getElementById('ultimaMedicionInfo');
   if (!info) return;
   if (typeof renderProtocoloMedicionPanel === 'function') renderProtocoloMedicionPanel();
+  if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
   if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
   if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();

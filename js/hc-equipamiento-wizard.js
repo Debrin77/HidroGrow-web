@@ -256,6 +256,7 @@
     renderMedirEquipamientoPanel();
     if (typeof renderCalendario === 'function') renderCalendario();
     if (typeof showToast === 'function') showToast('✓ Calibración registrada hoy');
+    if (typeof markMonitorSemanalHecho === 'function') markMonitorSemanalHecho('calibracion');
   }
 
   function generarEventosCalibracionDia(fechaDia, hoyRef) {

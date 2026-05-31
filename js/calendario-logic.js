@@ -43,7 +43,11 @@ function getRecordatorioMedicionDiariaCalendario() {
   if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) return null;
   const nPlantas =
     typeof contarPlantasTorreConVariedad === 'function' ? contarPlantasTorreConVariedad() : 0;
-  const hayContexto = nPlantas > 0 || !!state.ultimaRecarga || !!getUltimaMedicionCalendarioFecha();
+  const hayContexto =
+    nPlantas > 0 ||
+    !!state.ultimaRecarga ||
+    !!getUltimaMedicionCalendarioFecha() ||
+    !!(state.configTorre && (state.configTorre.premiumSetup || state.configTorre.semillero?.id));
   if (!hayContexto) return null;
 
   const hoy = new Date();
@@ -55,20 +59,24 @@ function getRecordatorioMedicionDiariaCalendario() {
   const titulo = medidoHoy ? 'Rutina diaria de medición' : 'Medición diaria pendiente';
 
   let desc = medidoHoy
-    ? 'Hoy ya registraste una medición. Mañana vuelve a medir EC, pH y temperatura del agua para mantener el seguimiento al día.'
-    : 'Conviene registrar al menos una medición hoy: EC, pH y temperatura del agua.';
+    ? 'Hoy ya registraste una medición. Mañana vuelve a completar la rutina diaria de la instalación.'
+    : 'Conviene registrar hoy la rutina diaria de monitorización de la instalación.';
 
-  if (!medidoHoy && diasSinMedir != null) {
+  if (typeof buildRecordatorioMedicionTexto === 'function') {
+    try {
+      desc = buildRecordatorioMedicionTexto(null, medidoHoy, diasSinMedir);
+    } catch (_) {}
+  } else if (!medidoHoy && diasSinMedir != null) {
     if (diasSinMedir >= 2) {
       desc =
         'Llevas ' +
         diasSinMedir +
-        ' días sin registrar mediciones. Toca medir hoy EC, pH y temperatura del agua.';
+        ' días sin registrar mediciones. Completa la rutina diaria en Medir.';
     } else if (diasSinMedir === 1) {
-      desc = 'Ayer fue la última medición. Mantén la rutina y registra hoy EC, pH y temperatura del agua.';
+      desc = 'Ayer fue la última medición. Mantén la rutina y registra hoy en Medir.';
     }
   } else if (!medidoHoy && diasSinMedir == null) {
-    desc = 'Aún no hay mediciones guardadas en esta instalación. Empieza hoy con una toma de EC, pH y temperatura del agua.';
+    desc = 'Aún no hay mediciones guardadas. Empieza hoy la rutina de monitorización en Medir.';
   }
 
   return {
@@ -133,20 +141,44 @@ function generarEventos(fecha) {
     eventos.push(recMed.evento);
   }
 
-  // ── Control diario EC y pH ────────────────────────────────────────────
-  let ecObjTxt = '1300–1400';
-  let phObjTxt = '5.7–6.4';
-  try {
-    const recCtrl = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
-    if (recCtrl && recCtrl.ec) ecObjTxt = recCtrl.ec.min + '–' + recCtrl.ec.max;
-    if (recCtrl && recCtrl.ph) phObjTxt = recCtrl.ph.min + '–' + recCtrl.ph.max;
-  } catch (_) {}
+  // ── Control diario — rutina completa por fase ─────────────────────────
+  let descControl = null;
+  if (typeof buildControlDiarioCalendarioTexto === 'function') {
+    try {
+      descControl = buildControlDiarioCalendarioTexto();
+    } catch (_) {}
+  }
+  if (!descControl) {
+    let ecObjTxt = '1300–1400';
+    let phObjTxt = '5.7–6.4';
+    try {
+      const recCtrl = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+      if (recCtrl && recCtrl.ec) ecObjTxt = recCtrl.ec.min + '–' + recCtrl.ec.max;
+      if (recCtrl && recCtrl.ph) phObjTxt = recCtrl.ph.min + '–' + recCtrl.ph.max;
+    } catch (_) {}
+    descControl = 'Medir EC (' + ecObjTxt + ' µS), pH (' + phObjTxt + '), temp. agua, ambiente (VPD/HR) y volumen según fase.';
+  }
   eventos.push({
     tipo: 'control',
     icono: '📊',
-    titulo: 'Control diario',
-    desc: 'Medir EC (objetivo ' + ecObjTxt + ' µS/cm), pH (' + phObjTxt + ') y temperatura del agua (18–22 °C).'
+    titulo: 'Control diario — monitorización',
+    desc: descControl,
   });
+
+  if (diffDias === 0 && typeof getEstadoControlSistema === 'function') {
+    try {
+      const estCtrl = getEstadoControlSistema();
+      const pendSem = (estCtrl.semanal || []).filter(function (x) { return !x.ok; });
+      if (pendSem.length) {
+        eventos.push({
+          tipo: 'control',
+          icono: '📋',
+          titulo: 'Tareas semanales pendientes',
+          desc: pendSem.map(function (x) { return x.label; }).join(' · ') + '. Márcalas en Medir → Control del sistema.',
+        });
+      }
+    } catch (_) {}
+  }
 
   // ── Recarga del depósito (intervalo ~diasObjetivo: volumen, tipo NFT/torre/DWC/RDWC, mediciones, reposición) ──
   if (state.ultimaRecarga) {
