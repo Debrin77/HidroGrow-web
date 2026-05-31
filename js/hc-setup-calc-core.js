@@ -2224,6 +2224,9 @@ function guardarSetupYContinuar() {
   try {
     if (typeof cerrarSetup === 'function') cerrarSetup();
   } catch (_) {}
+  try {
+    if (typeof hcMaybeOfferPuestaMarcha === 'function') hcMaybeOfferPuestaMarcha();
+  } catch (_) {}
   // Tras configurar: pestaña Cultivo e instalación para cultivos; el checklist se ofrece cuando el usuario confirme.
   if (typeof iniciarFlujoSistemaAntesChecklistPostSetup === 'function') {
     iniciarFlujoSistemaAntesChecklistPostSetup();

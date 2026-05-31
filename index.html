@@ -444,6 +444,7 @@
           </p>
           <div class="dash-post-setup-actions">
             <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn" onclick="goTab('sistema')">Ir a Cultivo e instalación</button>
+            <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button>
             <button type="button" class="btn btn-primary btn-sm dash-post-setup-btn" onclick="intentarAbrirChecklistDesdeInicio(false)">Checklist depósito</button>
           </div>
         </div>
@@ -1426,6 +1427,10 @@
           onclick="irMedirMunicipioClima()">
           Ir a Medir — municipio (clima y avisos)
         </button>
+        <button type="button" class="torre-btn-puesta-marcha btn btn-secondary btn-sm"
+          onclick="hcOpenPuestaMarchaChecklist()">
+          Verificar puesta en marcha
+        </button>
       </div>
 
       <!-- Avisos (cestas sin fecha, compatibilidad); nutriente solo en Inicio -->
@@ -1934,6 +1939,8 @@
 
       <h1 class="section-title section-title--with-ico"><svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-calendar"/></svg><span><span class="accent">Calendario</span></span></h1>
 
+      <div id="calContextBanner" class="cal-context-banner setup-hidden" role="status" aria-live="polite"></div>
+
       <!-- Navegación mes -->
       <div class="cal-nav-row">
         <button type="button" onclick="calNavMes(-1)" aria-label="Mes anterior" class="cal-nav-btn">‹</button>
@@ -1976,9 +1983,11 @@
       <div class="card cal-rutina-card">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg> Rutina diaria</div>
         <p class="cal-rutina-text">
-          <strong class="cal-rutina-strong">Sugerencia:</strong> una toma de muestra al día (pH, EC, temperatura del depósito) mantiene consejos y registros alineados con tu agua real.
-          El calendario te recordará la <strong class="cal-rutina-strong">medición diaria pendiente</strong> o la siguiente de la rutina.
-          Si registras una <strong class="cal-rutina-strong">fecha nueva</strong> al trasplantar (en cualquier ficha de cultivo), el calendario marca <strong class="cal-rutina-strong-ph">5 días seguidos</strong> para reforzar el control diario del <strong class="cal-rutina-strong">pH</strong> por la variación típica en plántulas.
+          <strong class="cal-rutina-strong">Sugerencia:</strong> una rutina diaria (EC, pH, temp. agua, volumen y ambiente: VPD, HR, PPFD o lux, CO₂ si aplica) mantiene consejos y registros alineados con tu sala real.
+          El calendario te recordará la <strong class="cal-rutina-strong">medición diaria pendiente</strong> según la instalación activa.
+          Con <strong class="cal-rutina-strong">varias salas</strong>, cambia la instalación arriba y mide en cada una.
+          Si usas <strong class="cal-rutina-strong">gateway WiFi</strong>, las lecturas pueden autocompletarse en Medir — confírmalas antes de guardar.
+          Tras un <strong class="cal-rutina-strong">trasplante nuevo</strong>, marca <strong class="cal-rutina-strong-ph">5 días seguidos</strong> de control de pH en plántulas.
         </p>
       </div>
 
@@ -2561,13 +2570,38 @@
               <div id="histHumActual" class="hist-um-val hist-um-val--blue">—</div>
               <div class="hist-um-unit">%</div>
             </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>T° aire</span></div>
+              <div id="histTempAireActual" class="hist-um-val hist-um-val--gold">—</div>
+              <div class="hist-um-unit">°C</div>
+            </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>PPFD</span></div>
+              <div id="histPPFDActual" class="hist-um-val hist-um-val--green">—</div>
+              <div class="hist-um-unit">µmol</div>
+            </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>Lux</span></div>
+              <div id="histLuxActual" class="hist-um-val hist-um-val--muted">—</div>
+              <div class="hist-um-unit">lx</div>
+            </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>CO₂</span></div>
+              <div id="histCO2Actual" class="hist-um-val hist-um-val--blue">—</div>
+              <div class="hist-um-unit">ppm</div>
+            </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>T° ext.</span></div>
+              <div id="histTempExtActual" class="hist-um-val hist-um-val--muted">—</div>
+              <div class="hist-um-unit">°C</div>
+            </div>
           </div>
         </div>
 
-        <!-- Tabla últimas mediciones (alineada con .hist-row) -->
-        <div class="hist-tabla">
-          <div class="hist-tabla-header hist-tabla-header--ambient" role="row">
-            <span>Fecha</span><span>EC</span><span>pH</span><span>°C agua</span><span>Vol</span><span>VPD</span><span>HR</span>
+        <!-- Tabla últimas mediciones (scroll horizontal si hace falta) -->
+        <div class="hist-tabla hist-tabla--scroll">
+          <div class="hist-tabla-header hist-tabla-header--full" role="row">
+            <span>Fecha</span><span>EC</span><span>pH</span><span>Agua</span><span>Vol</span><span>Aire</span><span>HR</span><span>VPD</span><span>PPFD</span><span>Lux</span><span>CO₂</span>
             <span class="hist-tabla-col-actions" aria-hidden="true"></span>
           </div>
           <div id="histTabla"></div>
@@ -2600,7 +2634,7 @@
           </svg>
         </div>
         <h3>Sin datos aún</h3>
-        <p>Registra mediciones en <strong>Medir</strong> para ver aquí la evolución de EC, pH y el resto de parámetros.</p>
+        <p>Registra mediciones en <strong>Medir</strong> para ver EC, pH, ambiente (VPD, HR, PPFD, CO₂…) por instalación.</p>
       </div>
 
       <!-- Panel registro -->
@@ -3848,6 +3882,21 @@
   </div>
 </div>
 
+<!-- Modal: checklist puesta en marcha (montaje, accesorios, IoT opcional) -->
+<div class="modal-overlay ctp-modal-overlay" id="modalPuestaMarcha"
+  onclick="hcClosePuestaMarchaChecklist(event)"
+  role="dialog" aria-modal="true" aria-labelledby="puestaMarchaTitle">
+  <div class="modal hc-pm-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="puestaMarchaTitle">Puesta en marcha</div>
+    <div id="puestaMarchaBody" class="hc-pm-body"></div>
+    <div class="hc-pm-foot">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePuestaMarchaChecklist()">Cerrar</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="hcFinishPuestaMarcha()">Marcar como verificada</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: asistente WiFi IoT -->
 <div class="modal-overlay ctp-modal-overlay" id="modalIotWifi"
   onclick="hcIotCloseWifiWizard(event)"
@@ -4544,16 +4593,17 @@
   <script src="js/hc-setup-agua-sustrato.js?v=11"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
-  <script src="js/hc-iot-bridge.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-iot-full"></script>
-  <script src="js/hc-monitor-sistema.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-monitor-sistema.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-eval"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-05-31-eval"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
-  <script src="js/hc-setup-historial-tabs.js?v=13"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-05-28-mm-tubos-uniform"></script>
-  <script src="js/calendario-logic.js?v=10"></script>
+  <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-hist-full"></script>
+  <script src="js/hc-consejos-extras.js?v=2026-05-31"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-05-31-consejos-iot"></script>
+  <script src="js/calendario-logic.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=21"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
@@ -4565,6 +4615,7 @@
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-multi"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

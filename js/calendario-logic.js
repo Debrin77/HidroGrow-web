@@ -17,6 +17,111 @@ const DIAS_CAL = ['L','M','X','J','V','S','D'];
 /** Días consecutivos desde el trasplante en que se sugiere medir pH a diario (plántulas nuevas). */
 const DIAS_MUESTRA_PH_TRASPLANTE = 5;
 
+function getCalendarioCtxInstalacion() {
+  const torres = (typeof state !== 'undefined' && state && state.torres) || [];
+  const idx = (typeof state !== 'undefined' && state && state.torreActiva) || 0;
+  const t = torres[idx] || null;
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const sisLab =
+    typeof etiquetaSistemaHidroponicoBreve === 'function'
+      ? etiquetaSistemaHidroponicoBreve(cfg)
+      : '';
+  const nombre = t && t.nombre ? String(t.nombre).trim() : 'Instalación';
+  const emoji = (t && t.emoji) || '🌿';
+  return {
+    nombre,
+    emoji,
+    sisLab,
+    multi: torres.length > 1,
+    total: torres.length,
+    idx,
+    cfg,
+  };
+}
+
+function getSalasPlanPendientesCal() {
+  try {
+    const raw = localStorage.getItem('hcSalasPlan');
+    if (!raw) return null;
+    const plan = JSON.parse(raw);
+    if (!plan || !Array.isArray(plan.pendingNames) || !plan.pendingNames.length) return null;
+    const n = ((typeof state !== 'undefined' && state && state.torres) || []).length || 1;
+    if (plan.count && n >= plan.count) return null;
+    return plan;
+  } catch (_) {
+    return null;
+  }
+}
+
+function escCalHtml(s) {
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderCalendarioContexto() {
+  const host = document.getElementById('calContextBanner');
+  if (!host) return;
+  if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+    host.classList.add('setup-hidden');
+    host.innerHTML = '';
+    return;
+  }
+  const ctx = getCalendarioCtxInstalacion();
+  const parts = [];
+  const titulo =
+    ctx.emoji +
+    ' <strong>' +
+    escCalHtml(ctx.nombre) +
+    '</strong>' +
+    (ctx.sisLab ? ' · ' + escCalHtml(ctx.sisLab) : '');
+  parts.push('<span class="cal-context-main">' + titulo + '</span>');
+
+  if (ctx.multi) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--multi">Varias instalaciones (' +
+        ctx.total +
+        '). El calendario sigue la <strong>activa</strong> (chip arriba). Mide en cada sala con su propia rutina.</span>'
+    );
+  }
+
+  const plan = getSalasPlanPendientesCal();
+  if (plan && plan.pendingNames && plan.pendingNames.length) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--plan">Plan ' +
+        (plan.count || plan.pendingNames.length + 1) +
+        ' salas: faltan «' +
+        plan.pendingNames.slice(0, 3).map(escCalHtml).join('», «') +
+        '». Añádelas con <strong>Nuevo sistema</strong>.</span>'
+    );
+  }
+
+  const iot =
+    typeof hcIotGetCalendarContext === 'function'
+      ? hcIotGetCalendarContext()
+      : { linked: false, count: 0, live: false, primaryName: null };
+  if (iot.linked) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--iot">📡 Gateway' +
+        (iot.primaryName ? ' «' + escCalHtml(iot.primaryName) + '»' : '') +
+        (iot.live ? ' en vivo' : ' vinculado') +
+        ': autocompleta lecturas en Medir; confirma EC/pH antes de guardar.</span>'
+    );
+  }
+
+  const checks = ctx.cfg && ctx.cfg.puestaMarchaChecks;
+  if (checks && !checks.completedAt) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--pm">Montaje sin verificar. ' +
+        '<button type="button" class="btn-link cal-context-link" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button></span>'
+    );
+  }
+
+  host.innerHTML = parts.join('');
+  host.classList.remove('setup-hidden');
+}
+
 function parseFechaCalendarioLocal(fechaStr) {
   if (!fechaStr || typeof fechaStr !== 'string') return null;
   const p = fechaStr.split('/');
@@ -178,6 +283,49 @@ function generarEventos(fecha) {
         });
       }
     } catch (_) {}
+  }
+
+  const ctxInst = getCalendarioCtxInstalacion();
+  if (diffDias === 0 && ctxInst.multi) {
+    eventos.push({
+      tipo: 'control',
+      icono: '🏠',
+      titulo: 'Varias instalaciones — rutina por sala',
+      desc:
+        'Tienes ' +
+        ctxInst.total +
+        ' sistemas guardados. Este calendario refleja «' +
+        ctxInst.nombre +
+        '». Cambia la instalación activa arriba y repite la medición diaria en veg, flor o esquejes según corresponda.',
+    });
+  }
+
+  const planSalas = getSalasPlanPendientesCal();
+  if (diffDias === 0 && planSalas && planSalas.pendingNames && planSalas.pendingNames.length) {
+    eventos.push({
+      tipo: 'control',
+      icono: '📋',
+      titulo: 'Salas del plan aún por crear',
+      desc:
+        'Tu plan incluye «' +
+        planSalas.pendingNames.join('», «') +
+        '». Cuando montes cada sala, créala como instalación nueva para tener calendario y EC/pH independientes.',
+    });
+  }
+
+  const iotCtx =
+    typeof hcIotGetCalendarContext === 'function'
+      ? hcIotGetCalendarContext()
+      : { linked: false };
+  if (iotCtx.linked && diffDias >= 0 && diffDias % 7 === 0) {
+    eventos.push({
+      tipo: 'control',
+      icono: '📡',
+      titulo: 'Revisión semanal gateway IoT',
+      desc:
+        'Comprueba que el gateway sigue en la misma WiFi y que Medir recibe lecturas (EC, pH, ambiente). Contrasta con medidor manual al menos una vez por semana.',
+      action: 'medicion',
+    });
   }
 
   // ── Recarga del depósito (intervalo ~diasObjetivo: volumen, tipo NFT/torre/DWC/RDWC, mediciones, reposición) ──
@@ -449,6 +597,7 @@ function escAriaAttr(str) {
 
 function renderCalendario() {
   try {
+  renderCalendarioContexto();
   const calMesLabel = document.getElementById('calMesLabel');
   if (!calMesLabel) return; // pestaña no activa
   const hoy  = new Date();
