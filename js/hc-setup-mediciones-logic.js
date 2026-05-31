@@ -344,6 +344,7 @@ function evalParam() {
   evalPH(ph, vol);
   evalTemp(temp);
   evalVol(vol, ec, ph);
+  if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir();
   if (typeof evalAmbiente === 'function') evalAmbiente();
 }
 
@@ -561,10 +562,6 @@ function evalPH(ph, vol) {
   const phActMin  = nut.pHIntervenir ? nut.pHIntervenir[0] : 5.2;
   const phActMax  = nut.pHIntervenir ? nut.pHIntervenir[1] : 6.8;
   const tieneBuffer = nut.pHBuffer || false;
-
-  // Actualizar rango en la card header
-  const rangeEl = document.getElementById('paramRangePH');
-  if (rangeEl) rangeEl.textContent = phMin + ' – ' + phMax;
 
   // Constantes de corrección (reales calibradas)
   const PH_PLUS_ML  = PH_PLUS_POR_ML  || 0.34; // unidades/ml
@@ -912,4 +909,124 @@ function cargarUltimaMedicion() {
   if (typeof cargarAmbienteDesdeUltimaMedicion === 'function') cargarAmbienteDesdeUltimaMedicion();
 }
 
+function setMedirParamRange(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.removeAttribute('title');
+}
+
+/** Sistema + cultivo listos → rangos numéricos en Medir; si no, vacío. */
+function medirPuedeMostrarRangos(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (!cfg.checklistInstalacionConfirmada) return false;
+  const tipo =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
+  if (!tipo || tipo === 'torre') return false;
+  const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
+  if (!nut) return false;
+  if (typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada()) {
+    return true;
+  }
+  const strategy = typeof getEcPhStrategy === 'function' ? getEcPhStrategy(cfg) : 'auto';
+  if (strategy === 'manual') return true;
+  const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+  if (rec && (rec.semilleroOverlay || rec.ecAgregacion === 'semillero')) return true;
+  if (rec && (rec.ecAgregacion === 'esquejes' || (rec.esquejesOverlay && rec.esquejesOverlay.activo))) {
+    return true;
+  }
+  return false;
+}
+
+function actualizarRangosParametrosMedir(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const rangeIds = [
+    'paramRangeEC',
+    'paramRangePH',
+    'paramRangeTemp',
+    'paramRangeVol',
+    'paramRangeTempAire',
+    'paramRangeHum',
+    'paramRangeVPD',
+    'paramRangePPFD',
+    'paramRangeCO2',
+    'paramRangeTempExt',
+  ];
+  if (!medirPuedeMostrarRangos(cfg)) {
+    rangeIds.forEach(function (id) { setMedirParamRange(id, ''); });
+    return;
+  }
+
+  const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
+  const ecOpt = typeof getECOptimaTorre === 'function' ? getECOptimaTorre() : { min: RANGOS.ec.min, max: RANGOS.ec.max };
+  const ecObj = typeof getEcObjetivoManualUs === 'function' ? getEcObjetivoManualUs(cfg) : null;
+  if (ecObj != null && Number.isFinite(ecObj)) {
+    setMedirParamRange(
+      'paramRangeEC',
+      (ecObj - EC_MEDICION_TOLERANCIA_OBJETIVO_US) + ' – ' + (ecObj + EC_MEDICION_TOLERANCIA_OBJETIVO_US) + ' µS/cm'
+    );
+  } else if (ecOpt && Number.isFinite(ecOpt.min) && Number.isFinite(ecOpt.max)) {
+    setMedirParamRange('paramRangeEC', ecOpt.min + ' – ' + ecOpt.max + ' µS/cm');
+  } else {
+    setMedirParamRange('paramRangeEC', '');
+  }
+
+  if (nut && typeof getPhOptimaTorre === 'function') {
+    const phOpt = getPhOptimaTorre(nut, cfg);
+    if (Array.isArray(phOpt) && Number.isFinite(phOpt[0]) && Number.isFinite(phOpt[1])) {
+      setMedirParamRange('paramRangePH', phOpt[0] + ' – ' + phOpt[1]);
+    } else {
+      setMedirParamRange('paramRangePH', '');
+    }
+  } else {
+    setMedirParamRange('paramRangePH', '');
+  }
+
+  const fase = typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : 'vegetativo';
+  const ambRangos =
+    typeof getRangosFaseAmbiente === 'function' ? getRangosFaseAmbiente(fase) : null;
+  const tempR = ambRangos && ambRangos.tempAgua ? ambRangos.tempAgua : RANGOS.temp;
+  if (tempR && Number.isFinite(tempR.min) && Number.isFinite(tempR.max)) {
+    setMedirParamRange('paramRangeTemp', tempR.min + ' – ' + tempR.max + ' °C');
+  } else {
+    setMedirParamRange('paramRangeTemp', '');
+  }
+
+  if (typeof getVolumenDepositoMaxLitros === 'function') {
+    const vrRaw = getVolumenDepositoMaxLitros(cfg);
+    const vr = Math.round(Number(vrRaw) * 10) / 10;
+    if (Number.isFinite(vr) && vr > 0) {
+      const vm =
+        typeof getVolumenMezclaLitros === 'function' ? getVolumenMezclaLitros(cfg) : vr;
+      const vmR = Number.isFinite(vm) && vm > 0 ? Math.round(vm * 10) / 10 : vr;
+      setMedirParamRange('paramRangeVol', '~' + vmR + ' L');
+    } else {
+      setMedirParamRange('paramRangeVol', '');
+    }
+  } else {
+    setMedirParamRange('paramRangeVol', '');
+  }
+
+  if (ambRangos) {
+    if (ambRangos.tempAire) {
+      setMedirParamRange('paramRangeTempAire', ambRangos.tempAire.min + ' – ' + ambRangos.tempAire.max + ' °C');
+    }
+    if (ambRangos.hr) {
+      setMedirParamRange('paramRangeHum', ambRangos.hr.min + ' – ' + ambRangos.hr.max + ' %');
+    }
+    if (ambRangos.vpd) {
+      setMedirParamRange('paramRangeVPD', ambRangos.vpd.min + ' – ' + ambRangos.vpd.max + ' kPa');
+    }
+    if (ambRangos.ppfd) {
+      setMedirParamRange('paramRangePPFD', ambRangos.ppfd.min + ' – ' + ambRangos.ppfd.max + ' µmol/m²/s');
+    }
+    if (ambRangos.co2) {
+      setMedirParamRange('paramRangeCO2', ambRangos.co2.min + ' – ' + ambRangos.co2.max + ' ppm');
+    }
+  }
+  setMedirParamRange('paramRangeTempExt', '');
+}
+
+window.medirPuedeMostrarRangos = medirPuedeMostrarRangos;
+window.actualizarRangosParametrosMedir = actualizarRangosParametrosMedir;
 

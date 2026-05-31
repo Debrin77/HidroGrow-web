@@ -349,10 +349,10 @@
       setAmbStatus('statusVPD', ev.estado, ev.estado === 'ok' ? '✅' : ev.estado === 'bad' ? '🔴' : ev.estado === 'warn' ? '🟡' : '', ev.msg);
       showAmbCorreccion('correccionVPD', ev.estado === 'ok' || ev.estado === 'empty' ? '' : correccionVPD(amb.vpd, rangos.vpd, amb.humSala, amb.tempAire));
     } else if (Number.isFinite(amb.tempAire) && Number.isFinite(amb.humSala)) {
-      setAmbStatus('statusVPD', 'empty', '', 'VPD calculado: ' + calcVPDkPa(amb.tempAire, amb.humSala) + ' kPa');
+      setAmbStatus('statusVPD', 'empty', '', '');
       showAmbCorreccion('correccionVPD', '');
     } else {
-      setAmbStatus('statusVPD', 'empty', '', interior ? 'Indica temp. aire y HR para VPD' : 'Opcional en exterior');
+      setAmbStatus('statusVPD', 'empty', '', '');
       showAmbCorreccion('correccionVPD', '');
     }
 
@@ -361,7 +361,7 @@
       setAmbStatus('statusPPFD', ev.estado, ev.estado === 'ok' ? '✅' : ev.estado === 'bad' ? '🔴' : ev.estado === 'warn' ? '🟡' : '', ev.msg);
       showAmbCorreccion('correccionPPFD', ev.estado === 'ok' || ev.estado === 'empty' ? '' : correccionPPFD(amb.ppfd, rangos.ppfd));
     } else {
-      setAmbStatus('statusPPFD', 'empty', '', 'PPFD semanal recomendado');
+      setAmbStatus('statusPPFD', 'empty', '', '');
       showAmbCorreccion('correccionPPFD', '');
     }
 
@@ -370,7 +370,7 @@
       setAmbStatus('statusCO2', ev.estado, ev.estado === 'ok' ? '✅' : ev.estado === 'bad' ? '🔴' : ev.estado === 'warn' ? '🟡' : '', ev.msg);
       showAmbCorreccion('correccionCO2', ev.estado === 'ok' || ev.estado === 'empty' ? '' : correccionCO2(amb.co2, rangos.co2));
     } else {
-      setAmbStatus('statusCO2', 'empty', '', 'Opcional · detector o sensor IoT');
+      setAmbStatus('statusCO2', 'empty', '', '');
       showAmbCorreccion('correccionCO2', '');
     }
 
@@ -386,12 +386,7 @@
       showAmbCorreccion('correccionTempExt', '');
     }
 
-    const rangeEl = el('paramRangeVPD');
-    if (rangeEl) rangeEl.textContent = rangos.vpd.min + ' – ' + rangos.vpd.max + ' kPa (' + fase + ')';
-    const ppfdRange = el('paramRangePPFD');
-    if (ppfdRange) ppfdRange.textContent = rangos.ppfd.min + ' – ' + rangos.ppfd.max + ' µmol/m²/s';
-    const co2Range = el('paramRangeCO2');
-    if (co2Range && rangos.co2) co2Range.textContent = rangos.co2.min + ' – ' + rangos.co2.max + ' ppm';
+    if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir();
   }
 
   function renderProtocoloMedicionPanel() {

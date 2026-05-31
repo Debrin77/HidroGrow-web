@@ -976,140 +976,24 @@ function actualizarBadgesNutriente() {
   const nut = getNutrienteTorre();
   const cfg = state.configTorre || {};
 
-  // Actualizar rangos dinámicos en las cards de Medir
-  const ecOptimaCultivos = getECOptimaTorre();
-  const ecMin = ecOptimaCultivos.min;
-  const ecMax = ecOptimaCultivos.max;
-  const phMin = nut && nut.pHRango ? nut.pHRango[0] : 5.5;
-  const phMax = nut && nut.pHRango ? nut.pHRango[1] : 6.5;
+  if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
 
-  const rangeEC = document.getElementById('paramRangeEC');
-  const rangePH = document.getElementById('paramRangePH');
-  if (rangeEC) {
-    const o = typeof getEcObjetivoManualUs === 'function' ? getEcObjetivoManualUs(cfg) : null;
-    const strategyEc = typeof getEcPhStrategy === 'function' ? getEcPhStrategy(cfg) : 'auto';
-    const tieneVariedades =
-      typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada();
-    if (o != null) {
-      rangeEC.textContent =
-        'Objetivo ' + o + ' ±' + EC_MEDICION_TOLERANCIA_OBJETIVO_US + ' µS/cm · cultivo ' + ecMin + '–' + ecMax;
-      rangeEC.removeAttribute('title');
-    } else if (!tieneVariedades && strategyEc !== 'manual') {
-      const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
-      if (rec && (rec.ecAgregacion === 'semillero' || rec.semilleroOverlay)) {
-        rangeEC.textContent =
-          ecMin + ' – ' + ecMax + ' µS/cm · perfil semillero ' + (rec.semilleroOverlay.marca || '');
-        rangeEC.title = 'Sin plantas en la instalación: EC orientativo del semillero elegido en el asistente premium.';
-      } else if (rec && (rec.ecAgregacion === 'esquejes' || (rec.esquejesOverlay && rec.esquejesOverlay.activo))) {
-        rangeEC.textContent = ecMin + ' – ' + ecMax + ' µS/cm · ' + (rec.esquejesOverlay.label || 'protocolo esquejes');
-        rangeEC.title = 'EC/pH según fase activa del protocolo de esquejes o madre.';
-      } else {
-        rangeEC.textContent =
-          'Sin variedad en la instalación: asigna cultivo y fecha en Cultivo e instalación para un EC por fase (o elige semillero en asistente premium).';
-        rangeEC.title =
-          'La fecha de la ficha es el trasplante al hidro. Con semillero confirmado, la app usa su perfil EC/pH hasta que haya plantas.';
-      }
-    } else {
-      const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
-      const faseMapEc = {
-        germinacion: 'germinación',
-        plantula: 'plántula',
-        vegetativo: 'vegetativo',
-        prefloracion: 'prefloración',
-        floracion: 'floración',
-        fructificacion: 'fructificación',
-      };
-      const faseTxt =
-        rec && rec.faseDominante ? ' · fase ' + (faseMapEc[rec.faseDominante] || rec.faseDominante) : '';
-      rangeEC.textContent = ecMin + ' – ' + ecMax + ' µS/cm' + faseTxt;
-      rangeEC.removeAttribute('title');
-    }
-  }
-  if (rangePH) {
-    const strategyPh = typeof getEcPhStrategy === 'function' ? getEcPhStrategy(cfg) : 'auto';
-    const tieneVariedadesPh =
-      typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada();
-    if (!tieneVariedadesPh && strategyPh !== 'manual') {
-      const recPh = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
-      const phOptSem =
-        recPh && recPh.ph ? [recPh.ph.min, recPh.ph.max] :
-        (nut && typeof getPhOptimaTorre === 'function' ? getPhOptimaTorre(nut, cfg) : [phMin, phMax]);
-      if (recPh && (recPh.ecAgregacion === 'semillero' || recPh.semilleroOverlay || recPh.esquejesOverlay)) {
-        rangePH.textContent = phOptSem[0] + ' – ' + phOptSem[1] + ' · según perfil activo';
-        rangePH.title = 'pH orientativo del semillero o protocolo de esquejes hasta tener plantas en la instalación.';
-      } else {
-        rangePH.textContent = 'Misma lógica que EC: define plantas en Cultivo e instalación o elige semillero en asistente premium.';
-        rangePH.title = 'Con plantas y fecha, el pH se ajusta al catálogo por fase y al nutriente activo.';
-      }
-    } else {
-      const phOpt =
-        nut && typeof getPhOptimaTorre === 'function' ? getPhOptimaTorre(nut, cfg) : [phMin, phMax];
-      rangePH.textContent = phOpt[0] + ' – ' + phOpt[1];
-      rangePH.removeAttribute('title');
-    }
-  }
-
-  const rangeVol = document.getElementById('paramRangeVol');
   const inputVol = document.getElementById('inputVol');
-  if (rangeVol && typeof getVolumenDepositoMaxLitros === 'function') {
+  if (inputVol && typeof getVolumenDepositoMaxLitros === 'function' && medirPuedeMostrarRangos(cfg)) {
     const vrRaw = getVolumenDepositoMaxLitros(cfg);
     const vr = Math.round(Number(vrRaw) * 10) / 10;
     if (Number.isFinite(vr) && vr > 0) {
-      if (cfg.tipoInstalacion === 'dwc') {
-        let capG = null;
-        if (typeof getDwcCapacidadLitrosDesdeConfig === 'function') {
-          capG = getDwcCapacidadLitrosDesdeConfig(cfg);
-        }
-        let vSafe = null;
-        if (typeof getDwcVolumenSeguroMaxLitrosDesdeConfig === 'function') {
-          vSafe = getDwcVolumenSeguroMaxLitrosDesdeConfig(cfg);
-        }
-        if (
-          capG != null &&
-          vSafe != null &&
-          Number.isFinite(capG) &&
-          Number.isFinite(vSafe) &&
-          capG > vSafe + 0.4
-        ) {
-          rangeVol.textContent =
-            '~' +
-            Math.round(vSafe * 10) / 10 +
-            ' L útil seguro (geom. ~' +
-            Math.round(capG * 10) / 10 +
-            ' L)';
-        } else {
-          rangeVol.textContent = '~' + vr + ' L (referencia DWC · bajo sustrato)';
-        }
-      } else if (cfg.tipoInstalacion === 'rdwc') {
-        rangeVol.textContent =
-          '~' + vr + ' L (depósito de control RDWC; mezcla y medición ahí; rango habitual en app 10–800 L)';
-      } else {
-        const vm =
-          typeof getVolumenMezclaLitros === 'function' ? getVolumenMezclaLitros(cfg) : vr;
-        const vmR = Number.isFinite(vm) && vm > 0 ? Math.round(vm * 10) / 10 : vr;
-        const capR = Math.round(Number(vrRaw) * 10) / 10;
-        if (Number.isFinite(capR) && capR > vmR + 0.35) {
-          rangeVol.textContent =
-            '~' + vmR + ' L en uso (dosis); capacidad máx. del depósito ≈ ' + capR + ' L';
-        } else {
-          rangeVol.textContent = '~' + vmR + ' L (volumen de mezcla y referencia para dosis)';
-        }
-      }
-      if (inputVol) {
-        const vm = typeof getVolumenMezclaLitros === 'function' ? getVolumenMezclaLitros(cfg) : vr;
-        const ph = Number.isFinite(vm) && vm > 0 ? Math.round(vm * 10) / 10 : vr;
-        inputVol.placeholder = String(ph);
-        const capIn = Math.min(800, Math.max(Math.ceil(vr + 2), 20));
-        inputVol.setAttribute('max', String(capIn));
-      }
-    } else if (cfg.hcPlantillaAutogenerada) {
-      rangeVol.textContent = 'Indica capacidad en Cultivo e instalación, asistente o etiqueta del depósito';
-      rangeVol.removeAttribute('title');
-      if (inputVol) {
-        inputVol.placeholder = '—';
-        inputVol.removeAttribute('max');
-      }
+      const vm = typeof getVolumenMezclaLitros === 'function' ? getVolumenMezclaLitros(cfg) : vr;
+      const ph = Number.isFinite(vm) && vm > 0 ? Math.round(vm * 10) / 10 : vr;
+      inputVol.placeholder = String(ph);
+      inputVol.setAttribute('max', String(Math.min(800, Math.max(Math.ceil(vr + 2), 20))));
+    } else {
+      inputVol.placeholder = '—';
+      inputVol.removeAttribute('max');
     }
+  } else if (inputVol) {
+    inputVol.placeholder = '—';
+    inputVol.removeAttribute('max');
   }
 
   try {

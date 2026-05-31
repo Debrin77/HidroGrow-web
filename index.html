@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css?v=2026-05-31-light-ledger">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-save2">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-ranges">
 </head>
 <body>
 <script>
@@ -648,8 +648,8 @@
         <div class="medir-ambiente-grid">
           <div class="param-card" id="cardTempAire">
             <div class="param-header">
-              <div class="param-label">Temp. aire sala</div>
-              <div class="param-range" id="paramRangeTempAire">20 – 28 °C</div>
+              <div class="param-label">Temp aire</div>
+              <div class="param-range" id="paramRangeTempAire"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputTempAire" placeholder="24" inputmode="decimal" step="0.1" min="0" max="45"
@@ -661,8 +661,8 @@
           </div>
           <div class="param-card" id="cardHumSala">
             <div class="param-header">
-              <div class="param-label">Humedad relativa</div>
-              <div class="param-range" id="paramRangeHum">55 – 70 %</div>
+              <div class="param-label">HR</div>
+              <div class="param-range" id="paramRangeHum"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputHumSala" placeholder="58" inputmode="numeric" step="1" min="0" max="100"
@@ -674,8 +674,8 @@
           </div>
           <div class="param-card" id="cardVPD">
             <div class="param-header">
-              <div class="param-label">VPD (calculado)</div>
-              <div class="param-range" id="paramRangeVPD">0.8 – 1.2 kPa</div>
+              <div class="param-label">VPD</div>
+              <div class="param-range" id="paramRangeVPD"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputVPD" placeholder="—" inputmode="decimal" step="0.01" min="0" max="3" readonly tabindex="-1">
@@ -686,8 +686,8 @@
           </div>
           <div class="param-card" id="cardPPFD">
             <div class="param-header">
-              <div class="param-label">PPFD bajo foco</div>
-              <div class="param-range" id="paramRangePPFD">400 – 600 µmol/m²/s</div>
+              <div class="param-label">PPFD</div>
+              <div class="param-range" id="paramRangePPFD"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputPPFD" placeholder="500" inputmode="numeric" step="10" min="0" max="2000"
@@ -704,8 +704,8 @@
           </div>
           <div class="param-card" id="cardTempExt">
             <div class="param-header">
-              <div class="param-label">Temp. exterior</div>
-              <div class="param-range">Opcional · sonda exterior</div>
+              <div class="param-label">Temp ext</div>
+              <div class="param-range" id="paramRangeTempExt"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputTempExt" placeholder="28" inputmode="decimal" step="0.1" min="-10" max="50"
@@ -717,8 +717,8 @@
           </div>
           <div class="param-card" id="cardCO2">
             <div class="param-header">
-              <div class="param-label">CO₂ sala</div>
-              <div class="param-range" id="paramRangeCO2">400 – 1200 ppm</div>
+              <div class="param-label">CO₂</div>
+              <div class="param-range" id="paramRangeCO2"></div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputCO2" placeholder="850" inputmode="numeric" step="10" min="300" max="5000"
@@ -1215,8 +1215,8 @@
       <!-- EC -->
       <div class="param-card" id="cardEC">
         <div class="param-header">
-          <div class="param-label" id="labelMedirEC"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><span>EC — Conductividad eléctrica</span></div>
-          <div class="param-range" id="paramRangeEC">1300 – 1400 µS/cm</div>
+          <div class="param-label" id="labelMedirEC"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><span>EC</span></div>
+          <div class="param-range" id="paramRangeEC"></div>
         </div>
         <div class="param-input-row">
           <input type="number" class="param-input" id="inputEC" placeholder="1350"
@@ -1233,7 +1233,7 @@
       <div class="param-card" id="cardPH">
         <div class="param-header">
           <div class="param-label" id="labelMedirPH"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg><span>pH</span></div>
-          <div class="param-range" id="paramRangePH">5.5 – 6.6 (óptimo 5.7-6.4)</div>
+          <div class="param-range" id="paramRangePH"></div>
         </div>
         <div class="param-input-row">
           <input type="number" class="param-input" id="inputPH" placeholder="6.0"
@@ -1249,8 +1249,8 @@
       <!-- TEMPERATURA AGUA -->
       <div class="param-card" id="cardTemp">
         <div class="param-header">
-          <div class="param-label" id="labelMedirTemp"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg><span>Temperatura del agua</span></div>
-          <div class="param-range" id="paramRangeTemp">18 – 22°C</div>
+          <div class="param-label" id="labelMedirTemp"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg><span>Temp agua</span></div>
+          <div class="param-range" id="paramRangeTemp"></div>
         </div>
         <div class="param-input-row">
           <input type="number" class="param-input" id="inputTemp" placeholder="20"
@@ -1266,19 +1266,18 @@
       <!-- VOLUMEN -->
       <div class="param-card" id="cardVol">
         <div class="param-header">
-          <div class="param-label" id="labelMedirVol"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bucket"/></svg><span>Volumen del depósito</span></div>
-          <div class="param-range" id="paramRangeVol">Según depósito (Medir)</div>
+          <div class="param-label" id="labelMedirVol"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bucket"/></svg><span>Volumen</span></div>
+          <div class="param-range" id="paramRangeVol"></div>
         </div>
         <div class="param-input-row">
           <input type="number" class="param-input" id="inputVol" placeholder="18"
-            aria-labelledby="labelMedirVol paramRangeVol medirVolAyuda"
-            aria-describedby="statusVol correccionVol medirVolAyuda"
+            aria-labelledby="labelMedirVol paramRangeVol"
+            aria-describedby="statusVol correccionVol"
             inputmode="decimal" step="0.5" min="0" max="20" oninput="evalParam()">
           <div class="param-unit">litros</div>
         </div>
         <div class="param-status empty" id="statusVol" role="status" aria-live="polite" aria-atomic="true"></div>
         <div class="correccion-box" id="correccionVol" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true"></div>
-        <p id="medirVolAyuda" class="setup-field-hint medir-param-hint">Litros que tienes ahora en el depósito de mezcla (regla, marca del recipiente o estimación). No tiene que coincidir con el tope del kit.</p>
       </div>
       </div>
 
@@ -4669,9 +4668,9 @@
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
-  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-medir-ranges"></script>
   <script src="js/hc-monitor-sistema.js?v=2026-05-31-cal-ctx"></script>
-  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-eval"></script>
+  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-medir-ranges"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-05-31-eval"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
@@ -4687,7 +4686,7 @@
   <script src="js/app-hc-medicion-toast.js?v=6"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-28-mm-tubos-uniform"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-multi"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-medir-ranges"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
   <script src="js/hc-puesta-marcha.js?v=2026-05-31"></script>
