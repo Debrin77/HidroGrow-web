@@ -1,12 +1,14 @@
 Iconos generados desde el arte maestro:
-  icons/splash-brand-card.png  ← logo circular (cannabis + raíces + agua) en tarjeta crema
+  icons/splash-brand-gold.png  ← emblema dorado (fondo exterior transparente)
 
-Splash de arranque y PIN:
-  splash-brand-card.png   ← fondo oscuro en app; la tarjeta crema aporta contraste
+Procesar PNG nuevo (quitar blanco exterior sin tocar el círculo):
+  node scripts/remove-outer-white-bg.js "ruta\logo.png" icons/splash-brand-gold.png
+  node scripts/resize-icons.js icons/splash-brand-gold.png
 
-Iconos PWA (192 / 512 / maskable):
-  node scripts/resize-icons.js icons/splash-brand-card.png
+Splash de arranque, PIN, header y bienvenida:
+  splash-brand-gold.png
 
-Legacy (HidroCultivo / icono cuadrado oscuro):
+Legacy:
+  splash-brand-card.png   ← logo crema anterior
   splash-brand-icon.png
   splash-brand.svg
