@@ -80,10 +80,13 @@
     var summary = document.createElement('summary');
     summary.className = 'medir-ambiente-summary';
     summary.innerHTML =
+      '<span class="medir-step-head medir-step-head--ambiente">' +
+      '<span class="medir-step-head-icon medir-step-head-icon--ambiente" aria-hidden="true">' +
+      '<svg class="hc-ico" focusable="false"><use href="#hc-i-home"/></svg></span>' +
+      '<span class="medir-step-head-text">' +
       '<span class="medir-step-kicker">Paso 2 · opcional</span>' +
-      '<span class="medir-ambiente-summary-title">' +
-      '<svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> ' +
-      'Ambiente de sala (temp, HR, VPD, PPFD…)</span>' +
+      '<span class="medir-step-sub">Ambiente de sala · temp, HR, VPD, luz, CO₂</span>' +
+      '</span></span>' +
       '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span>';
 
     card.parentNode.insertBefore(details, card);
@@ -94,6 +97,8 @@
     if (title) title.remove();
     var lead = card.querySelector('.medir-ambiente-lead');
     if (lead) lead.classList.add('medir-ambiente-lead--in-details');
+    var ambGrid = card.querySelector('.medir-ambiente-grid');
+    if (ambGrid) ambGrid.classList.add('medir-ambiente-grid--premium');
     ensureAmbienteSaveFooter(card);
   }
 
@@ -132,17 +137,28 @@
       '<p class="medir-flow-lead">' +
       'Introduce los valores del <strong>depósito</strong> o pega la lectura del medidor. Evaluación al instante.' +
       '</p>' +
-      '<div class="medir-quick-parse">' +
-      '<label class="form-label medir-quick-label" for="medirQuickInput">Entrada rápida (pegar)</label>' +
+      '<div class="medir-quick-parse medir-quick-parse--premium">' +
+      '<div class="medir-quick-parse-head">' +
+      '<span class="medir-quick-parse-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sparkle"/></svg></span>' +
+      '<label class="form-label medir-quick-label" for="medirQuickInput">Entrada rápida</label>' +
+      '</div>' +
       '<div class="medir-quick-parse-row">' +
       '<input id="medirQuickInput" class="form-input medir-quick-input" type="text" inputmode="text" autocomplete="off" ' +
-      'placeholder="EC 1350 pH 6.0 T 20 V 18">' +
-      '<button type="button" class="btn btn-secondary btn-sm" onclick="hcMedirTabQuickApply()">Aplicar</button>' +
+      'placeholder="EC 1350 · pH 6.0 · T 20 · V 18">' +
+      '<button type="button" class="btn btn-secondary btn-sm medir-quick-apply" onclick="hcMedirTabQuickApply()">Aplicar</button>' +
       '</div>' +
       '<p id="medirQuickParseHint" class="medir-quick-hint" role="status" aria-live="polite"></p>' +
       '</div>' +
-      '<p class="medir-step-kicker medir-step-kicker--solucion">Paso 1 · solución</p>' +
+      '<div class="medir-step-panel medir-step-panel--solucion">' +
+      '<div class="medir-step-head medir-step-head--solucion">' +
+      '<span class="medir-step-head-icon medir-step-head-icon--solucion" aria-hidden="true">' +
+      '<svg class="hc-ico" focusable="false"><use href="#hc-i-droplet"/></svg></span>' +
+      '<span class="medir-step-head-text">' +
+      '<span class="medir-step-kicker medir-step-kicker--solucion">Paso 1 · solución</span>' +
+      '<span class="medir-step-sub">EC, pH, temperatura y volumen del depósito</span>' +
+      '</span></div>' +
       '<div id="medirFlowSolucion" class="medir-flow-solucion-mount"></div>' +
+      '</div>' +
       '<div id="medirFlowAmbienteMount" class="medir-flow-ambiente-mount"></div>' +
       '<div class="medir-flow-actions">' +
       '<button type="button" id="btnGuardarMedicion" class="btn btn-primary medir-save-btn" onclick="guardarMedicion()">' +
@@ -178,7 +194,7 @@
     var solMount = document.getElementById('medirFlowSolucion');
     sync.classList.remove('setup-hidden');
     sync.removeAttribute('aria-hidden');
-    sync.classList.add('medir-solucion-grid');
+    sync.classList.add('medir-solucion-grid', 'medir-solucion-grid--premium');
     solMount.appendChild(sync);
 
     var ultima = document.getElementById('ultimaMedicionCard');

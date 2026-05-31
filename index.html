@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css?v=2026-05-31-layout-fix">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-layout-fix">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-premium">
 </head>
 <body>
 <script>
@@ -645,10 +645,10 @@
       <div class="card medir-ambiente-card" id="medirAmbienteCard">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Ambiente y luz</div>
         <p class="medir-ambiente-lead">Opcional: temp. aire, HR, luz y CO₂ de la sala. VPD se calcula solo. Las correcciones aparecen al escribir; pulsa <strong>Guardar medición</strong> (debajo) para registrarlo.</p>
-        <div class="medir-ambiente-grid">
+        <div class="medir-ambiente-grid medir-ambiente-grid--premium">
           <div class="param-card" id="cardTempAire">
             <div class="param-header">
-              <div class="param-label">Temp aire</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg><span>Temp aire</span></div>
               <div class="param-range" id="paramRangeTempAire"></div>
             </div>
             <div class="param-input-row">
@@ -661,7 +661,7 @@
           </div>
           <div class="param-card" id="cardHumSala">
             <div class="param-header">
-              <div class="param-label">HR</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg><span>HR</span></div>
               <div class="param-range" id="paramRangeHum"></div>
             </div>
             <div class="param-input-row">
@@ -674,7 +674,7 @@
           </div>
           <div class="param-card" id="cardVPD">
             <div class="param-header">
-              <div class="param-label">VPD</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-chart"/></svg><span>VPD</span></div>
               <div class="param-range" id="paramRangeVPD"></div>
             </div>
             <div class="param-input-row">
@@ -686,7 +686,7 @@
           </div>
           <div class="param-card" id="cardPPFD">
             <div class="param-header">
-              <div class="param-label">PPFD</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><span>PPFD</span></div>
               <div class="param-range" id="paramRangePPFD"></div>
             </div>
             <div class="param-input-row">
@@ -704,7 +704,7 @@
           </div>
           <div class="param-card" id="cardTempExt">
             <div class="param-header">
-              <div class="param-label">Temp ext</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg><span>Temp ext</span></div>
               <div class="param-range" id="paramRangeTempExt"></div>
             </div>
             <div class="param-input-row">
@@ -717,7 +717,7 @@
           </div>
           <div class="param-card" id="cardCO2">
             <div class="param-header">
-              <div class="param-label">CO₂</div>
+              <div class="param-label"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-leaf"/></svg><span>CO₂</span></div>
               <div class="param-range" id="paramRangeCO2"></div>
             </div>
             <div class="param-input-row">
@@ -4626,7 +4626,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-save2"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-premium"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-scroll"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
