@@ -128,6 +128,14 @@ const CONSEJOS_DATA = {
         alerta:{ tipo:'warn', txt:'⚠️ Un solo depósito = una sola EC/pH: las plantas en fases distintas (plántula vs flor plena) compiten por nutrientes.' } },
     ]
   },
+  iot: {
+    nombre: '📡 Sensores IoT', color: '#0d9488', bg: 'rgba(13,148,136,0.08)',
+    consejos: [
+      { icono:'📡', titulo:'Conexión WiFi opcional',
+        texto:'Sin sensores: sigue registrando manualmente en Medir. Con gateway local (ESP32): autocompleta lecturas tras validar cada parámetro.',
+        alerta:{ tipo:'info', txt:'ℹ️ Coste cero para la app; el hardware es tuyo en la misma WiFi.' } },
+    ]
+  },
 };
 
 // ── Diagnóstico por síntomas — árbol de decisión ─────────────────────────────
@@ -237,7 +245,7 @@ function renderDiagnostico() {
 }
 
 let consejoCatActiva = 'cultivo';
-const CONSEJOS_CAT_ORDEN_UI = ['cultivo', 'problemas', 'agua', 'clima', 'ecph', 'dwc', 'rdwc', 'variedades'];
+const CONSEJOS_CAT_ORDEN_UI = ['cultivo', 'variedades', 'problemas', 'agua', 'clima', 'iot', 'ecph', 'dwc', 'rdwc'];
 
 function getConsejosModoUi(cfg) {
   const c = cfg || state.configTorre || {};
@@ -2302,6 +2310,22 @@ function renderConsejosLista() {
 
   if (consejoCatActiva === 'problemas') {
     lista.innerHTML = cat.consejos.map(c => buildConsejoProblemasCompacto(cat, c)).join('');
+    plegarTodosDesplegablesConsejosLista(lista);
+    return;
+  }
+
+  if (consejoCatActiva === 'variedades') {
+    lista.innerHTML =
+      (typeof buildConsejoTablaGeneticasHidro === 'function' ? buildConsejoTablaGeneticasHidro() : '') +
+      cat.consejos.map(c => htmlConsejoCard(cat, c)).join('');
+    plegarTodosDesplegablesConsejosLista(lista);
+    return;
+  }
+
+  if (consejoCatActiva === 'iot') {
+    lista.innerHTML =
+      (typeof buildConsejoBloqueIoT === 'function' ? buildConsejoBloqueIoT() : '') +
+      cat.consejos.map(c => htmlConsejoCard(cat, c)).join('');
     plegarTodosDesplegablesConsejosLista(lista);
     return;
   }

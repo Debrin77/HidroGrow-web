@@ -882,4 +882,15 @@
   global.hcIotIsBluetoothAvailable = isWebBluetoothAvailable;
   global.hcIotParsePayload = parseIncomingPayload;
   global.hcIotValidateParam = validatePlausibility;
+
+  function getCalendarContext() {
+    var list = loadDevices();
+    return {
+      linked: list.length > 0,
+      count: list.length,
+      live: !!liveDeviceId,
+      primaryName: list[0] && list[0].name ? String(list[0].name) : null,
+    };
+  }
+  global.hcIotGetCalendarContext = getCalendarContext;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -479,8 +479,15 @@ function renderRegistro() {
         detalle = [
           e.ec   ? '⚡ ' + e.ec + ' µS' : '',
           e.ph   ? '🧪 ' + e.ph         : '',
-          e.temp ? '🌡️ ' + e.temp + '°C'  : '',
+          e.temp ? '🌡️ ' + e.temp + '°C agua'  : '',
           e.vol  ? '🪣 ' + e.vol + 'L'   : '',
+          e.tempAire ? '🌬️ ' + e.tempAire + '°C aire' : '',
+          e.humSala != null && e.humSala !== '' ? '💧 HR ' + e.humSala + '%' : '',
+          e.vpd != null && e.vpd !== '' ? 'VPD ' + e.vpd + ' kPa' : '',
+          e.ppfd ? '💡 PPFD ' + e.ppfd : '',
+          e.lux ? 'Lux ' + e.lux : '',
+          e.co2 ? 'CO₂ ' + e.co2 + ' ppm' : '',
+          e.tempExt ? 'Ext. ' + e.tempExt + '°C' : '',
         ].filter(Boolean).join(' · ');
         if (e.notas) detalle += '<br><span class="registro-note-sub">📝 ' + e.notas + '</span>';
       } else if (e.tipo === 'recarga') {
@@ -656,23 +663,38 @@ function renderHistMediciones() {
   document.getElementById('histVolActual').textContent  = ult.vol  || '—';
   const histVpd = document.getElementById('histVPDActual');
   const histHum = document.getElementById('histHumActual');
-  if (histVpd) histVpd.textContent = ult.vpd != null && ult.vpd !== '' ? ult.vpd : '—';
-  if (histHum) histHum.textContent = ult.humSala != null && ult.humSala !== '' ? ult.humSala : '—';
+  const histTempAire = document.getElementById('histTempAireActual');
+  const histPPFD = document.getElementById('histPPFDActual');
+  const histLux = document.getElementById('histLuxActual');
+  const histCO2 = document.getElementById('histCO2Actual');
+  const histTempExt = document.getElementById('histTempExtActual');
+  const fmtHist = (v) => (v != null && v !== '' ? v : '—');
+  if (histVpd) histVpd.textContent = fmtHist(ult.vpd);
+  if (histHum) histHum.textContent = fmtHist(ult.humSala);
+  if (histTempAire) histTempAire.textContent = fmtHist(ult.tempAire);
+  if (histPPFD) histPPFD.textContent = fmtHist(ult.ppfd);
+  if (histLux) histLux.textContent = fmtHist(ult.lux);
+  if (histCO2) histCO2.textContent = fmtHist(ult.co2);
+  if (histTempExt) histTempExt.textContent = fmtHist(ult.tempExt);
 
   // Tabla
   const tabla = document.getElementById('histTabla');
     tabla.innerHTML = mediciones.map((m, i) => `
-    <div class="hist-row hist-row--ambient${i===0 ? ' hist-row--latest' : ''}">
+    <div class="hist-row hist-row--full${i===0 ? ' hist-row--latest' : ''}">
       <span class="hist-fecha"><span class="hist-fecha-dia">${m.fecha}</span><br>
         <span class="hist-fecha-hora">${m.hora}</span>
         ${(() => { const sis = infoSistemaEntrada(m); return `<span class="hist-torre-chip">${sis.emoji||'🌿'} ${sis.nombre}</span>`; })()}
       </span>
-      <span class="hist-val ${getClaseVal('ec',   m.ec)}">${m.ec   || '—'}</span>
-      <span class="hist-val ${getClaseVal('ph',   m.ph)}">${m.ph   || '—'}</span>
-      <span class="hist-val ${getClaseVal('temp', m.temp)}">${m.temp || '—'}</span>
-      <span class="hist-val ${getClaseVal('vol',  m.vol)}">${m.vol  || '—'}</span>
-      <span class="hist-val hist-val--muted">${m.vpd != null && m.vpd !== '' ? m.vpd : '—'}</span>
-      <span class="hist-val hist-val--muted">${m.humSala != null && m.humSala !== '' ? m.humSala : '—'}</span>
+      <span class="hist-val ${getClaseVal('ec',   m.ec)}">${fmtHist(m.ec)}</span>
+      <span class="hist-val ${getClaseVal('ph',   m.ph)}">${fmtHist(m.ph)}</span>
+      <span class="hist-val ${getClaseVal('temp', m.temp)}">${fmtHist(m.temp)}</span>
+      <span class="hist-val ${getClaseVal('vol',  m.vol)}">${fmtHist(m.vol)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.tempAire)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.humSala)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.vpd)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.ppfd)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.lux)}</span>
+      <span class="hist-val hist-val--muted">${fmtHist(m.co2)}</span>
       <span class="hist-action-cell">
         <button type="button" class="hist-btn-delete js-hist-med-del"
           data-hc-fecha="${escRegistroAttr(m.fecha || '')}"

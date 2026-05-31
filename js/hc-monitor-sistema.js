@@ -268,8 +268,12 @@
     estado = estado || getEstadoControlSistema();
     var pend = estado.resumen.diarioTotal - estado.resumen.diarioOk;
     if (medidoHoy && pend === 0) {
+      var iotHint =
+        typeof hcIotGetCalendarContext === 'function' && hcIotGetCalendarContext().linked
+          ? ' Con gateway IoT, revisa que los autocompletados coinciden con tu medidor manual de vez en cuando.'
+          : '';
       return 'Rutina diaria completa (' + estado.resumen.diarioTotal + '/' + estado.resumen.diarioTotal +
-        '). Revisa tareas semanales si toca (PPFD, calibración, extractor).';
+        '). Revisa tareas semanales si toca (PPFD, calibración, extractor).' + iotHint;
     }
     if (medidoHoy && pend > 0) {
       return 'Parcial hoy: ' + estado.resumen.diarioOk + '/' + estado.resumen.diarioTotal +
@@ -281,7 +285,10 @@
         estado.diario.map(function (x) { return x.label; }).join(', ') + '.';
     }
     return 'Registra la rutina de ' + tituloFase(estado) + ': ' +
-      estado.diario.map(function (x) { return x.label; }).join(', ') + '.';
+      estado.diario.map(function (x) { return x.label; }).join(', ') + '.' +
+      (typeof hcIotGetCalendarContext === 'function' && hcIotGetCalendarContext().linked
+        ? ' El gateway puede autocompletar campos en Medir; confirma antes de guardar.'
+        : '');
   }
 
   function tituloFase(estado) {
