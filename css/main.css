@@ -14191,6 +14191,28 @@ button.toggle-switch:focus-visible {
   background: #ffffff;
   border-color: #cbd5e1;
 }
+.setup-dwc-preview-section--diagram .torre-preview.torre-preview--dwc,
+.setup-dwc-preview-section--diagram .torre-preview.torre-preview--rdwc {
+  max-width: 100%;
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+}
+.setup-dwc-preview-section--diagram .hc-diagram-setup-vivid {
+  display: block;
+  filter: contrast(1.22) saturate(1.1);
+  border-radius: 10px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+.setup-dwc-preview-section--diagram .hc-diagram-view-label {
+  fill: #0f172a;
+  font-size: 10px;
+  letter-spacing: 0.03em;
+}
+.setup-dwc-preview-section--diagram .hc-diagram-setup-vivid .dwc-mc-bucket rect,
+.setup-dwc-preview-section--diagram .hc-diagram-setup-vivid .dwc-mc-bucket circle {
+  stroke-width: 1.6;
+}
 .setup-germ-intro {
   font-size: 12px;
   line-height: 1.45;

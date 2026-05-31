@@ -238,6 +238,33 @@
     previewEl.classList.add('setup-diagram-crisp');
     var section = previewEl.closest('.setup-dwc-preview-section');
     if (section) section.classList.add('setup-dwc-preview-section--diagram');
+    boostSetupDiagramLegibility(previewEl);
+  }
+
+  /** Trazos muy claros (#e2e8f0…) casi no se ven sobre el fondo azul del SVG en el asistente. */
+  function boostSetupDiagramLegibility(previewEl) {
+    if (!previewEl) return;
+    var svg = previewEl.querySelector('svg');
+    if (!svg) return;
+    svg.classList.add('hc-diagram-setup-vivid');
+    var strokeMap = {
+      '#e2e8f0': '#64748b',
+      '#f1f5f9': '#64748b',
+      '#eceff1': '#78909c',
+      '#cbd5e1': '#475569',
+      '#f8fafc': '#64748b',
+    };
+    svg.querySelectorAll('[stroke]').forEach(function (el) {
+      var s = String(el.getAttribute('stroke') || '').toLowerCase();
+      if (strokeMap[s]) el.setAttribute('stroke', strokeMap[s]);
+      var op = parseFloat(el.getAttribute('opacity'));
+      if (Number.isFinite(op) && op > 0 && op < 0.72) {
+        el.setAttribute('opacity', String(Math.min(1, op + 0.38)));
+      }
+    });
+    svg.querySelectorAll('.hc-diagram-view-label').forEach(function (el) {
+      el.setAttribute('fill', '#0f172a');
+    });
   }
 
   function metodoLabel(m) {
@@ -286,4 +313,5 @@
   global.renderSetupDiagramEquipLegend = renderSetupDiagramEquipLegend;
   global.renderSetupDiagramEquipLegendForPreviews = renderSetupDiagramEquipLegendForPreviews;
   global.markSetupDiagramCrisp = markSetupDiagramCrisp;
+  global.boostSetupDiagramLegibility = boostSetupDiagramLegibility;
 })(typeof window !== 'undefined' ? window : globalThis);
