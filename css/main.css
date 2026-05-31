@@ -16849,6 +16849,11 @@ button.toggle-switch:focus-visible {
 .medir-sem-lead { font-size: 12px; margin: 0 0 8px; }
 .medir-sem-list { margin: 0; padding-left: 1.1rem; font-size: 12px; }
 .equip-catalog-head .hc-ico { width: 1.1rem; height: 1.1rem; vertical-align: -2px; margin-right: 4px; }
+.medir-sem-ec-link { font-size: 11px; color: #059669; background: #ecfdf5; padding: 6px 8px; border-radius: 8px; margin: 0 0 8px; }
+.medir-equip-cal { font-size: 12px; margin: 10px 0; padding: 8px 10px; background: #f5f3ff; border-radius: 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.medir-equip-cal--warn { background: #fef2f2; color: #991b1b; }
+.nutriente-icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(99,102,241,0.1); color: #6366f1; }
+.nutriente-icon .hc-visual-ico { width: 1.1rem; height: 1.1rem; }
 .medir-ambiente-card { margin-bottom: 12px; }
 .medir-ambiente-lead { font-size: 12px; color: #6b7280; margin: 0 0 12px; }
 .medir-ambiente-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }

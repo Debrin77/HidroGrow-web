@@ -70,6 +70,12 @@
           specs: Object.assign({}, item.specs),
           nota: item.nota || '',
         };
+        if (catId === 'medidor' && !cfg.ultimaCalibracionMedidor) {
+          const hoy = new Date();
+          cfg.ultimaCalibracionMedidor = hoy.getFullYear() + '-' +
+            String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+            String(hoy.getDate()).padStart(2, '0');
+        }
         aplicarEquipamientoASala(item);
       }
     }
@@ -193,6 +199,107 @@
     return '';
   }
 
+  function parseFechaCalibracion(str) {
+    if (!str) return null;
+    try {
+      const parts = String(str).split('-');
+      if (parts.length >= 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        d.setHours(0, 0, 0, 0);
+        return Number.isFinite(d.getTime()) ? d : null;
+      }
+      const d2 = new Date(str);
+      d2.setHours(0, 0, 0, 0);
+      return Number.isFinite(d2.getTime()) ? d2 : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function hoyLocal0() {
+    const h = new Date();
+    h.setHours(0, 0, 0, 0);
+    return h;
+  }
+
+  function getInfoCalibracionMedidor(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const inst = ensureEquipInstalado(cfg);
+    const med = inst.medidor;
+    if (!med || !med.id) return null;
+    const dias = Number(med.specs && med.specs.calibracionDias) || 30;
+    const hoy = hoyLocal0();
+    const ultima = parseFechaCalibracion(cfg.ultimaCalibracionMedidor) || hoy;
+    const proxima = new Date(ultima.getTime() + dias * 86400000);
+    proxima.setHours(0, 0, 0, 0);
+    const diasRest = Math.round((proxima - hoy) / 86400000);
+    return {
+      medidor: med,
+      diasIntervalo: dias,
+      ultima: ultima,
+      proxima: proxima,
+      diasRestantes: diasRest,
+      vencida: diasRest <= 0,
+      proximaPronto: diasRest > 0 && diasRest <= 3,
+    };
+  }
+
+  function registrarCalibracionMedidor() {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    if (!cfg) return;
+    const hoy = hoyLocal0();
+    cfg.ultimaCalibracionMedidor = hoy.getFullYear() + '-' +
+      String(hoy.getMonth() + 1).padStart(2, '0') + '-' +
+      String(hoy.getDate()).padStart(2, '0');
+    if (typeof saveState === 'function') saveState();
+    if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    renderMedirEquipamientoPanel();
+    if (typeof renderCalendario === 'function') renderCalendario();
+    if (typeof showToast === 'function') showToast('✓ Calibración registrada hoy');
+  }
+
+  function generarEventosCalibracionDia(fechaDia, hoyRef) {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const info = getInfoCalibracionMedidor(cfg);
+    if (!info) return [];
+    const hoy = hoyRef || hoyLocal0();
+    const d = new Date(fechaDia);
+    d.setHours(0, 0, 0, 0);
+    const nombre = info.medidor.marca + ' ' + info.medidor.modelo;
+    const baseDesc = nombre + ' · cada ' + info.diasIntervalo + ' d (solución buffer según manual).';
+    if (info.vencida && d.getTime() === hoy.getTime()) {
+      return [{
+        tipo: 'calibracion',
+        icono: '🧪',
+        titulo: 'Calibrar medidor EC/pH (vencido)',
+        desc: baseDesc + ' La fecha programada ya pasó — calibra antes de confiar en mediciones.',
+      }];
+    }
+    if (d.getTime() !== info.proxima.getTime()) return [];
+    const diff = Math.round((d - hoy) / 86400000);
+    return [{
+      tipo: 'calibracion',
+      icono: '🧪',
+      titulo: diff === 0 ? 'Calibrar medidor EC/pH hoy' : 'Calibración medidor próxima',
+      desc: baseDesc + (diff <= 0 ? ' Ya toca calibrar.' : ' Prepárate con kits 4.01 / 7.01 y EC estándar.'),
+    }];
+  }
+
+  function marcarCalibracionCalendarioGrid(addEvento, mes, año) {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const info = getInfoCalibracionMedidor(cfg);
+    if (!info) return;
+    const hoy = hoyLocal0();
+    for (let n = 0; n <= 12; n++) {
+      const fecha = new Date(info.ultima.getTime() + (n + 1) * info.diasIntervalo * 86400000);
+      fecha.setHours(0, 0, 0, 0);
+      if (fecha.getMonth() !== mes || fecha.getFullYear() !== año) continue;
+      const diff = Math.round((fecha - hoy) / 86400000);
+      const label = diff === 0 ? '🧪 Calibrar medidor hoy' : '🧪 Calibración medidor';
+      addEvento(fecha.getDate(), 'calibracion', diff <= 0 ? '#dc2626' : '#7c3aed', label);
+    }
+  }
+
   function renderMedirEquipamientoPanel() {
     const card = el('medirEquipamientoCard');
     const panel = el('medirEquipamientoPanel');
@@ -218,6 +325,25 @@
         '</li>';
     });
     html += '</ul>';
+    const cal = getInfoCalibracionMedidor(cfg);
+    if (cal) {
+      const fmt = function (d) {
+        return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear();
+      };
+      html += '<div class="medir-equip-cal' + (cal.vencida ? ' medir-equip-cal--warn' : '') + '">';
+      html += '<strong>' + (typeof hcVisualIconSvg === 'function' ? hcVisualIconSvg('medidor', 'hc-visual-ico--sm') : '🧪') +
+        ' Calibración ' + cal.medidor.marca + ':</strong> ';
+      if (cal.vencida) {
+        html += 'vencida · ';
+      } else if (cal.proximaPronto) {
+        html += 'en ' + cal.diasRestantes + ' d · ';
+      } else {
+        html += 'próxima ' + fmt(cal.proxima) + ' · ';
+      }
+      html += 'cada ' + cal.diasIntervalo + ' d';
+      html += ' <button type="button" class="btn btn-secondary btn-sm" onclick="registrarCalibracionMedidor()">Registrar hoy</button>';
+      html += '</div>';
+    }
     html += '<p class="medir-equip-foot">Los fabricantes publican W reales, m³/h, cobertura y calibración en ficha técnica — la app usa esos datos cuando eliges modelo del catálogo.</p>';
     panel.innerHTML = html;
   }
@@ -242,4 +368,8 @@
   window.getCamposEquipamientoFaltantes = getCamposEquipamientoFaltantes;
   window.getEquipamientoResumenHtml = getEquipamientoResumenHtml;
   window.getCorreccionEquipamientoSugerido = getCorreccionEquipamientoSugerido;
+  window.getInfoCalibracionMedidor = getInfoCalibracionMedidor;
+  window.registrarCalibracionMedidor = registrarCalibracionMedidor;
+  window.generarEventosCalibracionDia = generarEventosCalibracionDia;
+  window.marcarCalibracionCalendarioGrid = marcarCalibracionCalendarioGrid;
 })();

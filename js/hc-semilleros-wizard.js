@@ -144,6 +144,7 @@
     if (typeof saveState === 'function') saveState();
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     renderSemilleroPerfilPanel();
+    if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
     if (showToast && typeof showToast === 'function') showToast('Perfil de semillero guardado con tus ajustes');
   }
 
@@ -156,6 +157,7 @@
     s.aceptadoTalCual = true;
     if (typeof saveState === 'function') saveState();
     renderSemilleroPerfilPanel();
+    if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
     if (typeof showToast === 'function') showToast('✓ Perfil de ' + (s.marca || 'semillero') + ' aceptado');
   }
 
@@ -177,6 +179,34 @@
     cfg.semillero = JSON.parse(JSON.stringify(s));
   }
 
+  function getRecomendacionEcPhSemillero(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    if (typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada()) {
+      return null;
+    }
+    const s = ensureSemilleroState(cfg);
+    if (!s.id) return null;
+    const p = getPerfilActivo(cfg);
+    if (!p || p.ecVegMin == null || p.phMin == null) return null;
+    const faseRaw = String(
+      cfg.faseCultivoAmbiental || cfg.growRoomFase || (cfg.premiumSetup && cfg.premiumSetup.faseSala) || 'vegetativo'
+    ).toLowerCase();
+    const esFlor = /flor|fruct|bloom|12\/12|12-12/.test(faseRaw);
+    return {
+      activo: true,
+      marca: s.marca || s.id,
+      aceptadoTalCual: !!s.aceptadoTalCual,
+      fase: esFlor ? 'floracion' : 'vegetativo',
+      ec: esFlor
+        ? { min: p.ecFlorMin, max: p.ecFlorMax }
+        : { min: p.ecVegMin, max: p.ecVegMax },
+      ph: { min: p.phMin, max: p.phMax },
+      nota: p.hidroNota || '',
+      germTemp: { min: p.germTempMin, max: p.germTempMax },
+      germDias: { min: p.germDiasMin, max: p.germDiasMax },
+    };
+  }
+
   function renderMedirSemilleroPanel() {
     const card = el('medirSemilleroCard');
     const panel = el('medirSemilleroPanel');
@@ -189,9 +219,15 @@
     }
     card.classList.remove('setup-hidden');
     const p = getPerfilActivo(cfg);
+    const sinPlantas = typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
+    const recSem = getRecomendacionEcPhSemillero(cfg);
     panel.innerHTML =
       '<p class="medir-sem-lead"><strong>' + (s.marca || s.id) + '</strong>' +
       (s.aceptadoTalCual ? ' · perfil confirmado' : ' · revisa y confirma en asistente') + '</p>' +
+      (sinPlantas && recSem
+        ? '<p class="medir-sem-ec-link">Sin plantas en la instalación: EC/pH objetivo del depósito toma este perfil (' +
+          recSem.fase + ').</p>'
+        : '') +
       '<ul class="medir-sem-list">' +
       '<li>🌡️ Germinación: <strong>' + p.germTempMin + '–' + p.germTempMax + ' °C</strong> · ' + p.germDiasMin + '–' + p.germDiasMax + ' d</li>' +
       '<li>⚡ EC veg: <strong>' + p.ecVegMin + '–' + p.ecVegMax + ' µS</strong> · flor: <strong>' + p.ecFlorMin + '–' + p.ecFlorMax + ' µS</strong></li>' +
@@ -209,4 +245,5 @@
   window.renderMedirSemilleroPanel = renderMedirSemilleroPanel;
   window.persistSemilleroToConfig = persistSemilleroToConfig;
   window.getPerfilSemilleroActivo = getPerfilActivo;
+  window.getRecomendacionEcPhSemillero = getRecomendacionEcPhSemillero;
 })();

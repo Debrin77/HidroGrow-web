@@ -980,10 +980,20 @@ function actualizarBadgesNutriente() {
         'Objetivo ' + o + ' ±' + EC_MEDICION_TOLERANCIA_OBJETIVO_US + ' µS/cm · cultivo ' + ecMin + '–' + ecMax;
       rangeEC.removeAttribute('title');
     } else if (!tieneVariedades && strategyEc !== 'manual') {
-      rangeEC.textContent =
-        'Sin variedad en la instalación: asigna cultivo y fecha en Cultivo e instalación para un EC por fase (o EC manual en checklist).';
-      rangeEC.title =
-        'La fecha de la ficha es el trasplante al hidro. Si marcaste <strong>vivero</strong>, el rango EC/pH y la fase usan también una media de días en plug típica de ese cultivo (como en el resumen de cestas).';
+      const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+      if (rec && (rec.ecAgregacion === 'semillero' || rec.semilleroOverlay)) {
+        rangeEC.textContent =
+          ecMin + ' – ' + ecMax + ' µS/cm · perfil semillero ' + (rec.semilleroOverlay.marca || '');
+        rangeEC.title = 'Sin plantas en la instalación: EC orientativo del semillero elegido en el asistente premium.';
+      } else if (rec && (rec.ecAgregacion === 'esquejes' || (rec.esquejesOverlay && rec.esquejesOverlay.activo))) {
+        rangeEC.textContent = ecMin + ' – ' + ecMax + ' µS/cm · ' + (rec.esquejesOverlay.label || 'protocolo esquejes');
+        rangeEC.title = 'EC/pH según fase activa del protocolo de esquejes o madre.';
+      } else {
+        rangeEC.textContent =
+          'Sin variedad en la instalación: asigna cultivo y fecha en Cultivo e instalación para un EC por fase (o elige semillero en asistente premium).';
+        rangeEC.title =
+          'La fecha de la ficha es el trasplante al hidro. Con semillero confirmado, la app usa su perfil EC/pH hasta que haya plantas.';
+      }
     } else {
       const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
       const faseMapEc = {
@@ -1005,8 +1015,17 @@ function actualizarBadgesNutriente() {
     const tieneVariedadesPh =
       typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada();
     if (!tieneVariedadesPh && strategyPh !== 'manual') {
-      rangePH.textContent = 'Misma lógica que EC: define plantas en Cultivo e instalación o pH manual en checklist.';
-      rangePH.title = 'Con plantas y fecha, el pH se ajusta al catálogo por fase y al nutriente activo.';
+      const recPh = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+      const phOptSem =
+        recPh && recPh.ph ? [recPh.ph.min, recPh.ph.max] :
+        (nut && typeof getPhOptimaTorre === 'function' ? getPhOptimaTorre(nut, cfg) : [phMin, phMax]);
+      if (recPh && (recPh.ecAgregacion === 'semillero' || recPh.semilleroOverlay || recPh.esquejesOverlay)) {
+        rangePH.textContent = phOptSem[0] + ' – ' + phOptSem[1] + ' · según perfil activo';
+        rangePH.title = 'pH orientativo del semillero o protocolo de esquejes hasta tener plantas en la instalación.';
+      } else {
+        rangePH.textContent = 'Misma lógica que EC: define plantas en Cultivo e instalación o elige semillero en asistente premium.';
+        rangePH.title = 'Con plantas y fecha, el pH se ajusta al catálogo por fase y al nutriente activo.';
+      }
     } else {
       const phOpt =
         nut && typeof getPhOptimaTorre === 'function' ? getPhOptimaTorre(nut, cfg) : [phMin, phMax];

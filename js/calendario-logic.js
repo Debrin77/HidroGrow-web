@@ -134,11 +134,18 @@ function generarEventos(fecha) {
   }
 
   // ── Control diario EC y pH ────────────────────────────────────────────
+  let ecObjTxt = '1300–1400';
+  let phObjTxt = '5.7–6.4';
+  try {
+    const recCtrl = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+    if (recCtrl && recCtrl.ec) ecObjTxt = recCtrl.ec.min + '–' + recCtrl.ec.max;
+    if (recCtrl && recCtrl.ph) phObjTxt = recCtrl.ph.min + '–' + recCtrl.ph.max;
+  } catch (_) {}
   eventos.push({
     tipo: 'control',
     icono: '📊',
     titulo: 'Control diario',
-    desc: 'Medir EC (objetivo 1300-1400 µS/cm), pH (5.7-6.4) y temperatura del agua (18-22°C).'
+    desc: 'Medir EC (objetivo ' + ecObjTxt + ' µS/cm), pH (' + phObjTxt + ') y temperatura del agua (18–22 °C).'
   });
 
   // ── Recarga del depósito (intervalo ~diasObjetivo: volumen, tipo NFT/torre/DWC/RDWC, mediciones, reposición) ──
@@ -389,6 +396,13 @@ function generarEventos(fecha) {
     } catch (_) {}
   }
 
+  if (typeof generarEventosCalibracionDia === 'function') {
+    try {
+      const evCal = generarEventosCalibracionDia(d, hoy);
+      if (Array.isArray(evCal) && evCal.length) eventos.push.apply(eventos, evCal);
+    } catch (_) {}
+  }
+
   return eventos;
 }
 
@@ -584,6 +598,12 @@ function renderCalendario() {
   if (typeof marcarEsquejesCalendarioGrid === 'function') {
     try {
       marcarEsquejesCalendarioGrid(addEvento, mes, año);
+    } catch (_) {}
+  }
+
+  if (typeof marcarCalibracionCalendarioGrid === 'function') {
+    try {
+      marcarCalibracionCalendarioGrid(addEvento, mes, año);
     } catch (_) {}
   }
 

@@ -4236,6 +4236,10 @@ function syncSistemaEcPhStrategyUI() {
             ' Varias etapas a la vez: no hay una media «por fase nominal» única; se unen los rangos vigentes de cada planta (intersección o promedio si no encajan).';
         } else if (rec.ecAgregacion === 'promedio_plantas') {
           t += ' Rangos poco compatibles entre plantas: se promedia el rango actual de cada una.';
+        } else if (rec.ecAgregacion === 'semillero' && rec.semilleroOverlay) {
+          t += ' Sin plantas: EC/pH del perfil de ' + rec.semilleroOverlay.marca + ' (' + rec.semilleroOverlay.fase + ').';
+        } else if (rec.ecAgregacion === 'esquejes' && rec.esquejesOverlay) {
+          t += ' Protocolo esquejes/madre: ' + rec.esquejesOverlay.label + '.';
         }
         if (rec.ecMediaFasesCatalogo && rec.ecMediaFasesCatalogo.midAvg != null) {
           t +=
@@ -4266,8 +4270,15 @@ function syncSistemaEcPhStrategyUI() {
           m.maxAvg +
           '). Útil como referencia si quieres un EC manual fijo; el cultivo real sigue variando por etapa.';
       } else if (nVar === 0) {
-        hintMedia.textContent =
-          'Sin variedades asignadas en Cultivo e instalación: define plantas y fecha para alinear el manual con el catálogo, o usa solo tu criterio.';
+        const rec0 = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+        if (rec0 && rec0.semilleroOverlay) {
+          hintMedia.textContent =
+            'Sin plantas: perfil semillero ' + rec0.semilleroOverlay.marca + ' activo como referencia EC/pH (' +
+            rec0.semilleroOverlay.fase + '). Asigna variedad y fecha cuando trasplantes.';
+        } else {
+          hintMedia.textContent =
+            'Sin variedades asignadas: elige semillero en asistente premium o define plantas y fecha para alinear el manual con el catálogo.';
+        }
       } else {
         hintMedia.textContent =
           'Esta variedad no define fases EC en el catálogo; usa el rango de la ficha o la tabla de variedades como referencia.';

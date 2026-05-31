@@ -742,6 +742,7 @@ function getRecomendacionEcPhTorre() {
   }
 
   let esquejesOverlay = null;
+  let semilleroOverlay = null;
   if (typeof getRecomendacionEcPhEsquejes === 'function') {
     try {
       esquejesOverlay = getRecomendacionEcPhEsquejes(cfg);
@@ -761,19 +762,39 @@ function getRecomendacionEcPhTorre() {
     } catch (_) {}
   }
 
+  if (typeof getRecomendacionEcPhSemillero === 'function') {
+    try {
+      semilleroOverlay = getRecomendacionEcPhSemillero(cfg);
+      if (semilleroOverlay && semilleroOverlay.activo && rangosEc.length === 0 &&
+          !(esquejesOverlay && esquejesOverlay.activo)) {
+        ecRec = { min: semilleroOverlay.ec.min, max: semilleroOverlay.ec.max };
+        phRec = { min: semilleroOverlay.ph.min, max: semilleroOverlay.ph.max };
+      }
+    } catch (_) {}
+  }
+
+  let ecAgregacionFinal = ecAgregacion;
+  if (rangosEc.length === 0 && semilleroOverlay && semilleroOverlay.activo &&
+      !(esquejesOverlay && esquejesOverlay.activo)) {
+    ecAgregacionFinal = 'semillero';
+  } else if (rangosEc.length === 0 && esquejesOverlay && esquejesOverlay.activo) {
+    ecAgregacionFinal = 'esquejes';
+  }
+
   return {
     ec: ecRec,
     ph: phRec,
-    faseDominante: dom ? dom[0] : (esquejesOverlay ? esquejesOverlay.fase : null),
-    conFaseReal: totalConFecha > 0 || !!(esquejesOverlay && esquejesOverlay.activo),
+    faseDominante: dom ? dom[0] : (esquejesOverlay ? esquejesOverlay.fase : (semilleroOverlay ? semilleroOverlay.fase : null)),
+    conFaseReal: totalConFecha > 0 || !!(esquejesOverlay && esquejesOverlay.activo) || !!(semilleroOverlay && semilleroOverlay.activo),
     contexto: ctx,
     estrategia: 'auto',
-    ecAgregacion,
+    ecAgregacion: ecAgregacionFinal,
     mezclaFasesDistintas,
     ecMediaFasesCatalogo,
     variedadUnicaId: varUnica || null,
     variedadUnicaNombre,
     esquejesOverlay,
+    semilleroOverlay,
   };
 }
 

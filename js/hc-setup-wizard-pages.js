@@ -2677,12 +2677,16 @@ function renderNutrienteCardHtml(n) {
   const parLine = parNote
     ? '<span class="nutriente-par-flores">+ flor: ' + parNote.nombre + '</span>'
     : '';
+  const iconHtml = typeof hcVisualIconSvg === 'function'
+    ? '<span class="nutriente-icon" aria-hidden="true">' + hcVisualIconSvg('nutriente') + '</span>'
+    : '';
   return (
     '<button type="button" class="nutriente-card ' + (n.id === setupNutriente ? 'selected' : '') + '"' +
     ' id="nut-' + n.id + '" onclick="selNutriente(\'' + n.id + '\')" aria-pressed="' +
     (n.id === setupNutriente ? 'true' : 'false') + '"' +
     ' aria-label="Nutriente ' + n.nombre + (n.buffer ? ', con buffer de pH' : '') + '">' +
     rankBadge +
+    iconHtml +
     '<span class="nutriente-bandera" aria-hidden="true">' + n.bandera + '</span>' +
     '<span class="nutriente-info">' +
     '<span class="nutriente-nombre">' + n.nombre + '</span>' +
