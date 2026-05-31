@@ -4396,35 +4396,24 @@ function refrescarSistemaDatosFacilesBanner(cfg) {
 }
 
 function sincronizarSistemaNftMontajeUI() {
-  const card = document.getElementById('sistemaNftMontajeCard');
   const dwcInfo = document.getElementById('sistemaDwcAyudaCard');
-  const srfInfo = document.getElementById('sistemaSrfAyudaCard');
-  const torreObj = document.getElementById('sistemaTorreObjetivoCard');
-  [card, srfInfo, torreObj].forEach((el) => {
-    if (!el) return;
-    el.style.display = 'none';
-    el.classList.add('setup-hidden');
-    el.hidden = true;
-  });
   const ecphCard = document.getElementById('sistemaEcPhStrategyCard');
   const cfg = state.configTorre;
   try {
     refrescarSistemaDatosFacilesBanner(cfg);
-  } catch (eBan) {}
+  } catch (_) {}
   const tipoInst =
     cfg && typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(cfg)
       : cfg && cfg.tipoInstalacion;
-  const ocultarEcPhObjetivoTorreEnSistema = false;
   const ocultarEcPhRdwc = tipoInst === 'rdwc';
-  const nftYaListo = cfg && nftInstalacionYaConfigurada(cfg);
   if (ecphCard) {
-    const mostrarEcPh = cfg && !ocultarEcPhObjetivoTorreEnSistema && !ocultarEcPhRdwc && !nftYaListo;
+    const mostrarEcPh = cfg && !ocultarEcPhRdwc;
     ecphCard.style.display = mostrarEcPh ? 'block' : 'none';
     ecphCard.classList.toggle('setup-hidden', !mostrarEcPh);
     ecphCard.hidden = !mostrarEcPh;
   }
-  if (cfg && !ocultarEcPhObjetivoTorreEnSistema && !ocultarEcPhRdwc && !nftYaListo) {
+  if (cfg && !ocultarEcPhRdwc) {
     try {
       syncSistemaEcPhStrategyUI();
     } catch (_) {}
@@ -4433,156 +4422,24 @@ function sincronizarSistemaNftMontajeUI() {
     cfg.ecPhEstrategia = 'auto';
     cfg.ecPhIntensidad = 'conservador';
   }
-  const torreMontajeCard = document.getElementById('sistemaTorreMontajeCard');
-  if (torreMontajeCard) {
-    torreMontajeCard.style.display = 'none';
-    torreMontajeCard.classList.add('setup-hidden');
-    torreMontajeCard.hidden = true;
-  }
   if (dwcInfo) {
-    if (cfg && (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc')) {
+    if (cfg && (tipoInst === 'dwc' || tipoInst === 'rdwc')) {
       dwcInfo.style.display = 'block';
       syncSistemaDwcRdwcPanelIndependienteUI(cfg);
       applySistemaDwcRdwcBodyVisibilitySegunTipo(cfg);
-      if (cfg.tipoInstalacion === 'rdwc') {
+      if (tipoInst === 'rdwc') {
         syncSistemaRdwcDesdeConfig(cfg);
       } else {
         syncDwcFormInputsDesdeConfig(cfg, DWC_FORM_IDS_SISTEMA);
         try {
           refreshDwcSistemaMedidasUI();
-        } catch (eDwcHint) {}
+        } catch (_) {}
       }
     } else {
       dwcInfo.style.display = 'none';
     }
   }
-  if (srfInfo) {
-    srfInfo.style.display = 'none';
-    srfInfo.classList.add('setup-hidden');
-    srfInfo.hidden = true;
-  }
-  if (!card) {
-    try {
-      renderNftCultivoRecoStatus('sys');
-    } catch (_) {}
-    applySistemaTipoPanelesColapsablesUI();
-    return;
-  }
-  if (!cfg || cfg.tipoInstalacion !== 'nft') {
-    card.style.display = 'none';
-    card.classList.add('setup-hidden');
-    card.hidden = true;
-    try {
-      renderNftCultivoRecoStatus('sys');
-    } catch (_) {}
-    applySistemaTipoPanelesColapsablesUI();
-    return;
-  }
-  if (nftInstalacionYaConfigurada(cfg)) {
-    card.style.display = 'none';
-    card.classList.add('setup-hidden');
-    card.hidden = true;
-    try {
-      renderNftCultivoRecoStatus('sys');
-    } catch (_) {}
-    applySistemaTipoPanelesColapsablesUI();
-    return;
-  }
-  card.style.display = 'block';
-  card.classList.remove('setup-hidden');
-  card.hidden = false;
-  const dispN = nftDisposicionNormalizada(cfg.nftDisposicion);
-  seleccionarSistemaNftDisposicion(dispN);
-  const altInp = document.getElementById('sysNftAlturaBombeoCm');
-  if (altInp) {
-    altInp.value =
-      cfg.nftAlturaBombeoCm != null && Number(cfg.nftAlturaBombeoCm) > 0 ? String(Math.round(Number(cfg.nftAlturaBombeoCm))) : '';
-  }
-  const hxEl = document.getElementById('sysNftHuecos');
-  if (hxEl) hxEl.value = String(Math.max(2, Math.min(30, cfg.nftHuecosPorCanal || cfg.numCestas || 8)));
-  const pendEl = document.getElementById('sysNftPendiente');
-  if (pendEl) pendEl.value = String(Math.max(1, Math.min(4, Math.round(Number(cfg.nftPendientePct)) || 2)));
-  const objSel = document.getElementById('sysNftObjetivoCultivo');
-  if (objSel) objSel.value = nftGetObjetivoCultivo(cfg);
-  const objHint = document.getElementById('sysNftObjetivoHint');
-  if (objHint) {
-    const spN = nftGetObjetivoSpec(nftGetObjetivoCultivo(cfg));
-    objHint.classList.remove('setup-hidden');
-    objHint.textContent = 'Referencia: ' + spN.densidadTxt + ' · ' + spN.cicloTxt + '.';
-  }
-  const rimSysIn = document.getElementById('sysNftPotRimMm');
-  const hSysIn = document.getElementById('sysNftPotHmm');
-  if (rimSysIn) {
-    const rNv =
-      cfg.nftNetPotRimMm != null && Number(cfg.nftNetPotRimMm) > 0
-        ? Math.round(Number(cfg.nftNetPotRimMm))
-        : cfg.dwcNetPotRimMm != null && Number(cfg.dwcNetPotRimMm) > 0
-          ? Math.round(Number(cfg.dwcNetPotRimMm))
-          : '';
-    rimSysIn.value = rNv !== '' ? String(rNv) : '';
-  }
-  if (hSysIn) {
-    const hNv =
-      cfg.nftNetPotHeightMm != null && Number(cfg.nftNetPotHeightMm) > 0
-        ? Math.round(Number(cfg.nftNetPotHeightMm))
-        : cfg.dwcNetPotHeightMm != null && Number(cfg.dwcNetPotHeightMm) > 0
-          ? Math.round(Number(cfg.dwcNetPotHeightMm))
-          : '';
-    hSysIn.value = hNv !== '' ? String(hNv) : '';
-  }
-  try {
-    syncSistemaNftPotRimChipsFromInput();
-  } catch (_) {}
-  syncNftMesaRecorridoUiFromCfg(cfg);
-  const mmChk = document.getElementById('sysNftMesaMultinivelChk');
-  if (mmChk) mmChk.checked = cfg.nftMesaMultinivel === true;
-  if (mmChk && mmChk.checked) {
-    const tiersS = parseNftMesaTubosPorNivelStrLoose(cfg.nftMesaTubosPorNivelStr || '');
-    rebuildNftMesaMultinivelGrid('sys', tiersS.length >= 2 ? tiersS : [1, 1]);
-  }
-  const bhSys = document.getElementById('sysNftBombaLh');
-  const bwSys = document.getElementById('sysNftBombaW');
-  if (bhSys) {
-    bhSys.value =
-      cfg.nftBombaUsuarioCaudalLh != null && cfg.nftBombaUsuarioCaudalLh !== ''
-        ? String(cfg.nftBombaUsuarioCaudalLh)
-        : '';
-  }
-  if (bwSys) {
-    bwSys.value =
-      cfg.nftBombaUsuarioPotenciaW != null && cfg.nftBombaUsuarioPotenciaW !== ''
-        ? String(cfg.nftBombaUsuarioPotenciaW)
-        : '';
-  }
-  const mmSep = document.getElementById('sysNftMesaSepCm');
-  if (mmSep) {
-    mmSep.value =
-      cfg.nftMesaSeparacionNivelesCm != null && Number(cfg.nftMesaSeparacionNivelesCm) > 0
-        ? String(Math.round(Number(cfg.nftMesaSeparacionNivelesCm)))
-        : '';
-  }
-  seleccionarSistemaNftEscaleraCaras(nftEscaleraCarasNormalizada(cfg.nftEscaleraCaras));
-  let nvEsc = 4;
-  if (dispN === 'escalera' && cfg.nftEscaleraNivelesCara != null && Number(cfg.nftEscaleraNivelesCara) > 0) {
-    nvEsc = Math.max(1, Math.min(12, Math.round(Number(cfg.nftEscaleraNivelesCara))));
-  }
-  const peld = document.getElementById('sysNftPeldaños');
-  if (peld) peld.value = String(nvEsc);
-  const ncEl = document.getElementById('sysNftNumCanales');
-  if (ncEl) {
-    let nc = Math.max(1, Math.min(24, parseInt(String(cfg.nftNumCanales ?? cfg.numNiveles ?? 4), 10) || 4));
-    if (dispN === 'escalera') nc = Math.max(1, Math.min(24, nvEsc * nftEscaleraCarasNormalizada(cfg.nftEscaleraCaras)));
-    ncEl.value = String(nc);
-  }
-  onSistemaNftMesaMultinivelToggle();
-  refrescarSistemaNftMontajeSubpanels();
-  try {
-    seleccionarSistemaNftMontajeOrigen('diy');
-  } catch (_) {}
   applySistemaTipoPanelesColapsablesUI();
-  try {
-    renderNftCultivoRecoStatus('sys');
-  } catch (_) {}
 }
 
 function aplicarSistemaTorreObjetivoDesdeFormulario() {

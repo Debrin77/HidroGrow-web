@@ -4,10 +4,10 @@
  */
 function renderTorre() {
   const cfg = state.configTorre || {};
-  const esNft = cfg.tipoInstalacion === 'nft';
-  const esRdwc = cfg.tipoInstalacion === 'rdwc';
-  const esDwc = cfg.tipoInstalacion === 'dwc';
-  const esSrf = cfg.tipoInstalacion === 'srf';
+  const tipo =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
+  const esRdwc = tipo === 'rdwc';
+  const esDwc = !esRdwc;
 
   const chk = document.getElementById('torreChkAnimSuaves');
   if (chk) chk.checked = state.configTorre?.torreAnimSvg !== false;
@@ -15,8 +15,10 @@ function renderTorre() {
   const wrap = document.getElementById('torreSVGWrap');
   if (!wrap) return;
 
-  if (!esNft) {
-    disposeNftThreeIfAny(wrap);
+  if (typeof disposeNftThreeIfAny === 'function') {
+    try {
+      disposeNftThreeIfAny(wrap);
+    } catch (_) {}
   }
   if (typeof disposeDwcScadaViewport === 'function') {
     try {
@@ -24,75 +26,7 @@ function renderTorre() {
     } catch (_) {}
   }
 
-  if (esNft) {
-    const hyd = getNftHidraulicaDesdeConfig(cfg);
-    const hx = cfg.nftHuecosPorCanal ?? cfg.numCestas ?? 8;
-    const pend = cfg.nftPendientePct ?? 2;
-    const volRawMax = getVolumenDepositoMaxLitros(cfg);
-    const volRawMez = typeof getVolumenMezclaLitros === 'function' ? getVolumenMezclaLitros(cfg) : null;
-    const vol =
-      volRawMez != null && Number.isFinite(volRawMez) && volRawMez > 0
-        ? volRawMez
-        : volRawMax != null && Number.isFinite(volRawMax) && volRawMax > 0
-          ? volRawMax
-          : typeof VOL_OBJETIVO !== 'undefined'
-            ? VOL_OBJETIVO
-            : 18;
-    const eqArr = cfg.equipamiento;
-    const bombMain = getNftBombaDesdeConfig(cfg);
-    const altShow =
-      cfg.nftAlturaBombeoCm != null && Number(cfg.nftAlturaBombeoCm) > 0
-        ? Math.round(Number(cfg.nftAlturaBombeoCm))
-        : getNftAlturaBombeoEfectivaCm(cfg);
-    disposeNftThreeIfAny(wrap);
-    const esPared = nftDisposicionNormalizada(cfg.nftDisposicion) === 'pared';
-    const svgOpts = {
-      calentador: eqArr?.includes('calentador') ?? true,
-      difusor: true,
-      interactive: true,
-      bombaInfo: bombMain,
-      userCaudalLh: cfg.nftBombaUsuarioCaudalLh || null,
-      userPotenciaW: cfg.nftBombaUsuarioPotenciaW || null,
-      nftDisposicion: cfg.nftDisposicion,
-      nftAlturaBombeoCm: altShow > 0 ? altShow : null,
-      ubicacion: cfg.ubicacion,
-      cfgSnapshot: cfg,
-      volCapL: volRawMax,
-      volMezL: volRawMez,
-      mesaTiers: hyd.mesaTiers,
-      escaleraNiveles: hyd.escaleraNiveles,
-      escaleraCaras: hyd.escaleraCaras,
-    };
-    if (typeof wrapBuildNftActiveDiagramSvg === 'function') wrapBuildNftActiveDiagramSvg();
-    const dispNft = nftDisposicionNormalizada(cfg.nftDisposicion);
-    const canalesArg =
-      dispNft === 'escalera' && hyd.escaleraNiveles != null && hyd.escaleraNiveles >= 1
-        ? hyd.escaleraNiveles
-        : hyd.nCh;
-    let nftSvg = buildNftActiveDiagramSvg(canalesArg, hx, pend, vol, 'Main', svgOpts);
-    if (typeof enhanceNftDiagramScada === 'function') {
-      nftSvg = enhanceNftDiagramScada(nftSvg, { interactive: true });
-    }
-    wrap.innerHTML = nftSvg;
-    wrap.classList.remove('torre-svg-canvas--nft-pared-illo');
-    wrap.setAttribute(
-      'aria-label',
-      esPared
-        ? 'NFT en pared: tubos marrones, flujo del agua y depósito. Toca un hueco para la ficha o usa Lista.'
-        : 'NFT: trazo azul alimentación, trazo verde retorno al depósito. Toca un hueco para la ficha o usa Lista.'
-    );
-    try {
-      bindTorreCestas(wrap);
-    } catch (e2) {}
-    const nftHint = document.getElementById('torreNftDiagramHint');
-    if (nftHint) {
-      nftHint.classList.remove('setup-hidden');
-      if (esPared) {
-        nftHint.innerHTML =
-          'NFT pared: <strong class="fw-800" style="color:#2563eb">azul</strong> = alimentación; <strong class="fw-800" style="color:#16a34a">verde</strong> = retorno al depósito. Toca <strong class="fw-800">hueco</strong> o <strong class="fw-800">Lista</strong>.';
-      }
-    }
-  } else if (esDwc) {
+  if (esDwc) {
     try {
       wrap.innerHTML = typeof generarSVGDwc === 'function' ? generarSVGDwc() : '';
     } catch (eDwcSvg) {
@@ -114,23 +48,6 @@ function renderTorre() {
       dwcMcAria
         ? 'DWC multiválvula: vista cenital (arriba) y frontal (abajo). Toca una maceta para cultivo o usa Lista.'
         : 'DWC: tapa en vista superior con macetas y esquema frontal del depósito. Toca una maceta para la ficha o usa Lista.'
-    );
-    try {
-      bindTorreCestas(wrap);
-    } catch (e2) {}
-  } else if (esSrf) {
-    try {
-      wrap.innerHTML = typeof generarSVGSrf === 'function' ? generarSVGSrf() : '';
-    } catch (eSrfSvg) {
-      wrap.innerHTML =
-        '<p class="torre-svg-fallback" role="status">No se pudo cargar el esquema SRF. Recarga la página (Ctrl+F5).</p>';
-      try {
-        console.error('generarSVGSrf', eSrfSvg);
-      } catch (_) {}
-    }
-    wrap.setAttribute(
-      'aria-label',
-      'SRF balsa flotante: vista superior y corte del estanque. Toca una maceta para la ficha o usa Lista.'
     );
     try {
       bindTorreCestas(wrap);
@@ -167,48 +84,6 @@ function renderTorre() {
         console.error('bindRdwcScadaViewport', eRdwcVp);
       } catch (_) {}
     }
-  } else {
-    if (!state.configTorre) state.configTorre = {};
-    if (!state.configTorre.torreDiagramaVista) state.configTorre.torreDiagramaVista = 'esquema';
-    if (state.configTorre.torreVistaModo === 'lista') {
-      state.configTorre.torreVistaModo = 'esquema';
-    }
-    try {
-      const renderFn =
-        typeof hcRenderTorreDiagramHtml === 'function'
-          ? hcRenderTorreDiagramHtml
-          : typeof generarSVGTorre === 'function'
-            ? generarSVGTorre
-            : typeof _buildTorreSvgLegacy === 'function'
-              ? _buildTorreSvgLegacy
-              : null;
-      wrap.innerHTML = renderFn ? renderFn() : '';
-    } catch (eTorreSvg) {
-      wrap.innerHTML =
-        '<p class="torre-svg-fallback" role="status">No se pudo cargar el esquema de torre. Recarga la página (Ctrl+F5).</p>';
-      try {
-        console.error('hcRenderTorreDiagramHtml', eTorreSvg);
-      } catch (_) {}
-    }
-    if (!wrap.innerHTML || String(wrap.innerHTML).indexOf('<svg') < 0) {
-      wrap.innerHTML =
-        '<p class="torre-svg-fallback" role="status">Esquema de torre vacío: revisa niveles y cestas en Cultivo e instalación.</p>';
-    }
-    wrap.classList.add('torre-svg-canvas--torre-vertical');
-    wrap.setAttribute(
-      'aria-label',
-      'Torre hidropónica: eje central, niveles y depósito. Flechas para girar; toca una cesta de frente o usa Lista.'
-    );
-    try {
-      initTorreGestos(wrap);
-    } catch (e) {}
-    bindTorreCestas(wrap);
-    bindTorreRotFlechas(wrap);
-    try {
-      const titleEl = wrap.querySelector('svg title');
-      if (titleEl && titleEl.id) wrap.dataset.illoUid = titleEl.id.replace(/-title$/, '');
-    } catch (_) {}
-    bindTorreTecladoRotacion();
   }
 
   try {
@@ -240,11 +115,9 @@ function renderTorre() {
 }
 
 var MEDIR_ESQUEMA_HINT_DEFAULT =
-  'Mismo esquema que en Cultivo e instalación: tubos, recorrido del agua (azul/verde) y equipos. Toca un hueco para ver cultivo y días.';
-var MEDIR_NFT_CARTOON_HINT =
-  'Vista cartoon con el mismo circuito que Cultivo: <strong>azul</strong> alimentación, <strong>verde</strong> retorno. Toca un hueco para cultivo; tabla abajo.';
+  'Mismo esquema que en Cultivo e instalación: cubos, depósito y equipos. Toca una maceta para ver cultivo y días.';
 
-/** Medir: NFT → cartoon (misma hidráulica); resto → copia de #torreSVGWrap. */
+/** Medir: esquema solo en Cultivo e instalación (DWC/RDWC). */
 function renderTorreMedirDiagram() {
   const section = document.getElementById('medirInstalacionEsquema');
   const medirWrap = document.getElementById('medirDiagramWrap');
@@ -260,88 +133,8 @@ function renderTorreMedirDiagram() {
     return;
   }
 
-  const tipo = cfg.tipoInstalacion || 'torre';
-  /* Torre, DWC, SRF, RDWC: diagrama solo en Cultivo e instalación (como el resto de hidro). */
-  const esquemaSoloEnSistema =
-    !tipo || tipo === 'torre' || tipo === 'dwc' || tipo === 'srf' || tipo === 'rdwc';
-  if (esquemaSoloEnSistema) {
-    section.classList.add('setup-hidden');
-    medirWrap.innerHTML = '';
-    return;
-  }
-
-  if (tipo === 'nft' && typeof renderNftMedirCartoon === 'function') {
-    try {
-      if (renderNftMedirCartoon(cfg, medirWrap)) {
-        section.classList.remove('setup-hidden');
-        if (hintEl) hintEl.innerHTML = MEDIR_NFT_CARTOON_HINT;
-        return;
-      }
-    } catch (_) {}
-  }
-
-  let html = '';
-  const src = document.getElementById('torreSVGWrap');
-  if (src && src.innerHTML) html = String(src.innerHTML).trim();
-
-  if ((!html || html.indexOf('<svg') < 0) && tipo === 'nft' && typeof buildNftActiveDiagramSvg === 'function') {
-    try {
-      const hyd = getNftHidraulicaDesdeConfig(cfg);
-      const hx = cfg.nftHuecosPorCanal ?? cfg.numCestas ?? 8;
-      const pend = cfg.nftPendientePct ?? 2;
-      const vol =
-        typeof getVolumenMezclaLitros === 'function' && getVolumenMezclaLitros(cfg) > 0
-          ? getVolumenMezclaLitros(cfg)
-          : getVolumenDepositoMaxLitros(cfg) || 18;
-      const eqArr = cfg.equipamiento || [];
-      const dispMir = nftDisposicionNormalizada(cfg.nftDisposicion);
-      const canalesMir =
-        dispMir === 'escalera' && hyd.escaleraNiveles != null && hyd.escaleraNiveles >= 1
-          ? hyd.escaleraNiveles
-          : hyd.nCh;
-      let nftSvg = buildNftActiveDiagramSvg(canalesMir, hx, pend, vol, 'MedirMirror', {
-        calentador: eqArr.includes('calentador'),
-        difusor: true,
-        interactive: true,
-        cfgSnapshot: cfg,
-        nftDisposicion: cfg.nftDisposicion,
-        mesaTiers: hyd.mesaTiers,
-        escaleraNiveles: hyd.escaleraNiveles,
-        escaleraCaras: hyd.escaleraCaras,
-      });
-      if (typeof enhanceNftDiagramScada === 'function') {
-        nftSvg = enhanceNftDiagramScada(nftSvg, { interactive: true });
-      }
-      html = nftSvg;
-    } catch (_) {}
-  }
-
-  if (!html && src && src.innerHTML) html = String(src.innerHTML).trim();
-  if (!html || html.indexOf('<svg') < 0 || (src && src.querySelector('.torre-loading-placeholder'))) {
-    section.classList.add('setup-hidden');
-    medirWrap.innerHTML = '';
-    return;
-  }
-
-  section.classList.remove('setup-hidden');
-  medirWrap.innerHTML = html;
-  medirWrap.className = 'torre-svg-canvas medir-diagram-canvas';
-  medirWrap.classList.remove('medir-diagram-canvas--nft-cartoon', 'medir-diagram-canvas--nft-mesa-illo');
-  if (tipo === 'nft' || tipo === 'dwc' || tipo === 'srf' || tipo === 'rdwc' || !tipo || tipo === 'torre') {
-    try {
-      bindTorreCestas(medirWrap);
-    } catch (_) {}
-    if (!tipo || tipo === 'torre') {
-      try {
-        bindTorreRotFlechas(medirWrap);
-      } catch (_) {}
-    }
-  }
-  if (tipo === 'rdwc') {
-    try {
-      bindRdwcLoopHelp(medirWrap);
-    } catch (_) {}
-  }
+  section.classList.add('setup-hidden');
+  medirWrap.innerHTML = '';
 }
 
 function bindRdwcLoopHelp(wrap) {
