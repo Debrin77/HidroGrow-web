@@ -1,8 +1,9 @@
 {
+  "id": "/HidroGrow-web/",
   "name": "HidroGrow — Hidroponía en sala",
   "short_name": "HidroGrow",
   "description": "Hidroponía para autocultivo: torre, NFT, DWC, RDWC y SRF — EC, pH, riego, clima e instalaciones independientes.",
-  "start_url": "./index.html",
+  "start_url": "./index.html?source=pwa",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
@@ -11,6 +12,12 @@
   "lang": "es",
   "dir": "ltr",
   "icons": [
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",

@@ -1,6 +1,9 @@
 /**
- * Regenera icon-192.png, icon-512.png, icon-maskable-512.png
- * desde el PNG maestro (ajusta MASTER si cambias de sitio el archivo).
+ * Regenera icon-192.png, icon-512.png, icon-maskable-512.png, apple-touch-icon.png
+ * desde icons/splash-brand-gold.png (emblema HidroGrow).
+ *
+ * Uso: node scripts/resize-icons.js
+ *      node scripts/resize-icons.js "ruta\\otro-maestro.png"
  */
 const path = require('path');
 const fs = require('fs');
@@ -8,27 +11,21 @@ const sharp = require('sharp');
 
 const ROOT = path.join(__dirname, '..');
 const ICONS = path.join(ROOT, 'icons');
-const MASTER = path.join(
-  process.env.USERPROFILE || '',
-  '.cursor',
-  'projects',
-  'c-Users-carua-Downloads',
-  'assets',
-  'cultiva-icon-master.png'
-);
+const DEFAULT_MASTER = path.join(ICONS, 'splash-brand-gold.png');
 
 async function main() {
-  if (!fs.existsSync(MASTER)) {
-    console.error('No existe el maestro:', MASTER);
-    console.error('Genera un PNG cuadrado y pasa la ruta como argumento: node resize-icons.js "C:\\ruta\\icono.png"');
-    const alt = process.argv[2];
-    if (!alt || !fs.existsSync(alt)) process.exit(1);
+  const arg = process.argv[2];
+  const input = arg && fs.existsSync(arg) ? arg : DEFAULT_MASTER;
+  if (!fs.existsSync(input)) {
+    console.error('No existe el maestro:', input);
+    process.exit(1);
   }
-  const input = fs.existsSync(MASTER) ? MASTER : process.argv[2];
+  await sharp(input).resize(180, 180).png().toFile(path.join(ICONS, 'apple-touch-icon.png'));
+  await sharp(input).resize(180, 180).png().toFile(path.join(ICONS, 'icon-180.png'));
   await sharp(input).resize(192, 192).png().toFile(path.join(ICONS, 'icon-192.png'));
   await sharp(input).resize(512, 512).png().toFile(path.join(ICONS, 'icon-512.png'));
   await sharp(input).resize(512, 512).png().toFile(path.join(ICONS, 'icon-maskable-512.png'));
-  console.log('Iconos escritos en', ICONS);
+  console.log('Iconos HidroGrow escritos en', ICONS, 'desde', path.basename(input));
 }
 
 main().catch((e) => {

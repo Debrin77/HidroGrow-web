@@ -1,14 +1,21 @@
-Iconos generados desde el arte maestro:
-  icons/splash-brand-gold.png  ← emblema dorado (fondo exterior transparente)
+Iconos PWA HidroGrow (emblema dorado — NO reutilizar los de HidroCultivo)
 
-Procesar PNG nuevo (quitar blanco exterior sin tocar el círculo):
-  node scripts/remove-outer-white-bg.js "ruta\logo.png" icons/splash-brand-gold.png
-  node scripts/resize-icons.js icons/splash-brand-gold.png
+Maestro:
+  icons/splash-brand-gold.png
+
+Regenerar todos los tamaños:
+  node scripts/resize-icons.js
+
+Salida:
+  icons/apple-touch-icon.png   ← iPhone «Añadir a pantalla de inicio» (180×180)
+  icons/icon-192.png
+  icons/icon-512.png
+  icons/icon-maskable-512.png
 
 Splash de arranque, PIN, header y bienvenida:
   splash-brand-gold.png
 
-Legacy:
-  splash-brand-card.png   ← logo crema anterior
+Legacy (HidroCultivo / pruebas — no usar en manifest):
+  splash-brand-card.png
   splash-brand-icon.png
   splash-brand.svg
