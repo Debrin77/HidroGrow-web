@@ -54,9 +54,24 @@
     body.appendChild(protocol);
   }
 
+  function ensureAmbienteSaveFooter(card) {
+    if (!card || card.querySelector('.medir-ambiente-save-wrap')) return;
+    var wrap = document.createElement('div');
+    wrap.className = 'medir-ambiente-save-wrap';
+    wrap.innerHTML =
+      '<p class="medir-ambiente-save-hint">' +
+      'Depósito y ambiente se guardan juntos en el registro, el historial y la comprobación de rangos.</p>' +
+      '<button type="button" class="btn btn-primary medir-save-btn medir-save-btn--inline" onclick="guardarMedicion()">' +
+      'Guardar medición</button>';
+    card.appendChild(wrap);
+  }
+
   function wrapAmbienteCollapsible() {
     var card = document.getElementById('medirAmbienteCard');
-    if (!card || card.closest('details.medir-ambiente-details')) return;
+    if (!card || card.closest('details.medir-ambiente-details')) {
+      if (card) ensureAmbienteSaveFooter(card);
+      return;
+    }
 
     var details = document.createElement('details');
     details.className = 'medir-ambiente-details card';
@@ -79,6 +94,29 @@
     if (title) title.remove();
     var lead = card.querySelector('.medir-ambiente-lead');
     if (lead) lead.classList.add('medir-ambiente-lead--in-details');
+    ensureAmbienteSaveFooter(card);
+  }
+
+  function ensureMedirFlowAmbienteMount() {
+    var flow = document.getElementById('medirFlow');
+    if (!flow) return null;
+    var mount = document.getElementById('medirFlowAmbienteMount');
+    if (!mount) {
+      mount = document.createElement('div');
+      mount.id = 'medirFlowAmbienteMount';
+      mount.className = 'medir-flow-ambiente-mount';
+      var actions = flow.querySelector('.medir-flow-actions');
+      if (actions) flow.insertBefore(mount, actions);
+      else flow.appendChild(mount);
+    }
+    return mount;
+  }
+
+  function mountAmbienteInMedirFlow() {
+    var mount = ensureMedirFlowAmbienteMount();
+    var details = document.getElementById('medirAmbienteDetails');
+    if (!mount || !details || details.parentNode === mount) return;
+    mount.appendChild(details);
   }
 
   function buildMedirFlow() {
@@ -104,7 +142,8 @@
       '<p id="medirQuickParseHint" class="medir-quick-hint" role="status" aria-live="polite"></p>' +
       '</div>' +
       '<p class="medir-step-kicker medir-step-kicker--solucion">Paso 1 · solución</p>' +
-      '<div id="medirFlowSolucion" class="medir-solucion-grid"></div>' +
+      '<div id="medirFlowSolucion" class="medir-flow-solucion-mount"></div>' +
+      '<div id="medirFlowAmbienteMount" class="medir-flow-ambiente-mount"></div>' +
       '<div class="medir-flow-actions">' +
       '<button type="button" id="btnGuardarMedicion" class="btn btn-primary medir-save-btn" onclick="guardarMedicion()">' +
       'Guardar medición</button>' +
@@ -139,6 +178,7 @@
     var solMount = document.getElementById('medirFlowSolucion');
     sync.classList.remove('setup-hidden');
     sync.removeAttribute('aria-hidden');
+    sync.classList.add('medir-solucion-grid');
     solMount.appendChild(sync);
 
     var ultima = document.getElementById('ultimaMedicionCard');
@@ -237,6 +277,7 @@
     buildMedirFlow();
     ensureGuiaWrap();
     wrapAmbienteCollapsible();
+    mountAmbienteInMedirFlow();
     salaSubTab(salaSubActive);
     refreshSistemaCultivoExtras();
   }

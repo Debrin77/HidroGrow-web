@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css?v=2026-05-31-light-ledger">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-light-ledger">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-save2">
 </head>
 <body>
 <script>
@@ -644,7 +644,7 @@
 
       <div class="card medir-ambiente-card" id="medirAmbienteCard">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Ambiente y luz</div>
-        <p class="medir-ambiente-lead">Registra sala y depósito. VPD se calcula solo con temp. aire + HR. Las correcciones aparecen al escribir.</p>
+        <p class="medir-ambiente-lead">Opcional: temp. aire, HR, luz y CO₂ de la sala. VPD se calcula solo. Las correcciones aparecen al escribir; pulsa <strong>Guardar medición</strong> (debajo) para registrarlo.</p>
         <div class="medir-ambiente-grid">
           <div class="param-card" id="cardTempAire">
             <div class="param-header">
@@ -1211,7 +1211,7 @@
       </div>
 
       <!-- Campos sincronizados con el asistente (guardarMedicion / evalParam); sin UI manual en pestaña -->
-      <div id="medirMedicionSyncFields" class="setup-hidden" aria-hidden="true">
+      <div id="medirMedicionSyncFields" class="setup-hidden medir-solucion-grid" aria-hidden="true">
       <!-- EC -->
       <div class="param-card" id="cardEC">
         <div class="param-header">
@@ -4625,7 +4625,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-ios-a11y"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-sistema-equip"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-save2"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>

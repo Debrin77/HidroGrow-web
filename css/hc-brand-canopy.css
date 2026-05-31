@@ -914,19 +914,87 @@ html.hc-theme-dark .medir-flow {
   margin: 0 0 8px;
 }
 .medir-step-kicker--solucion { margin-top: 0; }
+.medir-flow-solucion-mount {
+  margin-bottom: 0;
+}
 .medir-solucion-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 12px;
+  align-items: start;
 }
 .medir-solucion-grid .param-card {
   margin: 0;
+  padding: 10px 10px 8px;
+  min-width: 0;
+}
+.medir-solucion-grid .param-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.medir-solucion-grid .param-label {
+  font-size: 11px;
+  line-height: 1.25;
+  gap: 4px;
+}
+.medir-solucion-grid .param-label .hc-ico {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.medir-solucion-grid .param-range {
+  font-size: 9px;
+  line-height: 1.3;
+  text-align: left;
+  max-width: 100%;
+}
+.medir-solucion-grid .param-input-row {
+  margin-bottom: 4px;
+}
+.medir-solucion-grid .param-input {
+  font-size: 1.125rem;
+  padding: 8px 10px;
+}
+.medir-solucion-grid .param-status,
+.medir-solucion-grid .correccion-box {
+  font-size: 10px;
+  line-height: 1.35;
+}
+.medir-solucion-grid .medir-param-hint {
+  font-size: 10px;
+  line-height: 1.35;
+  margin: 6px 0 0;
+}
+.medir-solucion-grid #cardVol {
+  grid-column: 1 / -1;
+}
+@media (max-width: 340px) {
+  .medir-solucion-grid {
+    grid-template-columns: 1fr;
+  }
+  .medir-solucion-grid #cardVol {
+    grid-column: auto;
+  }
+}
+.medir-flow-ambiente-mount {
+  margin: 4px 0 0;
+}
+.medir-flow-ambiente-mount .medir-ambiente-details {
+  margin-bottom: 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
 }
 .medir-flow-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
 }
 .medir-save-btn {
   grid-column: 1 / -1;
@@ -934,6 +1002,27 @@ html.hc-theme-dark .medir-flow {
   font-size: var(--text-md);
   font-weight: 800;
   border-radius: 12px;
+}
+.medir-save-btn--inline {
+  width: 100%;
+}
+.medir-ambiente-save-wrap {
+  padding: 10px 12px 14px;
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+}
+.medir-ambiente-save-hint {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.medir-ambiente-lead--in-details {
+  padding: 0 12px 8px;
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: var(--muted);
 }
 .medir-flow-secondary,
 .medir-flow-link-sala {
