@@ -1689,7 +1689,7 @@ function guardarSetupYContinuar() {
   setupData.horasLuz = horasLuzGuardar;
 
   state.configTorre = {
-    tipoInstalacion: isNft ? 'nft' : isDwc ? 'dwc' : isRdwc ? 'rdwc' : isSrf ? 'srf' : 'torre',
+    tipoInstalacion: isRdwc ? 'rdwc' : 'dwc',
     torreVistaModo: 'esquema',
     torreDiagramaVista: 'esquema',
     tipoTorre:    'custom',
@@ -2397,7 +2397,7 @@ function aplicarConfigTorre() {
   // `hcPlantillaAutogenerada` evita tratar el sistema como “ya configurado” (bienvenida / asistente) hasta que el usuario guarde o complete el asistente.
   if (!state.configTorre) {
     state.configTorre = {
-      tipoInstalacion: 'torre',
+      tipoInstalacion: 'dwc',
       numNiveles: NUM_NIVELES,
       numCestas:  NUM_CESTAS,
       agua: state.configAgua || 'destilada',
@@ -2406,7 +2406,7 @@ function aplicarConfigTorre() {
       hcPlantillaAutogenerada: true,
     };
   }
-  if (!state.configTorre.tipoInstalacion) state.configTorre.tipoInstalacion = 'torre';
+  if (!state.configTorre.tipoInstalacion) state.configTorre.tipoInstalacion = 'dwc';
   if (!state.configTorre.torreObjetivoCultivo) state.configTorre.torreObjetivoCultivo = 'final';
   const cfg = state.configTorre;
   if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cfg);

@@ -16,7 +16,7 @@ function hcChecklistContinuidadVisualAsistente() {
 }
 
 /**
- * Quita volMezclaLitros si solo repite el máximo orientativo (DWC/SRF cámara+cesta; NFT si confundía mezcla con capacidad física).
+ * Quita volMezclaLitros si solo repite el máximo orientativo (DWC/RDWC).
  * El campo «litros de mezcla (opcional)» puede quedar vacío: getVolumenMezclaLitros usa el máximo orientativo.
  */
 function hcEliminarVolMezclaLitrosSiRedundanteConMaxOrientativo(cfg) {
@@ -26,21 +26,9 @@ function hcEliminarVolMezclaLitrosSiRedundanteConMaxOrientativo(cfg) {
       typeof tipoInstalacionNormalizado === 'function'
         ? tipoInstalacionNormalizado(cfg)
         : cfg.tipoInstalacion;
-    if (tipo !== 'dwc' && tipo !== 'srf' && tipo !== 'nft') return false;
+    if (tipo !== 'dwc' && tipo !== 'rdwc') return false;
     const vm = Number(cfg.volMezclaLitros);
     if (!Number.isFinite(vm) || vm <= 0) return false;
-    if (tipo === 'nft') {
-      const dosis =
-        typeof nftVolumenDosificacionLitrosDesdeConfig === 'function'
-          ? nftVolumenDosificacionLitrosDesdeConfig(cfg)
-          : null;
-      const maxF =
-        typeof getVolumenDepositoMaxLitros === 'function' ? getVolumenDepositoMaxLitros(cfg) : null;
-      if (dosis == null || maxF == null || !Number.isFinite(maxF) || maxF <= dosis + 0.35) return false;
-      if (Math.abs(vm - maxF) > 0.35) return false;
-      delete cfg.volMezclaLitros;
-      return true;
-    }
     if (typeof getVolumenDepositoMaxLitros !== 'function') return false;
     const maxO = getVolumenDepositoMaxLitros(cfg);
     if (maxO == null || !Number.isFinite(maxO) || maxO <= 0) return false;
@@ -226,17 +214,17 @@ function abrirChecklistDespuesDeElegirRuta(esPrimeraVez) {
       const esKratkyTit =
         tCh === 'dwc' && typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(state.configTorre || {}) === 'kratky';
       const titPrimer =
-        tCh === 'nft' ? '🪴 Primer llenado NFT — checklist'
-        : tCh === 'dwc' ? (esKratkyTit ? '🫧 Primer llenado Kratky — checklist' : '🫧 Primer llenado DWC — checklist')
-        : tCh === 'rdwc' ? '🔁 Primer llenado RDWC — checklist'
-        : tCh === 'srf' ? '🛶 Primer llenado SRF — checklist'
-        : '🌿 Primer llenado — torre vertical — checklist';
+        tCh === 'rdwc'
+          ? '🔁 Primer llenado RDWC — checklist'
+          : esKratkyTit
+            ? '🫧 Primer llenado Kratky — checklist'
+            : '🫧 Primer llenado DWC — checklist';
       const titRecarga =
-        tCh === 'nft' ? '🪴 Recarga NFT — checklist'
-        : tCh === 'dwc' ? (esKratkyTit ? '🫧 Recarga Kratky — checklist' : '🫧 Recarga DWC — checklist')
-        : tCh === 'rdwc' ? '🔁 Recarga RDWC — checklist'
-        : tCh === 'srf' ? '🛶 Recarga SRF — checklist'
-        : '🌿 Recarga — torre vertical — checklist';
+        tCh === 'rdwc'
+          ? '🔁 Recarga RDWC — checklist'
+          : esKratkyTit
+            ? '🫧 Recarga Kratky — checklist'
+            : '🫧 Recarga DWC — checklist';
       if (clRutaChecklist === 'primer_llenado') {
         clTit.textContent = titPrimer;
       } else {
@@ -497,23 +485,16 @@ function construirTextoChecklistPreliminar() {
   }
   const tipoPre =
     typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  const esNft = tipoPre === 'nft';
   const esDwc = tipoPre === 'dwc';
   const esRdwc = tipoPre === 'rdwc';
-  const esSrf = tipoPre === 'srf';
-  const esSrfKratky =
-    esSrf && typeof srfNormalizeOxigenacionModo === 'function' && srfNormalizeOxigenacionModo(cfg.srfOxigenacionModo) === 'kratky';
   const esDwcK =
     esDwc && typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(cfg) === 'kratky';
-  const esTorre = !esNft && !esDwc && !esRdwc && !esSrf;
   const desc = 'Preparar solución provisional en cubo (~5L) con agua destilada/ósmosis: ' +
     p1Partes.join(' + ') + '. Remover bien.' +
-    (esNft ? ' En NFT, con esa mezcla humedece copas o el arranque de cada canal antes del paro prolongado.' : '') +
     (esDwc ? ' En DWC, humedece coronas/net cups o el arranque de cada maceta antes del vaciado prolongado.' : '') +
     (esRdwc
       ? ' En RDWC, humedece cada net cup o corona en los cubos antes de vaciar el circuito; prepara la mezcla provisional en el <strong>depósito de control</strong> con la recirculación en marcha.'
-      : '') +
-    (esSrf ? ' En SRF, humedece net cups o coronas antes de llenar el estanque y colocar la balsa.' : '');
+      : '');
   const stockExtra = orden.slice(0, partes).join(', ');
   const phStockTxt =
     nut && (nut.id === 'campeador' || nut.id === 'campeador_hidro' || nut.id === 'campeador_fruto')
@@ -522,10 +503,8 @@ function construirTextoChecklistPreliminar() {
   let p2 = 'Verificar stock: agua destilada u ósmosis' +
     (usarCalMagEnRecarga() ? ', CalMag' : '') +
     ', ' + stockExtra + ', ' + phStockTxt + ', agua oxigenada 3%, esponja';
-  if (esNft) p2 += ', cepillo suave o tubo flexible para canales, comprobación de pendiente';
   if (esDwc && !esDwcK) p2 += ', repuestos de difusor o piedra porosa, manguera de aire';
   if (esRdwc) p2 += ', piedras de aire o difusores por cubo, manguera de retorno, comprobación de flujo en control';
-  if (esSrf && !esSrfKratky) p2 += ', difusor o piedra porosa, manguera de aire';
   const ecO = getECOptimaTorre();
   const provMs = Math.min(1.2, Math.max(0.35, ((ecO.min + ecO.max) / 2000) * 0.06));
   return { descP1: desc, descP2: p2, placeholderProv: provMs.toFixed(2) };
@@ -544,12 +523,12 @@ function checklistInstalacionCompletaParaRecarga() {
     typeof litrosDepositoParaChecklist === 'function'
       ? litrosDepositoParaChecklist(cfg)
       : Number(cfg.volDeposito);
-  const volMaxTipo = tipo === 'srf' ? 5000 : 800;
+  const volMaxTipo = 800;
   if (!Number.isFinite(vol) || vol < 1 || vol > volMaxTipo) return false;
   const vm = Number(cfg.volMezclaLitros);
   if (Number.isFinite(vm) && vm > 0 && (vm > vol + 0.01 || vm < 0.5)) return false;
   if (!cfg.nutriente || !NUTRIENTES_DB.some(n => n.id === cfg.nutriente)) return false;
-  if (tipo !== 'torre' && tipo !== 'nft' && tipo !== 'dwc' && tipo !== 'rdwc' && tipo !== 'srf') return false;
+  if (tipo !== 'dwc' && tipo !== 'rdwc') return false;
 
   if (cfg.checklistInstalacionConfirmada === true) return true;
 
@@ -570,26 +549,6 @@ function checklistInstalacionCompletaParaRecarga() {
       (Number.isFinite(volManual) && volManual >= 1 && volManual <= 800);
     if (dwcVolOk) return true;
   }
-  if (tipo === 'srf') {
-    const segS =
-      typeof srfVolumenSeguroLitrosDesdeConfig === 'function' ? srfVolumenSeguroLitrosDesdeConfig(cfg) : null;
-    if (segS != null && segS >= 1) return true;
-    const capS = typeof srfCapacidadLitrosDesdeConfig === 'function' ? srfCapacidadLitrosDesdeConfig(cfg) : null;
-    if (capS != null && capS >= 1) return true;
-    const volManualS = Number(cfg.volDeposito);
-    if (Number.isFinite(volManualS) && volManualS >= 1 && volManualS <= 5000) return true;
-  }
-  if (tipo === 'nft') {
-    const v = Number(cfg.volDeposito);
-    if (Number.isFinite(v) && v >= 1 && v <= 600) return true;
-    const hyd = typeof getNftHidraulicaDesdeConfig === 'function' ? getNftHidraulicaDesdeConfig(cfg) : null;
-    if (hyd && hyd.nCh >= 1 && hyd.nHx >= 2 && Number(cfg.nftTuboInteriorMm) > 0) return true;
-    if (typeof nftVolumenDepositoOrientativoDesdeConfig === 'function') {
-      const o = nftVolumenDepositoOrientativoDesdeConfig(cfg);
-      if (o && o.recL >= 1) return true;
-    }
-  }
-
   return false;
 }
 
@@ -682,33 +641,7 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
 
   const dwcModo = (typeof dwcNormalizeModo === 'function' ? dwcNormalizeModo(dwcModoOpt) : 'aireado');
 
-  if (tipo === 'nft') {
-    state.configTorre = Object.assign({}, baseComun, {
-      tipoInstalacion: 'nft',
-      numNiveles: 4,
-      numCestas: 8,
-      nftNumCanales: 4,
-      nftHuecosPorCanal: 8,
-      nftPendientePct: 2,
-      nftDisposicion: 'mesa',
-      nftTuboInteriorMm: 25,
-      nftCanalForma: 'redondo',
-      nftCanalDiamMm: 90,
-      nftLaminaAguaMm: 3,
-    });
-    redimensionarMatrizTorreNftPreservando(state.configTorre);
-    try {
-      const bOv = typeof getNftBombaDesdeConfig === 'function' ? getNftBombaDesdeConfig(state.configTorre) : null;
-      const recOv =
-        bOv && Number.isFinite(bOv.volDepositoRecomendadoL) ? Math.round(bOv.volDepositoRecomendadoL) : vol;
-      const fisOv =
-        typeof nftSnapCapacidadFisicaDepositoL === 'function'
-          ? nftSnapCapacidadFisicaDepositoL(vol, recOv)
-          : Math.max(recOv, vol);
-      state.configTorre.volDeposito = fisOv;
-      state.configTorre.volMezclaLitros = recOv;
-    } catch (_) {}
-  } else if (tipo === 'dwc') {
+  if (tipo === 'dwc') {
     state.configTorre = Object.assign({}, baseComun, {
       tipoInstalacion: 'dwc',
       dwcModo: dwcModo,
@@ -723,31 +656,6 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
     for (let n = 0; n < NUM_NIVELES; n++) {
       state.torre.push([]);
       for (let c = 0; c < NUM_CESTAS; c++) {
-        state.torre[n].push({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] });
-      }
-    }
-  } else if (tipo === 'srf') {
-    const capS = Math.min(5000, Math.max(1, Math.round(Number(vol) * 10) / 10));
-    state.configTorre = Object.assign({}, baseComun, {
-      tipoInstalacion: 'srf',
-      srfCanalLargoCm: 120,
-      srfCanalAnchoCm: 60,
-      srfProfundidadCm: 25,
-      srfFilas: 2,
-      srfPlantasPorFila: 4,
-      srfNumPlantas: 8,
-      numNiveles: 2,
-      numCestas: 4,
-      volDeposito: capS,
-    });
-    if (typeof srfEnsureConfigDefaults === 'function') srfEnsureConfigDefaults(state.configTorre);
-    const gridS = typeof srfDistribuirPlantas === 'function' ? srfDistribuirPlantas(state.configTorre) : { rows: 1, cols: 8 };
-    state.configTorre.numNiveles = gridS.rows;
-    state.configTorre.numCestas = gridS.cols;
-    state.torre = [];
-    for (let n = 0; n < state.configTorre.numNiveles; n++) {
-      state.torre.push([]);
-      for (let c = 0; c < state.configTorre.numCestas; c++) {
         state.torre[n].push({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] });
       }
     }
@@ -785,10 +693,14 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
     }
   } else {
     state.configTorre = Object.assign({}, baseComun, {
-      tipoInstalacion: 'torre',
+      tipoInstalacion: 'dwc',
+      dwcModo: dwcModo,
       numNiveles: NUM_NIVELES,
       numCestas: NUM_CESTAS,
     });
+    try {
+      dwcPersistSnapshotMaxCestasEnCfg(state.configTorre);
+    } catch (_) {}
     state.torre = [];
     for (let n = 0; n < NUM_NIVELES; n++) {
       state.torre.push([]);
@@ -840,7 +752,7 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
         : cfg && cfg.tipoInstalacion;
     if (
       cfg &&
-      (tipoPre === 'dwc' || tipoPre === 'srf' || tipoPre === 'nft') &&
+      (tipoPre === 'dwc' || tipoPre === 'rdwc') &&
       hcEliminarVolMezclaLitrosSiRedundanteConMaxOrientativo(cfg)
     ) {
       if (typeof saveState === 'function') saveState();
@@ -994,15 +906,14 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
   try { a11yDialogOpened(overlay); } catch (e) {}
 
   const continuar = () => {
-    const tipo = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'torre';
+    const tipo = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'dwc';
     const vol = parseInt(String(document.getElementById('cldVolDeposito').value || '0'), 10);
     const agua = document.getElementById('cldAgua').value || 'destilada';
     const dwcModo = document.getElementById('cldDwcModo')?.value || 'aireado';
     const nutId = document.getElementById('cldNutriente').value;
-    const mezStr =
-      tipo === 'nft' ? '' : String(document.getElementById('cldVolMezcla')?.value || '').trim();
+    const mezStr = String(document.getElementById('cldVolMezcla')?.value || '').trim();
     const volMez = parseFloat(String(mezStr).replace(',', '.'));
-    const volMaxOk = tipo === 'srf' ? 5000 : 600;
+    const volMaxOk = 800;
     if (!Number.isFinite(vol) || vol < 1 || vol > volMaxOk) {
       showToast('Indica un volumen de depósito entre 1 y ' + volMaxOk + ' L', true);
       return;
@@ -1030,77 +941,24 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
 
   document.getElementById('cldBtnContinuar').addEventListener('click', continuar);
   function syncCldVolDepositoCopy() {
-    const tipoSel = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'torre';
+    const tipoSel = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'dwc';
     const lab = document.getElementById('cldVolDepositoLabel');
     const hint = document.getElementById('cldVolDepositoHint');
-    const mezWrap = document.getElementById('cldVolMezclaWrap');
-    const depIn = document.getElementById('cldVolDeposito');
     if (!lab || !hint) return;
     if (tipoSel === 'rdwc') {
       lab.textContent = 'Litros del depósito de control (L)';
       hint.textContent =
         'Suele figurar en la placa del kit: reservorio donde preparas la mezcla. Afinar cubos y circuito en Cultivo e instalación.';
-    } else if (tipoSel === 'srf') {
-      lab.textContent = 'Litros útiles del estanque SRF (L)';
-      hint.textContent =
-        'Llenado seguro con cámara de aire y cesta (asistente o Cultivo e instalación). Si no hay medidas de cesta, usa L×A×P o el litraje medido.';
-    } else if (tipoSel === 'nft') {
-      lab.textContent = 'Capacidad física del depósito (L)';
-      let hintNft =
-        'Etiqueta del recipiente que compres (≥ volumen para dosificar). Las dosis usan el recomendado con margen del asistente.';
-      const dosisNft =
-        typeof nftVolumenDosificacionLitrosDesdeConfig === 'function'
-          ? nftVolumenDosificacionLitrosDesdeConfig(cfg)
-          : null;
-      if (typeof nftVolumenDepositoOrientativoDesdeConfig === 'function') {
-        const o = nftVolumenDepositoOrientativoDesdeConfig(cfg);
-        if (o && o.recL >= 1) {
-          const minFis =
-            typeof nftSnapCapacidadFisicaDepositoL === 'function'
-              ? nftSnapCapacidadFisicaDepositoL(o.recL, o.recL)
-              : o.recL;
-          hintNft =
-            'Dosificar sobre <strong>~' +
-            o.recL +
-            ' L</strong> (recomendado con margen). Indica aquí el tope físico del depósito (≥ ~' +
-            minFis +
-            ' L' +
-            (o.minL != null ? '; mín. orientativo ' + o.minL + ' L' : '') +
-            ') para no rebosar al comprarlo.';
-          if (depIn) {
-            const curD = parseFloat(String(depIn.value || '').replace(',', '.'));
-            const snap =
-              typeof nftSnapCapacidadFisicaDepositoL === 'function'
-                ? nftSnapCapacidadFisicaDepositoL(
-                    Number.isFinite(curD) && curD > 0 ? curD : minFis,
-                    o.recL
-                  )
-                : minFis;
-            if (!Number.isFinite(curD) || curD <= 0 || curD === 20 || curD < minFis - 0.01) {
-              depIn.value = String(snap);
-            }
-          }
-        } else if (dosisNft != null) {
-          hintNft =
-            'Dosificar sobre ~' +
-            dosisNft +
-            ' L. Indica el tope físico del depósito (≥ ese valor).';
-        }
-      }
-      hint.textContent = hintNft;
     } else {
       lab.textContent = 'Capacidad máxima del depósito de mezcla (L)';
       hint.textContent =
         'Recipiente de solución: copia el dato de la etiqueta o de Cultivo e instalación si ya lo guardaste.';
     }
-    if (mezWrap) {
-      mezWrap.style.display = tipoSel === 'nft' ? 'none' : '';
-    }
   }
   syncCldVolDepositoCopy();
   overlay.querySelectorAll('input[name="cldTipoInst"]').forEach(r => {
     r.addEventListener('change', () => {
-      const tipoSel = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'torre';
+      const tipoSel = (overlay.querySelector('input[name="cldTipoInst"]:checked') || {}).value || 'dwc';
       const wrap = document.getElementById('cldDwcModoWrap');
       if (wrap) wrap.style.display = tipoSel === 'dwc' ? '' : 'none';
       syncCldVolDepositoCopy();
@@ -2915,7 +2773,7 @@ function renderChecklist() {
       clRutaChecklist === 'primer_llenado' &&
       state &&
       state.configTorre &&
-      (tipoN === 'dwc' || tipoN === 'srf' || tipoN === 'nft') &&
+      (tipoN === 'dwc' || tipoN === 'rdwc') &&
       hcEliminarVolMezclaLitrosSiRedundanteConMaxOrientativo(state.configTorre)
     ) {
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();

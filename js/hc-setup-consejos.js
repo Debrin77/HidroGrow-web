@@ -55,11 +55,6 @@ const CONSEJOS_DATA = {
     soloTabla: true,
     consejos: []
   },
-  nft: {
-    nombre: '🪴 NFT', color: '#0d9488', bg: 'rgba(13,148,136,0.1)',
-    consejos: [],
-    soloNftDoc: true,
-  },
   dwc: {
     nombre: '🫧 DWC', color: '#0891b2', bg: 'rgba(8,145,178,0.12)',
     consejos: [],
@@ -69,11 +64,6 @@ const CONSEJOS_DATA = {
     nombre: '🧿 RDWC', color: '#475569', bg: 'rgba(71,85,105,0.12)',
     consejos: [],
     soloRdwcDoc: true,
-  },
-  srf: {
-    nombre: '🟩 SRF', color: '#0369a1', bg: 'rgba(3,105,161,0.12)',
-    consejos: [],
-    soloSrfDoc: true,
   },
   clima: {
     nombre: '🌡️ Clima', color: '#b45309', bg: 'rgba(217,119,6,0.1)',
@@ -262,7 +252,7 @@ const REF_CULTIVOS_EC_PH = [
   { cultivo: 'CBD / perfil suave', ec: '1000–1600', ph: '5,9–6,3', nota: 'EC más baja que THC altas' },
 ];
 
-/** Nombre instalación + NFT | DWC | Torre vertical (para títulos de tablas EC/pH). */
+/** Nombre instalación + DWC | RDWC (para títulos de tablas EC/pH). */
 function consejosTituloInstalacionSistemaLinea() {
   const cfg = state.configTorre || {};
   const sys =
@@ -1009,7 +999,7 @@ function htmlConsejoCard(cat, c) {
 
 /** Bloque visible: mismos criterios que el checklist de recarga para la instalación activa. */
 function buildConsejosNutrienteChecklistResumenHtml(nut, cfg) {
-  const t = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'torre';
+  const t = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   const sysLargo =
     t === 'nft' ? 'NFT — canales en recirculación'
     : t === 'dwc' ? 'DWC — raíces en el depósito'
@@ -2251,12 +2241,6 @@ function renderConsejosLista() {
     return;
   }
 
-  if (consejoCatActiva === 'nft') {
-    lista.innerHTML = buildConsejosNftHidraulica();
-    plegarTodosDesplegablesConsejosLista(lista);
-    return;
-  }
-
   if (consejoCatActiva === 'dwc') {
     lista.innerHTML = buildConsejosDwc();
     mountDwcCestasGuiaEnPanelConsejos();
@@ -2266,12 +2250,6 @@ function renderConsejosLista() {
 
   if (consejoCatActiva === 'rdwc') {
     lista.innerHTML = buildConsejosRdwc();
-    plegarTodosDesplegablesConsejosLista(lista);
-    return;
-  }
-
-  if (consejoCatActiva === 'srf') {
-    lista.innerHTML = buildConsejosSrf();
     plegarTodosDesplegablesConsejosLista(lista);
     return;
   }

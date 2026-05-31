@@ -166,11 +166,9 @@ function renderDiarioBloqueSistema() {
   const n = keys.length;
   const tDiario = tipoInstalacionNormalizado(state.configTorre || {});
   const msgDiarioVacío =
-    tDiario === 'nft'
-      ? 'Aún no hay fotos de conjunto. <strong>Aléjate un poco</strong> para que salgan canales, depósito y entorno; conviene repetir desde la <strong>misma esquina</strong> para comparar.'
-      : tDiario === 'dwc'
-        ? 'Aún no hay fotos de conjunto. <strong>Aléjate un poco</strong> para que salgan macetas, tapa, depósito y entorno; repetir desde la <strong>misma esquina</strong> ayuda a comparar.'
-        : 'Aún no hay fotos de conjunto. <strong>Aléjate un poco</strong> para que salgan la torre vertical, el depósito y el entorno; conviene repetir desde la <strong>misma esquina</strong> para comparar.';
+    tDiario === 'rdwc'
+      ? 'Aún no hay fotos de conjunto. <strong>Aléjate un poco</strong> para que salgan cubos, depósito de control y entorno; repetir desde la <strong>misma esquina</strong> ayuda a comparar.'
+      : 'Aún no hay fotos de conjunto. <strong>Aléjate un poco</strong> para que salgan macetas, tapa, depósito y entorno; repetir desde la <strong>misma esquina</strong> ayuda a comparar.';
   const filasTimel =
     n === 0
       ? '<div class="diario-sistema-empty-msg">' + msgDiarioVacío + '</div>'
@@ -695,9 +693,11 @@ function poblarSelectVariedades() {
   });
 
   const nombreGrupos = {
-    lechugas:'Lechugas', hojas:'Hojas verdes', asiaticas:'Asiáticas / Mostaza',
-    hierbas:'Hierbas', frutos:'Frutos', fresas:'Fresas',
-    raices:'Raíces', microgreens:'Microgreens'
+    indica: 'Índica',
+    sativa: 'Sativa',
+    hibrida: 'Híbrida',
+    auto: 'Autofloreciente',
+    cbd: 'CBD / ratio',
   };
 
   Object.entries(grupos).forEach(([gKey, cultivos]) => {
