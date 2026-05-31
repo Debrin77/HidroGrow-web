@@ -887,6 +887,7 @@ function cargarUltimaMedicion() {
   if (!info) return;
   if (typeof renderProtocoloMedicionPanel === 'function') renderProtocoloMedicionPanel();
   if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
+  if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   if (!state.ultimaMedicion) {
     if (card) card.classList.remove('ultima-medicion-card--visible');
     if (typeof cargarAmbienteDesdeUltimaMedicion === 'function') cargarAmbienteDesdeUltimaMedicion();

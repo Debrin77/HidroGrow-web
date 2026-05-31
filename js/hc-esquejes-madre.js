@@ -151,47 +151,86 @@
     return null;
   }
 
+  function getGeneticsAdj(cfg) {
+    if (typeof getGeneticsEsquejesAdjustments !== 'function') {
+      return { diasEnraizarExtra: 0, intervaloSesionEsquejes: INTERVALO_SESION_DIAS, ecMultEsqueje: 1, notaEsqueje: '', notaBreeder: '', nombreGenetica: '' };
+    }
+    return getGeneticsEsquejesAdjustments(cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {}));
+  }
+
+  function enraizarDiasTotal(cfg) {
+    const adj = getGeneticsAdj(cfg);
+    return Math.max(7, ENRAIZAR_DIAS + (Number(adj.diasEnraizarExtra) || 0));
+  }
+
+  function aplicarGeneticaEcPh(fase, cfg) {
+    if (!fase) return fase;
+    const adj = getGeneticsAdj(cfg);
+    const mult = adj.ecMultEsqueje || 1;
+    const out = Object.assign({}, fase);
+    if (out.ec && mult !== 1) {
+      out.ec = {
+        min: Math.max(0, Math.round(out.ec.min * mult)),
+        max: Math.max(0, Math.round(out.ec.max * mult)),
+      };
+    }
+    if (adj.notaEsqueje) out.notaGenetica = adj.notaEsqueje;
+    if (adj.notaBreeder) out.notaBreeder = adj.notaBreeder;
+    return out;
+  }
+
   function getFaseEsquejesActual(cfg) {
     if (!origenEsMadreOClon()) return null;
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const ep = ensureEsquejesState(cfg);
+    const adj = getGeneticsAdj(cfg);
+    if (!ep.intervaloSesionDias || ep.intervaloSesionDias === INTERVALO_SESION_DIAS) {
+      ep.intervaloSesionDias = adj.intervaloSesionEsquejes || INTERVALO_SESION_DIAS;
+    }
     const madre = esModoMadreActivo();
     const dias = diasDesdeUltimaSesion(ep);
-    const intervalo = ep.intervaloSesionDias || INTERVALO_SESION_DIAS;
+    const intervalo = ep.intervaloSesionDias || adj.intervaloSesionEsquejes || INTERVALO_SESION_DIAS;
     const proxima = getProximaSesionFecha(ep);
     const hoy = hoyLocal0();
+    const enraizarTotal = enraizarDiasTotal(cfg);
 
-    if (dias != null && dias >= 0 && dias <= ENRAIZAR_DIAS) {
-      if (dias <= 2) return Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.clonador_48h);
-      if (dias <= 7) return Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.enraizamiento);
-      return Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.traslado_dwc);
+    if (dias != null && dias >= 0 && dias <= enraizarTotal) {
+      if (dias <= 2) return aplicarGeneticaEcPh(Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.clonador_48h), cfg);
+      if (dias <= 7 + Math.max(0, adj.diasEnraizarExtra || 0)) {
+        return aplicarGeneticaEcPh(Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.enraizamiento), cfg);
+      }
+      return aplicarGeneticaEcPh(Object.assign({ activo: true, diasDesdeSesion: dias }, ESQUEJES_EC_PH.traslado_dwc), cfg);
     }
 
     if (madre && proxima) {
       const diasHasta = Math.round((proxima - hoy) / 86400000);
       if (diasHasta <= PREP_DIAS_ANTES && diasHasta >= 0) {
-        return Object.assign({ activo: true, diasHastaSesion: diasHasta }, ESQUEJES_EC_PH.prep_madre);
+        return aplicarGeneticaEcPh(Object.assign({ activo: true, diasHastaSesion: diasHasta }, ESQUEJES_EC_PH.prep_madre), cfg);
       }
       if (diasHasta < 0) {
-        return Object.assign({ activo: true, sesionVencida: true, diasHastaSesion: diasHasta }, ESQUEJES_EC_PH.prep_madre);
+        return aplicarGeneticaEcPh(Object.assign({ activo: true, sesionVencida: true, diasHastaSesion: diasHasta }, ESQUEJES_EC_PH.prep_madre), cfg);
       }
-      return Object.assign({ activo: true, diasHastaSesion: diasHasta }, ESQUEJES_EC_PH.madre_mantener);
+      return aplicarGeneticaEcPh(Object.assign({ activo: true, diasHastaSesion: diasHasta, intervaloGenetica: intervalo }, ESQUEJES_EC_PH.madre_mantener), cfg);
     }
 
     if (madre) {
-      return Object.assign({ activo: true }, ESQUEJES_EC_PH.madre_mantener);
+      return aplicarGeneticaEcPh(Object.assign({ activo: true }, ESQUEJES_EC_PH.madre_mantener), cfg);
     }
 
-    return Object.assign({ activo: true }, ESQUEJES_EC_PH.enraizamiento);
+    return aplicarGeneticaEcPh(Object.assign({ activo: true }, ESQUEJES_EC_PH.enraizamiento), cfg);
   }
 
-  function getEsquejesEcPhPorFase(faseKey) {
-    return ESQUEJES_EC_PH[faseKey] || null;
+  function getEsquejesEcPhPorFase(faseKey, cfg) {
+    const base = ESQUEJES_EC_PH[faseKey] || null;
+    if (!base) return null;
+    return aplicarGeneticaEcPh(base, cfg);
   }
 
   function getRecomendacionEcPhEsquejes(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const fase = getFaseEsquejesActual(cfg);
     if (!fase || !fase.activo) return null;
+    const adj = getGeneticsAdj(cfg);
     return {
       activo: true,
       fase: fase.key,
@@ -199,9 +238,13 @@
       ec: fase.ec,
       ph: fase.ph,
       nota: fase.nota,
+      notaGenetica: fase.notaGenetica || adj.notaEsqueje || '',
+      notaBreeder: fase.notaBreeder || adj.notaBreeder || '',
+      nombreGenetica: adj.nombreGenetica || '',
       sesionVencida: !!fase.sesionVencida,
       diasHastaSesion: fase.diasHastaSesion,
       diasDesdeSesion: fase.diasDesdeSesion,
+      diasEnraizarTotal: enraizarDiasTotal(cfg),
     };
   }
 
@@ -378,7 +421,13 @@
         ? 'Planta madre en DWC/RDWC: aprovecha brotes vegetativos sin volver a sembrar.'
         : 'Protocolo de clonación hacia net pot y cubo.') + '</p>' +
       renderEcPhFaseHtml(fase) +
-      (genHint
+      (rec && rec.notaGenetica
+        ? '<p class="medir-esquejes-gen">🧬 <strong>Genética:</strong> ' + rec.notaGenetica + '</p>'
+        : '') +
+      (rec && rec.notaBreeder
+        ? '<p class="medir-esquejes-gen">📋 <strong>Breeder:</strong> ' + rec.notaBreeder + '</p>'
+        : '') +
+      (genHint && !rec?.notaGenetica
         ? '<p class="medir-esquejes-gen">🧬 <strong>' + genHint.nombre + ':</strong> ' + genHint.consejo + '</p>'
         : '') +
       '<div class="medir-esquejes-stats">' +

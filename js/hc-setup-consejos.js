@@ -42,7 +42,10 @@ const CONSEJOS_DATA = {
         alerta:{ tipo:'ok', txt:'✅ Renueva la madre cada 6–12 meses desde el esqueje más vigoroso para evitar fatiga de clon.' } },
       { icono:'✂️', titulo:'Esquejes — EC/pH por fase',
         texto:'<strong>Prep madre (7 d antes):</strong> EC ~800–1000 µS. <strong>Domo 48 h:</strong> 0–400 µS. <strong>Enraizamiento:</strong> 300–600 µS, pH 5.5–6.0. <strong>Net pot → cubo:</strong> 400–600 µS la primera semana. Marca origen <strong>Esqueje</strong> en la ficha para que Medir use el rango correcto.',
-        alerta:{ tipo:'info', txt:'ℹ️ Registra cada sesión en Medir → «Registrar sesión hoy» para sincronizar avisos y calendario.' } },
+        alerta:{ tipo:'info', txt:'ℹ️ La app ajusta tiempos y EC por grupo genético (sativa +3 d, CBD −10 % EC). Prioriza siempre la ficha del semillero.' } },
+      { icono:'🔧', titulo:'Equipamiento — marca y modelo',
+        texto:'En el asistente premium (paso Espacio) elige <strong>marca/modelo</strong> de carpa, LED, extractor, humidificador, deshumidificador y medidor. La app rellena W, m³/h y dimensiones desde el catálogo y los usa en correcciones VPD/PPFD y calendario de calibración.',
+        alerta:{ tipo:'ok', txt:'✅ Si tu modelo no está listado, introduce medidas manualmente — los fabricantes publican W reales, caudal y cobertura en la ficha técnica.' } },
     ]
   },
   agua: {

@@ -140,7 +140,7 @@ function torreSliceEcPhCestaRaw(c, cfg) {
       const origClon =
         typeof normalizarOrigenPlanta === 'function' && normalizarOrigenPlanta(c.origenPlanta) === 'clon';
       if (origClon && dias < 14 && typeof getEsquejesEcPhPorFase === 'function') {
-        const esq = getEsquejesEcPhPorFase(dias <= 2 ? 'clonador_48h' : dias <= 7 ? 'enraizamiento' : 'traslado_dwc');
+        const esq = getEsquejesEcPhPorFase(dias <= 2 ? 'clonador_48h' : dias <= 7 ? 'enraizamiento' : 'traslado_dwc', cfg);
         if (esq) {
           ecMin = esq.ec.min;
           ecMax = esq.ec.max;

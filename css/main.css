@@ -16798,6 +16798,22 @@ button.toggle-switch:focus-visible {
 .medir-esquejes-fecha-lbl { font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px; }
 .medir-esquejes-fecha-inp { max-width: 140px; margin-bottom: 8px; }
 .medir-esquejes-foot { font-size: 11px; color: #6b7280; margin: 0 0 8px; font-style: italic; }
+.equip-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.equip-catalog-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 10px; background: #fafafa; }
+.equip-catalog-head { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.equip-catalog-req { font-size: 10px; color: #b45309; font-weight: 700; text-transform: uppercase; }
+.equip-catalog-select { width: 100%; margin-bottom: 4px; }
+.equip-catalog-hint { font-size: 11px; color: #6b7280; margin: 4px 0 0; line-height: 1.35; }
+.equip-catalog-ok { font-size: 11px; color: #059669; margin: 4px 0 0; }
+.equip-faltantes-ok { color: #059669; font-size: 12px; }
+.medir-equip-card { margin-bottom: 12px; }
+.medir-equip-panel { font-size: 13px; color: #374151; }
+.medir-equip-lead { font-size: 12px; color: #6b7280; margin: 0 0 10px; }
+.medir-equip-warn { font-size: 12px; color: #92400e; background: #fef3c7; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; }
+.medir-equip-list { margin: 0 0 10px; padding-left: 1.1rem; font-size: 12px; }
+.medir-equip-muted { color: #9ca3af; }
+.medir-equip-foot { font-size: 11px; color: #6b7280; font-style: italic; margin: 0; }
+.setup-mt-12 { margin-top: 12px; }
 .medir-ambiente-card { margin-bottom: 12px; }
 .medir-ambiente-lead { font-size: 12px; color: #6b7280; margin: 0 0 12px; }
 .medir-ambiente-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }

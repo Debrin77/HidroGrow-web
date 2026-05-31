@@ -187,6 +187,7 @@
     const panel = el('panelGrowRoomSala');
     if (panel) panel.classList.remove('setup-hidden');
     calcularGrowRoom();
+    if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   }
 
   function calcularGrowRoom() {

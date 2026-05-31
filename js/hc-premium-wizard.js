@@ -321,8 +321,10 @@
     refreshPremiumGerminacionUI();
     calcularPremiumSala();
     refreshPremiumClimaResumen();
+    if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
 
     if (pagina === SETUP_PAGE_PREMIUM_6) refreshPremiumGerminacionUI();
+    if (pagina === SETUP_PAGE_PREMIUM_3 && typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
   }
 
   function persistPremiumSetupToConfig(cfg) {
@@ -350,6 +352,7 @@
     cfg.geneticaPref = p.geneticaPref;
     cfg.ubicacion = p.entorno;
     if (typeof persistEsquejesToConfig === 'function') persistEsquejesToConfig(cfg);
+    if (typeof persistEquipamientoToConfig === 'function') persistEquipamientoToConfig(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
   }

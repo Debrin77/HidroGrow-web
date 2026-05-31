@@ -569,6 +569,11 @@
         <div id="medirEsquejesPanel" class="medir-esquejes-panel"></div>
       </div>
 
+      <div class="card medir-equip-card" id="medirEquipamientoCard">
+        <div class="card-title">🔧 Equipamiento de sala</div>
+        <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
+      </div>
+
       <div class="card medir-ambiente-card" id="medirAmbienteCard">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Ambiente y luz</div>
         <p class="medir-ambiente-lead">Registra sala y depósito. VPD se calcula solo con temp. aire + HR. Las correcciones aparecen al escribir.</p>
@@ -2862,6 +2867,10 @@
           Carpa reflectante Mylar (recomendado)
         </label>
         <div id="setupPremiumSalaResult" class="setup-box-info setup-mb-16"></div>
+        <div class="setup-block-title setup-mt-12">Marca y modelo (catálogo ES)</div>
+        <p class="setup-field-hint setup-mb-8">Elige fabricante/modelo para rellenar medidas automáticamente. Datos orientativos de ficha técnica — puedes dejar «Manual» y escribir arriba.</p>
+        <div id="setupPremiumEquipGrid" class="equip-catalog-grid setup-mb-8"></div>
+        <div id="setupPremiumEquipFaltantes" class="setup-box-warn setup-mb-8"></div>
       </div>
       <div id="setupPremiumExteriorHint" class="setup-box-warn setup-hidden setup-mb-12">
         En exterior usa el municipio para meteo y registra temp. exterior en Medir. Prioriza sombrear el depósito en verano.
@@ -4353,7 +4362,8 @@
   <script src="js/backup-capacitor.js"></script>
   <script src="js/hc-ui-icons.js?v=1"></script>
   <script src="js/genetics-db.js?v=2026-05-31-hidrogrow"></script>
-  <script src="js/hc-genetics-premium.js?v=2026-05-31-premium"></script>
+  <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-grow-room.js?v=2026-05-31-hidrogrow"></script>
@@ -4387,8 +4397,9 @@
 <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-esquejes-madre.js?v=2026-05-31-esquejes2"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-esquejes"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip"></script>
+  <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-equip"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-premium7"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
 <script src="js/hc-setup-wizard-pages.js?v=2026-05-28-nft-vol-deposito"></script>

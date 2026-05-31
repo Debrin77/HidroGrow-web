@@ -108,7 +108,33 @@
   }
 
   function getRangosFase(fase) {
-    return AMBIENTE_RANGOS[fase] || AMBIENTE_RANGOS.vegetativo;
+    const base = AMBIENTE_RANGOS[fase] || AMBIENTE_RANGOS.vegetativo;
+    const out = JSON.parse(JSON.stringify(base));
+    try {
+      let cu = null;
+      const tor = (typeof state !== 'undefined' && state && state.torre) ? state.torre : [];
+      for (let n = 0; n < tor.length && !cu; n++) {
+        (tor[n] || []).forEach(function (c) {
+          if (c && c.variedad && typeof getCultivoDB === 'function') cu = getCultivoDB(c.variedad);
+        });
+      }
+      if (cu && typeof getGeneticsPremiumProfile === 'function') {
+        const gp = getGeneticsPremiumProfile(cu);
+        if (Number.isFinite(gp.ppfdFlorMin) && (fase === 'floracion' || fase === 'prefloracion')) {
+          out.ppfd.min = Math.max(out.ppfd.min, gp.ppfdFlorMin - 50);
+          out.ppfd.max = Math.max(out.ppfd.max, gp.ppfdFlorMin + 200);
+        }
+        if (Number.isFinite(gp.humedadFlorMax) && (fase === 'floracion' || fase === 'prefloracion')) {
+          out.hrFlorMax = gp.humedadFlorMax;
+          out.hr.max = Math.min(out.hr.max, gp.humedadFlorMax + 5);
+        }
+      }
+    } catch (_) {}
+    return out;
+  }
+
+  function getRangosFaseAmbiente(fase) {
+    return getRangosFase(fase);
   }
 
   function esInteriorActivo() {
@@ -197,11 +223,16 @@
   }
 
   function correccionVPD(vpd, rango, hr, tempAire) {
+    const humEquip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('humidificar') : '';
+    const deshEquip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('deshumidificar') : '';
+    const extEquip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('extractor') : '';
     if (vpd > rango.max) {
       return (
         '<div class="correccion-title">💧 VPD alto (' + vpd + ' kPa)</div>' +
-        '<div class="correccion-item"><span>Subir humedad</span><span class="correccion-valor">Humidificador / bandeja agua</span></div>' +
-        '<div class="correccion-item"><span>Bajar extracción</span><span class="correccion-valor">Menos renovaciones/h</span></div>' +
+        '<div class="correccion-item"><span>Subir humedad</span><span class="correccion-valor">' +
+        (humEquip || 'Humidificador / bandeja agua') + '</span></div>' +
+        '<div class="correccion-item"><span>Bajar extracción</span><span class="correccion-valor">' +
+        (extEquip ? extEquip + ' · menos rpm' : 'Menos renovaciones/h') + '</span></div>' +
         (Number.isFinite(tempAire) && tempAire > 26
           ? '<div class="correccion-item"><span>Enfriar sala</span><span class="correccion-valor">AC / extraer aire caliente</span></div>'
           : '') +
@@ -211,8 +242,10 @@
     if (vpd < rango.min) {
       return (
         '<div class="correccion-title">🌫️ VPD bajo (' + vpd + ' kPa)</div>' +
-        '<div class="correccion-item"><span>Más extracción</span><span class="correccion-valor">Subir m³/h extractor</span></div>' +
-        '<div class="correccion-item"><span>Deshumidificar</span><span class="correccion-valor">HR actual ~' + (hr || '—') + '%</span></div>' +
+        '<div class="correccion-item"><span>Más extracción</span><span class="correccion-valor">' +
+        (extEquip ? extEquip + ' · subir rpm' : 'Subir m³/h extractor') + '</span></div>' +
+        '<div class="correccion-item"><span>Deshumidificar</span><span class="correccion-valor">' +
+        (deshEquip || 'HR actual ~' + (hr || '—') + '%') + '</span></div>' +
         '<div class="correccion-item"><span>Circulación</span><span class="correccion-valor">Clip fan bajo copa</span></div>' +
         '<div class="correccion-muted">HR muy alta en floración → riesgo de moho en cogollos.</div>'
       );
@@ -222,10 +255,12 @@
 
   function correccionPPFD(ppfd, rango) {
     if (!Number.isFinite(ppfd)) return '';
+    const ledEquip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('led') : '';
     if (ppfd < rango.min) {
       return (
         '<div class="correccion-title">💡 PPFD bajo (' + ppfd + ' µmol/m²/s)</div>' +
-        '<div class="correccion-item"><span>Acercar LED</span><span class="correccion-valor">Objetivo ' + rango.min + '–' + rango.max + '</span></div>' +
+        '<div class="correccion-item"><span>Acercar LED</span><span class="correccion-valor">' +
+        (ledEquip || 'Objetivo ' + rango.min + '–' + rango.max) + '</span></div>' +
         '<div class="correccion-item"><span>Potencia</span><span class="correccion-valor">Revisar % dimmer / W totales</span></div>'
       );
     }
@@ -374,7 +409,7 @@
 
   window.calcVPDkPa = calcVPDkPa;
   window.getFaseCultivoActual = getFaseCultivoActual;
-  window.getRangosFaseAmbiente = getRangosFase;
+  window.getRangosFaseAmbiente = getRangosFaseAmbiente;
   window.evalAmbiente = evalAmbiente;
   window.actualizarVPDEnUI = actualizarVPDEnUI;
   window.syncLuxPpfd = syncLuxPpfd;
