@@ -524,14 +524,26 @@ body::before { display: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   z-index: 9999;
-  gap: 20px;
-  padding: env(safe-area-inset-top, 47px) 20px env(safe-area-inset-bottom, 34px);
+  gap: 14px;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding:
+    max(16px, calc(env(safe-area-inset-top, 0px) + 12px))
+    max(16px, env(safe-area-inset-right, 0px))
+    max(20px, calc(env(safe-area-inset-bottom, 0px) + 12px))
+    max(16px, env(safe-area-inset-left, 0px));
 }
 .pin-brand {
-  width: 108px;
-  height: 108px;
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  margin-top: 4px;
   display: grid;
   place-items: center;
   background: transparent;
@@ -539,8 +551,8 @@ body::before { display: none; }
   box-shadow: none;
 }
 .pin-brand-img {
-  width: 98px;
-  height: 98px;
+  width: 88px;
+  height: 88px;
   display: block;
   object-fit: contain;
   background: transparent;
@@ -554,11 +566,40 @@ body::before { display: none; }
 .pin-brand-img--emblem {
   clip-path: none;
   transform: none;
+  width: 88px;
+  height: 88px;
   filter:
     drop-shadow(0 0 10px rgba(251, 191, 36, 0.2))
     drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
   box-shadow: none;
   border-radius: 0;
+}
+@media (max-height: 740px) {
+  .pin-brand {
+    width: 80px;
+    height: 80px;
+  }
+  .pin-brand-img,
+  .pin-brand-img--emblem {
+    width: 72px;
+    height: 72px;
+  }
+  .pin-screen {
+    gap: 10px;
+  }
+  .pin-pad {
+    grid-template-columns: repeat(3, 62px);
+    gap: 8px;
+  }
+  .pin-key {
+    width: 62px;
+    height: 62px;
+    font-size: 1.35rem;
+  }
+  .pin-footer-hint {
+    font-size: 10.5px;
+    margin-bottom: 4px;
+  }
 }
 .pin-sub {
   font-size: 11.5px;
@@ -4014,10 +4055,14 @@ button.aviso-cestas-ir:active {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: max(12px, env(safe-area-inset-top, 12px)) 16px env(safe-area-inset-bottom, 24px);
-  background: rgba(15, 23, 42, 0.88);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding:
+    max(12px, calc(env(safe-area-inset-top, 0px) + 8px))
+    max(16px, env(safe-area-inset-right, 0px))
+    max(20px, calc(env(safe-area-inset-bottom, 0px) + 12px))
+    max(16px, env(safe-area-inset-left, 0px));
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   pointer-events: auto;
   overflow-y: auto;
   overflow-x: hidden;
@@ -4026,6 +4071,12 @@ button.aviso-cestas-ir:active {
   overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
+}
+#welcomeOverlay[data-welcome-theme="light"] {
+  background: rgba(8, 14, 10, 0.5);
+}
+#welcomeOverlay[data-welcome-theme="dark"] {
+  background: rgba(4, 8, 6, 0.82);
 }
 html.hc-welcome-open,
 body.hc-welcome-open,

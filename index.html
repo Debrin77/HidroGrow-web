@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="HidroGrow">
 
 <!-- SEO y descripción -->
@@ -33,8 +33,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-deep-canopy-v2">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-full">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-ios-a11y">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-ios-a11y">
 </head>
 <body>
 <script>
@@ -2793,6 +2793,7 @@
 
 <!-- ══ BIENVENIDA (primera vez) — guía rápida en una pantalla ══ -->
 <div class="welcome-overlay setup-hidden" id="welcomeOverlay" role="dialog" aria-modal="true"
+  data-welcome-theme="light"
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
   <div class="welcome-card welcome-card--guide">
     <div class="welcome-brand" aria-hidden="true">
@@ -4618,7 +4619,7 @@
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-28-welcome-scroll-top"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-ios-a11y"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-sistema-equip"></script>
