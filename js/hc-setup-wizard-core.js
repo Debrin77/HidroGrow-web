@@ -10,7 +10,7 @@
 let setupPagina = 0;
 let setupTipoTorre = 'custom';
 /** 'torre' | 'nft' | 'dwc' | 'rdwc' | 'srf' | '' (nueva instalación: hay que elegir en paso 0) */
-let setupTipoInstalacion = 'torre';
+let setupTipoInstalacion = 'dwc';
 let setupRdwcDraft = null;
 
 function hcSetupClonePlain(value, fallback = null) {
@@ -22,11 +22,11 @@ function hcSetupClonePlain(value, fallback = null) {
   }
 }
 
-/** Normaliza tipo de instalación guardado en config. */
+/** Normaliza tipo de instalación guardado en config (solo DWC / RDWC). */
 function tipoInstalacionNormalizado(cfg) {
+  if (typeof hidrogrowTipoInstalacionRaw === 'function') return hidrogrowTipoInstalacionRaw(cfg);
   const t = cfg && cfg.tipoInstalacion;
-  if (t === 'nft' || t === 'dwc' || t === 'rdwc' || t === 'srf' || t === 'torre') return t;
-  return 'torre';
+  return t === 'rdwc' ? 'rdwc' : 'dwc';
 }
 
 /** Siempre DIY/a medida (opción kit comercial retirada de la UI). */
@@ -458,14 +458,9 @@ function seleccionarSistemaRdwcMontajeOrigen(_mode) {
 /** Etiqueta corta para avisos (recarga, calendario, notificaciones). */
 function etiquetaSistemaHidroponicoBreve(cfg) {
   const t = tipoInstalacionNormalizado(cfg || {});
-  if (t === 'nft') return 'NFT';
   if (t === 'rdwc') return 'RDWC';
-  if (t === 'srf') return 'SRF';
-  if (t === 'dwc') {
-    if (typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(cfg || {}) === 'kratky') return 'Kratky';
-    return 'DWC';
-  }
-  return 'Torre vertical';
+  if (typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(cfg || {}) === 'kratky') return 'Kratky';
+  return 'DWC';
 }
 
 /**
@@ -2166,7 +2161,7 @@ function torreGetObjetivoSpec(objetivo) {
   if (k === 'baby') {
     return {
       key: 'baby',
-      label: 'Alta densidad / baby leaf (cosecha joven)',
+      label: 'SOG / esquejes (alta densidad)',
       densidadTxt: '8–12 cm c-c',
       cicloTxt: 'cosecha joven (aprox. 20–35 días)',
     };
@@ -2289,7 +2284,7 @@ function nftGetObjetivoSpec(objetivo) {
   if (k === 'baby') {
     return {
       key: 'baby',
-      label: 'Alta densidad / baby leaf (cosecha joven)',
+      label: 'SOG / esquejes (alta densidad)',
       densidadTxt: '8–12 cm c-c',
       cicloTxt: 'cosecha joven (aprox. 20–35 días)',
     };
@@ -2725,7 +2720,7 @@ function cerrarSetup() {
 }
 
 function iniciarConfiguracionTorre() {
-  if (setupEsNuevaTorre && setupTipoInstalacion !== 'torre' && setupTipoInstalacion !== 'nft' && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'srf') {
+  if (setupEsNuevaTorre && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
     showToast('Elige Torre, NFT, DWC, RDWC o SRF antes de continuar', true);
     return;
   }
@@ -2766,11 +2761,8 @@ function seleccionarTipoInstalacionSetup(tipo) {
   try {
     _hcExposeMontajeDiyBlocks();
   } catch (_) {}
-  if (tipo === 'nft') setupTipoInstalacion = 'nft';
-  else if (tipo === 'dwc') setupTipoInstalacion = 'dwc';
-  else if (tipo === 'rdwc') setupTipoInstalacion = 'rdwc';
-  else if (tipo === 'srf') setupTipoInstalacion = 'srf';
-  else setupTipoInstalacion = 'torre';
+  if (tipo === 'rdwc') setupTipoInstalacion = 'rdwc';
+  else setupTipoInstalacion = 'dwc';
   if (setupEsNuevaTorre) {
     setupPlantasSeleccionadas = new Set();
     try {
@@ -2808,64 +2800,41 @@ function seleccionarTipoInstalacionSetup(tipo) {
 }
 
 function refrescarSetupTipoInstalacionUI() {
-  const torreCard = document.getElementById('setupCardTipoTorre');
-  const nftCard = document.getElementById('setupCardTipoNft');
+  if (setupTipoInstalacion !== 'rdwc') setupTipoInstalacion = 'dwc';
+  ['setupCardTipoTorre', 'setupCardTipoNft', 'setupCardTipoSrf', 'setupInlineTipoTorre', 'setupInlineTipoNft', 'setupInlineTipoSrf'].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
   const dwcCard = document.getElementById('setupCardTipoDwc');
   const rdwcCard = document.getElementById('setupCardTipoRdwc');
-  const srfCard = document.getElementById('setupCardTipoSrf');
-  [torreCard, nftCard, dwcCard, rdwcCard, srfCard].forEach(card => {
+  [dwcCard, rdwcCard].forEach((card) => {
     if (!card) return;
     card.classList.remove('selected');
     card.setAttribute('aria-pressed', 'false');
   });
-  if (setupTipoInstalacion === 'torre' && torreCard) {
-    torreCard.classList.add('selected');
-    torreCard.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'nft' && nftCard) {
-    nftCard.classList.add('selected');
-    nftCard.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'dwc' && dwcCard) {
-    dwcCard.classList.add('selected');
-    dwcCard.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'rdwc' && rdwcCard) {
+  if (setupTipoInstalacion === 'rdwc' && rdwcCard) {
     rdwcCard.classList.add('selected');
     rdwcCard.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'srf' && srfCard) {
-    srfCard.classList.add('selected');
-    srfCard.setAttribute('aria-pressed', 'true');
+  } else if (dwcCard) {
+    dwcCard.classList.add('selected');
+    dwcCard.setAttribute('aria-pressed', 'true');
   }
-  const inlTorre = document.getElementById('setupInlineTipoTorre');
-  const inlNft = document.getElementById('setupInlineTipoNft');
   const inlDwc = document.getElementById('setupInlineTipoDwc');
   const inlRdwc = document.getElementById('setupInlineTipoRdwc');
-  const inlSrf = document.getElementById('setupInlineTipoSrf');
-  [inlTorre, inlNft, inlDwc, inlRdwc, inlSrf].forEach(btn => {
+  [inlDwc, inlRdwc].forEach((btn) => {
     if (!btn) return;
     btn.classList.remove('selected');
     btn.setAttribute('aria-pressed', 'false');
   });
-  if (setupTipoInstalacion === 'torre' && inlTorre) {
-    inlTorre.classList.add('selected');
-    inlTorre.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'nft' && inlNft) {
-    inlNft.classList.add('selected');
-    inlNft.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'dwc' && inlDwc) {
-    inlDwc.classList.add('selected');
-    inlDwc.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'rdwc' && inlRdwc) {
+  if (setupTipoInstalacion === 'rdwc' && inlRdwc) {
     inlRdwc.classList.add('selected');
     inlRdwc.setAttribute('aria-pressed', 'true');
-  } else if (setupTipoInstalacion === 'srf' && inlSrf) {
-    inlSrf.classList.add('selected');
-    inlSrf.setAttribute('aria-pressed', 'true');
+  } else if (inlDwc) {
+    inlDwc.classList.add('selected');
+    inlDwc.setAttribute('aria-pressed', 'true');
   }
   const cestaBlk = document.getElementById('setupBloqueTamanoCestas');
-  // Torre: tarjetas cm. DWC/RDWC: Ø mm en su bloque. NFT/SRF: diámetro en el bloque del sistema (no repetir abajo).
-  if (cestaBlk) {
-    cestaBlk.style.display =
-      setupTipoInstalacion === 'torre' ? '' : 'none';
-  }
+  if (cestaBlk) cestaBlk.style.display = 'none';
   try {
     aplicarSetupWizardExclusividadTorreVertical();
   } catch (_) {}
@@ -2875,54 +2844,29 @@ function refrescarSetupTipoInstalacionUI() {
     } catch (eTapEarly) {}
     return;
   }
-  const isNft = setupTipoInstalacion === 'nft';
   const isRdwc = setupTipoInstalacion === 'rdwc';
-  const isSrf = setupTipoInstalacion === 'srf';
   const tw = document.getElementById('setupTorreBuilderWrap');
   const nw = document.getElementById('setupNftBuilderWrap');
-  if (tw) {
-    const hideTorreBuilder = isNft || isRdwc || setupTipoInstalacion === 'dwc' || isSrf;
-    tw.style.display = hideTorreBuilder ? 'none' : 'block';
-  }
-  if (nw) {
-    nw.classList.toggle('setup-hidden', !isNft);
-    nw.classList.toggle('setup-nft-asistente-simple', !!isNft);
-  }
+  if (tw) tw.style.display = 'none';
+  if (nw) nw.style.display = 'none';
   const t1 = document.getElementById('spage1Title');
   const st = document.getElementById('spage1Subtitle');
   if (t1) {
-    t1.textContent = isNft ? '🪴 Tu montaje NFT'
-      : setupTipoInstalacion === 'dwc' ? '🫧 Tu DWC'
-      : isRdwc ? '🧿 Tu RDWC'
-      : isSrf ? 'Tu SRF'
-      : '🌿 Tu torre vertical';
+    t1.textContent = isRdwc ? '🧿 Tu RDWC' : '🫧 Tu DWC';
   }
   if (st) {
-    st.textContent = isNft
-      ? 'Disposición, tubos y huecos; la app calcula depósito, bomba y aireador. Detalle en Consejos.'
-      : setupTipoInstalacion === 'dwc'
-        ? 'Depósito: medidas interiores con cinta o litros en la caja; Ø de cesta en el envase. Rejilla y litros de mezcla los sugerimos; lo opcional puede quedar vacío.'
-        : isRdwc
-          ? 'Elige una plantilla (cubos × filas) o indica medidas a mano. Vista cenital: impulsión, retorno y aire con piedra en cada cubo de cultivo.'
-        : isSrf
-          ? 'Mide el estanque (largo × ancho × profundidad útil del agua) y cuenta huecos en la balsa. Aireación y recirculación pueden quedar por defecto.'
-        : 'Niveles y cestas por nivel: manual del kit o a ojo. Depósito y tubo los afinas luego en Cultivo e instalación.';
-  }
-  if (setupTipoInstalacion === 'torre') {
-    try {
-      restaurarSetupTorreBuilderControls();
-    } catch (_) {}
-    try {
-      const cTorreUi =
-        state.configTorre && tipoInstalacionNormalizado(state.configTorre) === 'torre' ? state.configTorre : {};
-      seleccionarSetupTorreMontajeOrigen('diy');
-    } catch (_) {}
+    st.textContent = isRdwc
+      ? 'Depósito de control + cubos en serie: la app calcula litros totales, caudal de recirculación, piedras de aire por maceta (≈2–4 L/min), Ø net pot y separación. Temperatura objetivo del agua 18–22 °C.'
+      : 'Cubo(s) con solución y piedra de aire: mide el depósito (litros o cinta), Ø de cesta (3" índica / 4" sativa) y número de plantas. Oxígeno 24 h; pH 5,8–6,2 y EC según fase en Consejos.';
   }
   const dwcWizard = document.getElementById('setupDwcDetalleWrap');
   if (dwcWizard) dwcWizard.classList.toggle('setup-hidden', !(setupTipoInstalacion === 'dwc' || isRdwc));
   if (dwcWizard) dwcWizard.classList.toggle('setup-dwc-wrap--rdwc', isRdwc);
   const srfWizard = document.getElementById('setupSrfDetalleWrap');
-  if (srfWizard) srfWizard.classList.toggle('setup-hidden', !isSrf);
+  if (srfWizard) {
+    srfWizard.classList.add('setup-hidden');
+    srfWizard.style.display = 'none';
+  }
   const dwcIntroSetup = document.getElementById('setupDwcIntroBloque');
   if (dwcIntroSetup) dwcIntroSetup.classList.toggle('setup-hidden', isRdwc);
   const rdwcWizard = document.getElementById('setupRdwcDetalleWrap');
@@ -2945,21 +2889,19 @@ function refrescarSetupTipoInstalacionUI() {
     if (rdwcW) rdwcW.classList.add('setup-rdwc-asistente-simple');
   }
   const volDepWrap = document.getElementById('setupVolDepositoWrap');
-  if (volDepWrap) volDepWrap.style.display = isRdwc || isSrf ? 'none' : '';
+  if (volDepWrap) volDepWrap.style.display = isRdwc ? 'none' : '';
   const capMaxWrap = document.getElementById('setupVolCapacidadMaxWrap');
-  if (capMaxWrap) capMaxWrap.style.display = (setupTipoInstalacion === 'dwc' || isRdwc || isSrf) ? 'none' : '';
+  if (capMaxWrap) capMaxWrap.style.display = setupTipoInstalacion === 'dwc' || isRdwc ? 'none' : '';
   const dwcCapHint = document.getElementById('setupDwcCapacidadEstimada');
   if (dwcCapHint && setupTipoInstalacion !== 'dwc') {
     dwcCapHint.classList.add('setup-hidden');
     dwcCapHint.textContent = '';
   }
   const mezBlock = document.getElementById('setupVolMezclaBlock');
-  if (mezBlock) {
-    mezBlock.style.display = setupTipoInstalacion === 'nft' ? 'none' : '';
-  }
+  if (mezBlock) mezBlock.style.display = '';
   const mezLab = document.getElementById('setupVolMezclaLabel');
   const mezAyuda = document.getElementById('setupVolMezclaAyuda');
-  if (mezLab && mezAyuda && setupTipoInstalacion !== 'nft') {
+  if (mezLab && mezAyuda) {
     if (setupTipoInstalacion === 'dwc') {
       mezLab.textContent = 'Litros de solución en el depósito (relleno operativo)';
       mezAyuda.textContent =
@@ -2971,33 +2913,15 @@ function refrescarSetupTipoInstalacionUI() {
     }
   }
   const capAyuda = document.getElementById('setupVolCapacidadAyuda');
-  if (capAyuda && setupTipoInstalacion === 'torre') {
+  if (capAyuda && isRdwc) {
     capAyuda.textContent =
-      'Tope físico del recipiente (porcentaje de llenado y bomba). Las dosis usan los litros de mezcla si los indicas abajo.';
-  } else if (capAyuda && setupTipoInstalacion === 'nft') {
-    capAyuda.textContent =
-      'Capacidad del recipiente que compres (etiqueta), ≥ al volumen para dosificar del recuadro superior. Las dosis usan el recomendado con margen, no este tope si es mayor.';
+      'Depósito de control + volumen de cubos: la app suma litros para dosificar y dimensionar bomba de recirculación.';
   }
   const capLab = document.getElementById('setupVolCapacidadLabel');
-  if (capLab) {
-    capLab.textContent =
-      setupTipoInstalacion === 'nft' ? 'Capacidad física del depósito' : 'Capacidad máx. depósito';
-  }
+  if (capLab) capLab.textContent = 'Capacidad máx. depósito';
   try {
     if (typeof repositionSetupVolMezclaBlock === 'function') repositionSetupVolMezclaBlock();
   } catch (_) {}
-  if (isSrf) {
-    try {
-      srfRefreshOxigenacionUi('setup');
-    } catch (_) {}
-    try {
-      if (!setupEsNuevaTorre && typeof syncSrfFormDesdeConfig === 'function') {
-        syncSrfFormDesdeConfig(state.configTorre || {}, 'setup');
-      }
-      if (typeof updateTorreBuilder === 'function') updateTorreBuilder();
-      if (typeof renderSrfCultivoRecoStatus === 'function') renderSrfCultivoRecoStatus('setup');
-    } catch (_) {}
-  }
   if (setupTipoInstalacion === 'dwc') {
     try {
       onSetupDwcMedidasInput();
@@ -3012,38 +2936,23 @@ function refrescarSetupTipoInstalacionUI() {
     } catch (_) {}
   }
   syncSetupPreviewDiagramPorTipoInstalacion();
-  if (isNft) {
-    refrescarDocTuberiaNftSetup();
-    try {
-      refrescarNftMontajeSubpanels();
-      refrescarNftCanalesSliderEtiqueta();
-      const cfgN = state.configTorre || {};
-      seleccionarSetupNftMontajeOrigen('diy');
-    } catch (e) {}
-  }
 }
 
-/** Actualiza el gráfico del paso 1 según Torre vs NFT (asistente). */
+/** Actualiza el gráfico del paso 1 (DWC / RDWC). */
 function syncSetupPreviewDiagramPorTipoInstalacion() {
   if (typeof setupPagina === 'undefined' || setupPagina !== 1) return;
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-  else updateTorreBuilder();
+  if (setupTipoInstalacion === 'rdwc') {
+    try {
+      if (typeof onSetupRdwcInput === 'function') onSetupRdwcInput();
+    } catch (_) {}
+  } else if (typeof updateTorreBuilder === 'function') {
+    updateTorreBuilder();
+  }
 }
 
 function onSetupVolSliderInput() {
   const sliderVol = document.getElementById('sliderVol');
-  if (setupTipoInstalacion === 'nft' && sliderVol && !sliderVol.dataset.hcNftVolSyncing) {
-    sliderVol.setAttribute('data-hc-nft-vol-manual', '1');
-    const minFis = parseInt(String(sliderVol.min || '5'), 10);
-    const cur = parseInt(String(sliderVol.value), 10);
-    if (Number.isFinite(minFis) && Number.isFinite(cur) && cur < minFis) {
-      sliderVol.dataset.hcNftVolSyncing = '1';
-      sliderVol.value = String(minFis);
-      delete sliderVol.dataset.hcNftVolSyncing;
-    }
-  }
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-  else updateTorreBuilder();
+  if (typeof updateTorreBuilder === 'function') updateTorreBuilder();
   const mezEl = document.getElementById('setupVolMezclaL');
   if (mezEl && mezEl.value.trim()) {
     const maxL = getSetupVolumenMaxLitros();
@@ -4195,7 +4104,11 @@ function applySistemaTipoPanelesColapsablesUI() {
   const nftBtn = document.getElementById('btnToggleSistemaNftMontaje');
   const nftBody = document.getElementById('sistemaNftMontajeBody');
   const nftRes = document.getElementById('sistemaNftMontajeResumen');
-  if (nftCard && nftBtn && nftBody && cfg && cfg.tipoInstalacion === 'nft' && nftCard.style.display === 'block') {
+  if (nftCard) {
+    nftCard.style.display = 'none';
+    nftCard.hidden = true;
+  }
+  if (false && nftCard && nftBtn && nftBody && cfg && cfg.tipoInstalacion === 'nft' && nftCard.style.display === 'block') {
     if (nftRes) nftRes.textContent = textoResumenMontajeNftSistema(cfg);
     const col = cfg.uiSistemaNftMontajeColapsado === true;
     nftBody.hidden = col;
@@ -4487,6 +4400,12 @@ function sincronizarSistemaNftMontajeUI() {
   const dwcInfo = document.getElementById('sistemaDwcAyudaCard');
   const srfInfo = document.getElementById('sistemaSrfAyudaCard');
   const torreObj = document.getElementById('sistemaTorreObjetivoCard');
+  [card, srfInfo, torreObj].forEach((el) => {
+    if (!el) return;
+    el.style.display = 'none';
+    el.classList.add('setup-hidden');
+    el.hidden = true;
+  });
   const ecphCard = document.getElementById('sistemaEcPhStrategyCard');
   const cfg = state.configTorre;
   try {
@@ -4496,7 +4415,7 @@ function sincronizarSistemaNftMontajeUI() {
     cfg && typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(cfg)
       : cfg && cfg.tipoInstalacion;
-  const ocultarEcPhObjetivoTorreEnSistema = tipoInst === 'torre';
+  const ocultarEcPhObjetivoTorreEnSistema = false;
   const ocultarEcPhRdwc = tipoInst === 'rdwc';
   const nftYaListo = cfg && nftInstalacionYaConfigurada(cfg);
   if (ecphCard) {
@@ -4514,29 +4433,11 @@ function sincronizarSistemaNftMontajeUI() {
     cfg.ecPhEstrategia = 'auto';
     cfg.ecPhIntensidad = 'conservador';
   }
-  if (cfg && tipoInst === 'nft') {
-    try {
-      nftEnsureDifusorEnDeposito(cfg);
-    } catch (_) {}
-  }
   const torreMontajeCard = document.getElementById('sistemaTorreMontajeCard');
-  if (torreObj) {
-    torreObj.style.display = 'none';
-    torreObj.classList.add('setup-hidden');
-    torreObj.hidden = true;
-  }
   if (torreMontajeCard) {
-    if (cfg && cfg.tipoInstalacion === 'torre') {
-      try {
-        ocultarTorreMontajeWizardEnPestanaSistema();
-      } catch (_) {}
-    } else {
-      torreMontajeCard.style.display = 'none';
-      torreMontajeCard.classList.add('setup-hidden');
-      try {
-        restaurarSetupTorreBuilderControls();
-      } catch (_) {}
-    }
+    torreMontajeCard.style.display = 'none';
+    torreMontajeCard.classList.add('setup-hidden');
+    torreMontajeCard.hidden = true;
   }
   if (dwcInfo) {
     if (cfg && (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc')) {
@@ -4556,19 +4457,9 @@ function sincronizarSistemaNftMontajeUI() {
     }
   }
   if (srfInfo) {
-    if (cfg && cfg.tipoInstalacion === 'srf') {
-      srfInfo.style.display = 'block';
-      try {
-        if (typeof syncSrfFormDesdeConfig === 'function') syncSrfFormDesdeConfig(cfg, 'sys');
-        if (typeof renderSrfCalculoStatus === 'function') renderSrfCalculoStatus(cfg, 'sysSrfCalcStatus');
-        const res = document.getElementById('sistemaSrfResumen');
-        if (res && typeof textoResumenSistemaSrfPanel === 'function') {
-          res.textContent = textoResumenSistemaSrfPanel(cfg);
-        }
-      } catch (_) {}
-    } else {
-      srfInfo.style.display = 'none';
-    }
+    srfInfo.style.display = 'none';
+    srfInfo.classList.add('setup-hidden');
+    srfInfo.hidden = true;
   }
   if (!card) {
     try {
@@ -4703,7 +4594,7 @@ function aplicarSistemaTorreObjetivoDesdeFormulario() {
   saveState();
   try { renderTorreSistemaResumenTabla(state.configTorre); } catch (_) {}
   try { refreshConsejosSiVisible(); } catch (_) {}
-  showToast('Objetivo de torre guardado: ' + (objetivo === 'baby' ? 'Alta densidad / baby leaf' : 'Planta adulta (tamaño completo)'));
+  showToast('Objetivo de torre guardado: ' + (objetivo === 'baby' ? 'SOG / esquejes' : 'Floración / tamaño completo'));
 }
 
 /** Checklist recarga (paso T·obj): mismo criterio que Cultivo e instalación, sincroniza el select del sistema si existe. */
@@ -4733,7 +4624,7 @@ function persistTorreObjetivoDesdeChecklist() {
     evalParam();
   } catch (_) {}
   showToast(
-    'Objetivo de torre: ' + (objetivo === 'baby' ? 'Alta densidad / baby leaf' : 'Planta adulta (tamaño completo)')
+    'Objetivo de torre: ' + (objetivo === 'baby' ? 'SOG / esquejes' : 'Floración / tamaño completo')
   );
   try {
     if (typeof renderChecklist === 'function') renderChecklist();

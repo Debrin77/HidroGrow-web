@@ -14,29 +14,29 @@ const CONSEJOS_DATA = {
         texto:'Si compras en vivero o garden center, suele venir sustrato (coco, turba, plug de semillero) en el pan de raíces. En hidroponía conviene <strong>retirar con suavidad lo suelto</strong> o seguir las indicaciones del proveedor, para no arrastrar tierra o materia orgánica al depósito. En la ficha elige <strong>Plántula de vivero</strong> y la <strong>fecha en que entra al sistema</strong> (NFT, DWC o torre).',
         alerta:{ tipo:'info', txt:'ℹ️ Con «vivero» la app suma una <strong>media de días en plug</strong> por cultivo (referencia comercial) a los días en hidro para <strong>EC/pH automáticos</strong>, riego y cosecha. Los recordatorios de <strong>pH diario en plántula nueva</strong> siguen contando solo desde la entrada al sistema (raíz nueva en la solución).' } },
       { icono:'🫘', titulo:'Origen en ficha: germinación propia',
-        texto:'Desde semilla en sustrato hidropónico: bandeja a <strong>oscuras</strong> hasta que asome la radícula (suelen ser unos 2–4 días según especie y temperatura), luego <strong>luz de crecimiento</strong> (14–18 h/día, suave al inicio) hasta 2–3 hojas reales y buen desarrollo radicular; entonces <strong>trasplanta al circuito</strong>. En la ficha marca <strong>Germinación propia</strong> y usa como fecha el <strong>día del traslado al sistema</strong> (no el de la siembra), para que el progreso y el riego coincidan con la planta en hidroponía.',
+        texto:'Desde semilla: bandeja a <strong>oscuras</strong> hasta radícula (2–4 días), luego luz suave <strong>18/6</strong> (o 20/4 en plántula muy joven) hasta 2–3 hojas reales y raíz visible; entonces <strong>trasplanta al circuito</strong> (DWC/NFT/torre). En la ficha marca <strong>Germinación propia</strong> y como fecha el <strong>día de entrada al hidro</strong> (no el de la siembra), para que EC, pH y progreso coincidan con la planta en solución.',
         alerta:{ tipo:'ok', txt:'✅ En modo «Asignar cultivo» verás los mismos pasos al elegir germinación propia; los tiempos exactos dependen de la variedad y del sobre del semillero.' } },
       { icono:'⚗️', titulo:'pH inestable tras trasplantar plántulas',
         texto:'Es completamente normal que el pH suba 1-2 unidades en las primeras 24-72h tras añadir plántulas nuevas al sistema. Las raíces jóvenes absorben más aniones (nitratos) que cationes y liberan OH⁻ al agua, subiendo el pH. Con agua destilada este efecto es más pronunciado porque no hay carbonatos que amortigüen. <strong>No es un problema — es fisiología normal.</strong>',
         alerta:{ tipo:'warn', txt:'⚠️ Primera semana con plántulas nuevas: mide el pH cada 6-8h y ajusta con pH- si supera 7.0. A partir del día 4-5 el pH se estabiliza solo. Si el pH sube DE NOCHE también, puede indicar actividad bacteriana — revisar raíces.' } },
-      { icono:'🥬', titulo:'Señales de lechuga sana',
-        texto:'Hojas turgentes y brillantes, color verde intenso o rojizo según variedad, crecimiento visible día a día. Las raíces deben ser blancas o ligeramente crema, nunca marrones o con mal olor.',
-        alerta:{ tipo:'ok', txt:'✅ Una lechuga sana puede crecer 2-3 cm al día en condiciones óptimas.' } },
-      { icono:'✂️', titulo:'Cuándo y cómo cosechar',
-        texto:'Cosecha cuando la lechuga tenga 15-20cm de diámetro o empiece a compactar el centro. <strong>Corta a 2cm de la base</strong> — muchas variedades rebrotan. Cosechar por la mañana temprano cuando están más hidratadas.',
-        alerta:{ tipo:'warn', txt:'⚠️ Si aparece un tallo central alargado (espigado) la lechuga está a punto de florecer y se volverá amarga. Cosechar inmediatamente.' } },
+      { icono:'🌿', titulo:'Señales de planta sana',
+        texto:'Hojas turgentes sin clawing ni quemaduras en puntas, color verde uniforme (o morado según genética), crecimiento visible en vegetativo. Las raíces en hidro deben ser <strong>blancas o crema</strong>, nunca marrones, viscosas ni con mal olor.',
+        alerta:{ tipo:'ok', txt:'✅ En veg óptima (18/6, EC/pH en rango) muchas genéticas ganan altura de forma constante; en flor vigila engorde de cogollos, no solo altura.' } },
+      { icono:'✂️', titulo:'Cuándo cosechar (floración)',
+        texto:'Revisa <strong>tricomas</strong> (lechoso → ámbar según efecto deseado). Seca el cogollo tras corte; en hidro, vacía y limpia el depósito tras la cosecha para evitar biofilm antes del siguiente ciclo.',
+        alerta:{ tipo:'warn', txt:'⚠️ Humedad relativa >55% con cogollos densos favorece botrytis. Baja RH y mejora aireación bajo copa en las últimas semanas.' } },
       { icono:'🔃', titulo:'Rotación escalonada (torre por niveles)',
         texto:'Sobre todo en <strong>torre vertical</strong> con varios niveles: rota cada 12-15 días (cosecha abajo → subes plantas → plántulas arriba). Así mantienes producción continua con un solo depósito. En NFT/DWC el ritmo es distinto; usa fechas en fichas y calendario.',
         alerta:{ tipo:'info', txt:'ℹ️ Al rotar, ajusta la EC del depósito al estado del cultivo predominante.' } },
-      { icono:'⏱️', titulo:'NFT vs torre: ¿mismos días de cultivo?',
-        texto:'En estudios y guías técnicas (p. ej. comparativas NFT / DWC / torre con lechuga) lo que más se documenta son <strong>rendimiento, biomasa y uso de agua</strong>, no un calendario fijo distinto “por sistema”. Los <strong>días hasta cosecha</strong> los marcan sobre todo la <strong>variedad</strong>, la <strong>luz</strong>, <strong>temperatura</strong>, <strong>EC/pH</strong> y la calidad de la plántula. Un NFT con película inestable o una torre con sombra desigual puede alargar el ciclo; no es que NFT o torre tengan por sí solos otro “cronómetro” en webs serias.',
-        alerta:{ tipo:'info', txt:'ℹ️ Usa las fechas en la app y la ficha de la variedad; el tipo de montaje cambia la ingeniería del agua, no el genotipo.' } },
+      { icono:'⏱️', titulo:'NFT vs torre: ¿mismos días de ciclo?',
+        texto:'En cannabis hidropónico el calendario lo marca la <strong>genética</strong> (foto vs auto), el <strong>fotoperiodo</strong> (18/6 veg, 12/12 flor en fotodependientes) y la <strong>EC/pH</strong>. DWC/RDWC/NFT/torre cambian oxigenación y estabilidad de raíz, no el genotipo: un NFT con película pobre o una torre con sombra desigual puede alargar veg o flor.',
+        alerta:{ tipo:'info', txt:'ℹ️ Usa fechas en ficha + días de la genética en HidroGrow; ajusta lámpara y extractor según fase.' } },
       { icono:'📅', titulo:'Fecha de trasplante en la ficha',
         texto:'Cada hueco, maceta o cesta debe llevar <strong>variedad + fecha</strong> desde que plantas o trasplantas. Sin fecha, el riego automático, las medias de edad y el calendario no reflejan lo que hay en la instalación activa: puedes regar como si fueran plántulas cuando ya van por la mitad del ciclo (o al revés).',
         alerta:{ tipo:'ok', txt:'✅ Un momento al trasplantar: abre la ficha, elige cultivo y fecha. Así fotos, registro y cálculo de riego quedan alineados con tus plantas reales.' } },
-      { icono:'🧩', titulo:'Cultivos compatibles o no (y por qué)',
-        texto:'En un sistema con <strong>un solo depósito</strong> (torre, NFT o DWC) todas las plantas comparten la <strong>misma agua</strong>: misma EC y mismo pH. Por eso solo conviene mezclar grupos con necesidades parecidas. <strong>Lechugas entre sí</strong> y con muchas <strong>asiáticas</strong> de hoja (p. ej. mizuna, komatsuna) suele funcionar si ajustas la EC con cuidado. Las <strong>hojas verdes</strong> más exigentes (espinaca, acelga) suelen pedir <strong>más nutrientes</strong> que un circuito solo lechuga. Los <strong>frutos</strong> (tomate, pepino, pimiento…) y varias <strong>hierbas de EC alta</strong> (menta, orégano, cebollino) descompensan a las lechugas: mejor <strong>otra instalación u otro depósito</strong>. Además del agua, piensa en la <strong>luz</strong>: una planta muy grande puede dejar a las demás a la sombra.',
-        alerta:{ tipo:'info', txt:'ℹ️ En <strong>Cultivo e instalación → Compatibilidad de cultivos</strong> la app te avisa si mezclas grupos poco recomendables en el mismo depósito.' } },
+      { icono:'🧩', titulo:'Genéticas compatibles o no (y por qué)',
+        texto:'En un solo depósito (torre, NFT, DWC, RDWC) todas comparten <strong>EC y pH</strong>. Mezcla <strong>índicas con híbridas</strong> si están en fase similar. <strong>No mezcles autoflorecientes con fotodependientes</strong> en la misma sala: el 12/12 de las fotos fuerza flor en autos demasiado pronto. Sativas altas pueden sombrear índicas compactas en torre. CBD suele ir con EC más baja: mejor depósito dedicado si mezclas con genéticas THC muy exigentes.',
+        alerta:{ tipo:'info', txt:'ℹ️ En <strong>Cultivo e instalación → Compatibilidad</strong> la app avisa si combinas grupos poco recomendables.' } },
     ]
   },
   agua: {
@@ -79,8 +79,8 @@ const CONSEJOS_DATA = {
     nombre: '🌡️ Clima', color: '#b45309', bg: 'rgba(217,119,6,0.1)',
     consejos: [
       { icono:'☀️', titulo:'Ola de calor (> 30°C)',
-        texto:'Despliega el toldo antes de las 10h. Aumenta la frecuencia de riego — el atajo lo calcula automáticamente con VPD alto. <strong>Riesgo de espigado</strong> en lechugas con temperaturas sostenidas > 28°C.',
-        alerta:{ tipo:'warn', txt:'⚠️ Si las lechugas se ponen lacias a mediodía y no se recuperan al atardecer, hay estrés hídrico real. Añadir ciclo extra de riego.' } },
+        texto:'Refuerza ventilación de sala y temperatura del depósito (<26°C ideal). El atajo ajusta riego con VPD alto. En floración densa, el calor sostenido >28°C aumenta estrés y riesgo de hermaphroditismo en algunas genéticas.',
+        alerta:{ tipo:'warn', txt:'⚠️ Hojas en “garra” (claw) hacia abajo con puntas quemadas: revisa EC, temperatura de solución y intensidad lumínica.' } },
       { icono:'🥶', titulo:'Noches frías (< 5°C)',
         texto:'El calentador del depósito es esencial. Por debajo de 14°C en el agua el crecimiento casi se detiene. <strong>Objetivo siempre 20°C</strong> en el agua del depósito.',
         alerta:{ tipo:'info', txt:'ℹ️ En Castelló las heladas son raras pero en enero-febrero pueden darse temperaturas de 2-4°C por las noches.' } },
@@ -112,18 +112,18 @@ const CONSEJOS_DATA = {
   variedades: {
     nombre: '🌱 Variedades', color: '#047857', bg: 'rgba(5,150,105,0.08)',
     consejos: [
-      { icono:'🥬', titulo:'Mejores lechugas para Castelló',
-        texto:'<strong>Primavera/Otoño:</strong> Romana, Trocadero, Batavia — crecimiento rápido y sabor excelente. <strong>Verano:</strong> Lolo Rosso, Hoja Roble Rojo — más resistentes al calor. <strong>Invierno:</strong> Maravilla, Mantecosa — toleran temperaturas bajas.',
-        alerta:{ tipo:'ok', txt:'✅ La Romana es la más productiva y versátil para hidropónica — buena elección para empezar.' } },
-      { icono:'🌿', titulo:'Mizuna — la más fácil',
-        texto:'La Mizuna es la variedad asiática más recomendada para principiantes en hidropónica. Crece en 35-40 días, tolera tanto el calor como el frío moderado, y produce hojas delicadas de sabor suave-picante. <strong>Muy productiva.</strong>',
-        alerta:{ tipo:'info', txt:'ℹ️ La Komatsuna es similar pero con hojas más grandes y sabor más suave. Ambas son perfectas mezcladas con lechugas.' } },
-      { icono:'🌿', titulo:'Albahaca — compañera perfecta',
-        texto:'Aunque necesita más calor (mínimo 18°C), la albahaca bien situada tiene una función extra: <strong>repele pulgones y mosca blanca</strong>. Ponla donde reciba más sol (arriba en torre, borde soleado en NFT/DWC). EC compatible con lechugas.',
-        alerta:{ tipo:'warn', txt:'⚠️ La albahaca no tolera temperaturas < 10°C. Solo usarla de mayo a octubre en Castelló.' } },
+      { icono:'🌱', titulo:'Genéticas recomendadas para empezar en hidro',
+        texto:'<strong>Fáciles en DWC/RDWC:</strong> Northern Lights (foto o auto), Blue Dream, White Widow, AK-47, Critical Mass. <strong>Compactas:</strong> índicas y muchas autos (Zkittlez Auto, Auto Blueberry). <strong>Avanzadas:</strong> sativas largas (Amnesia Haze, Royal Moby) — planifica altura y luz.',
+        alerta:{ tipo:'ok', txt:'✅ Elige genéticas tolerantes a pH/EC estables; raíz blanca desde el primer día en solución.' } },
+      { icono:'⏱️', titulo:'Fotoperiodo y fases',
+        texto:'<strong>Fotodependientes:</strong> 18/6 vegetativo hasta tamaño deseado, luego 12/12 floración. <strong>Autos:</strong> 18/6 todo el ciclo (no cambies a 12/12). Sube EC de forma gradual en flor; pH objetivo 5,8–6,2 en la mayoría de líneas minerales.',
+        alerta:{ tipo:'info', txt:'ℹ️ Referencia habitual en cultivos con nutrientes minerales hidropónicos (Canna, Advanced, GHE, etc.).' } },
+      { icono:'💡', titulo:'Luz LED por fase',
+        texto:'Vegetativo: ~300–450 µmol/s·m² (PPFD) según altura. Floración: ~600–900+ según genética y temperatura. Sativas toleran más intensidad si la temperatura de copa se controla; índicas densas necesitan buena penetración bajo copa.',
+        alerta:{ tipo:'warn', txt:'⚠️ Demasiada luz con VPD descontrolado quema hojas antes que subir EC.' } },
       { icono:'❌', titulo:'Qué NO mezclar en el mismo depósito',
-        texto:'<strong>Tomates, pepinos, pimientos:</strong> necesitan EC 1800-2500 y soporte físico — mal compañeros de lechuga en un solo tanque. <strong>Fresas:</strong> pueden funcionar pero compiten por EC. <strong>Plantas muy altas:</strong> sombrean al resto (en torre, sobre todo niveles bajos).',
-        alerta:{ tipo:'warn', txt:'⚠️ Mezclar frutales con lechugas en el mismo depósito provoca deficiencias en unas u otras inevitablemente.' } },
+        texto:'<strong>Autos + fotos</strong> en la misma instalación o sala con un solo programa de luz. <strong>CBD de EC baja + genéticas THC altas</strong> en el mismo tanque. <strong>Sativas muy altas + índicas en torre</strong> sin separar niveles o poda.',
+        alerta:{ tipo:'warn', txt:'⚠️ Un solo depósito = una sola EC/pH: las plantas en fases distintas (plántula vs flor plena) compiten por nutrientes.' } },
     ]
   },
 };
@@ -155,10 +155,10 @@ const DIAGNOSTICO = [
     urgencia: 'bad'
   },
   {
-    sintoma: '🌿 Tallo central alargado y hojas más pequeñas',
-    causa: 'Bolting — espigado por calor',
-    solucion: 'Temperatura > 24°C. Cosechar inmediatamente — la lechuga estará amarga. Instalar toldo.',
-    urgencia: 'bad'
+    sintoma: '🌿 Estiramiento excesivo (internudos largos, tallo débil)',
+    causa: 'Poca luz o VPD desequilibrado en vegetativo',
+    solucion: 'Sube PPFD o acerca LED; revisa 18/6 y temperatura nocturna. En flor, puede ser stretch normal de sativa — usa red o LST.',
+    urgencia: 'warn'
   },
   {
     sintoma: '💧 Plantas lacias al mediodía pero se recuperan por la tarde',
@@ -235,7 +235,7 @@ function renderDiagnostico() {
 }
 
 let consejoCatActiva = 'cultivo';
-const CONSEJOS_CAT_ORDEN_UI = ['cultivo', 'problemas', 'agua', 'clima', 'ecph', 'nft', 'dwc', 'rdwc', 'srf', 'variedades'];
+const CONSEJOS_CAT_ORDEN_UI = ['cultivo', 'problemas', 'agua', 'clima', 'ecph', 'dwc', 'rdwc', 'variedades'];
 
 function getConsejosModoUi(cfg) {
   const c = cfg || state.configTorre || {};
@@ -252,28 +252,21 @@ function setConsejosModoUi(modo) {
 
 /** µS/cm y pH orientativos (bibliografía / manuales de hidroponía) — ajustar por nutriente, agua y fase */
 const REF_CULTIVOS_EC_PH = [
-  { cultivo: 'Lechuga / lechuguinas', ec: '900–1600', ph: '5,5–6,5', nota: 'Rango app lechuga ~1300–1400' },
-  { cultivo: 'Espinaca / acelga / kale', ec: '1200–2000', ph: '5,5–6,5', nota: 'Mayor necesidad nitro' },
-  { cultivo: 'Rúcula / canónigos / mostaza', ec: '1000–1600', ph: '5,5–6,4', nota: 'Similar lechuga' },
-  { cultivo: 'Albahaca / menta / perejil', ec: '1000–1800', ph: '5,5–6,5', nota: 'Albahaca algo más EC en pleno sol' },
-  { cultivo: 'Cilantro / eneldo', ec: '1200–1800', ph: '5,5–6,2', nota: '' },
-  { cultivo: 'Tomate — vegetativo', ec: '1400–2400', ph: '5,5–6,5', nota: '' },
-  { cultivo: 'Tomate — floración / fruto', ec: '2200–3200', ph: '5,5–6,2', nota: 'Subir EC de forma gradual' },
-  { cultivo: 'Pimiento / berenjena', ec: '1600–2600', ph: '5,5–6,5', nota: '' },
-  { cultivo: 'Pepino', ec: '1400–2200', ph: '5,5–6,2', nota: '' },
-  { cultivo: 'Judía verde / guisante (brotes)', ec: '1400–2400', ph: '6,0–6,5', nota: '' },
-  { cultivo: 'Fresa / fresón', ec: '1200–2000', ph: '5,5–6,2', nota: 'Plántulas más bajo EC' },
-  { cultivo: 'Brócoli / coliflor', ec: '1700–2600', ph: '6,0–6,8', nota: '' },
-  { cultivo: 'Zanahoria (hojas) / microverduras', ec: '1200–2000', ph: '5,5–6,5', nota: '' },
-  { cultivo: 'Melón / sandía', ec: '1600–3000', ph: '5,5–6,2', nota: 'Fructificación arriba del rango' },
-  { cultivo: 'Flores de corte (p. ej. rosa)', ec: '1200–2200', ph: '5,5–6,2', nota: '' },
+  { cultivo: 'Cannabis — plántula / esqueje', ec: '400–800', ph: '5,8–6,2', nota: 'Subir EC de forma gradual' },
+  { cultivo: 'Cannabis — vegetativo', ec: '1000–1600', ph: '5,8–6,2', nota: '18/6 · más N relativo' },
+  { cultivo: 'Cannabis — preflor / floración', ec: '1400–2200', ph: '5,8–6,1', nota: '12/12 en foto · subir EC poco a poco' },
+  { cultivo: 'Cannabis — floración densa (engorde)', ec: '1800–2600', ph: '5,8–6,0', nota: 'Vigilar bloqueo por EC alta' },
+  { cultivo: 'Índica / híbrida compacta', ec: '1200–2200', ph: '5,8–6,2', nota: 'Rango típico catálogo HidroGrow' },
+  { cultivo: 'Sativa', ec: '1300–2400', ph: '5,8–6,3', nota: 'Ciclo largo; EC media-alta en flor' },
+  { cultivo: 'Autofloreciente', ec: '1200–2100', ph: '5,8–6,2', nota: '18/6 todo el ciclo' },
+  { cultivo: 'CBD / perfil suave', ec: '1000–1600', ph: '5,9–6,3', nota: 'EC más baja que THC altas' },
 ];
 
 /** Nombre instalación + NFT | DWC | Torre vertical (para títulos de tablas EC/pH). */
 function consejosTituloInstalacionSistemaLinea() {
   const cfg = state.configTorre || {};
   const sys =
-    typeof etiquetaSistemaHidroponicoBreve === 'function' ? etiquetaSistemaHidroponicoBreve(cfg) : 'Torre vertical';
+    typeof etiquetaSistemaHidroponicoBreve === 'function' ? etiquetaSistemaHidroponicoBreve(cfg) : 'DWC';
   let nombre = '';
   try {
     const ta = typeof getTorreActiva === 'function' ? getTorreActiva() : null;
@@ -339,7 +332,7 @@ const REF_DOSIS_FABRICANTE = {
     calmagGrifoNota: 'Sin CalMag extra (Ca/Mg en Micro). Ajustar solo si el fabricante lo indica para tu agua.',
   },
   ghe_flora: {
-    fuente: 'GHE Flora Series: proporción lechuga vegetativo de esta app — Micro 2,6 + Gro 1,3 + Bloom 1,3 ml/L.',
+    fuente: 'GHE Flora Series: proporción vegetativo cannabis — Micro 2,6 + Gro 2,0 + Bloom 1,0 ml/L (orientativo).',
     mlPorLitro: [2.6, 1.3, 1.3],
     calmagGrifoNota: 'CalMag: reducir u omitir si el grifo aporta minerales; medir tras mezclar.',
   },
@@ -875,7 +868,10 @@ function renderConsejos() {
   const lista = document.getElementById('consejosLista');
   if (!cats || !lista) return;
   const cfg = state.configTorre || {};
-  const tipoInst = cfg.tipoInstalacion || 'torre';
+  const tipoInst =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(cfg)
+      : cfg.tipoInstalacion || 'dwc';
   const modoUi = getConsejosModoUi(cfg);
   cats.setAttribute('role', 'tablist');
   cats.setAttribute('aria-label', 'Categorías de consejos');
@@ -893,10 +889,9 @@ function renderConsejos() {
   if (modoUi !== 'avanzado') {
     catEntries = catEntries.filter(([key]) => {
       if (key === 'ecph') return false;
-      if (key === 'nft') return tipoInst === 'nft';
       if (key === 'dwc') return tipoInst === 'dwc';
       if (key === 'rdwc') return tipoInst === 'rdwc';
-      if (key === 'srf') return tipoInst === 'srf';
+      if (key === 'nft' || key === 'srf') return false;
       return true;
     });
   }
@@ -1817,8 +1812,8 @@ function buildConsejosCestasPorSistemaTabla() {
   }
   const esc = typeof meteoEscHtml === 'function' ? meteoEscHtml : x => String(x == null ? '' : x);
   const objetivos = [
-    { key: 'final', label: 'Planta completa' },
-    { key: 'baby', label: 'Baby leaf' },
+    { key: 'final', label: 'Floración / tamaño completo' },
+    { key: 'baby', label: 'SOG / esquejes' },
   ];
   const rows = [];
   HC_CESTA_MATRIX_GRUPOS.forEach(gr => {
@@ -1848,7 +1843,7 @@ function buildConsejosCestasPorSistemaTabla() {
     '</tr></thead><tbody>' +
     rows.join('') +
     '</tbody></table></div>' +
-    '<p class="consejo-footnote">«Planta completa» = cabeza o ciclo estándar; «Baby leaf» = cosecha joven o alta densidad. En torre, el Ø suele coincidir con el tamaño de cesta del asistente (cm × 10 ≈ mm).</p>';
+    '<p class="consejo-footnote">«Floración / tamaño completo» = maceta y separación para planta adulta; «SOG / esquejes» = alta densidad, cestas más pequeñas. En torre, el Ø suele coincidir con el asistente (cm × 10 ≈ mm).</p>';
   return htmlInnerConsejoCard(cat, {
     icono: '🧺',
     titulo: 'Cestas y geometría por cultivo y sistema',
@@ -1868,12 +1863,12 @@ function buildConsejosDwcNetPotRefTabla(catForCard) {
     '<table class="consejo-dwc-netpot-ref-table" role="grid" aria-label="Referencia orientativa Ø net pot y altura comercial">' +
     '<thead><tr><th scope="col">Ø aro (mm)</th><th scope="col">Altura cuerpo típica (mm)</th><th scope="col">Nota</th></tr></thead>' +
     '<tbody>' +
-    '<tr><td>50</td><td>45–60</td><td>Plántulas, albahaca en maceta pequeña</td></tr>' +
-    '<tr><td>80</td><td>55–75</td><td>Hojas compactas, clones</td></tr>' +
-    '<tr><td>100</td><td>60–85</td><td>Lechuga / asiáticas en cubo medio</td></tr>' +
-    '<tr><td>125</td><td>70–100</td><td>DWC «5 pulg» habitual; mucha lechuga</td></tr>' +
-    '<tr><td>150</td><td>75–110</td><td>Tomate/pepino joven en cubo grande</td></tr>' +
-    '<tr><td>200</td><td>85–130</td><td>Fruto adulto, raíz gruesa</td></tr>' +
+    '<tr><td>50</td><td>45–60</td><td>Esquejes enraizados, SOG denso</td></tr>' +
+    '<tr><td>63</td><td>60–75</td><td>Plántula → veg temprana</td></tr>' +
+    '<tr><td>75</td><td>70–90</td><td>Índica / híbrida · flor estándar (3")</td></tr>' +
+    '<tr><td>100</td><td>80–110</td><td>DWC 4" · sativa o raíz vigorosa</td></tr>' +
+    '<tr><td>125</td><td>85–120</td><td>RDWC cubo grande · ciclo largo</td></tr>' +
+    '<tr><td>150</td><td>90–130</td><td>Solo genéticas muy grandes (poco habitual)</td></tr>' +
     '</tbody></table></div>' +
     '<p class="consejo-footnote">Rangos orientativos entre fabricantes y líneas de distribución. Si tu modelo trae cifras, úsalas en <strong>Cultivo e instalación</strong> (Ø y altura opcional en RDWC).</p>';
   return htmlInnerConsejoCard(cat, {
@@ -1969,7 +1964,7 @@ function buildConsejosSrf() {
     icono: '📐',
     titulo: 'SRF: estanque, balsa y cesta según cultivo',
     texto:
-      '<p class="consejo-p consejo-p--tight">En SRF la solución es <strong>casi estática</strong> (opcional recirculación). Profundidad útil ~<strong>20–30 cm</strong> para lechugas; balsa EPS habitual <strong>25–50 mm</strong>; deja cámara de aire bajo la balsa en modo <strong>Kratky</strong> o usa <strong>bomba de aire</strong>.</p>' +
+      '<p class="consejo-p consejo-p--tight">En SRF la solución es <strong>casi estática</strong> (opcional recirculación). Profundidad útil ~<strong>24–30 cm</strong> para floración cannabis; balsa EPS <strong>35–50 mm</strong>; cámara de aire bajo la balsa en <strong>Kratky</strong> o <strong>bomba de aire</strong> en recirculación.</p>' +
       (recoSrf
         ? '<p class="consejo-p consejo-p--tight">Tu instalación: <strong>' +
           meteoEscHtml(recoSrf.perfil.etiqueta) +
@@ -2118,7 +2113,7 @@ function buildConsejosDwc() {
     titulo: 'Llenado: distancia al sustrato (DWC)',
     texto:
       panelLlenDw +
-      '<p style="margin:12px 0 0;line-height:1.45;font-size:12px">Modelo para <strong>cultivos de hoja</strong> (lechuga, asiáticas, hojas, hierbas). EC, pH y volumen en <strong>Mediciones</strong> y recargas.</p>',
+      '<p style="margin:12px 0 0;line-height:1.45;font-size:12px">Modelo para <strong>genéticas cannabis</strong> (índica, sativa, híbrida, auto, CBD). EC, pH y volumen en <strong>Mediciones</strong> y recargas.</p>',
     alerta: {
       tipo: 'info',
       txt: 'ℹ️ Cálculo en vivo desde sustrato en Cultivo e instalación + variedad y fecha en cada cesta. Ajusta según observación y temperatura.',

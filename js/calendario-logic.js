@@ -256,34 +256,6 @@ function generarEventos(fecha) {
     }
   }
 
-  // ── Mantenimiento específico SRF ────────────────────────────────────────
-  if (tCal === 'srf') {
-    if (diffDias >= 0 && diffDias % 7 === 0) {
-      eventos.push({
-        tipo: 'control',
-        icono: '🛶',
-        titulo: 'Revisión semanal SRF',
-        desc: 'Comprobar nivel del estanque, estabilidad de la balsa y que cada net pot mantenga contacto con la solución.',
-      });
-    }
-    if (diffDias >= 0 && diffDias % 14 === 0) {
-      eventos.push({
-        tipo: 'control',
-        icono: '💨',
-        titulo: 'Aireación SRF',
-        desc: 'Inspeccionar difusores y mangueras de aire: burbujeo homogéneo en todo el estanque, sin obstrucciones.',
-      });
-    }
-    if (diffDias >= 0 && diffDias % 28 === 0) {
-      eventos.push({
-        tipo: 'recarga',
-        icono: '🧪',
-        titulo: 'SRF — valorar recambio parcial o total',
-        desc: 'Con 4 semanas de uso, revisar estabilidad EC/pH y decidir recambio parcial o recarga completa según deriva y carga radicular.',
-      });
-    }
-  }
-
   // ── Mantenimiento específico RDWC ───────────────────────────────────────
   if (tCal === 'rdwc') {
     if (diffDias >= 0 && diffDias % 7 === 0) {
@@ -370,23 +342,23 @@ function generarEventos(fecha) {
   const mes = d.getMonth() + 1;
   const dia = d.getDate();
 
-  // Riesgo de bolting en lechugas (verano)
+  // Estrés por calor en floración (verano exterior / invernadero)
   if (mes >= 6 && mes <= 9) {
     eventos.push({
       tipo: 'clima',
       icono: '☀️',
-      titulo: 'Temporada de calor — riesgo de espigado',
-      desc: 'Las lechugas pueden espigarse con temperaturas > 28°C. Usar toldo en horas centrales y aumentar frecuencia de riego.'
+      titulo: 'Calor — vigilar VPD y temperatura de solución',
+      desc: 'Por encima de 28–30°C en copa o >26°C en el depósito aumenta el estrés. Refuerza ventilación, sombrea si hace falta y revisa EC/pH con más frecuencia.'
     });
   }
 
-  // Mejores meses para lechugas en Castelló
+  // Ventanas cómodas para arrancar ciclos en clima mediterráneo
   if (mes === 3 || mes === 4 || mes === 9 || mes === 10) {
     eventos.push({
       tipo: 'clima',
       icono: '🌱',
-      titulo: 'Época óptima para lechugas',
-      desc: 'Temperaturas ideales para el cultivo de lechugas en Castelló. Máximo crecimiento y calidad.'
+      titulo: 'Época favorable para vegetativo',
+      desc: 'Temperaturas moderadas en Castelló: buen momento para esquejes, plántulas o inicio de 18/6 en instalaciones con clima ambiente.'
     });
   }
 

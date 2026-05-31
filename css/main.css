@@ -14067,6 +14067,12 @@ button.toggle-switch:focus-visible {
   grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
   gap: 8px;
 }
+.setup-tipo-grid--dual,
+.setup-tipo-inline-grid--dual {
+  grid-template-columns: 1fr 1fr;
+  max-width: 420px;
+  margin: 0 auto;
+}
 .srf-setup-preview-wrap { width: 100%; max-width: min(100%, 420px); margin: 0 auto; }
 .srf-setup-canal {
   background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 100%);

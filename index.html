@@ -14,13 +14,13 @@
 <meta name="apple-mobile-web-app-title" content="HidroGrow">
 
 <!-- SEO y descripción -->
-<meta name="description" content="HidroGrow — Hidroponía para autocultivo: torre, NFT, DWC, RDWC, SRF, EC, pH, riego y clima por instalación.">
-<meta name="keywords" content="HidroGrow, cannabis, autocultivo, hidropónico, torre vertical, NFT, DWC, RDWC, SRF, EC, pH, riego, VPD, sala de cultivo">
+<meta name="description" content="HidroGrow — Autocultivo cannabis en DWC y RDWC: EC, pH, oxígeno, nutrientes, LED y clima por instalación.">
+<meta name="keywords" content="HidroGrow, cannabis, autocultivo, DWC, RDWC, deep water culture, EC, pH, aireador, recirculación, LED, VPD">
 <meta name="author" content="HidroGrow">
 
 <!-- Open Graph (para compartir en redes) -->
 <meta property="og:title" content="HidroGrow — Hidroponía en sala">
-<meta property="og:description" content="Gestiona tu cultivo hidropónico (torre, NFT o DWC) con inteligencia meteorológica">
+<meta property="og:description" content="Gestiona tu cultivo cannabis en DWC o RDWC con cálculos de volumen, aire y nutrientes">
 <meta property="og:type" content="website">
 <meta property="og:image" content="icons/icon-512.png">
 
@@ -524,7 +524,7 @@
 
       <section id="medirInstalacionEsquema" class="medir-instalacion-esquema setup-hidden" aria-labelledby="medirEsquemaTitulo">
         <h2 id="medirEsquemaTitulo" class="medir-esquema-titulo">Esquema de tu instalación</h2>
-        <p class="medir-esquema-hint">NFT: vista cartoon con el mismo circuito que Cultivo. Otros sistemas: esquema técnico. Toca un hueco para cultivo y días.</p>
+        <p class="medir-esquema-hint">DWC/RDWC: esquema de macetas. Toca cada cubo para genética, fase y fecha de entrada al hidro.</p>
         <div id="medirDiagramWrap" class="torre-svg-canvas medir-diagram-canvas" role="img"
           aria-label="Esquema orientativo de la instalación activa."></div>
       </section>
@@ -1300,7 +1300,7 @@
             <label class="form-label torre-dwc-lbl-mono" for="sysTorreObjetivoCultivo">Objetivo de cosecha</label>
             <select id="sysTorreObjetivoCultivo" class="torre-dwc-input" aria-label="Objetivo de cosecha en torre vertical">
               <option value="final">Planta adulta (tamaño completo)</option>
-              <option value="baby">Alta densidad / baby leaf (cosecha joven)</option>
+              <option value="baby">SOG / esquejes (alta densidad)</option>
             </select>
           </div>
           <div class="torre-objetivo-torre-actions">
@@ -1457,7 +1457,7 @@
             <select id="sysNftObjetivoCultivo" class="torre-nft-input-mt" aria-label="Objetivo de cultivo en NFT"
               onchange="try{typeof renderNftCultivoRecoStatus==='function'&&renderNftCultivoRecoStatus('sys')}catch(e){}">
               <option value="final">Planta adulta (tamaño completo)</option>
-              <option value="baby">Alta densidad / baby leaf (cosecha joven)</option>
+              <option value="baby">SOG / esquejes (alta densidad)</option>
             </select>
           </div>
           <div>
@@ -1643,7 +1643,7 @@
             <select id="sysDwcObjetivoCultivo" class="torre-dwc-input" aria-label="Objetivo de densidad DWC"
               oninput="try{refreshDwcSistemaMedidasUI()}catch(e){}">
               <option value="final">Planta adulta (tamaño completo)</option>
-              <option value="baby">Alta densidad / baby leaf (cosecha joven)</option>
+              <option value="baby">SOG / esquejes (alta densidad)</option>
             </select>
           </div>
           <p id="sysDwcCultivoRecoStatus" class="torre-dwc-vol-hint setup-hidden" role="status" aria-live="polite"></p>
@@ -1753,7 +1753,7 @@
 <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfProfundidadCm">Profundidad útil agua (cm)</label><input type="number" id="sysSrfProfundidadCm" class="torre-dwc-input" min="10" max="50" step="0.5" placeholder="25" oninput="try{srfRefreshSysFormLive()}catch(e){}"></div>
 <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfNumPlantas">Nº plantas (huecos)</label><input type="number" id="sysSrfNumPlantas" class="torre-dwc-input" min="1" max="64" step="1" placeholder="8" oninput="try{srfRefreshSysFormLive()}catch(e){}"></div>
             <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfFilas">Filas en balsa</label><input type="number" id="sysSrfFilas" class="torre-dwc-input" min="1" max="8" step="1" placeholder="1" oninput="try{srfRefreshSysFormLive()}catch(e){}"></div>
-            <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfObjetivoCultivo">Objetivo cultivo</label><select id="sysSrfObjetivoCultivo" class="torre-dwc-input" onchange="try{srfRefreshSysFormLive()}catch(e){}"><option value="final">Planta adulta</option><option value="baby">Baby leaf</option></select></div>
+            <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfObjetivoCultivo">Objetivo cultivo</label><select id="sysSrfObjetivoCultivo" class="torre-dwc-input" onchange="try{srfRefreshSysFormLive()}catch(e){}"><option value="final">Floración / tamaño completo</option><option value="baby">SOG / esquejes</option></select></div>
             <div><label class="form-label torre-dwc-lbl-mono" for="sysSrfOxigenacionModo">Oxigenación</label><select id="sysSrfOxigenacionModo" class="torre-dwc-input" onchange="try{srfRefreshOxigenacionUi('sys');srfRefreshSysFormLive()}catch(e){}"><option value="aireador">Bomba de aire</option><option value="kratky">Kratky (cámara de aire)</option></select></div>
             <div id="sysSrfAirWrap"><label class="form-label torre-dwc-lbl-mono" for="sysSrfAirLpm">Aireación (L/min)</label><input type="number" id="sysSrfAirLpm" class="torre-dwc-input" min="0.5" max="300" step="0.5" placeholder="8" oninput="try{srfRefreshSysFormLive()}catch(e){}"></div>
             <div id="sysSrfKratkyGapWrap" class="setup-hidden"><label class="form-label torre-dwc-lbl-mono" for="sysSrfKratkyGapCm">Hueco aire bajo balsa (cm)</label><input type="number" id="sysSrfKratkyGapCm" class="torre-dwc-input" min="2" max="40" step="0.5" placeholder="8" oninput="try{srfRefreshSysFormLive()}catch(e){}"></div>
@@ -2804,10 +2804,10 @@
         onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
     </div>
     <h2 id="welcomeGuideTitle" class="welcome-title">Controla tu cultivo hidropónico sin perderte</h2>
-    <p class="welcome-lead">HidroGrow centraliza tu operativa diaria: <strong>cinco sistemas hidropónicos</strong> (torre, NFT, DWC, RDWC y SRF) con <strong>cálculos recomendados</strong> de volumen, cestas, bombeo y aireación; más <strong>asistente de mediciones</strong>, <strong>herramientas PRO</strong>, <strong>nutrientes por cultivo y fase</strong> y <strong>meteorología local</strong>.</p>
+    <p class="welcome-lead">HidroGrow está pensado para <strong>cannabis en hidro</strong>: los dos sistemas más usados por cultivadores — <strong>DWC</strong> (cubos aireados) y <strong>RDWC</strong> (recirculación entre depósito y macetas). Calculamos <strong>litros, oxígeno, net pots, EC/pH</strong>, checklist de mezcla y <strong>meteorología</strong> de tu municipio.</p>
     <div class="welcome-kpis" aria-label="Resumen de utilidad">
       <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-grid"/></svg><strong>1</strong> panel operativo</span>
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-layers"/></svg><strong>5</strong> sistemas con cálculos guiados</span>
+      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-layers"/></svg><strong>2</strong> sistemas DWC · RDWC</span>
       <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><strong>8</strong> módulos clave</span>
       <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-check"/></svg>Checklist guiado</span>
       <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg>Nutriente recomendado por cultivo y fase</span>
@@ -2816,7 +2816,7 @@
       <article class="welcome-value-card welcome-value-card--green" role="listitem">
         <div class="welcome-value-icon" aria-hidden="true">⚙️</div>
         <h3>Configuración de sistemas</h3>
-        <p>Torre, NFT, DWC, RDWC o SRF: geometría, litros, cestas, bomba y checklist desde el asistente.</p>
+        <p>DWC o RDWC: volumen, aireador, net pots, recirculación y checklist de mezcla desde el asistente.</p>
       </article>
       <article class="welcome-value-card welcome-value-card--blue" role="listitem">
         <div class="welcome-value-icon" aria-hidden="true">📝</div>
@@ -2836,7 +2836,7 @@
       <article class="welcome-value-card welcome-value-card--violet" role="listitem">
         <div class="welcome-value-icon" aria-hidden="true">📊</div>
         <h3>Cálculo según cultivos</h3>
-        <p>Recomendaciones por cultivo, baby leaf o planta completa, y validación de cestas en cada sistema.</p>
+        <p>Recomendaciones por genética, SOG o flor completa, y validación de cestas en cada sistema.</p>
       </article>
       <article class="welcome-value-card welcome-value-card--teal" role="listitem">
         <div class="welcome-value-icon" aria-hidden="true">💧</div>
@@ -2906,46 +2906,25 @@
     <div class="setup-page active" id="spage0">
       <div class="setup-title">Configura tu instalación</div>
       <div class="setup-subtitle">
-        Elige <strong>torre vertical</strong>, <strong>NFT</strong>, <strong>DWC</strong>, <strong>RDWC</strong> o <strong>SRF</strong> (balsa flotante). Cada sistema guarda geometría, nutrientes y <strong>checklist de recarga</strong> con <strong>cálculos automáticos</strong>: litros de mezcla, bomba o aireador, Ø de cesta y compatibilidad con el cultivo que selecciones. Puedes tener <strong>varias instalaciones mezclando tipos</strong>; cada una guarda <strong>su municipio y clima</strong>. Cambia de activa en Inicio o en Cultivo e instalación.
+        HidroGrow trabaja solo con los dos sistemas más usados en <strong>cannabis</strong>: <strong>DWC</strong> (Deep Water Culture, cubos con piedra de aire) y <strong>RDWC</strong> (recirculación entre depósito de control y macetas). Calculamos <strong>litros de mezcla</strong>, <strong>oxígeno disuelto</strong> (L/min por cubo), <strong>Ø net pot</strong>, <strong>EC/pH</strong> por genética y fase, y <strong>checklist de recarga</strong>. Varias instalaciones (solo DWC o RDWC); cada una con su clima.
       </div>
 
       <div id="setupTipoInstalacionPanel" class="setup-tipo-panel">
         <div class="setup-tipo-label">Tipo de sistema</div>
-        <div class="setup-tipo-grid">
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoTorre"
-            onclick="seleccionarTipoInstalacionSetup('torre')"
-            aria-pressed="false" aria-label="Torre vertical: niveles y cestas">
-            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-torre"/></svg></div>
-            <div class="setup-tipo-name">Torre</div>
-            <div class="setup-tipo-hint">Niveles y cestas</div>
-          </button>
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoNft"
-            onclick="seleccionarTipoInstalacionSetup('nft')"
-            aria-pressed="false" aria-label="NFT: película nutricional y canales">
-            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-nft"/></svg></div>
-            <div class="setup-tipo-name">NFT</div>
-            <div class="setup-tipo-hint">Canales y depósito</div>
-          </button>
+        <div class="setup-tipo-grid setup-tipo-grid--dual">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
-            aria-pressed="false" aria-label="DWC: depósito con macetas en tapa y oxigenación">
+            aria-pressed="false" aria-label="DWC: cubos con solución y aireador">
             <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-dwc"/></svg></div>
             <div class="setup-tipo-name">DWC</div>
-            <div class="setup-tipo-hint">Agua profunda + aire</div>
+            <div class="setup-tipo-hint">1–8 cubos · piedra de aire 24 h</div>
           </button>
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoRdwc"
             onclick="seleccionarTipoInstalacionSetup('rdwc')"
-            aria-pressed="false" aria-label="RDWC: módulos conectados con recirculación y retorno">
+            aria-pressed="false" aria-label="RDWC: depósito de control y cubos en serie">
             <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></div>
             <div class="setup-tipo-name">RDWC</div>
-            <div class="setup-tipo-hint">Recirculación continua</div>
-          </button>
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoSrf"
-            onclick="seleccionarTipoInstalacionSetup('srf')"
-            aria-pressed="false" aria-label="SRF: balsa flotante sobre estanque">
-            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-srf"/></svg></div>
-            <div class="setup-tipo-name">SRF</div>
-            <div class="setup-tipo-hint">Balsa flotante</div>
+            <div class="setup-tipo-hint">Recirculación · escala sala</div>
           </button>
         </div>
       </div>
@@ -2969,34 +2948,25 @@
         <div class="setup-tipo-inline-label">
           Tipo de sistema
         </div>
-        <div class="setup-tipo-inline-grid">
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoTorre"
-            onclick="seleccionarTipoInstalacionSetup('torre')"
-            aria-pressed="false" aria-label="Torre vertical"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-torre"/></svg></span> Torre</button>
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoNft"
-            onclick="seleccionarTipoInstalacionSetup('nft')"
-            aria-pressed="false" aria-label="NFT"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-nft"/></svg></span> NFT</button>
+        <div class="setup-tipo-inline-grid setup-tipo-inline-grid--dual">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
             aria-pressed="false" aria-label="DWC"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-dwc"/></svg></span> DWC</button>
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoRdwc"
             onclick="seleccionarTipoInstalacionSetup('rdwc')"
             aria-pressed="false" aria-label="RDWC"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></span> RDWC</button>
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoSrf"
-            onclick="seleccionarTipoInstalacionSetup('srf')"
-            aria-pressed="false" aria-label="SRF"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-srf"/></svg></span> SRF</button>
         </div>
       </div>
 
       <div id="setupNombreInstalacionWrap" class="setup-hidden setup-nombre-wrap">
         <label class="form-label setup-nombre-label" for="setupNombreInstalacionInput">Nombre de esta instalación</label>
         <input type="text" id="setupNombreInstalacionInput" class="form-input" maxlength="40"
-          autocomplete="off" placeholder="Ej. Torre terraza, NFT sur, Cultivo invierno…"
+          autocomplete="off" placeholder="Ej. DWC sala, RDWC floración…"
           aria-label="Nombre para la nueva instalación"
           class="setup-nombre-input"
           oninput="setupNombreNuevaTorre=(this.value||'').trim().slice(0,40)">
         <p class="setup-nombre-hint">
-          Así verás tu sistema en Inicio y al cambiar de instalación (no hace falta «Torre 1» o «NFT 1»).
+          Así verás tu sistema en Inicio y al cambiar de instalación (ej. «DWC 1», «RDWC flor»).
         </p>
       </div>
 
@@ -3172,7 +3142,7 @@
         </div>
         <div id="setupDwcDepUnidoExtrasWrap" class="setup-dwc-dep-unido-only">
         <div><label class="form-label setup-dwc-label" for="setupDwcModoCultivo">Modo DWC</label><select id="setupDwcModoCultivo" class="setup-dwc-input" onchange="try{onDwcModoChanged(DWC_FORM_IDS_SETUP);actualizarResumenSetup()}catch(e){}"><option value="aireado">DWC aireado</option><option value="kratky">Kratky</option></select></div>
-        <div><label class="form-label setup-dwc-label" for="setupDwcObjetivoCultivo">Objetivo de cultivo</label><select id="setupDwcObjetivoCultivo" class="setup-dwc-input" onchange="try{onSetupDwcMedidasInput()}catch(e){}"><option value="final">Planta adulta</option><option value="baby">Baby leaf</option></select></div>
+        <div><label class="form-label setup-dwc-label" for="setupDwcObjetivoCultivo">Objetivo de cultivo</label><select id="setupDwcObjetivoCultivo" class="setup-dwc-input" onchange="try{onSetupDwcMedidasInput()}catch(e){}"><option value="final">Floración / tamaño completo</option><option value="baby">SOG / esquejes</option></select></div>
         <p id="setupDwcCultivoRecoStatus" class="setup-hidden" role="status"></p>
         <div id="setupDwcDepUnidoRejillaWrap">
         <div><label class="form-label setup-dwc-label" for="setupDwcRejillaPreferida">Rejilla</label><select id="setupDwcRejillaPreferida" class="setup-dwc-input"><option value="objetivo">Por objetivo</option><option value="max">Máxima</option></select></div>
@@ -3216,7 +3186,7 @@
         <div class="setup-dwc-grid-2">
           <div><label class="form-label setup-dwc-label" for="setupSrfNetPotMm">Diámetro cesta (mm)</label><input type="number" id="setupSrfNetPotMm" class="setup-dwc-input" min="25" max="120" step="1" placeholder="50" oninput="try{onSetupSrfInput()}catch(e){}"></div>
           <div><label class="form-label setup-dwc-label" for="setupSrfNetPotHeightMm">Profundidad cesta (mm)</label><input type="number" id="setupSrfNetPotHeightMm" class="setup-dwc-input" min="30" max="200" step="1" placeholder="75" oninput="try{onSetupSrfInput()}catch(e){}"></div>
-          <div><label class="form-label setup-dwc-label" for="setupSrfObjetivoCultivo">Objetivo de cultivo</label><select id="setupSrfObjetivoCultivo" class="setup-dwc-input" onchange="try{onSetupSrfInput()}catch(e){}"><option value="final">Planta adulta</option><option value="baby">Baby leaf</option></select></div>
+          <div><label class="form-label setup-dwc-label" for="setupSrfObjetivoCultivo">Objetivo de cultivo</label><select id="setupSrfObjetivoCultivo" class="setup-dwc-input" onchange="try{onSetupSrfInput()}catch(e){}"><option value="final">Floración / tamaño completo</option><option value="baby">SOG / esquejes</option></select></div>
           <div><label class="form-label setup-dwc-label" for="setupSrfOxigenacionModo">Oxigenación</label><select id="setupSrfOxigenacionModo" class="setup-dwc-input" onchange="try{srfRefreshOxigenacionUi('setup');onSetupSrfInput()}catch(e){}"><option value="aireador">Bomba de aire</option><option value="kratky">Kratky (sin aireador)</option></select></div>
           <div id="setupSrfKratkyGapWrap" class="setup-hidden"><label class="form-label setup-dwc-label" for="setupSrfKratkyGapCm">Cámara de aire bajo balsa (cm)</label><input type="number" id="setupSrfKratkyGapCm" class="setup-dwc-input" min="2" max="40" step="0.5" placeholder="8" oninput="try{onSetupSrfInput()}catch(e){}"></div>
         </div>
@@ -3666,7 +3636,7 @@
         <button type="button" class="equip-card equip-card-pad-10-6-center" id="cesta40" onclick="seleccionarCesta('40')">
           <div class="setup-cesta-icon"><svg class="hc-ico" style="color:#16a34a" aria-hidden="true" focusable="false"><use href="#hc-i-leaf"/></svg></div>
           <div class="setup-cesta-title">4.0 cm</div>
-          <div class="setup-cesta-desc">Muy habitual en torres verticales<br>Lechugas y hojas</div>
+          <div class="setup-cesta-desc">Muy habitual en torres verticales<br>Índicas y autos compactas</div>
         </button>
         <button type="button" class="equip-card selected equip-card-pad-10-6-center" id="cesta50" onclick="seleccionarCesta('50')">
           <div class="setup-cesta-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-dot-green"/></svg></div>
@@ -3676,7 +3646,7 @@
         <button type="button" class="equip-card equip-card-pad-10-6-center" id="cesta75" onclick="seleccionarCesta('75')">
           <div class="setup-cesta-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-dot-blue"/></svg></div>
           <div class="setup-cesta-title">7.5 cm</div>
-          <div class="setup-cesta-desc">Grande · Tomates<br>Frutos y hierbas</div>
+          <div class="setup-cesta-desc">Grande · Sativas<br>Floración con altura</div>
         </button>
         <button type="button" class="equip-card equip-card-pad-10-6-center" id="cesta100" onclick="seleccionarCesta('100')">
           <div class="setup-cesta-icon"><svg class="hc-ico" style="width:26px;height:26px;color:#0f172a" aria-hidden="true" focusable="false"><use href="#hc-i-circle-o"/></svg></div>
@@ -3907,7 +3877,7 @@
         <div class="setup-block-title"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg> ¿Qué luz recibe esta instalación?</div>
         <div class="setup-box-warn">
           Indica si la luz es <strong>natural</strong> (ventana, lucernario) o <strong>artificial</strong> (LED, T5, HPS…), o <strong>mixta</strong>.
-          Con <strong>solo artificial</strong>, para lechugas conviene alrededor de <strong>16&nbsp;h/día</strong> de fotoperíodo efectivo; con poca luz las plantas se etiolarán.
+          Con <strong>solo artificial</strong>, en <strong>vegetativo</strong> usa <strong>18/6</strong> (18&nbsp;h luz / 6&nbsp;h oscuridad); en <strong>floración foto</strong> cambia a <strong>12/12</strong>. Con poca intensidad las plantas se estiran y debilitan.
         </div>
         <div class="setup-grid-2 setup-grid-gap-8">
           <button type="button" class="equip-card equip-card-pad-12" id="luzNatural" onclick="seleccionarLuz('natural')">
@@ -3988,7 +3958,7 @@
 
     <div class="setup-page" id="spage6">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-sprout"/></svg> ¿Qué vas a cultivar?</div>
-      <div class="setup-subtitle"><strong>Arriba, grupos de cultivo</strong> (lechugas, hierbas…): sirven para orientar EC y el resumen del asistente; puedes marcar varios. <strong>Abajo, opcional:</strong> variedad <em>concreta</em> por fila y cesta (o hueco NFT): es lo que queda en tu esquema; si rellenas variedad, al guardar ponemos la <strong>fecha de trasplante al hidro en hoy</strong> salvo que ya la hubieras puesto. Si lo dejas vacío, lo harás cesta a cesta en Cultivo e instalación.</div>
+      <div class="setup-subtitle"><strong>Arriba, grupos de genética</strong> (índica, sativa, híbrida, auto, CBD): orientan EC, pH y el resumen del asistente; puedes marcar varios. <strong>Abajo, opcional:</strong> variedad <em>concreta</em> por fila y cesta (o hueco NFT): es lo que queda en tu esquema; si rellenas variedad, al guardar ponemos la <strong>fecha de entrada al hidro en hoy</strong> salvo que ya la hubieras puesto. Si lo dejas vacío, lo harás cesta a cesta en Cultivo e instalación.</div>
 
       <div id="setupPlantasGrid" class="setup-plantas-grid">
         <!-- Generado por JS -->
@@ -4649,7 +4619,7 @@
           </thead>
           <tbody>
             <tr class="dwc-cestas-guia-section">
-              <td colspan="6"><strong>Cestas de 5 cm (50 mm)</strong> · lechuga de tamaño final / estándar</td>
+              <td colspan="6"><strong>Cestas de 5 cm (50 mm)</strong> · SOG / esquejes / plántula enraizada</td>
             </tr>
             <tr>
               <td class="dwc-cestas-guia-diam">20×15 cm</td>
@@ -4684,7 +4654,7 @@
               <td>Excelente</td>
             </tr>
             <tr class="dwc-cestas-guia-section">
-              <td colspan="6"><strong>Cestas de 2,7 cm (27 mm)</strong> · alta densidad / baby leaf / plantín</td>
+              <td colspan="6"><strong>Cestas de 2,7 cm (27 mm)</strong> · solo clones muy pequeños (poco habitual en cannabis)</td>
             </tr>
             <tr>
               <td class="dwc-cestas-guia-diam">20×15 cm</td>
@@ -4730,7 +4700,7 @@
         </table>
       </div>
       <p class="dwc-cestas-guia-foot">
-        <strong>Lectura rápida:</strong> para lechuga de tamaño final, diseña con <strong>3–5 L/planta</strong> y separación <strong>15–25 cm centro a centro</strong>. Para baby leaf, puedes trabajar en <strong>1–2 L/planta</strong> y <strong>8–12 cm centro a centro</strong>. Estas cifras son orientativas y deben validarse con variedad, luz, temperatura y aireación real del depósito.
+        <strong>Lectura rápida:</strong> en <strong>floración estándar</strong> (índica/híbrida), planifica <strong>15–25 L/planta</strong> en RDWC/DWC y <strong>30–45 cm</strong> entre copas. En <strong>SOG</strong>, <strong>5–10 L</strong> y <strong>15–20 cm</strong>. Sativas altas necesitan más volumen y altura de lámpara. Valida con genética, PPFD y renovación de aire del depósito.
       </p>
     </div>
   </template>

@@ -258,7 +258,7 @@ function dwcGetObjetivoSpec(objetivo) {
   if (k === 'baby') {
     return {
       key: 'baby',
-      label: 'Alta densidad / baby leaf (cosecha joven)',
+      label: 'SOG / esquejes (alta densidad)',
       litrosTxt: '1–2 L/planta',
       ccTxt: '8–12 cm',
       ccMinMm: 80,
@@ -754,7 +754,7 @@ function dwcGrupoObjetivoDesdeConfig(cfg) {
   if (typeof hcGrupoCultivoDominanteDesdeConfig === 'function') {
     return hcGrupoCultivoDominanteDesdeConfig(cfg);
   }
-  return 'lechugas';
+  return 'hibrida';
 }
 
 function dwcRimMmDesdeConfig(cfg) {
@@ -771,82 +771,48 @@ function dwcRimMmDesdeConfig(cfg) {
 }
 
 function dwcRecoPerfilPorGrupo(grupo, objetivo) {
-  const g = String(grupo || '').trim().toLowerCase();
+  const g = String(grupo || 'hibrida').trim().toLowerCase();
   const obj = dwcNormalizeObjetivoCultivo(objetivo);
   const esBaby = obj === 'baby';
-  if (g === 'microgreens') {
-    return {
-      grupo: 'microgreens',
-      etiqueta: 'Microgreens',
-      objetivo: esBaby ? 'alta densidad' : 'ciclo corto',
-      cestaMinMm: 27,
-      cestaMaxMm: 50,
-      cestaTxt: '27–50 mm',
-      permite: true,
-    };
-  }
-  if (g === 'asiaticas') {
-    if (esBaby) {
-      return {
-        grupo: 'asiaticas',
-        etiqueta: 'Asiáticas (baby)',
-        objetivo: 'alta densidad',
-        cestaMinMm: 27,
-        cestaMaxMm: 50,
-        cestaTxt: '27–50 mm',
-        permite: true,
-      };
-    }
-    return {
-      grupo: 'asiaticas',
-      etiqueta: 'Asiáticas (planta final)',
-      objetivo: 'producción final',
-      cestaMinMm: 50,
-      cestaMaxMm: 75,
-      cestaTxt: '50–75 mm',
-      permite: true,
-    };
-  }
-  if (g === 'hojas' || g === 'hierbas') {
-    return {
-      grupo: g || 'hojas',
-      etiqueta: g === 'hierbas' ? 'Hierbas' : 'Hojas voluminosas',
-      objetivo: esBaby ? 'alta densidad' : 'producción final',
-      cestaMinMm: esBaby ? 27 : 50,
-      cestaMaxMm: esBaby ? 50 : 75,
-      cestaTxt: esBaby ? '27–50 mm' : '50–75 mm',
-      permite: true,
-    };
-  }
-  if (g === 'frutos' || g === 'fresas' || g === 'raices') {
-    return {
-      grupo: g || 'frutos',
-      etiqueta: g === 'fresas' ? 'Fresas' : g === 'raices' ? 'Raíces' : 'Frutos',
-      objetivo: 'sistema dedicado',
-      cestaMinMm: 75,
-      cestaMaxMm: 100,
-      cestaTxt: '75–100 mm',
-      permite: true,
-    };
-  }
+  const compact = g === 'indica' || g === 'auto' || g === 'cbd';
+  const tall = g === 'sativa';
+  const labels = {
+    indica: 'Índica',
+    sativa: 'Sativa',
+    hibrida: 'Híbrida',
+    auto: 'Autofloreciente',
+    cbd: 'CBD / perfil suave',
+  };
+  const etiqueta = labels[g] || labels.hibrida;
   if (esBaby) {
     return {
-      grupo: 'lechugas',
-      etiqueta: 'Lechugas / hojas ligeras (baby)',
-      objetivo: 'alta densidad',
-      cestaMinMm: 27,
-      cestaMaxMm: 50,
-      cestaTxt: '27–50 mm',
+      grupo: g,
+      etiqueta,
+      objetivo: 'SOG / esquejes',
+      cestaMinMm: 50,
+      cestaMaxMm: 63,
+      cestaTxt: '50–63 mm',
+      permite: true,
+    };
+  }
+  if (tall) {
+    return {
+      grupo: g,
+      etiqueta,
+      objetivo: 'floración (altura)',
+      cestaMinMm: 100,
+      cestaMaxMm: 100,
+      cestaTxt: '100 mm (4")',
       permite: true,
     };
   }
   return {
-    grupo: 'lechugas',
-    etiqueta: 'Lechugas / hojas ligeras (final)',
-    objetivo: 'producción final',
-    cestaMinMm: 50,
-    cestaMaxMm: 50,
-    cestaTxt: '50 mm',
+    grupo: g,
+    etiqueta,
+    objetivo: 'floración estándar',
+    cestaMinMm: compact ? 75 : 75,
+    cestaMaxMm: compact ? 75 : 100,
+    cestaTxt: compact ? '75 mm (3")' : '75–100 mm',
     permite: true,
   };
 }
@@ -2833,7 +2799,7 @@ function dwcGrupoEnTablaDistancia(grupo) {
   const g = String(grupo || '')
     .trim()
     .toLowerCase();
-  return g === 'lechugas' || g === 'asiaticas' || g === 'hojas' || g === 'hierbas';
+  return g === 'indica' || g === 'sativa' || g === 'hibrida' || g === 'auto' || g === 'cbd';
 }
 
 /** Perfil «coco fino» frente a esponja / lana / espuma (tabla interna; no se muestra al usuario). */
@@ -3041,7 +3007,7 @@ function dwcHtmlDistanciaLlenadoTiempoReal(cfg) {
     return (
       '<div class="torre-dwc-llenado-live" role="region" aria-label="Llenado DWC">' +
       '<p class="torre-dwc-llenado-kicker">Llenado · distancia nutriente → sustrato (cm)</p>' +
-      '<p class="torre-nft-p-soft">La recomendación automática aplica a <strong>cultivos de hoja</strong> (lechuga, asiáticas, hojas, hierbas) con fecha en la ficha. Tus plantas en rejilla son de <strong>otros grupos</strong> (p. ej. frutos): aquí no se calcula ese llenado.</p>' +
+      '<p class="torre-nft-p-soft">La recomendación automática aplica a <strong>genéticas del catálogo cannabis</strong> con fecha en la ficha. Si el grupo dominante no encaja con la matriz de cestas, revisa compatibilidad en Consejos.</p>' +
       '<p class="torre-nft-p-soft">Sustrato de referencia en Cultivo e instalación: <strong>' +
       (typeof meteoEscHtml === 'function' ? meteoEscHtml(suNombre) : suNombre) +
       '</strong>.</p>' +

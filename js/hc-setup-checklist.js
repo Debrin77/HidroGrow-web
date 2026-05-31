@@ -873,11 +873,11 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
       ? String(Math.round(vmIniRaw * 10) / 10)
       : '';
   const tipoIni =
-    cfg.tipoInstalacion === 'nft' ? 'nft'
-    : cfg.tipoInstalacion === 'dwc' ? 'dwc'
-    : cfg.tipoInstalacion === 'rdwc' ? 'rdwc'
-    : cfg.tipoInstalacion === 'srf' ? 'srf'
-    : 'torre';
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(cfg)
+      : cfg.tipoInstalacion === 'rdwc'
+        ? 'rdwc'
+        : 'dwc';
   let cldVolMezclaPlaceholder = 'Vacío = hasta el máximo';
   let cldVolMezclaHint =
     'Si no llenas hasta el tope (p. ej. 19 L en un depósito de 20 L), indícalo aquí: las dosis del checklist usarán esos litros. En RDWC suele aplicarse al volumen útil del depósito de control.';
@@ -888,18 +888,6 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
     }
     cldVolMezclaHint =
       'En DWC, <strong>vacío</strong>: las dosis usan el volumen <strong>orientativo</strong> (cámara de aire y cesta), igual que Cultivo e instalación. Solo indica litros si <strong>rellenas menos</strong> que ese orientativo.';
-  }
-  if (tipoIni === 'srf' && typeof getVolumenDepositoMaxLitros === 'function') {
-    const moS = getVolumenDepositoMaxLitros(cfg);
-    if (moS != null && Number.isFinite(moS) && moS > 0) {
-      cldVolMezclaPlaceholder = 'Vacío → orientativo ~' + (Math.round(moS * 10) / 10) + ' L (aire + cesta)';
-    }
-    cldVolMezclaHint =
-      'En SRF, <strong>vacío</strong>: las dosis usan el llenado seguro del estanque común (cámara de aire hasta la base de la cesta). Solo indica litros si rellenas <strong>menos</strong> que ese orientativo.';
-  }
-  if (tipoIni === 'nft') {
-    cldVolMezclaHint =
-      'En NFT no hace falta: las dosis usan la <strong>capacidad máxima del depósito</strong> (arriba). El margen orientativo se muestra al configurar tubos y Ø de riego.';
   }
   const aguaIni = cfg.agua || state.configAgua || 'destilada';
   const nutObjIni = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
@@ -952,22 +940,13 @@ function mostrarOverlayChecklistDatosInstalacion(esPrimeraVezChecklist) {
         'Si no es la correcta, pulsa <strong>Más tarde</strong>, cambia de instalación y vuelve. Lo demás lo afinas después en Cultivo e instalación o en el asistente.</p>' +
 
       '<div class="checklist-dark-kicker">Tipo de sistema</div>' +
-      '<div class="checklist-dark-type-grid">' +
-        '<label class="checklist-dark-type-opt">' +
-          '<input type="radio" name="cldTipoInst" value="torre"' + (tipoIni === 'torre' ? ' checked' : '') + '>' +
-          '<span class="checklist-dark-type-opt-text">Torre vertical</span></label>' +
-        '<label class="checklist-dark-type-opt">' +
-          '<input type="radio" name="cldTipoInst" value="nft"' + (tipoIni === 'nft' ? ' checked' : '') + '>' +
-          '<span class="checklist-dark-type-opt-text">NFT</span></label>' +
+      '<div class="checklist-dark-type-grid checklist-dark-type-grid--dual">' +
         '<label class="checklist-dark-type-opt">' +
           '<input type="radio" name="cldTipoInst" value="dwc"' + (tipoIni === 'dwc' ? ' checked' : '') + '>' +
           '<span class="checklist-dark-type-opt-text">DWC</span></label>' +
         '<label class="checklist-dark-type-opt">' +
           '<input type="radio" name="cldTipoInst" value="rdwc"' + (tipoIni === 'rdwc' ? ' checked' : '') + '>' +
           '<span class="checklist-dark-type-opt-text">RDWC</span></label>' +
-        '<label class="checklist-dark-type-opt">' +
-          '<input type="radio" name="cldTipoInst" value="srf"' + (tipoIni === 'srf' ? ' checked' : '') + '>' +
-          '<span class="checklist-dark-type-opt-text">SRF</span></label>' +
       '</div>' +
       '<div id="cldDwcModoWrap" style="' + (tipoIni === 'dwc' ? '' : 'display:none;') + '">' +
         '<label class="checklist-dark-field-label">Modo DWC</label>' +
@@ -1739,7 +1718,7 @@ function getCLPasos() {
       seccion: '🧭 Torre vertical — objetivo de cultivo',
       paso: 'T·obj',
       desc:
-        'Elige si la torre va orientada a <strong>baby leaf</strong> (cosecha joven, alta densidad) o a <strong>planta completa</strong>. ' +
+        'Elige si la torre va orientada a <strong>SOG / esquejes</strong> (alta densidad, EC más baja) o a <strong>floración tamaño completo</strong>. ' +
         'Influye en textos orientativos de densidad, ciclo y demanda de riego.',
       nota: (function () {
         const sp = typeof torreGetObjetivoSpec === 'function' && typeof torreGetObjetivoCultivo === 'function'
@@ -1763,8 +1742,8 @@ function getCLPasos() {
           type: 'select',
           label: 'Objetivo de la torre',
           opcionesVal: [
-            { value: 'final', label: 'Planta adulta (tamaño completo)', selected: curTorreObj !== 'baby' },
-            { value: 'baby', label: 'Alta densidad / baby leaf (cosecha joven)', selected: curTorreObj === 'baby' },
+            { value: 'final', label: 'Floración / tamaño completo', selected: curTorreObj !== 'baby' },
+            { value: 'baby', label: 'SOG / esquejes (alta densidad)', selected: curTorreObj === 'baby' },
           ],
           _clOnchange: 'persistTorreObjetivoDesdeChecklist()',
         },

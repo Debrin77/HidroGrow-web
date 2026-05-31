@@ -152,7 +152,7 @@ function nftTuberiaReferenciaDocHtml(opts) {
     '<p class="nft-ref-p">Tubería o perfil donde van las cestas y las raíces. Si no usas <strong>canaleta rectangular</strong>, lo habitual es <strong>tubo redondo en PVC</strong>: en muchos montajes caseros se emplea <strong>PVC de saneamiento o evacuación</strong> por precio y disponibilidad; es <strong>preferible PVC de uso alimentario</strong> (menor riesgo de lixiviación). El tubo <strong>blanco</strong> limita algo el calentamiento solar del agua.</p>' +
     '<ul class="nft-ref-ul">' +
     '<li class="nft-ref-li"><strong>Ø75 mm</strong>: cultivos pequeños o sistemas compactos.</li>' +
-    '<li class="nft-ref-li"><strong>Ø90 mm</strong>: el más usado para lechuga y hojas.</li>' +
+    '<li class="nft-ref-li"><strong>Ø90–110 mm</strong>: habitual para índicas/híbridas en flor.</li>' +
     '<li class="nft-ref-li"><strong>Ø110 mm</strong>: plantas más grandes o cuando interesa más caudal por canal.</li>' +
     '<li class="nft-ref-li"><strong>Perfil rectangular / canaleta</strong>: suele dar una <strong>película</strong> de agua muy uniforme bajo las raíces; equivale a elegir ancho útil del fondo en la app.</li>' +
     '</ul>' +
@@ -398,87 +398,36 @@ function syncNftSetupVolDepositoSlider(bNft) {
 }
 
 function nftRecoPerfilPorGrupo(grupo) {
-  const g = String(grupo || '').trim().toLowerCase();
-  if (g === 'lechugas') {
+  const g = String(grupo || 'hibrida').trim().toLowerCase();
+  const labels = {
+    indica: 'Índica',
+    sativa: 'Sativa',
+    hibrida: 'Híbrida',
+    auto: 'Autofloreciente',
+    cbd: 'CBD / perfil suave',
+  };
+  const compact = g === 'indica' || g === 'auto' || g === 'cbd';
+  const tall = g === 'sativa';
+  if (tall) {
     return {
-      grupo: 'lechugas',
-      etiqueta: 'Lechugas',
-      canalMinMm: 90,
-      canalMaxMm: 110,
-      cestaTxt: '50 mm',
-      sepTxt: '15–20 cm c-c',
-      uso: 'Producción estándar',
-      permite: true,
-    };
-  }
-  if (g === 'asiaticas') {
-    return {
-      grupo: 'asiaticas',
-      etiqueta: 'Asiáticas / hojas rápidas',
-      canalMinMm: 75,
-      canalMaxMm: 100,
-      cestaTxt: '50 mm',
-      sepTxt: '12–20 cm c-c',
-      uso: 'Baby leaf o ciclo corto',
-      permite: true,
-    };
-  }
-  if (g === 'hierbas') {
-    return {
-      grupo: 'hierbas',
-      etiqueta: 'Hierbas',
-      canalMinMm: 75,
-      canalMaxMm: 100,
-      cestaTxt: '50–75 mm',
-      sepTxt: '15–25 cm c-c',
-      uso: 'Aromáticas medianas',
-      permite: true,
-    };
-  }
-  if (g === 'hojas') {
-    return {
-      grupo: 'hojas',
-      etiqueta: 'Hojas voluminosas',
-      canalMinMm: 100,
-      canalMaxMm: 125,
-      cestaTxt: '50–75 mm',
-      sepTxt: '20–30 cm c-c',
-      uso: 'Acelga, kale, espinaca grande',
-      permite: true,
-    };
-  }
-  if (g === 'microgreens') {
-    return {
-      grupo: 'microgreens',
-      etiqueta: 'Microgreens',
-      canalMinMm: 63,
-      canalMaxMm: 75,
-      cestaTxt: '27–50 mm',
-      sepTxt: '6–10 cm c-c',
-      uso: 'Alta densidad y ciclo muy corto',
-      permite: true,
-    };
-  }
-  if (g === 'frutos' || g === 'fresas' || g === 'raices') {
-    return {
-      grupo: g || 'frutos',
-      etiqueta: g === 'fresas' ? 'Fresas' : g === 'raices' ? 'Raíces' : 'Frutos',
+      grupo: g,
+      etiqueta: labels[g],
       canalMinMm: 125,
-      canalMaxMm: 160,
+      canalMaxMm: 140,
       cestaTxt: '75–100 mm',
-      sepTxt: '25–40 cm c-c',
-      uso: 'NFT avanzado y poca densidad',
-      permite: false,
+      sepTxt: '25–35 cm c-c',
+      uso: 'Sativa en flor — poca densidad',
+      permite: true,
     };
   }
   return {
-    grupo: 'lechugas',
-    etiqueta: 'Lechugas',
-    canalMinMm: 90,
-    canalMaxMm: 110,
-    cestaTxt: '50 mm',
-    sepTxt: '15–20 cm c-c',
-    uso: 'Referencia general',
+    grupo: g,
+    etiqueta: labels[g] || labels.hibrida,
+    canalMinMm: compact ? 100 : 110,
+    canalMaxMm: compact ? 110 : 125,
+    cestaTxt: compact ? '63 mm' : '63–75 mm',
+    sepTxt: compact ? '18–22 cm c-c' : '20–25 cm c-c',
+    uso: compact ? 'Flor compacta' : 'Flor estándar',
     permite: true,
   };
 }
@@ -555,7 +504,7 @@ function nftGrupoObjetivoDesdeConfig(cfg) {
   if (typeof hcGrupoCultivoDominanteDesdeConfig === 'function') {
     return hcGrupoCultivoDominanteDesdeConfig(cfg);
   }
-  return 'lechugas';
+  return 'hibrida';
 }
 
 function nftCestaDesdeConfig(cfg) {
@@ -836,7 +785,7 @@ function nftTextoResumenInstalacion(cfg) {
   const objSpec =
     typeof nftGetObjetivoSpec === 'function'
       ? nftGetObjetivoSpec(objNft)
-      : { label: objNft === 'baby' ? 'Alta densidad / baby leaf (cosecha joven)' : 'Planta adulta (tamaño completo)' };
+      : { label: objNft === 'baby' ? 'SOG / esquejes (alta densidad)' : 'Floración / tamaño completo' };
   let extraDisp = '';
   if (disp === 'mesa' && cfg.nftMesaMultinivel && hyd.mesaTiers && hyd.mesaTiers.length >= 2) {
     extraDisp = ' multinivel';
@@ -940,7 +889,7 @@ function renderTorreSistemaResumenTabla(cfg) {
     const objSpec =
       typeof nftGetObjetivoSpec === 'function'
         ? nftGetObjetivoSpec(objNft)
-        : { label: objNft === 'baby' ? 'Alta densidad / baby leaf (cosecha joven)' : 'Planta adulta (tamaño completo)', densidadTxt: '—', cicloTxt: '—' };
+        : { label: objNft === 'baby' ? 'SOG / esquejes (alta densidad)' : 'Floración / tamaño completo', densidadTxt: '—', cicloTxt: '—' };
     rows.push(['Objetivo cultivo', escHtmlUi(objSpec.label + ' · ' + objSpec.densidadTxt + ' · ' + objSpec.cicloTxt)]);
     const nftRim =
       cfg.nftNetPotRimMm != null && Number(cfg.nftNetPotRimMm) > 0

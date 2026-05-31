@@ -18,21 +18,16 @@ function hcClonePlainData(value, fallback = null) {
 }
 
 function hcEtiquetaTipoInstalacion(tipo) {
-  if (tipo === 'nft') return 'NFT';
-  if (tipo === 'dwc') return 'DWC';
   if (tipo === 'rdwc') return 'RDWC';
-  if (tipo === 'srf') return 'SRF';
-  return 'torre vertical';
+  return 'DWC';
 }
 
 function hcNormalizarConfigSegunTipo(cfg) {
   const c = hcClonePlainData(cfg, {}) || {};
   const tipo = tipoInstalacionNormalizado(c);
   const prefixes = [
-    { tipo: 'nft', prefijo: 'nft' },
     { tipo: 'dwc', prefijo: 'dwc' },
     { tipo: 'rdwc', prefijo: 'rdwc' },
-    { tipo: 'srf', prefijo: 'srf' },
   ];
   const removedKeys = [];
   prefixes.forEach(rule => {
@@ -118,12 +113,7 @@ function hcCapturarSnapshotSeguridadTorre(idx, reason) {
 }
 
 function hcCrearNombreInstalacionPorTipo(tipo, ordinal) {
-  const base =
-    tipo === 'nft' ? 'NFT'
-    : tipo === 'dwc' ? 'DWC'
-    : tipo === 'rdwc' ? 'RDWC'
-    : tipo === 'srf' ? 'SRF'
-    : 'Torre';
+  const base = tipo === 'rdwc' ? 'RDWC' : 'DWC';
   return base + ' ' + ordinal;
 }
 
@@ -461,6 +451,9 @@ function guardarEstadoTorreActual() {
   const idx = state.torreActiva || 0;
   if (!state.torres[idx]) return;
   const slot = state.torres[idx];
+  if (state.configTorre && typeof hidrogrowMigrarConfigInstalacion === 'function') {
+    hidrogrowMigrarConfigInstalacion(state.configTorre);
+  }
   const integrity = hcEvaluarIntegridadGuardadoInstalacion(slot, state.configTorre || null);
   if (!integrity.ok) {
     state.torre = hcClonePlainData(slot.torre, []);
@@ -784,13 +777,9 @@ function toggleSistemaOperativa() {
 function textoTipoInstalacionTorre(cfg) {
   return typeof etiquetaSistemaHidroponicoBreve === 'function'
     ? etiquetaSistemaHidroponicoBreve(cfg)
-    : (cfg && cfg.tipoInstalacion === 'nft'
-      ? 'NFT'
-      : cfg && cfg.tipoInstalacion === 'dwc'
-        ? 'DWC'
-        : cfg && cfg.tipoInstalacion === 'rdwc'
-          ? 'RDWC'
-        : 'Torre vertical');
+    : cfg && cfg.tipoInstalacion === 'rdwc'
+      ? 'RDWC'
+      : 'DWC';
 }
 
 /** Actualiza el botón de dos líneas (nombre + tipo) de la instalación activa en la pestaña Torre. */
@@ -841,26 +830,12 @@ function renderListaTorres() {
     const plantasCount = (t.torre || []).reduce((sum, nivel) =>
       sum + (nivel || []).filter(c => c && c.variedad).length, 0);
     const cfgT = t.config || {};
-    const geomTxt = cfgT.tipoInstalacion === 'nft'
-      ? ((cfgT.nftNumCanales || cfgT.numNiveles || 4) + ' canales × ' + (cfgT.nftHuecosPorCanal || cfgT.numCestas || 8) + ' huecos')
-      : cfgT.tipoInstalacion === 'dwc'
-        ? ((cfgT.numNiveles || 5) + ' filas × ' + (cfgT.numCestas || 5) + ' cestas')
-        : cfgT.tipoInstalacion === 'rdwc'
-          ? ((cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' sitios')
-          : cfgT.tipoInstalacion === 'srf'
-            ? ((cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' plantas')
-            : ((cfgT.numNiveles || 5) + 'N × ' + (cfgT.numCestas || 5) + 'C');
-    const tipoNorm = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'torre';
-    const tipoTag =
-      tipoNorm === 'nft'
-        ? 'NFT'
-        : tipoNorm === 'dwc'
-          ? 'DWC'
-          : tipoNorm === 'rdwc'
-            ? 'RDWC'
-            : tipoNorm === 'srf'
-              ? 'SRF'
-              : 'Torre';
+    const tipoNorm = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'dwc';
+    const geomTxt =
+      tipoNorm === 'rdwc'
+        ? ((cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' cubos')
+        : ((cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' cubos');
+    const tipoTag = tipoNorm === 'rdwc' ? 'RDWC' : 'DWC';
     const listIco =
       typeof hcSistemaIconMarkup === 'function'
         ? hcSistemaIconMarkup(tipoNorm, 'hc-ico--torre-list')

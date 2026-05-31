@@ -33,7 +33,7 @@ function resetApp() {
 
   // Reiniciar estado
   state = initState();
-  modoActual = 'lechuga';
+  modoActual = 'vegetativo';
   clEsPrimeraVez = true;
   try {
     delete state.hcPostSetupChecklistPendiente;

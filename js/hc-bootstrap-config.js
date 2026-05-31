@@ -229,26 +229,62 @@ const COMPATIBILIDAD = {
   'D-D': { ok: true, icono: '✅', texto: 'Solo autoflorecientes juntas' },
 };
 
+/** Sistemas hidropónicos soportados (cannabis — referencia cultivadores y fabricantes). */
+const HIDROGROW_SISTEMAS = ['dwc', 'rdwc'];
+
+/** Normaliza tipo: solo DWC o RDWC; torre/NFT/SRF → DWC (migración). */
+function hidrogrowTipoInstalacionRaw(cfg) {
+  const t = cfg && cfg.tipoInstalacion;
+  if (t === 'rdwc') return 'rdwc';
+  return 'dwc';
+}
+
+/** Migra config legacy y fija tipoInstalacion canónico. */
+function hidrogrowMigrarConfigInstalacion(cfg) {
+  if (!cfg || typeof cfg !== 'object') return cfg;
+  const prev = cfg.tipoInstalacion;
+  const norm = hidrogrowTipoInstalacionRaw(cfg);
+  if (prev && prev !== norm && prev !== 'dwc' && prev !== 'rdwc') {
+    cfg.hidrogrowMigradoDesde = prev;
+  }
+  cfg.tipoInstalacion = norm;
+  return cfg;
+}
+
+/** Migra estado global (modo cultivo + todas las instalaciones). */
+function hidrogrowMigrarStateCompleto(s) {
+  if (!s || typeof s !== 'object') return s;
+  const modosLegacy = { lechuga: 'vegetativo', lechugas: 'vegetativo', mixto: 'vegetativo', mini: 'esquejes' };
+  if (modosLegacy[s.modo]) s.modo = modosLegacy[s.modo];
+  if (s.configTorre) hidrogrowMigrarConfigInstalacion(s.configTorre);
+  if (Array.isArray(s.torres)) {
+    s.torres.forEach((t) => {
+      if (t && t.config) hidrogrowMigrarConfigInstalacion(t.config);
+    });
+  }
+  return s;
+}
+
 const MODOS_CULTIVO = {
   vegetativo: {
-    niveles: [0, 2, 4],
-    nombre: 'Vegetativo (3 niveles)',
-    desc: '18/6 · EC media-alta según genética',
+    niveles: [0, 1, 2, 3, 4],
+    nombre: 'Vegetativo',
+    desc: '18/6 · EC ~1000–1600 µS/cm · piedras de aire en cada cubo',
   },
   floracion: {
-    niveles: [0, 2, 4],
-    nombre: 'Floración (3 niveles)',
-    desc: '12/12 · subir EC de forma gradual',
+    niveles: [0, 1, 2, 3, 4],
+    nombre: 'Floración',
+    desc: '12/12 (foto) · subir EC gradual · RH bajo 55% en cogollos densos',
   },
   esquejes: {
-    niveles: [0, 2],
-    nombre: 'Esquejes / plántulas (2 niveles)',
-    desc: 'Luz suave · EC baja los primeros días',
+    niveles: [0, 1],
+    nombre: 'Esquejes / plántulas',
+    desc: 'Luz suave · EC baja · oxígeno disuelto alto',
   },
   intensivo: {
-    niveles: [0, 1, 2, 3, 4],
-    nombre: 'Sala llena (5 niveles)',
-    desc: 'Máxima densidad en torre — solo genéticas compactas',
+    niveles: [0, 1, 2, 3, 4, 5, 6, 7],
+    nombre: 'SOG / muchas macetas',
+    desc: 'Alta densidad · solo índicas/autos compactas',
   },
 };
 

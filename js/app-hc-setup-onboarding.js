@@ -325,14 +325,11 @@ function renderSetupPlantasGrid() {
 
   // Grupos principales aptos para inicio
   const grupos = [
-    { key:'lechugas',  label:'Lechugas',      desc:'Fácil · 40-60 días' },
-    { key:'asiaticas', label:'Asiáticas',     desc:'Fácil · 35-40 días' },
-    { key:'hojas',     label:'Hojas verdes',  desc:'Fácil · 30-55 días' },
-    { key:'hierbas',   label:'Hierbas',       desc:'Media · 30-90 días' },
-    { key:'fresas',    label:'Fresas',        desc:'Media · 90 días' },
-    { key:'frutos',    label:'Frutos',        desc:'Avanzado · Torre dedicada' },
-    { key:'raices',    label:'Raíces',        desc:'Media · sustrato profundo' },
-    { key:'microgreens', label:'Microgreens', desc:'Rápido · 7-14 días' },
+    { key:'hibrida',  label:'Híbrida',       desc:'Equilibrada · ~77–105 días' },
+    { key:'indica',   label:'Índica',        desc:'Compacta · ~77–91 días' },
+    { key:'sativa',   label:'Sativa',        desc:'Altura · ~91–119 días' },
+    { key:'auto',     label:'Autofloreciente', desc:'18/6 · ~70–84 días' },
+    { key:'cbd',      label:'CBD',           desc:'EC suave · ~91–105 días' },
   ];
 
   grid.innerHTML = grupos.map(g => {
@@ -484,10 +481,9 @@ function actualizarResumenSetup() {
     fluorescente: 'Fluorescente T5', hps: 'HPS / HM', sin_luz: 'Sin luz adecuada'
   }[setupData.luz || 'led'] || 'LED';
   const hLuzRes = Math.max(12, Math.min(20, parseInt(String(setupData.horasLuz || 16), 10) || 16));
-  const grupos  = ['lechugas','asiaticas','hojas','hierbas','fresas','frutos','raices','microgreens'];
+  const grupos  = ['hibrida','indica','sativa','auto','cbd'];
   const plantasNombres = {
-    lechugas:'Lechugas', asiaticas:'Asiáticas', hojas:'Hojas verdes',
-    hierbas:'Hierbas', fresas:'Fresas', frutos:'Frutos', raices:'Raíces', microgreens:'Microgreens',
+    hibrida:'Híbrida', indica:'Índica', sativa:'Sativa', auto:'Autofloreciente', cbd:'CBD',
   };
   const plantasSel = [...setupPlantasSeleccionadas].map(k => plantasNombres[k]||k).join(', ') || 'Sin seleccionar';
 
@@ -555,7 +551,7 @@ function actualizarResumenSetup() {
     if (document.getElementById('setupDwcCupulas')?.checked) geoDwcRes += ' · cúpulas';
     if (document.getElementById('setupDwcEntradaAire')?.checked) geoDwcRes += ' · entrada aire';
     const objSel = document.getElementById('setupDwcObjetivoCultivo')?.value;
-    const objLbl = dwcNormalizeObjetivoCultivo(objSel) === 'baby' ? 'baby leaf' : 'lechuga final';
+    const objLbl = dwcNormalizeObjetivoCultivo(objSel) === 'baby' ? 'SOG / esquejes' : 'flor completa';
     geoDwcRes += ' · objetivo ' + objLbl;
     if (!dwcMcSetup) {
       const rejSel = dwcNormalizeRejillaModo(document.getElementById('setupDwcRejillaPreferida')?.value);
@@ -570,7 +566,7 @@ function actualizarResumenSetup() {
     const tSpec =
       typeof torreGetObjetivoSpec === 'function'
         ? torreGetObjetivoSpec(tObj)
-        : { label: tObj === 'baby' ? 'Alta densidad / baby leaf (cosecha joven)' : 'Planta adulta (tamaño completo)' };
+        : { label: tObj === 'baby' ? 'SOG / esquejes (alta densidad)' : 'Floración / tamaño completo' };
     geoTorreRes = ' · objetivo ' + tSpec.label;
   }
 

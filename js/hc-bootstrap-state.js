@@ -15,7 +15,7 @@ let torreInteraccionModo = 'editar';
 /** false = por defecto: marcar varias cestas y «Aplicar a selección». true = cada toque aplica ya. */
 let torreAsignarInstantaneo = false;
 let torreCestasMultiSel = new Set();
-let modoActual = 'lechuga';
+let modoActual = 'vegetativo';
 let state = null; // se inicializa después
 
 function loadState() {
@@ -45,6 +45,7 @@ function loadState() {
         (nivel || []).forEach(cell => asegurarCamposFilaTorre(cell));
       });
       if (s.modo) modoActual = s.modo;
+      if (typeof hidrogrowMigrarStateCompleto === 'function') hidrogrowMigrarStateCompleto(s);
       normalizarNotifOpcionesEnState(s);
       return s;
     }
@@ -117,7 +118,7 @@ function hcOrientacionGerminacionHtml(nombreVariedad) {
     '<li>Coloca la semilla en <strong>sustrato hidropónico</strong> húmedo (lana de roca, coco, etc.), sin enterrar en exceso.</li>' +
     '<li>Bandeja en germinador <strong>a oscuras</strong> hasta que asome la radícula (suele ser unos <strong>2–4 días</strong> según especie y temperatura).</li>' +
     '<li>Pasa a <strong>luz de crecimiento</strong> (14–18 h/día, intensidad suave al inicio) hasta <strong>2–3 hojas reales</strong> y buen desarrollo radicular.</li>' +
-    '<li><strong>Trasplanta al sistema</strong> (torre, NFT o DWC) y registra aquí la <strong>fecha de trasplante</strong>: es el día desde el que la app cuenta el ciclo.</li>' +
+    '<li><strong>Trasplanta al sistema</strong> (DWC o RDWC) y registra la <strong>fecha de entrada al hidro</strong>: es el día desde el que la app cuenta el ciclo.</li>' +
     '</ol>' +
     '<p class="hc-origen-hint-foot">Los días exactos dependen de la variedad y de la temperatura; revisa siempre el sobre del semillero.</p>';
   return typeof hcWrapOrigenDetails === 'function'
@@ -184,7 +185,7 @@ function initState() {
   }
   const st = {
     torre,
-    modo: 'lechuga',
+    modo: 'vegetativo',
     ultimaMedicion: null,
     ultimaRecarga: null,
     /** epoch ms — oculta aviso urgente de recarga hasta esa hora */

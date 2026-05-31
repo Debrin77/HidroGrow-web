@@ -2088,7 +2088,7 @@ function guardarSetupYContinuar() {
                 : EMOJIS[nTorres % EMOJIS.length],
       config: { ...state.configTorre },
       torre: JSON.parse(JSON.stringify(state.torre)),
-      modoActual: 'lechuga',
+      modoActual: 'vegetativo',
       mediciones: [],
       registro: [],
       ultimaMedicion: null,

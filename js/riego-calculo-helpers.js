@@ -121,7 +121,7 @@ const RIEGO_SOMBRA_PERFILES = {
     et0Rest: 0.52,
     dTemp: -2.0,
     label: 'Malla media',
-    hint: '~50 % sombra — equilibrio habitual (tomate en flor, lechugas en verano).',
+    hint: '~50 % sombra — equilibrio habitual (floración densa o verano intenso).',
     pct: 50,
   },
   fuerte: {
@@ -152,7 +152,7 @@ function riegoSombraMaxTipo(a, b) {
  */
 function riegoSombraTipoParaCultivo(cult, pct, dias) {
   if (!cult) return 'ligera';
-  const g = cult.grupo || 'lechugas';
+  const g = cult.grupo || 'hibrida';
   const id = cult.id || '';
   const p = Math.max(0, Number(pct) || 0);
   let fase = null;
@@ -166,10 +166,23 @@ function riegoSombraTipoParaCultivo(cult, pct, dias) {
     if (fase === 'prefloracion' || p >= 0.35) return 'media';
     return 'ligera';
   }
+  if (g === 'indica' || g === 'cbd' || g === 'auto') {
+    if (p < 0.2) return 'ligera';
+    if (fase === 'floracion' || fase === 'fructificacion' || p > 0.5) return 'media';
+    return p > 0.35 ? 'ligera' : 'ligera';
+  }
+  if (g === 'hibrida') {
+    if (p < 0.18) return 'ligera';
+    if (fase === 'floracion' || fase === 'fructificacion') return 'media';
+    return p > 0.4 ? 'media' : 'ligera';
+  }
+  if (g === 'sativa') {
+    if (p < 0.15) return 'ligera';
+    if (fase === 'floracion' || p > 0.45) return 'media';
+    return 'ligera';
+  }
   if (g === 'lechugas') {
     if (p < 0.18) return 'ligera';
-    if (id === 'mantecosa' || id === 'iceberg' || id === 'trocadero') return 'media';
-    if (id === 'lolorrosso' || id === 'hojaroble') return p > 0.4 ? 'media' : 'ligera';
     return p > 0.35 ? 'media' : 'ligera';
   }
   if (g === 'hojas') {
@@ -594,7 +607,7 @@ function riegoToldoContextoCultivo(edadSemManual) {
       const cult = getCultivoDB(c.variedad);
       if (!cult) return;
       n++;
-      const g = cult.grupo || 'lechugas';
+      const g = cult.grupo || 'hibrida';
       const pct = riegoPctCicloPlanta(c, edadSemManual);
       const dias =
         typeof getDiasEfectivosCicloRiego === 'function'
@@ -788,7 +801,7 @@ function actualizarRiegoToldoRecoUI(esInterior, tempMax, uvIdxRaw, edadSemManual
     if (ctx.hayFlorFruto) subTxt += ' Frutos/fresas en flor o fruto → más prudente con el sol.';
     else if (ctx.hayPlántulaReciente) subTxt += ' Plántulas jóvenes → no sombrear todo el día sin necesidad.';
   } else {
-    subTxt += ' Sin fechas en torre: umbrales de referencia (lechuga media).';
+    subTxt += ' Sin fechas en torre: umbrales de referencia (híbrida media).';
   }
   riegoActualizarPanelSombraCultivos(edadSem, null, { fuerte, suave, ctx });
   if (toldoDesplegado) {
@@ -969,15 +982,16 @@ function sincronizarInputsRiego() {
 function calcularFactorCultivo() {
   const nivelesActivos = getNivelesActivos();
   const factoresPorGrupo = {
+    indica: 1.12, sativa: 1.28, hibrida: 1.2, auto: 1.1, cbd: 0.95,
     lechugas: 1.0, hojas: 1.0, asiaticas: 0.95, hierbas: 0.75,
-    frutos: 1.5, fresas: 1.3, raices: 0.8, microgreens: 0.6
+    frutos: 1.5, fresas: 1.3, raices: 0.8, microgreens: 0.6,
   };
   let sumFactores = 0, nPlantas = 0;
   nivelesActivos.forEach(n => {
     (state.torre[n] || []).forEach(c => {
       if (!cestaCuentaParaRiegoYMetricas(c)) return;
       const cultivo = getCultivoDB(c.variedad);
-      const grupo = cultivo?.grupo || 'lechugas';
+      const grupo = cultivo?.grupo || 'hibrida';
       sumFactores += (factoresPorGrupo[grupo] || 1.0);
       nPlantas++;
     });
@@ -1221,7 +1235,7 @@ function getDiasEfectivosCicloRiego(cesta, cultivo, refFinMs) {
 
 /** Avance del ciclo 0–1+ (trasplante → cosecha) por planta */
 function riegoPctCicloPlanta(cesta, edadSemManual) {
-  const cult = getCultivoDB(cesta.variedad) || { dias: 45, grupo: 'lechugas' };
+  const cult = getCultivoDB(cesta.variedad) || { dias: 91, grupo: 'hibrida' };
   const diasBase = cult.dias || 45;
   const diasTot = typeof torreGetDiasCosechaObjetivo === 'function'
     ? torreGetDiasCosechaObjetivo(diasBase, state.configTorre || {})
@@ -1342,8 +1356,8 @@ const RIEGO_KC_MULT_FASE = {
  * sobre hortaliza de hoja de referencia; grupo, variedad y fase fenológica.
  */
 function riegoKcOperativo(pct, cultivo, cesta) {
-  const cult = cultivo || { grupo: 'lechugas' };
-  const g = cult.grupo || 'lechugas';
+  const cult = cultivo || { grupo: 'hibrida' };
+  const g = cult.grupo || 'hibrida';
   const p = Math.max(0, Math.min(1.2, Number(pct) || 0));
   let k;
   if (p < 0.12) k = 0.32 + (p / 0.12) * (0.62 - 0.32);
@@ -1352,6 +1366,11 @@ function riegoKcOperativo(pct, cultivo, cesta) {
   else k = 1.06 - Math.min(0.22, ((p - 0.85) / 0.2) * 0.22);
   k = Math.max(0.3, Math.min(1.1, k));
   const multGrupo = {
+    indica: 1.08,
+    sativa: 1.15,
+    hibrida: 1.12,
+    auto: 1.06,
+    cbd: 0.92,
     lechugas: 1.0,
     hojas: 1.03,
     asiaticas: 0.98,
@@ -1416,7 +1435,7 @@ function riegoMultDemandaFaseFenologicaTorre() {
 
 /** Compatibilidad: solo grupo, sin ficha */
 function riegoKcDesdePctYGrupo(pct, grupo) {
-  return riegoKcOperativo(pct, { grupo: grupo || 'lechugas' }, null);
+  return riegoKcOperativo(pct, { grupo: grupo || 'hibrida' }, null);
 }
 
 /** Kc medio en torre (ponderado por planta); sin plantas → lechuga y edad del formulario */
@@ -1426,7 +1445,7 @@ function calcularKcMedioRiego(edadSemManual) {
   getNivelesActivos().forEach(nv => {
     (state.torre[nv] || []).forEach(c => {
       if (!cestaCuentaParaRiegoYMetricas(c)) return;
-      const cult = getCultivoDB(c.variedad) || { dias: 45, grupo: 'lechugas' };
+      const cult = getCultivoDB(c.variedad) || { dias: 91, grupo: 'hibrida' };
       const pct = riegoPctCicloPlanta(c, edadSemManual);
       sum += riegoKcOperativo(pct, cult, c);
       n++;
@@ -1435,7 +1454,7 @@ function calcularKcMedioRiego(edadSemManual) {
   const s = Math.max(0.05, Math.min(24, Number(edadSemManual) || 4));
   if (n === 0) {
     const pct = Math.max(0, Math.min(1.15, (s * 7) / 45));
-    const kc = riegoKcOperativo(pct, { grupo: 'lechugas' }, null);
+    const kc = riegoKcOperativo(pct, { grupo: 'hibrida' }, null);
     return { kc: Math.round(kc * 1000) / 1000, nPlantasKc: 0 };
   }
   return { kc: Math.round((sum / n) * 1000) / 1000, nPlantasKc: n };

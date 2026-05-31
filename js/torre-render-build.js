@@ -1399,7 +1399,7 @@ function poblarTorreAssignSelect() {
     grupos[c.grupo].push(c);
   });
   const nombreGrupos = {
-    lechugas:'Lechugas', hojas:'Hojas verdes', asiaticas:'Asiáticas / Mostaza',
+    indica:'Índica', sativa:'Sativa', hibrida:'Híbrida', auto:'Autofloreciente', cbd:'CBD',
     hierbas:'Hierbas', frutos:'Frutos', fresas:'Fresas',
     raices:'Raíces', microgreens:'Microgreens'
   };

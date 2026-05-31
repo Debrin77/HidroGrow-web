@@ -339,7 +339,7 @@ function srfGrupoObjetivoDesdeConfig(cfg) {
     ? hcGrupoCultivoDominanteDesdeConfig(cfg)
     : typeof nftGrupoObjetivoDesdeConfig === 'function'
       ? nftGrupoObjetivoDesdeConfig(cfg)
-      : 'lechugas';
+      : 'hibrida';
 }
 
 function srfRecoValoresDesdeCelda(celda) {
@@ -371,7 +371,7 @@ function srfRecoPerfilDesdeConfig(cfg) {
     grupo,
     etiqueta: gLabel,
     objetivo,
-    objetivoLabel: objetivo === 'baby' ? 'Baby leaf' : 'Planta completa',
+    objetivoLabel: objetivo === 'baby' ? 'SOG / esquejes' : 'Floración completa',
     celda,
     profMinCm: vals && vals.profCm != null ? Math.max(10, vals.profCm - 3) : 20,
     profMaxCm: vals && vals.profCm != null ? Math.min(50, vals.profCm + 4) : 30,
