@@ -2837,6 +2837,17 @@
         </button>
       </div>
       <p class="setup-field-hint">Tras el asistente registrarás mediciones diarias (depósito + ambiente) con correcciones sugeridas.</p>
+      <div class="setup-block-title setup-mt-12">Nivel de ayuda en Consejos</div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8" role="radiogroup" aria-label="Nivel de ayuda">
+        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumConsejosPrincipiante" onclick="seleccionarConsejosModoSetup('principiante')">
+          <div class="setup-option-title-md">Principiante</div>
+          <div class="setup-option-desc-sm">Más claro, menos tecnicismos</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumConsejosAvanzado" onclick="seleccionarConsejosModoSetup('avanzado')">
+          <div class="setup-option-title-md">Avanzado</div>
+          <div class="setup-option-desc-sm">Todo el detalle técnico</div>
+        </button>
+      </div>
     </div>
 
     <div class="setup-page" id="spagePremium2">
@@ -2969,7 +2980,7 @@
 
     <div class="setup-page" id="spagePremium6">
       <div class="setup-title">Germinación, clones y madre</div>
-      <div class="setup-subtitle">Semilla, clon recibido o <strong>planta madre</strong> en DWC/RDWC (18/6) para esquejes repetidos.</div>
+      <div class="setup-subtitle">Elige origen (semilla, clon o madre). Si germinas semilla, marca las <strong>6 fases en orden</strong> hasta el cubo hidro.</div>
       <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
       <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div class="setup-block-title">Origen de plantas</div>
@@ -2990,7 +3001,7 @@
           <div class="setup-option-desc-sm">18/6 · esquejes cada 10–14 d</div>
         </button>
       </div>
-      <div id="setupPremiumGerminacionPasos" class="setup-grid-2 setup-grid-gap-8 setup-mb-8"></div>
+      <div id="setupPremiumGerminacionPasos" class="setup-mb-8"></div>
       <div id="setupPremiumEsquejesPrep" class="setup-hidden">
         <div class="setup-block-title">1 · Preparar madre (antes del corte)</div>
         <div id="setupPremiumEsquejesPrepGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
@@ -3013,21 +3024,18 @@
     </div>
 
     <div class="setup-page" id="spagePremium7">
-      <div class="setup-title">Sistema hidro y checklist</div>
-      <div class="setup-subtitle">Confirma DWC o RDWC. Tras el asistente tendrás checklist de compra y recarga.</div>
+      <div class="setup-title">Puente al montaje</div>
+      <div class="setup-subtitle">Ya tienes contexto (sala, genética, origen). Ahora medimos cubos, equipamiento y mezcla — sin repetir lo anterior.</div>
       <div class="setup-box-info setup-mb-12">
-        <strong>DWC:</strong> 1–8 cubos con aireador 24 h.<br>
-        <strong>RDWC:</strong> recirculación entre depósito de control y macetas (escala sala).
+        <strong>Siguiente:</strong> geometría del sistema (filas×cestas o cubos RDWC), equipamiento hidro, agua de mezcla y nutriente.
       </div>
       <ul class="setup-checklist-preview setup-mb-12">
-        <li>Bomba de aire + difusoras por cubo</li>
-        <li>Medidor EC/pH calibrado</li>
-        <li>CalMag si agua blanda</li>
-        <li>Net pots + bolas de arcilla</li>
-        <li>Semillas/clones + rockwool 4×4 cm</li>
-        <li>Nutriente elegido en paso siguiente</li>
+        <li>Tipo DWC/RDWC confirmado en bienvenida</li>
+        <li>Entorno, luz y fotoperiodo ya definidos</li>
+        <li>Origen semilla/clon/madre y camino de germinación</li>
+        <li>Checklist de compra: aire, EC/pH, net pots, nutriente</li>
       </ul>
-      <p class="setup-field-hint">El tipo DWC/RDWC lo confirmas en la pantalla de bienvenida o en el paso de geometría.</p>
+      <p class="setup-field-hint">El diagrama nítido del sistema aparece en el paso Geometría.</p>
     </div>
 
     <div class="setup-page" id="spage1">
@@ -3037,10 +3045,11 @@
         <strong>Sin cálculos obligatorios:</strong> cinta métrica o etiqueta del fabricante. Los campos opcionales pueden quedar vacíos: usamos valores orientativos razonables hasta que los completes.
       </p>
 
-      <div id="setupTipoInstalacionInline" class="setup-tipo-inline" role="group" aria-label="Tipo de sistema">
+      <div id="setupTipoInstalacionInline" class="setup-tipo-inline setup-flow-tipo-wrap" role="group" aria-label="Tipo de sistema">
         <div class="setup-tipo-inline-label">
           Tipo de sistema
         </div>
+        <p id="setupFlowTipoHint" class="setup-flow-tipo-hint setup-hidden">DWC/RDWC ya elegido en bienvenida — cambia aquí solo si te equivocaste.</p>
         <div class="setup-tipo-inline-grid setup-tipo-inline-grid--dual">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
@@ -3419,8 +3428,9 @@
     </div>
 
     <div class="setup-page" id="spage3">
-      <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg> Agua y sustrato</div>
-      <div class="setup-subtitle">¿Qué tipo de agua usas y cómo fijas las plantas?</div>
+      <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg> Agua y fijación en cestas</div>
+      <div class="setup-subtitle">Agua de la <strong>mezcla del depósito</strong> y medio en la <strong>net pot</strong> — distinto del cubo de germinación (paso Planta).</div>
+      <div id="setupAguaRecapPanel" class="setup-flow-recap setup-box-info setup-mb-12 setup-hidden" role="note"></div>
 
       <!-- Tipo de agua -->
       <div class="setup-block-title"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg> Tipo de agua</div>
@@ -3523,9 +3533,11 @@
     </div>
 
     <div class="setup-page" id="spage5">
-      <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-globe"/></svg> Ubicación e iluminación</div>
-      <div class="setup-subtitle">Esto afecta al cálculo de riego, alertas de temperatura y necesidades de luz.</div>
+      <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-globe"/></svg> Meteo y preferencias</div>
+      <div class="setup-subtitle">Ubicación e iluminación ya vienen de los pasos Entorno y Clima. Aquí solo lo que falta.</div>
+      <div id="setupUbicacionRecapPanel" class="setup-flow-recap setup-box-info setup-mb-12 setup-hidden" role="note"></div>
 
+      <div id="setupUbicacionDuplicadaWrap">
       <!-- Interior / Exterior -->
       <div class="setup-block-title"><svg class="hc-ico hc-ico--ubicacion-mapa" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> ¿Dónde estará tu sistema?</div>
       <div class="setup-grid-2 setup-grid-gap-10 setup-mb-16">
@@ -3543,6 +3555,7 @@
             Casa, grow room · Indica luz natural y/o artificial (LED, etc.) · Clima más estable que en calle
           </div>
         </button>
+      </div>
       </div>
 
       <!-- Iluminación si es interior: natural o artificial -->
@@ -3599,6 +3612,7 @@
         </div>
       </div>
 
+      <div id="setupUbicacionExtrasWrap">
       <div class="setup-block-title setup-mt-12"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-help"/></svg> Nivel de ayuda en Consejos</div>
       <div class="setup-box-warn">
         Elige si prefieres una vista más simple (principiante) o ver toda la información técnica (avanzado). Podrás cambiarlo después.
@@ -3614,6 +3628,7 @@
           <div class="setup-option-title-md">Avanzado</div>
           <div class="setup-option-desc-sm">Muestra todas las categorías y detalle técnico</div>
         </button>
+      </div>
       </div>
 
       <!-- Ciudad para meteo (si es exterior) -->
@@ -4438,8 +4453,9 @@
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-visual"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-equip"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-guias"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-germ-clar"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-flow"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-flow"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-premium7"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
 <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-guias"></script>

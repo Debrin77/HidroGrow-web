@@ -1524,21 +1524,40 @@ function renderSetupPage() {
     cargarSetupSensoresHwUI();
     refreshSetupCalentadorConsignaVis();
   }
-  if (setupPagina === SETUP_PAGE_AGUA) setTimeout(() => seleccionarSustrato(setupData.sustrato), 0);
+  if (setupPagina === SETUP_PAGE_AGUA) {
+    setTimeout(function () {
+      if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
+      if (typeof seleccionarSustrato === 'function') seleccionarSustrato(setupData.sustrato || 'lana', false);
+      if (typeof seleccionarAgua === 'function' && setupData.agua) seleccionarAgua(setupData.agua);
+      if (typeof applySetupFlowCondensedUI === 'function') applySetupFlowCondensedUI(SETUP_PAGE_AGUA);
+    }, 0);
+  }
   if (setupPagina === SETUP_PAGE_NUTRIENTES) {
     renderNutrientesGrid();
     setTimeout(renderDosisSetup, 100);
   }
-  if (setupPagina === SETUP_PAGE_UBICACION) setTimeout(syncWizardLuzUI, 0);
+  if (setupPagina === SETUP_PAGE_UBICACION) {
+    setTimeout(function () {
+      if (typeof applySetupFlowCondensedUI === 'function') applySetupFlowCondensedUI(SETUP_PAGE_UBICACION);
+      else if (typeof syncWizardLuzUI === 'function') syncWizardLuzUI();
+    }, 0);
+  }
   if (setupPagina === SETUP_PAGE_CULTIVOS) setTimeout(renderSetupPlantasGrid, 50);
   if (setupPagina === SETUP_PAGE_RESUMEN) setTimeout(actualizarResumenSetup, 50);
 
-  // Dots de progreso
+  // Dots de progreso (ocultar pasos saltados)
+  const skipDots =
+    typeof getSetupSkippedPages === 'function' ? getSetupSkippedPages() : new Set();
   for (let i = 0; i < SETUP_TOTAL_PAGES; i++) {
     const dot = document.getElementById('sdot' + i);
     if (!dot) continue;
+    if (skipDots.has(i)) {
+      dot.style.display = 'none';
+      continue;
+    }
+    dot.style.display = '';
     dot.className = 'setup-step-dot';
-    if (i < setupPagina)      dot.classList.add('done');
+    if (i < setupPagina) dot.classList.add('done');
     else if (i === setupPagina) dot.classList.add('active');
   }
 
@@ -1554,23 +1573,40 @@ function renderSetupPage() {
     'Sistema hidro',        // 7
     'Geometría',            // 8
     'Equipamiento',         // 9
-    'Agua y sustrato',      // 10
+    'Agua y fijación',      // 10
     'Nutrientes',           // 11
-    'Ubicación',            // 12
+    'Meteo',                // 12
     'Cultivos',             // 13
     'Resumen',              // 14
   ];
   const labelEl = document.getElementById('setupStepLabel');
   if (labelEl) {
+    const flowInfo =
+      typeof getSetupDisplayStepInfo === 'function'
+        ? getSetupDisplayStepInfo(setupPagina)
+        : { step: setupPagina + 1, total: SETUP_TOTAL_PAGES };
     if (setupEsNuevaTorre) {
       const nomLbl = (setupNombreNuevaTorre || '').trim() || 'Nueva instalación';
-      labelEl.textContent = setupPagina === 0
-        ? '🌿 ' + nomLbl + ' — configuración'
-        : nomLbl + ' · Paso ' + setupPagina + ' de ' + (SETUP_TOTAL_PAGES-2) + ' — ' + (labels[setupPagina] || '');
+      labelEl.textContent =
+        setupPagina === 0
+          ? '🌿 ' + nomLbl + ' — configuración'
+          : nomLbl +
+            ' · Paso ' +
+            flowInfo.step +
+            ' de ' +
+            flowInfo.total +
+            ' — ' +
+            (labels[setupPagina] || '');
     } else {
-      labelEl.textContent = setupPagina === 0
-        ? 'Bienvenido'
-        : 'Paso ' + setupPagina + ' de ' + (SETUP_TOTAL_PAGES-1) + ' — ' + (labels[setupPagina] || '');
+      labelEl.textContent =
+        setupPagina === 0
+          ? 'Bienvenido'
+          : 'Paso ' +
+            flowInfo.step +
+            ' de ' +
+            flowInfo.total +
+            ' — ' +
+            (labels[setupPagina] || '');
     }
   }
 
@@ -1605,6 +1641,9 @@ function renderSetupPage() {
   try {
     if (typeof renderSetupGuiaPanel === 'function') renderSetupGuiaPanel(setupPagina);
   } catch (_) {}
+  try {
+    if (typeof applySetupFlowCondensedUI === 'function') applySetupFlowCondensedUI(setupPagina);
+  } catch (_) {}
 }
 
 function setupNext() {
@@ -1623,6 +1662,9 @@ function setupNext() {
   }
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     if (typeof validarPremiumSetupPaso === 'function' && !validarPremiumSetupPaso(setupPagina)) return;
+    if (setupPagina === SETUP_PAGE_PREMIUM_END && typeof syncSetupDataFromPremium === 'function') {
+      syncSetupDataFromPremium();
+    }
   }
   if (setupPagina === SETUP_PAGE_CULTIVOS && typeof validarPlantasVsSalaPremium === 'function') {
     const nPl = typeof setupPlantasSeleccionadas !== 'undefined' ? setupPlantasSeleccionadas.size : 0;
@@ -1633,7 +1675,8 @@ function setupNext() {
   }
   const ultimoPaso = setupEsNuevaTorre ? SETUP_TOTAL_PAGES - 2 : SETUP_TOTAL_PAGES - 1;
   if (setupPagina < ultimoPaso) {
-    setupPagina++;
+    setupPagina =
+      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : setupPagina + 1;
     renderSetupPage();
   } else {
     guardarSetupYContinuar();
@@ -1642,7 +1685,8 @@ function setupNext() {
 
 function setupBack() {
   if (setupPagina > SETUP_PAGE_GEOMETRY) {
-    setupPagina--;
+    setupPagina =
+      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;
     renderSetupPage();
   } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
     setupPagina = SETUP_PAGE_PREMIUM_END;

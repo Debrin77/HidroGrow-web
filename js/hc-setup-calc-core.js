@@ -1728,6 +1728,7 @@ function guardarSetupYContinuar() {
   const lonWizard = parseCoord(setupCoordenadas.lon, setupData.lon);
   const locWizard = ciudadWizard.split(',')[0].trim();
   const ubicEffGuardar = setupData.ubicacion || setupUbicacion || 'exterior';
+  if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
   if (ubicEffGuardar === 'exterior') {
     if (!ciudadWizard || !Number.isFinite(latWizard) || !Number.isFinite(lonWizard)) {
       showToast(

@@ -3,12 +3,42 @@
  */
 (function () {
   const GERMINACION_HIDRO_PASOS = [
-    { id: 'semilla', titulo: 'Semilla en germinador', desc: 'Papel húmedo o domo 22–26 °C; no enterrar >5 mm.' },
-    { id: 'taproot', titulo: 'Radícula 5–10 mm', desc: 'Trasladar con cuidado; no manipular la punta.' },
-    { id: 'rockwool', titulo: 'Cubo lana de roca 4×4 cm', desc: 'Remojar pH 5.5; colocar semilla en hueco central.' },
-    { id: 'domo', titulo: 'Domo + luz tenue 18/6', desc: 'HR 70–80%; ventilar domo 2×/día contra moho.' },
-    { id: 'netpot', titulo: 'Net pot + bolas de arcilla', desc: 'Raíz visible por fuera del cubo antes del traslado.' },
-    { id: 'dwc', titulo: 'DWC/RDWC (NO semilla directa)', desc: 'Solo plántula con raíz en net pot; EC inicial 400–600 µS.' },
+    {
+      id: 'semilla',
+      paso: 1,
+      titulo: 'Germinador (papel o domo)',
+      desc: 'Semilla húmeda a 22–26 °C, a oscuras o en domo. Todavía no va al cubo hidro.',
+    },
+    {
+      id: 'taproot',
+      paso: 2,
+      titulo: 'Radícula 5–10 mm',
+      desc: 'La raíz blanca asoma: momento de pasarla al cubo de lana. No toques la punta.',
+    },
+    {
+      id: 'rockwool',
+      paso: 3,
+      titulo: 'Cubo lana de roca 4×4 cm',
+      desc: 'Remoja pH 5.5 e inserta la semilla en el hueco central del cubo.',
+    },
+    {
+      id: 'domo',
+      paso: 4,
+      titulo: 'Domo húmedo + luz suave 18/6',
+      desc: 'Plántula bajo domo (HR 70–80 %). Ventila 2×/día; luz tenue, no intensa.',
+    },
+    {
+      id: 'netpot',
+      paso: 5,
+      titulo: 'Net pot + arcilla expandida',
+      desc: 'Cuando la raíz sale del cubo, pasa a maceta de malla antes del depósito.',
+    },
+    {
+      id: 'dwc',
+      paso: 6,
+      titulo: 'Traslado al cubo DWC/RDWC',
+      desc: 'Solo plántula enraizada en net pot. Nunca siembra directa en el depósito · EC 400–600 µS.',
+    },
   ];
 
   function el(id) {
@@ -248,15 +278,24 @@
         'Tras 5–6 sem en veg estable, toma esquejes cada 10–14 d sin volver a sembrar.</div>';
     } else {
       const done = p.germinacionChecklist || {};
-      sec.innerHTML = GERMINACION_HIDRO_PASOS.map(function (paso) {
-        const ok = !!done[paso.id];
-        return (
-          '<button type="button" class="equip-card equip-card-pad-12' + (ok ? ' selected' : '') +
-          '" onclick="togglePremiumGermPaso(\'' + paso.id + '\')" aria-pressed="' + (ok ? 'true' : 'false') + '">' +
-          '<div class="setup-option-title-md">' + paso.titulo + '</div>' +
-          '<div class="setup-option-desc-sm">' + paso.desc + '</div></button>'
-        );
-      }).join('');
+      sec.innerHTML =
+        '<div class="setup-germ-intro setup-box-info setup-mb-12" role="note">' +
+        '<strong>Camino semilla → cubo:</strong> marca cada fase cuando la completes. ' +
+        'Son <strong>6 pasos en orden</strong>, no opciones alternativas.</div>' +
+        '<div class="setup-germ-timeline" role="list" aria-label="Pasos de germinación semilla a cubo hidro">' +
+        GERMINACION_HIDRO_PASOS.map(function (paso) {
+          const ok = !!done[paso.id];
+          return (
+            '<button type="button" role="listitem" class="setup-germ-step equip-card' + (ok ? ' selected' : '') +
+            '" onclick="togglePremiumGermPaso(\'' + paso.id + '\')" aria-pressed="' + (ok ? 'true' : 'false') + '">' +
+            '<span class="setup-germ-step-num" aria-hidden="true">' + paso.paso + '</span>' +
+            '<span class="setup-germ-step-body">' +
+            '<span class="setup-option-title-md">' + paso.titulo + '</span>' +
+            '<span class="setup-option-desc-sm">' + paso.desc + '</span>' +
+            '</span></button>'
+          );
+        }).join('') +
+        '</div>';
     }
     if (typeof renderEsquejesSetupUI === 'function') renderEsquejesSetupUI();
     if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(orig);
@@ -364,6 +403,9 @@
     if (typeof persistSemilleroToConfig === 'function') persistSemilleroToConfig(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
+    if (typeof inferLuzFromPremium === 'function') cfg.luz = inferLuzFromPremium(p);
+    else if (p.entorno === 'exterior') cfg.luz = 'natural';
+    else cfg.luz = 'led';
   }
 
   function validarPremiumSetupPaso(pagina) {

@@ -876,13 +876,20 @@ function seleccionarAgua(tipo) {
   if (el) el.classList.add('selected');
 }
 
-function seleccionarSustrato(tipo) {
+function seleccionarSustrato(tipo, fromUser) {
   const t = normalizaSustratoKey(tipo);
   setupData.sustrato = t;
+  if (fromUser !== false) {
+    setupData._sustratoManual = true;
+    setupData._sustratoAuto = false;
+  }
   document.querySelectorAll('.equip-card[data-setup-sustrato]').forEach(el => {
     const on = el.getAttribute('data-setup-sustrato') === t;
     el.classList.toggle('selected', on);
   });
+  try {
+    if (typeof renderSetupAguaRecap === 'function') renderSetupAguaRecap();
+  } catch (_) {}
 }
 
 function seleccionarUbicacion(tipo) {

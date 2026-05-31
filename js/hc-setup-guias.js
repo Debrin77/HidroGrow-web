@@ -6,64 +6,64 @@
 
   var SETUP_GUIAS = {
     0: {
-      l1: 'El asistente recorre ~15 pasos: tipo de sistema, sala, hidro y cultivos.',
-      l2: 'El semillero es solo referencia; las variedades en cestas se asignan al final.',
+      l1: 'Elige DWC o RDWC una sola vez; el resto del asistente no volverá a preguntarlo salvo error.',
+      l2: 'Fases: contexto → planta → montaje hidro → mezcla → cultivos en cestas.',
     },
     1: {
-      l1: 'Confirma autocultivo y normativa local; la app calcula parámetros técnicos.',
-      l2: 'Siguiente: dónde cultivarás (interior o exterior).',
+      l1: 'Objetivo y nivel Consejos (principiante/avanzado); solo se pregunta aquí.',
+      l2: 'Siguiente: interior o exterior (define clima y meteo).',
     },
     2: {
-      l1: 'Interior = VPD, LED y extractor controlables; exterior = sol y estaciones.',
-      l2: 'Ajusta avisos de clima y equipamiento recomendado.',
+      l1: 'Interior o exterior — única vez; no se repite en pasos posteriores.',
+      l2: 'Exterior: más adelante pediremos ciudad para meteo si hace falta.',
     },
     3: {
-      l1: 'Medidas de carpa y potencia LED/extractor para validar plantas/m² después.',
-      l2: 'Catálogo opcional: rellena la ficha o deja «Manual» arriba.',
+      l1: 'Medidas de carpa, LED y extractor; catálogo opcional para rellenar fichas.',
+      l2: 'Estos datos validan plantas/m² en el paso Cultivos.',
     },
     4: {
-      l1: 'Fase y fotoperiodo definen objetivos de VPD, EC/pH y checklist diario.',
-      l2: 'Los afinarás con mediciones reales en Medir.',
+      l1: 'Fase y fotoperiodo: única fuente de horas de luz y objetivos VPD/EC.',
+      l2: 'No volverás a ajustar el slider de horas más adelante.',
     },
     5: {
-      l1: 'SOG/SCROG y genética orientan densidad; aún no eliges plantas concretas.',
-      l2: 'Semillero = perfil orientativo (EC/pH). Las cestas se llenan en paso Cultivos.',
+      l1: 'SOG/SCROG y genética orientan densidad; semillero = referencia EC/pH.',
+      l2: 'Variedades concretas en cestas van al final (paso Cultivos).',
     },
     6: {
-      l1: 'Semilla, clon o madre: cómo entran las plantas al sistema hidro.',
-      l2: 'El calendario de germinación o esquejes se generará según tu elección.',
+      l1: 'Las 6 casillas son fases en orden hasta el cubo hidro, no opciones alternativas.',
+      l2: 'Radícula = raíz blanca; domo = plántula húmeda; nunca siembra en depósito.',
     },
     7: {
-      l1: 'Repaso hidro: oxígeno, recirculación y checklist antes de medir cubos.',
-      l2: 'Siguiente: filas×cestas y verás el esquema nítido del sistema.',
+      l1: 'Resumen de lo ya definido; ahora pasamos a medidas del montaje real.',
+      l2: 'Siguiente: geometría con diagrama nítido del sistema.',
     },
     8: {
-      l1: 'Define cuántas macetas y forma del depósito; el diagrama se actualiza al instante.',
-      l2: 'Aireador y calentador del paso Equipamiento aparecen en el esquema.',
+      l1: 'Filas×cestas o cubos RDWC y medidas del depósito; diagrama en vivo.',
+      l2: 'DWC/RDWC ya elegido — cambia solo si te equivocaste.',
     },
     9: {
-      l1: 'Marca aireador, calentador y medidor; se dibujan en el diagrama del sistema.',
-      l2: 'Valores por defecto sensatos si aún no tienes el material.',
+      l1: 'Aireador, calentador y medidor hidro (distinto del catálogo LED/extractor).',
+      l2: 'Aparecen en el diagrama del paso anterior.',
     },
     10: {
-      l1: 'Tipo de agua y sustrato (rockwool, arcilla…) para dosis y recargas.',
-      l2: 'Influye en EC inicial y en el checklist de preparación de mezcla.',
+      l1: 'Agua de mezcla del depósito + medio en net pot (no el cubo de germinación).',
+      l2: 'Sustrato sugerido según origen Planta; confirma o cambia.',
     },
     11: {
-      l1: 'Elige línea de nutrientes; calculamos dosis según litros del depósito.',
-      l2: 'Puedes cambiarla después en Medir → Configuración.',
+      l1: 'Línea de nutrientes para dosis según litros calculados en Geometría.',
+      l2: 'Editable después en Medir → Configuración.',
     },
     12: {
-      l1: 'Ubicación para meteo exterior o recordatorios de luz interior.',
-      l2: 'Opcional si ya indicaste municipio en otro paso.',
+      l1: 'Solo si cultivas en exterior: ciudad para meteo (interior salta este paso).',
+      l2: 'Ubicación, luz y horas ya vienen de Entorno y Clima.',
     },
     13: {
-      l1: 'Aquí sí: variedad y fecha en cada cesta o cubo del diagrama.',
-      l2: 'Distinto del semillero (paso Genética), que solo orienta EC/pH.',
+      l1: 'Grupos genéticos + variedad/fecha por cesta — aquí sí asignas plantas.',
+      l2: 'Distinto del semillero (referencia) y del medio en net pot (paso Agua).',
     },
     14: {
-      l1: 'Revisa litros, oxígeno, equipamiento y cultivos antes de guardar.',
-      l2: 'Tras guardar: checklist diario en Medir y calendario unificado.',
+      l1: 'Revisa litros, equipamiento, mezcla y cultivos antes de guardar.',
+      l2: 'Tras guardar: checklist diario en Medir.',
     },
   };
 
@@ -71,7 +71,8 @@
     { id: 'inicio', label: 'Inicio', pages: [0] },
     { id: 'sala', label: 'Sala', pages: [1, 2, 3, 4] },
     { id: 'planta', label: 'Planta', pages: [5, 6] },
-    { id: 'hidro', label: 'Hidro', pages: [7, 8, 9, 10, 11] },
+    { id: 'hidro', label: 'Hidro', pages: [7, 8, 9] },
+    { id: 'mezcla', label: 'Mezcla', pages: [10, 11] },
     { id: 'cultivo', label: 'Cultivo', pages: [12, 13, 14] },
   ];
 
@@ -143,7 +144,6 @@
     return {};
   }
 
-  /** Fusiona equipamiento del paso 9 + premium en el draft del diagrama. */
   function buildSetupEquipamientoMerged(draft) {
     draft = draft || {};
     var eq = new Set(Array.isArray(draft.equipamiento) ? draft.equipamiento : []);
