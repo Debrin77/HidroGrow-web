@@ -27,9 +27,17 @@ npm run rpi:serve
 
 Abre `http://localhost:5173`. Si ves datos viejos: DevTools → Application → borrar datos de `localhost:5173` o usa puerto `5174`.
 
-## Siguientes fases de producto
+## Producto HidroGrow (implementado)
 
-1. Iconos y colores propios (sustituir splash provisional).
-2. `genetics-db.js` — genéticas cannabis.
-3. Módulo sala (LED, extractor, carpa).
-4. Nutrientes y cultivos orientados a cannabis.
+1. **30 genéticas** en `js/genetics-db.js` (grupos: índica, sativa, híbrida, auto, CBD).
+2. **Nutrientes cannabis** en `js/nutrientes-hidrogrow.js` (sustituye el catálogo hortícola).
+3. **Sala de cultivo** en Medir → Configuración: carpa, LED, extractor (`js/hc-grow-room.js`).
+4. **Marca** violeta/verde: `css/main.css`, `icons/splash-brand.svg`, tema PWA `#6d28d9`.
+5. Herramientas PRO LED ampliadas (veg / preflor / flor).
+
+Regenerar iconos PWA tras cambiar splash:
+
+```powershell
+cd C:\Git\hidroGrow-web
+node scripts/resize-icons.js
+```

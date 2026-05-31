@@ -11,20 +11,23 @@ const ctx = vm.createContext({ console });
 vm.runInContext(code, ctx);
 const normalizeTorreModoActual = ctx.normalizeTorreModoActual;
 
-test('normalizeTorreModoActual: lechuga y alias lechugas', () => {
-  assert.strictEqual(normalizeTorreModoActual('lechuga'), 'lechuga');
-  assert.strictEqual(normalizeTorreModoActual('lechugas'), 'lechuga');
-});
-
-test('normalizeTorreModoActual: resto de modos válidos', () => {
-  assert.strictEqual(normalizeTorreModoActual('mixto'), 'mixto');
+test('normalizeTorreModoActual: modos HidroGrow válidos', () => {
+  assert.strictEqual(normalizeTorreModoActual('vegetativo'), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual('floracion'), 'floracion');
+  assert.strictEqual(normalizeTorreModoActual('esquejes'), 'esquejes');
   assert.strictEqual(normalizeTorreModoActual('intensivo'), 'intensivo');
-  assert.strictEqual(normalizeTorreModoActual('mini'), 'mini');
 });
 
-test('normalizeTorreModoActual: basura cae a lechuga', () => {
-  assert.strictEqual(normalizeTorreModoActual(''), 'lechuga');
-  assert.strictEqual(normalizeTorreModoActual(null), 'lechuga');
-  assert.strictEqual(normalizeTorreModoActual('nope'), 'lechuga');
-  assert.strictEqual(normalizeTorreModoActual(undefined), 'lechuga');
+test('normalizeTorreModoActual: alias hortícola → vegetativo', () => {
+  assert.strictEqual(normalizeTorreModoActual('lechuga'), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual('lechugas'), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual('mixto'), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual('mini'), 'vegetativo');
+});
+
+test('normalizeTorreModoActual: basura cae a vegetativo', () => {
+  assert.strictEqual(normalizeTorreModoActual(''), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual(null), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual('nope'), 'vegetativo');
+  assert.strictEqual(normalizeTorreModoActual(undefined), 'vegetativo');
 });

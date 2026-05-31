@@ -135,8 +135,7 @@ function cultivoEmojiHtml(cultivo, fontRem) {
 }
 
 const GRUPO_EMOJI_REP = {
-  lechugas: '🥬', hojas: '🌿', asiaticas: '🍃', hierbas: '🌿', fresas: '🍓',
-  frutos: '🍅', raices: '🥕', microgreens: '🌱',
+  indica: '🌲', sativa: '☀️', hibrida: '🌿', auto: '⚡', cbd: '💚',
 };
 
 function grupoEmojiHtml(grupoKey) {
@@ -151,101 +150,105 @@ function refEcPhRowEmojiHtml(row) {
     if (!c) return '<span class="cultivo-emoji-mark cultivo-emoji-mark--135" aria-hidden="true">🌱</span>';
     return cultivoEmojiHtml(c, 1.35);
   };
-  if (/Tomate/i.test(s)) return byId('tomate');
-  if (/Pimiento|berenjena/i.test(s)) return byId('pimiento');
-  if (/Pepino/i.test(s)) return byId('pepino');
-  if (/Judía|guisante/i.test(s)) return byId('microgreens_mezcla');
-  if (/Fresa|fresón/i.test(s)) return byId('fresa');
-  if (/Brócoli|coliflor/i.test(s)) return byId('col_rizada');
-  if (/Zanahoria|microverdura/i.test(s)) return byId('zanahoria');
-  if (/Melón|sandía/i.test(s)) return byId('calabacin');
-  /* Flores de corte: icono de flores, no lavanda (💜) */
-  if (/Flores/i.test(s)) {
-    return '<span class="cultivo-emoji-mark cultivo-emoji-mark--135" aria-hidden="true">🌸</span>';
-  }
-  if (/Cilantro|eneldo/i.test(s)) return byId('cilantro');
-  if (/Albahaca|menta|perejil/i.test(s)) return byId('albahaca');
-  if (/Lechuga/i.test(s)) return byId('romana');
-  if (/Espinaca|acelga|kale/i.test(s)) return byId('espinaca');
-  /* Una sola fila mezcla rúcula + canónigos + mostaza: hoja (🌿), nunca chile */
-  if (/Rúcula|canónig|canonigo|mostaza/i.test(s)) return byId('rucula');
+  const hit = CULTIVOS_DB.find(c => c.nombre === s || (c.abrev && s.indexOf(c.abrev) >= 0));
+  if (hit) return cultivoEmojiHtml(hit, 1.35);
   return byId(null);
 }
 
-// Grupos con colores y compatibilidad
+// Grupos de genética (HidroGrow)
 const GRUPOS_CULTIVO = {
-  lechugas:    { nombre:'Lechugas',           color:'#22c55e', ec:'800-1400',   ph:'5.5-6.5',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='lechugas').map(c=>c.nombre),
-    nota:'Perfectamente compatibles entre sí. El cultivo más fácil en hidroponía.' },
-  hojas:       { nombre:'Hojas verdes',        color:'#84cc16', ec:'1200-2300',  ph:'6.0-7.0',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='hojas').map(c=>c.nombre),
-    nota:'Rango EC variable. Espinaca y acelga necesitan EC más alta que rúcula.' },
-  asiaticas:   { nombre:'Asiáticas / Mostaza', color:'#60a5fa', ec:'1200-2500',  ph:'5.5-7.0',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='asiaticas').map(c=>c.nombre),
-    nota:'Mizuna y komatsuna compatibles con lechugas. Pak choi y menta necesitan torre separada.' },
-  hierbas:     { nombre:'Hierbas aromáticas',  color:'#f59e0b', ec:'800-2400',   ph:'5.5-7.0',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='hierbas').map(c=>c.nombre),
-    nota:'Rango EC muy variable. Menta y orégano incompatibles con lechugas. Albahaca sí.' },
-  frutos:      { nombre:'Frutos',              color:'#f97316', ec:'1500-3500',  ph:'5.5-6.5',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='frutos').map(c=>c.nombre),
-    nota:'EC incompatible con lechugas. Sistema dedicado obligatorio. Requieren polinización.' },
-  fresas:      { nombre:'Fresas',              color:'#f43f5e', ec:'1500-2500',  ph:'5.5-6.5',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='fresas').map(c=>c.nombre),
-    nota:'Compatibles con lechugas en fase vegetativa. EC aumenta en fructificación.' },
-  raices:      { nombre:'Raíces',              color:'#a78bfa', ec:'1600-2200',  ph:'6.0-7.0',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='raices').map(c=>c.nombre),
-    nota:'Necesitan sustrato profundo. Difíciles en torres verticales estándar.' },
-  microgreens: { nombre:'Microgreens',         color:'#2dd4bf', ec:'800-1600',   ph:'5.5-6.5',
-    plantas: CULTIVOS_DB.filter(c=>c.grupo==='microgreens').map(c=>c.nombre),
-    nota:'Sin nutrientes los primeros días. Cosecha muy rápida (7-14 días).' },
+  indica: {
+    nombre: 'Índica',
+    color: '#7c3aed',
+    ec: '1200-2000',
+    ph: '5.8-6.2',
+    plantas: CULTIVOS_DB.filter(c => c.grupo === 'indica').map(c => c.nombre),
+    nota: 'Ciclo más corto, perfil compacto. Ideal DWC/RDWC en salas pequeñas.',
+  },
+  sativa: {
+    nombre: 'Sativa',
+    color: '#eab308',
+    ec: '1300-2300',
+    ph: '5.8-6.3',
+    plantas: CULTIVOS_DB.filter(c => c.grupo === 'sativa').map(c => c.nombre),
+    nota: 'Mayor estiramiento en floración. Planifica altura de lámpara y extractor.',
+  },
+  hibrida: {
+    nombre: 'Híbrida',
+    color: '#22c55e',
+    ec: '1300-2400',
+    ph: '5.8-6.2',
+    plantas: CULTIVOS_DB.filter(c => c.grupo === 'hibrida').map(c => c.nombre),
+    nota: 'Equilibrio vigor/altura. La mayoría de genéticas comerciales actuales.',
+  },
+  auto: {
+    nombre: 'Autofloreciente',
+    color: '#06b6d4',
+    ec: '1200-2100',
+    ph: '5.8-6.2',
+    plantas: CULTIVOS_DB.filter(c => c.grupo === 'auto').map(c => c.nombre),
+    nota: 'Fotoperiodo fijo (~18/6). No mezclar con fotodependientes en la misma sala.',
+  },
+  cbd: {
+    nombre: 'CBD / perfil suave',
+    color: '#34d399',
+    ec: '1000-1600',
+    ph: '5.9-6.3',
+    plantas: CULTIVOS_DB.filter(c => c.grupo === 'cbd').map(c => c.nombre),
+    nota: 'EC más baja que genéticas THC altas. Vigilar pH estable.',
+  },
 };
 
-// Compatibilidad: grupos que SÍ pueden compartir depósito
 const COMPAT_MATRIZ = {
-  lechugas:   ['lechugas','asiaticas','hierbas'], // albahaca ok, menta no
-  asiaticas:  ['lechugas','asiaticas'],
-  hojas:      ['hojas'],
-  hierbas:    ['lechugas'],  // solo algunas
-  frutos:     ['frutos'],
-  fresas:     ['fresas','lechugas'],
-  raices:     ['raices'],
-  microgreens:['microgreens'],
+  indica: ['indica', 'hibrida'],
+  sativa: ['sativa', 'hibrida'],
+  hibrida: ['indica', 'sativa', 'hibrida'],
+  auto: ['auto'],
+  cbd: ['cbd', 'indica', 'hibrida'],
 };
 
-// ALIAS por compatibilidad con código anterior (GRUPOS_CULTIVO keys A,B,C,D)
 const GRUPOS_CULTIVO_OLD = {
-  A: GRUPOS_CULTIVO.lechugas,
-  B: GRUPOS_CULTIVO.asiaticas,
-  C: GRUPOS_CULTIVO.hojas,
-  D: GRUPOS_CULTIVO.hierbas,
+  A: GRUPOS_CULTIVO.hibrida,
+  B: GRUPOS_CULTIVO.indica,
+  C: GRUPOS_CULTIVO.sativa,
+  D: GRUPOS_CULTIVO.auto,
 };
 
-// DIAS_COSECHA — definido después de CULTIVOS_DB
-const DIAS_COSECHA = Object.fromEntries(
-  CULTIVOS_DB.map(c => [c.nombre, c.dias])
-);
-DIAS_COSECHA['Pak Choi'] = 40;
-DIAS_COSECHA['Bok Choy'] = 40;
+const DIAS_COSECHA = Object.fromEntries(CULTIVOS_DB.map(c => [c.nombre, c.dias]));
 
-// Compatibilidad entre grupos (qué mezclar y qué no)
 const COMPATIBILIDAD = {
-  'A-A': { ok: true,  icono: '✅', texto: 'Perfectamente compatibles' },
-  'A-B': { ok: true,  icono: '✅', texto: 'Compatibles — mismo depósito' },
-  'A-C': { ok: true,  icono: '⚠️', texto: 'Compatibles pero ajustar EC a 1400' },
-  'A-D': { ok: true,  icono: '✅', texto: 'Compatibles — albahaca protege de plagas' },
-  'B-B': { ok: true,  icono: '✅', texto: 'Perfectamente compatibles' },
-  'B-C': { ok: true,  icono: '✅', texto: 'Compatibles' },
-  'B-D': { ok: true,  icono: '✅', texto: 'Compatibles' },
-  'C-C': { ok: true,  icono: '✅', texto: 'Compatibles' },
-  'C-D': { ok: true,  icono: '✅', texto: 'Compatibles' },
-  'D-D': { ok: true,  icono: '⚠️', texto: 'Compatibles — evitar mezclar menta con perejil' },
+  'A-A': { ok: true, icono: '✅', texto: 'Compatibles — mismo depósito' },
+  'A-B': { ok: true, icono: '✅', texto: 'Compatibles con ajuste de EC' },
+  'A-C': { ok: true, icono: '⚠️', texto: 'Compatibles — vigilar estiramiento sativa' },
+  'A-D': { ok: false, icono: '⛔', texto: 'No mezclar auto con foto en misma instalación' },
+  'B-B': { ok: true, icono: '✅', texto: 'Compatibles' },
+  'B-C': { ok: true, icono: '⚠️', texto: 'Compatibles — EC intermedia' },
+  'B-D': { ok: false, icono: '⛔', texto: 'Autos en instalación separada' },
+  'C-C': { ok: true, icono: '✅', texto: 'Compatibles' },
+  'C-D': { ok: false, icono: '⛔', texto: 'Autos en instalación separada' },
+  'D-D': { ok: true, icono: '✅', texto: 'Solo autoflorecientes juntas' },
 };
 
-// Número de niveles activos según modo cultivo
 const MODOS_CULTIVO = {
-  lechuga:   { niveles: [0,2,4], nombre: 'Lechugas (3 niveles)', desc: 'Óptimo para EC 1300-1400 µS/cm' },
-  intensivo: { niveles: [0,1,2,3,4], nombre: 'Intensivo (5 niveles)', desc: 'Solo hojas verdes compatibles' },
-  mixto:     { niveles: [0,2,4], nombre: 'Mixto (3 niveles)', desc: 'Lechugas + asiáticas + hierbas' },
-  mini:      { niveles: [0,2], nombre: 'Compacto (2 niveles)', desc: 'Producción reducida o plántulas' },
+  vegetativo: {
+    niveles: [0, 2, 4],
+    nombre: 'Vegetativo (3 niveles)',
+    desc: '18/6 · EC media-alta según genética',
+  },
+  floracion: {
+    niveles: [0, 2, 4],
+    nombre: 'Floración (3 niveles)',
+    desc: '12/12 · subir EC de forma gradual',
+  },
+  esquejes: {
+    niveles: [0, 2],
+    nombre: 'Esquejes / plántulas (2 niveles)',
+    desc: 'Luz suave · EC baja los primeros días',
+  },
+  intensivo: {
+    niveles: [0, 1, 2, 3, 4],
+    nombre: 'Sala llena (5 niveles)',
+    desc: 'Máxima densidad en torre — solo genéticas compactas',
+  },
 };
 

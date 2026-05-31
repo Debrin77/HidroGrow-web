@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-28-welcome-scroll-top">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-hidrogrow-brand">
 </head>
 <body>
 <script>
@@ -904,6 +904,75 @@
           </div>
         </div>
 
+        <div class="recarga-card config-section-collapsible" id="panelGrowRoomSala">
+          <button type="button" class="config-section-collapse-head medir-disclosure-main-head" id="btnCollapseGrowRoom"
+            aria-expanded="true" aria-controls="collapseBodyGrowRoom"
+            onclick="toggleMedirCollapse('growRoom')">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title"><svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg> Sala de cultivo (LED y clima)</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </button>
+          <div class="config-section-collapse-body recarga-proxima-collapse-body" id="collapseBodyGrowRoom">
+          <div class="medir-note-block">
+            Dimensiones de <strong>carpa/armario</strong>, potencia LED y extractor. Cálculos orientativos para cannabis en interior.
+          </div>
+          <div class="medir-grid-2-gap-10 medir-mb-10">
+            <div>
+              <label for="growRoomTentPreset" class="medir-field-label">Plantilla de carpa</label>
+              <select id="growRoomTentPreset" class="form-input medir-input-md" onchange="aplicarPresetTendaGrowRoom()">
+                <option value="">— Medidas manuales —</option>
+                <option value="60x60">60 × 60 cm</option>
+                <option value="80x80">80 × 80 cm</option>
+                <option value="100x100">100 × 100 cm</option>
+                <option value="120x120">120 × 120 cm</option>
+                <option value="240x120">240 × 120 cm</option>
+              </select>
+            </div>
+            <div>
+              <label for="growRoomFase" class="medir-field-label">Fase actual</label>
+              <select id="growRoomFase" class="form-input medir-input-md" onchange="calcularGrowRoom()">
+                <option value="esqueje">Esqueje / plántula</option>
+                <option value="vegetativo" selected>Vegetativo (18/6)</option>
+                <option value="prefloracion">Prefloración</option>
+                <option value="floracion">Floración (12/12)</option>
+              </select>
+            </div>
+          </div>
+          <div class="medir-grid-3-gap-8 medir-mb-10">
+            <div>
+              <label for="growRoomAnchoM" class="medir-field-label">Ancho (m)</label>
+              <input type="number" id="growRoomAnchoM" class="form-input medir-input-md" inputmode="decimal" min="0.4" max="4" step="0.1" placeholder="1"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+            <div>
+              <label for="growRoomLargoM" class="medir-field-label">Largo (m)</label>
+              <input type="number" id="growRoomLargoM" class="form-input medir-input-md" inputmode="decimal" min="0.4" max="4" step="0.1" placeholder="1"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+            <div>
+              <label for="growRoomAltoM" class="medir-field-label">Alto (m)</label>
+              <input type="number" id="growRoomAltoM" class="form-input medir-input-md" inputmode="decimal" min="1.2" max="3" step="0.1" placeholder="2"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+          </div>
+          <div class="medir-grid-2-gap-10 medir-mb-10">
+            <div>
+              <label for="growRoomLedW" class="medir-field-label">LED instalado (W)</label>
+              <input type="number" id="growRoomLedW" class="form-input medir-input-md" inputmode="numeric" min="50" max="2000" step="10" placeholder="350"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+            <div>
+              <label for="growRoomExtractorM3h" class="medir-field-label">Extractor (m³/h)</label>
+              <input type="number" id="growRoomExtractorM3h" class="form-input medir-input-md" inputmode="numeric" min="50" max="3000" step="10" placeholder="240"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+          </div>
+          <button type="button" class="btn btn-primary btn-sm medir-mb-10" onclick="calcularGrowRoom()">Calcular sala</button>
+          <div id="growRoomResultado" class="tools-pro-result grow-room-result-host">Indica medidas y pulsa Calcular sala.</div>
+          </div>
+        </div>
+
         <div class="recarga-card config-section-collapsible setup-hidden" id="panelConfigInteriorGrow">
           <button type="button" class="config-section-collapse-head medir-disclosure-main-head" id="btnCollapseInteriorGrow"
             aria-expanded="true" aria-controls="collapseBodyInteriorGrow"
@@ -951,7 +1020,7 @@
               <span class="config-option-radio" aria-hidden="true"></span>
               <span class="config-option-body">
                 <span class="config-option-title">Media</span>
-                <span class="config-option-desc">Uso típico lechuga</span>
+                <span class="config-option-desc">Dosel medio</span>
               </span>
             </button>
             <button type="button" class="config-option" id="opt-int-luz-alta" role="radio" aria-checked="false"
@@ -4369,17 +4438,19 @@
       </section>
 
       <section class="tools-pro-card tools-pro-card--led">
-        <h4>💡 Luz LED (germinación)</h4>
+        <h4>💡 Luz LED (sala)</h4>
         <div class="tools-pro-led-head">
-          <span class="tools-pro-led-chip">Semillero</span>
-          <span class="tools-pro-led-chip">Ajuste progresivo</span>
+          <span class="tools-pro-led-chip">Cannabis</span>
+          <span class="tools-pro-led-chip">Altura y % potencia</span>
         </div>
         <div class="tools-pro-row">
-          <select id="toolLedEtapa" class="form-input" aria-label="Etapa de germinación">
-            <option value="semilla">Semilla (sin brote)</option>
-            <option value="emergencia">Emergencia (cotiledones)</option>
-            <option value="plantula_temprana">Plántula temprana</option>
-            <option value="plantula_avanzada">Plántula avanzada</option>
+          <select id="toolLedEtapa" class="form-input" aria-label="Etapa de cultivo">
+            <option value="semilla">Semilla / esqueje</option>
+            <option value="emergencia">Emergencia</option>
+            <option value="plantula_temprana">Vegetativo temprano</option>
+            <option value="plantula_avanzada">Vegetativo avanzado</option>
+            <option value="prefloracion">Prefloración</option>
+            <option value="floracion">Floración</option>
           </select>
           <select id="toolLedTipo" class="form-input" aria-label="Tipo de luz LED">
             <option value="barra">Barra LED / lineal</option>
@@ -4666,12 +4737,15 @@
 
   <script src="js/backup-capacitor.js"></script>
   <script src="js/hc-ui-icons.js?v=1"></script>
-  <script src="js/cultivos-db.js?v=3"></script>
+  <script src="js/genetics-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/hc-grow-room.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/state-torre-logic.js"></script>
   <script src="js/ui-tabs.js"></script>
   <script src="js/meteo-alarm-utils.js?v=1"></script>
   <script src="js/meteo-alarm-parse.js?v=1"></script>
-  <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-bootstrap"></script>
+  <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-28-welcome-scroll-top"></script>
@@ -4701,7 +4775,7 @@
   <script src="js/diagrams/torre/torre-diagram.js?v=2026-05-28-sin-vista-frontal"></script>
   <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
-  <script src="js/nutrientes-catalog.js?v=1"></script>
+  <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
 

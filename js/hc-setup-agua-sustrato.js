@@ -1158,6 +1158,9 @@ function resolveMedirExpanded(key) {
   if (key === 'luzOrigen') {
     return ui.luzOrigen !== undefined ? !!ui.luzOrigen : true;
   }
+  if (key === 'growRoom') {
+    return ui.growRoom !== undefined ? !!ui.growRoom : true;
+  }
   if (key === 'interiorGrow') {
     return ui.interiorGrow !== undefined ? !!ui.interiorGrow : true;
   }
@@ -1189,6 +1192,21 @@ function applyMedirCollapseUI() {
     btn.classList.toggle('is-collapsed', !exp);
     const titulo = btn.querySelector('.config-section-collapse-title')?.textContent?.trim() || 'sección';
     btn.setAttribute('aria-label', (exp ? 'Contraer: ' : 'Expandir: ') + titulo);
+  }
+
+  const growPanel = document.getElementById('panelGrowRoomSala');
+  if (growPanel && growPanel.style.display !== 'none') {
+    const body = document.getElementById('collapseBodyGrowRoom');
+    const btn = document.getElementById('btnCollapseGrowRoom');
+    if (body && btn) {
+      const exp = resolveMedirExpanded('growRoom');
+      body.hidden = !exp;
+      body.setAttribute('aria-hidden', exp ? 'false' : 'true');
+      btn.setAttribute('aria-expanded', exp ? 'true' : 'false');
+      btn.classList.toggle('is-collapsed', !exp);
+      const titulo = btn.querySelector('.config-section-collapse-title')?.textContent?.trim() || 'sección';
+      btn.setAttribute('aria-label', (exp ? 'Contraer: ' : 'Expandir: ') + titulo);
+    }
   }
 
   const intPanel = document.getElementById('panelConfigInteriorGrow');
@@ -1228,6 +1246,7 @@ function getCollapseDomByKey(key) {
     luzOrigen: { body: 'collapseBodyLuzOrigen', btn: 'btnCollapseLuzOrigen' },
     recargaTotal: { body: 'collapseBodyRecargaTotal', btn: 'btnCollapseRecargaTotal' },
     recargaParcial: { body: 'collapseBodyRecargaParcial', btn: 'btnCollapseRecargaParcial' },
+    growRoom: { body: 'collapseBodyGrowRoom', btn: 'btnCollapseGrowRoom' },
     interiorGrow: { body: 'collapseBodyInteriorGrow', btn: 'btnCollapseInteriorGrow' },
     calentadorRiego: { body: 'collapseBodyCalentadorRiego', btn: 'btnCollapseCalentadorRiego' },
     recargaVolAviso: { body: 'collapseBodyRecargaVolAviso', btn: 'btnCollapseRecargaVolAviso' },
@@ -1415,6 +1434,7 @@ function cargarLocalidadMeteoUI() {
 }
 
 function cargarInteriorGrowUI() {
+  if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
   if (!state.configTorre) state.configTorre = {};
   const cfg = state.configTorre;
   const tEl = document.getElementById('interiorTempC');

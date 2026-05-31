@@ -1281,7 +1281,7 @@ function rdwcGrupoObjetivoDesdeConfig(cfg) {
   if (typeof hcGrupoCultivoDominanteDesdeConfig === 'function') {
     return hcGrupoCultivoDominanteDesdeConfig(c);
   }
-  return 'lechugas';
+  return 'hibrida';
 }
 
 function rdwcRecoPerfilPorGrupo(grupo) {
@@ -1392,11 +1392,11 @@ function rdwcRecoPerfilPorGrupo(grupo) {
     };
   }
   return {
-    grupo: 'lechugas',
-    etiqueta: 'Lechugas / hojas ligeras',
-    cestaMinMm: 50,
-    cestaMaxMm: 75,
-    cestaTxt: '50–75 mm (≈2–3")',
+    grupo: 'hibrida',
+    etiqueta: 'Híbrida / uso general',
+    cestaMinMm: 75,
+    cestaMaxMm: 100,
+    cestaTxt: '75–100 mm (≈3–4")',
     bucketMinL: 15,
     bucketMaxL: 25,
     bucketTxt: '15–25 L',

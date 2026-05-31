@@ -175,7 +175,7 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
     emoji: emojiMigracionPorTipoInstalacion({ tipoInstalacion: tipo }),
     config: hcClonePlainData(hcNormalizarConfigSegunTipo(state.configTorre || {}).config, null),
     torre: hcClonePlainData(state.torre, []),
-    modoActual: modoActual || 'lechuga',
+    modoActual: modoActual || 'vegetativo',
     mediciones: o.clearHistory === false ? hcClonePlainData(state.mediciones, []) : [],
     registro: o.clearHistory === false ? hcClonePlainData(state.registro, []) : [],
     ultimaMedicion: o.clearHistory === false && state.ultimaMedicion ? { ...state.ultimaMedicion } : null,
@@ -229,7 +229,7 @@ function initTorres() {
       emoji: emojiMigracionPorTipoInstalacion(state.configTorre),
       config: hcClonePlainData(state.configTorre, null),
       torre: hcClonePlainData(state.torre, []),
-      modoActual: modoActual || 'lechuga',
+      modoActual: modoActual || 'vegetativo',
       mediciones: hcClonePlainData(state.mediciones, []),
       registro: hcClonePlainData(state.registro, []),
       notifOpciones: { recarga: false, medicion: false, cosecha: false },
@@ -246,7 +246,7 @@ function initTorres() {
       emoji: emojiMigracionPorTipoInstalacion(state.configTorre),
       config: hcClonePlainData(state.configTorre, null),
       torre: hcClonePlainData(state.torre, []),
-      modoActual: modoActual || 'lechuga',
+      modoActual: modoActual || 'vegetativo',
       mediciones: hcClonePlainData(state.mediciones, []),
       registro: hcClonePlainData(state.registro, []),
       notifOpciones: { recarga: false, medicion: false, cosecha: false },
@@ -560,7 +560,7 @@ function cargarEstadoTorre(idx) {
       : { fotoKeys: [], fotos: [] };
   modoActual = typeof normalizeTorreModoActual === 'function'
     ? normalizeTorreModoActual(t.modoActual)
-    : (MODOS_CULTIVO[t.modoActual] ? t.modoActual : 'lechuga');
+    : (MODOS_CULTIVO[t.modoActual] ? t.modoActual : 'vegetativo');
   // Asegurar estructura COMPLETA siempre — rellenar niveles y cestas que falten
   const nivR = state.configTorre?.numNiveles || NUM_NIVELES;
   const cesR = state.configTorre?.numCestas  || NUM_CESTAS;

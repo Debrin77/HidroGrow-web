@@ -4,16 +4,16 @@
   --bg2:        #ffffff;
   --bg3:        #eceff5;
   --border:     rgba(15, 23, 42, 0.09);
-  --green:      #15803d;
+  --green:      #16a34a;
   --green-dim:  #14532d;
-  --green-pale: #dcfce7;
-  --gold:       #b45309;
-  --gold-dim:   #fef3c7;
-  /* Marca HidroCultivo: dos tonos claramente distintos (UI clara vs splash oscuro) */
+  --green-pale: #ecfdf5;
+  --gold:       #a855f7;
+  --gold-dim:   #f3e8ff;
+  /* Marca HidroGrow: verde cultivo + acento violeta */
   --logo-hydro:       #22c55e;
-  --logo-cultivo:     #f59e0b;
+  --logo-cultivo:     #a855f7;
   --logo-hydro-splash:  #4ade80;
-  --logo-cultivo-splash: #fbbf24;
+  --logo-cultivo-splash: #c084fc;
   --red:        #b91c1c;
   --red-dim:    #fee2e2;
   --orange:     #c2410c;
@@ -17340,4 +17340,14 @@ html.hc-theme-dark .repos-resumen-muted strong,
 html.hc-theme-dark .nft-detalle-foot-muted strong,
 html.hc-theme-dark .torre-nft-p-note strong {
   color: #e7edf5;
+}
+
+.grow-room-result-host.grow-room-result p {
+  margin: 0.35rem 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+.grow-room-result-host .grow-room-foot {
+  color: var(--muted);
+  font-size: 0.8rem;
 }

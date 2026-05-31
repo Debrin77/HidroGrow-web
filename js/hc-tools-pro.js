@@ -279,10 +279,12 @@
     }
 
     const baseByStage = {
-      semilla: { distMin: 40, distMax: 55, powerPct: 28, hours: '16 h', ppfd: '90-140' },
-      emergencia: { distMin: 35, distMax: 45, powerPct: 38, hours: '16-18 h', ppfd: '120-180' },
-      plantula_temprana: { distMin: 30, distMax: 38, powerPct: 50, hours: '16-18 h', ppfd: '170-230' },
-      plantula_avanzada: { distMin: 24, distMax: 32, powerPct: 62, hours: '14-16 h', ppfd: '220-320' }
+      semilla: { distMin: 40, distMax: 55, powerPct: 28, hours: '18/6', ppfd: '100-150' },
+      emergencia: { distMin: 35, distMax: 45, powerPct: 38, hours: '18/6', ppfd: '150-220' },
+      plantula_temprana: { distMin: 30, distMax: 38, powerPct: 50, hours: '18/6', ppfd: '250-350' },
+      plantula_avanzada: { distMin: 28, distMax: 36, powerPct: 65, hours: '18/6', ppfd: '350-500' },
+      prefloracion: { distMin: 30, distMax: 40, powerPct: 70, hours: '12/12', ppfd: '450-600' },
+      floracion: { distMin: 25, distMax: 35, powerPct: 80, hours: '12/12', ppfd: '550-800' },
     };
     const typeAdj = {
       barra: { dist: -2, pct: -4 },
@@ -304,10 +306,12 @@
 
     const wattsWork = wmax * (pct / 100);
     const etapaLabel = {
-      semilla: 'Semilla',
+      semilla: 'Semilla / esqueje',
       emergencia: 'Emergencia',
-      plantula_temprana: 'Plantula temprana',
-      plantula_avanzada: 'Plantula avanzada'
+      plantula_temprana: 'Vegetativo temprano',
+      plantula_avanzada: 'Vegetativo avanzado',
+      prefloracion: 'Prefloración',
+      floracion: 'Floración',
     }[etapa] || 'Semilla';
     out.innerHTML =
       '<div class="tools-pro-result-head">' +

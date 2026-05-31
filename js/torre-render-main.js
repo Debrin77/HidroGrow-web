@@ -797,7 +797,7 @@ function renderCompatGrid() {
     const nivel = state.torre[n] || [];
     nivel.forEach((c, ci) => {
       if (!c || !c.variedad) return;
-      const cultivo = getCultivoDB(c.variedad) || { nombre: c.variedad, grupo:'lechugas', ecMin:800, ecMax:1400 };
+      const cultivo = getCultivoDB(c.variedad) || { nombre: c.variedad, grupo:'hibrida', ecMin:1200, ecMax:2000 };
       enTorre.push({ variedad: c.variedad, nivel: n+1, cesta: ci+1, cultivo });
     });
   }
@@ -820,9 +820,9 @@ function renderCompatGrid() {
   // Grupos únicos
   const gruposMap = new Map();
   enTorre.forEach(p => {
-    const gKey = p.cultivo.grupo || 'lechugas';
+    const gKey = p.cultivo.grupo || 'hibrida';
     if (!gruposMap.has(gKey)) {
-      const g = GRUPOS_CULTIVO[gKey] || GRUPOS_CULTIVO.lechugas;
+      const g = GRUPOS_CULTIVO[gKey] || GRUPOS_CULTIVO.hibrida;
       gruposMap.set(gKey, { ...g, key: gKey, plantas: [] });
     }
     gruposMap.get(gKey).plantas.push(p.variedad);
