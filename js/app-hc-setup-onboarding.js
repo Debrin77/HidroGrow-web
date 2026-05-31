@@ -943,10 +943,22 @@ function seleccionarLuz(tipo) {
 function seleccionarConsejosModoSetup(modo) {
   const m = modo === 'avanzado' ? 'avanzado' : 'principiante';
   setupData.consejosModoUi = m;
-  const bp = document.getElementById('setupConsejosModoPrincipiante');
-  const ba = document.getElementById('setupConsejosModoAvanzado');
-  if (bp) bp.classList.toggle('selected', m === 'principiante');
-  if (ba) ba.classList.toggle('selected', m === 'avanzado');
+  const principianteIds = ['setupConsejosModoPrincipiante', 'setupPremiumConsejosPrincipiante'];
+  const avanzadoIds = ['setupConsejosModoAvanzado', 'setupPremiumConsejosAvanzado'];
+  principianteIds.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('selected', m === 'principiante');
+      el.setAttribute('aria-checked', m === 'principiante' ? 'true' : 'false');
+    }
+  });
+  avanzadoIds.forEach(function (id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.toggle('selected', m === 'avanzado');
+      el.setAttribute('aria-checked', m === 'avanzado' ? 'true' : 'false');
+    }
+  });
 }
 
 function onBuscarCiudadSetup(val) {

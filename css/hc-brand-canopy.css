@@ -188,28 +188,24 @@ html.hc-theme-dark body::after {
 
 /* ── Shell: header + tabs (pergamino) ── */
 .header {
-  background: color-mix(in srgb, var(--bg2) 92%, transparent);
-  backdrop-filter: blur(12px) saturate(1.1);
-  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  background: var(--bg2);
   border-bottom: 1px solid rgba(180, 83, 9, 0.18);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 4px 16px rgba(62, 47, 35, 0.06);
 }
 
 html.hc-theme-dark .header {
-  background: rgba(10, 15, 12, 0.82);
+  background: rgba(10, 15, 12, 0.98);
   box-shadow: 0 1px 0 rgba(212, 160, 23, 0.1) inset, 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 .tab-bar {
-  background: color-mix(in srgb, var(--bg2) 94%, transparent);
-  backdrop-filter: blur(12px) saturate(1.08);
-  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  background: var(--bg2);
   border-top: 1px solid rgba(180, 83, 9, 0.16);
   box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.9) inset, 0 -6px 20px rgba(62, 47, 35, 0.05);
 }
 
 html.hc-theme-dark .tab-bar {
-  background: rgba(10, 15, 12, 0.88);
+  background: rgba(10, 15, 12, 0.98);
   box-shadow: 0 -1px 0 rgba(212, 160, 23, 0.1) inset, 0 -8px 32px rgba(0, 0, 0, 0.5);
 }
 
@@ -248,9 +244,7 @@ html:not(.hc-theme-dark) .tab-btn.active svg.hc-ico--ion-tab {
 html.hc-theme-dark .card,
 html.hc-theme-dark .recarga-card,
 html.hc-theme-dark .param-card {
-  background: rgba(20, 28, 23, 0.88);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(20, 28, 23, 0.96);
   border-color: rgba(212, 160, 23, 0.12);
   box-shadow:
     0 4px 24px rgba(0, 0, 0, 0.35),
@@ -894,10 +888,8 @@ html:not(.hc-theme-dark) .medir-torre-banner {
   box-shadow: var(--card-shadow-soft);
 }
 html.hc-theme-dark .medir-flow {
-  background: rgba(16, 24, 19, 0.88);
+  background: rgba(16, 24, 19, 0.96);
   border-color: rgba(212, 160, 23, 0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 .medir-flow-lead {
   font-size: var(--text-sm);
@@ -1238,4 +1230,40 @@ html.hc-theme-dark .medir-quick-parse {
   border-radius: 0;
   border-top: 1px solid var(--hc-border-soft, rgba(255, 255, 255, 0.06));
   box-shadow: none;
+}
+
+/* ── Scroll vertical: fluidez (evitar blur y animaciones durante desplazamiento) ── */
+.header,
+.tab-bar {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.content .card,
+.content .recarga-card,
+.content .param-card,
+.content .param-tile,
+.content .medir-flow,
+.content .quick-btn,
+.content .dia-card,
+.content .dash-sistema-info,
+.content .dash-ubicacion-badge,
+.content .hc-post-setup-rail-inner,
+.content .medir-ambiente-details,
+.content .medir-guia-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.content.is-scrolling .card,
+.content.is-scrolling .recarga-card,
+.content.is-scrolling .param-card,
+.content.is-scrolling .quick-btn,
+.content.is-scrolling .info-banner,
+.content.is-scrolling .meteo-alert {
+  transition: none !important;
+}
+
+.app:has(.content.is-scrolling) .status-dot {
+  animation-play-state: paused;
 }

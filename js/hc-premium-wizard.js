@@ -377,6 +377,13 @@
     if (el('setupPremiumIntensidadLuz') && p.intensidadLuz) el('setupPremiumIntensidadLuz').value = p.intensidadLuz;
 
     seleccionarPremiumObjetivo(p.objetivo || 'autocultivo');
+    if (typeof seleccionarConsejosModoSetup === 'function') {
+      const modoConsejos =
+        (typeof setupData !== 'undefined' && setupData.consejosModoUi) ||
+        cfg.consejosModoUi ||
+        'principiante';
+      seleccionarConsejosModoSetup(modoConsejos);
+    }
     refreshPremiumEntornoUI();
     refreshPremiumMetodoUI();
     seleccionarPremiumGenetica(p.geneticaPref || 'foto');

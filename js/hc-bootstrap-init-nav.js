@@ -472,4 +472,20 @@ function irMedirMunicipioClima() {
   }, 120);
 }
 
+/** Marca el contenedor principal durante scroll para aliviar blur/transiciones. */
+function hcInitScrollPerf() {
+  var root = document.getElementById('main-content');
+  if (!root || root.dataset.scrollPerfBound === '1') return;
+  root.dataset.scrollPerfBound = '1';
+  var timer;
+  root.addEventListener('scroll', function () {
+    if (!root.classList.contains('is-scrolling')) root.classList.add('is-scrolling');
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      root.classList.remove('is-scrolling');
+    }, 100);
+  }, { passive: true });
+}
+
+document.addEventListener('DOMContentLoaded', hcInitScrollPerf);
 
