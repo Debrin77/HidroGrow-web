@@ -143,3 +143,104 @@ function hcObjetivoCultivoDesdeConfig(cfg, tipo) {
   if (cfg.objetivoCultivo) return hcCultivoObjetivoEsBaby(cfg.objetivoCultivo) ? 'baby' : 'final';
   return 'final';
 }
+
+const HC_FASE_PLANTA_LABELS = {
+  germinacion: 'Germinación',
+  plantula: 'Plántula',
+  vegetativo: 'Vegetativo',
+  prefloracion: 'Prefloración',
+  floracion: 'Floración',
+  fructificacion: 'Fructificación',
+  crecimiento: 'Crecimiento',
+  madurez: 'Madurez',
+  cosecha: 'Cosecha',
+};
+
+/** Etiqueta de posición (maceta, módulo, hueco…) según tipo de instalación activa. */
+function hcLabelUbicacionCultivo(nivel, cesta, cfg) {
+  const c = cfg || (typeof state !== 'undefined' ? state.configTorre : null) || {};
+  const tipo =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(c)
+      : String(c.tipoInstalacion || 'dwc').toLowerCase();
+  const n = Number(nivel) + 1;
+  const ci = Number(cesta) + 1;
+  if (tipo === 'nft') return 'Hueco ' + n + '-' + ci;
+  if (tipo === 'dwc') return 'Maceta ' + n + '-' + ci;
+  if (tipo === 'rdwc') return 'Módulo ' + n + '-' + ci;
+  if (tipo === 'srf') return 'Planta ' + n + '-' + ci;
+  return 'Cesta N' + n + ' C' + ci;
+}
+
+function hcFasePlantaLabelTexto(cultivo, cesta) {
+  if (!cultivo || !cesta || !cesta.fecha) return 'Sin fecha';
+  const ms = new Date(cesta.fecha).getTime();
+  if (!Number.isFinite(ms)) return 'Sin fecha';
+  if (typeof cultivoFaseDesdeDias === 'function') {
+    const dias =
+      typeof getDiasEfectivosCicloBiologico === 'function'
+        ? getDiasEfectivosCicloBiologico(cesta, cultivo, Date.now())
+        : Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+    const f = cultivoFaseDesdeDias(cultivo, dias, { desdeTrasplante: true });
+    if (f && f.key) return HC_FASE_PLANTA_LABELS[f.key] || f.key;
+  }
+  if (typeof getEstado === 'function') {
+    const dias =
+      typeof getDiasEfectivosCicloBiologico === 'function'
+        ? getDiasEfectivosCicloBiologico(cesta, cultivo, Date.now())
+        : Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+    const est = getEstado(cultivo.id || cultivo.nombre, dias);
+    if (est === 'plantula') return 'Plántula';
+    if (est === 'crecimiento') return 'Vegetativo';
+    if (est === 'madurez' || est === 'cosecha') {
+      return cultivo.fructificacion ? 'Fructificación' : 'Floración';
+    }
+  }
+  return '—';
+}
+
+/** Plantas con variedad asignada en la matriz de la instalación activa. */
+function hcCollectPlantasInstalacionActiva() {
+  const items = [];
+  const cfg = typeof state !== 'undefined' ? state.configTorre || {} : {};
+  const niveles =
+    typeof getNivelesActivos === 'function'
+      ? getNivelesActivos()
+      : (state.torre || []).map((_, i) => i);
+  niveles.forEach(n => {
+    (state.torre[n] || []).forEach((c, ci) => {
+      if (!c || !c.variedad) return;
+      const cult = typeof getCultivoDB === 'function' ? getCultivoDB(c.variedad) : null;
+      const nombre =
+        typeof cultivoNombreLista === 'function'
+          ? cultivoNombreLista(cult, c.variedad)
+          : String(c.variedad || '—');
+      const tieneFecha =
+        typeof cestaTieneFechaValida === 'function' ? cestaTieneFechaValida(c.fecha) : !!c.fecha;
+      let dias = null;
+      if (tieneFecha && cult) {
+        dias =
+          typeof getDiasEfectivosCicloBiologico === 'function'
+            ? getDiasEfectivosCicloBiologico(c, cult, Date.now())
+            : Math.max(0, Math.floor((Date.now() - new Date(c.fecha).getTime()) / 86400000));
+      }
+      const origen =
+        typeof etiquetaOrigenPlantaBreve === 'function'
+          ? etiquetaOrigenPlantaBreve(c.origenPlanta)
+          : '';
+      items.push({
+        nivel: n,
+        cesta: ci,
+        ubicacion: hcLabelUbicacionCultivo(n, ci, cfg),
+        variedad: c.variedad,
+        nombre,
+        emoji: cult && cult.emoji ? cult.emoji : '🌿',
+        dias: Number.isFinite(dias) ? dias : null,
+        fase: tieneFecha ? hcFasePlantaLabelTexto(cult, c) : 'Sin fecha',
+        origen,
+        sinFecha: !tieneFecha,
+      });
+    });
+  });
+  return items;
+}

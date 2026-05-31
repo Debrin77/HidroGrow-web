@@ -112,6 +112,9 @@ function renderTorre() {
   try {
     renderTorreMedirDiagram();
   } catch (_) {}
+  try {
+    if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+  } catch (_) {}
 }
 
 /** Medir: esquema retirado — solo en Cultivo e instalación. */

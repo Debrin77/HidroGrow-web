@@ -950,6 +950,9 @@ function renderConsejos() {
   lista.setAttribute('aria-labelledby', 'catBtn-' + consejoCatActiva);
 
   renderConsejosLista();
+  try {
+    if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+  } catch (_) {}
 }
 
 function selConsejoCat(key) {
@@ -1116,11 +1119,14 @@ function buildConsejosNutrienteChecklistResumenHtml(nut, cfg) {
     nombreInst !== ''
       ? '<p class="consejo-checklist-resumen-inst"><strong>' + meteoEscHtml(nombreInst) + '</strong> · ' + meteoEscHtml(sysBreve) + '</p>'
       : '<p class="consejo-checklist-resumen-inst">Instalación activa · <strong>' + meteoEscHtml(sysBreve) + '</strong></p>';
+  const plantasSnippet =
+    typeof buildHtmlPlantasInstalacionSnippet === 'function' ? buildHtmlPlantasInstalacionSnippet() : '';
 
   return (
     '<div class="consejo-checklist-resumen" role="region" aria-label="Valores para el checklist según la instalación seleccionada">' +
     '<div class="consejo-checklist-resumen-kicker">📋 Valores para el checklist (recarga)</div>' +
     instLine +
+    plantasSnippet +
     '<p class="consejo-checklist-resumen-decl"><strong>Instalación configurada:</strong> ' +
     meteoEscHtml(sysLargo) +
     '. Lo siguiente es lo que usa la app en el <strong>checklist de recarga</strong> para <em>esta</em> instalación y nutriente seleccionado.</p>' +
@@ -1444,6 +1450,152 @@ function consejoFaseCultivoLabel(k) {
   return m[k] || k;
 }
 
+function hcPlantasInstalacionEsc(s) {
+  return typeof meteoEscHtml === 'function' ? meteoEscHtml(s) : String(s == null ? '' : s);
+}
+
+/** Bloque HTML: plantas identificadas en la instalación activa (maceta/módulo, variedad, fase). */
+function buildHtmlPlantasInstalacionResumen(opts) {
+  const o = opts || {};
+  const esc = hcPlantasInstalacionEsc;
+  const cfg = state.configTorre || {};
+  const tAct = typeof getTorreActiva === 'function' ? getTorreActiva() : null;
+  const nombreInst = tAct && tAct.nombre ? String(tAct.nombre).trim() : cfg.nombreTorre || cfg.nombre || '';
+  const sysBreve =
+    typeof etiquetaSistemaHidroponicoBreve === 'function'
+      ? etiquetaSistemaHidroponicoBreve(cfg)
+      : 'DWC/RDWC';
+  const plantas =
+    typeof hcCollectPlantasInstalacionActiva === 'function'
+      ? hcCollectPlantasInstalacionActiva()
+      : [];
+
+  if (!plantas.length) {
+    return (
+      '<div class="hc-plantas-instalacion-inner">' +
+      '<div class="hc-plantas-instalacion-kicker">🌿 Plantas en esta instalación</div>' +
+      (nombreInst
+        ? '<p class="hc-plantas-instalacion-inst"><strong>' + esc(nombreInst) + '</strong> · ' + esc(sysBreve) + '</p>'
+        : '<p class="hc-plantas-instalacion-inst">' + esc(sysBreve) + '</p>') +
+      '<p class="hc-plantas-instalacion-empty">Aún no hay variedad asignada en macetas o módulos. En <strong>Cultivo e instalación</strong> elige genética y fecha en cada posición; los consejos de EC, luz y riego se alinearán con esas fichas.</p>' +
+      (o.linkSistema !== false
+        ? '<p class="hc-plantas-instalacion-cta"><button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sistema\')">Ir a Cultivo e instalación</button></p>'
+        : '') +
+      '</div>'
+    );
+  }
+
+  const rows = plantas
+    .map(p => {
+      const diasTxt =
+        p.sinFecha || p.dias == null
+          ? '<span class="hc-plantas-sin-fecha">Sin fecha</span>'
+          : p.dias + ' d';
+      const origenTxt = p.origen ? ' · ' + esc(p.origen) : '';
+      return (
+        '<tr>' +
+        '<td>' +
+        esc(p.ubicacion) +
+        '</td><td><span aria-hidden="true">' +
+        esc(p.emoji) +
+        '</span> <strong>' +
+        esc(p.nombre) +
+        '</strong></td><td>' +
+        diasTxt +
+        origenTxt +
+        '</td><td>' +
+        esc(p.fase) +
+        '</td></tr>'
+      );
+    })
+    .join('');
+
+  return (
+    '<div class="hc-plantas-instalacion-inner">' +
+    '<div class="hc-plantas-instalacion-kicker">🌿 Plantas en esta instalación</div>' +
+    (nombreInst
+      ? '<p class="hc-plantas-instalacion-inst"><strong>' + esc(nombreInst) + '</strong> · ' + esc(sysBreve) + '</p>'
+      : '<p class="hc-plantas-instalacion-inst">' + esc(sysBreve) + '</p>') +
+    '<p class="hc-plantas-instalacion-lead">Cada consejo de EC, luz o cestas se calcula con estas fichas (misma instalación que Inicio y Cultivo e instalación).</p>' +
+    '<div class="hc-germ-table-scroll"><table class="hc-plantas-instalacion-table hc-germ-table" role="grid" aria-label="Plantas en la instalación activa">' +
+    '<thead><tr><th scope="col">Posición</th><th scope="col">Variedad</th><th scope="col">Días</th><th scope="col">Fase</th></tr></thead><tbody>' +
+    rows +
+    '</tbody></table></div>' +
+    '</div>'
+  );
+}
+
+/** Fragmento corto para tarjetas de Consejos (DWC, agua, etc.). */
+function buildHtmlPlantasInstalacionSnippet() {
+  const plantas =
+    typeof hcCollectPlantasInstalacionActiva === 'function'
+      ? hcCollectPlantasInstalacionActiva()
+      : [];
+  if (!plantas.length) return '';
+  const esc = hcPlantasInstalacionEsc;
+  const lis = plantas
+    .map(
+      p =>
+        '<li><strong>' +
+        esc(p.ubicacion) +
+        '</strong>: ' +
+        esc(p.emoji) +
+        ' ' +
+        esc(p.nombre) +
+        (p.sinFecha || p.dias == null ? '' : ' · ' + p.dias + ' d') +
+        ' · ' +
+        esc(p.fase) +
+        '</li>'
+    )
+    .join('');
+  return (
+    '<div class="hc-plantas-instalacion-snippet" role="note">' +
+    '<div class="hc-plantas-instalacion-snippet-title">Plantas en el sistema</div>' +
+    '<ul class="hc-plantas-instalacion-snippet-list">' +
+    lis +
+    '</ul></div>'
+  );
+}
+
+function refreshPlantasInstalacionResumen() {
+  const html = buildHtmlPlantasInstalacionResumen({ linkSistema: true });
+  const ids = ['hcPlantasInstalacionInicioCultivo', 'hcPlantasInstalacionSistema', 'hcPlantasInstalacionConsejos'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = html;
+    el.classList.toggle('setup-hidden', false);
+  });
+}
+
+function buildConsejoPlantasInstalacionActiva() {
+  const cat = CONSEJOS_DATA.cultivo;
+  const plantas =
+    typeof hcCollectPlantasInstalacionActiva === 'function'
+      ? hcCollectPlantasInstalacionActiva()
+      : [];
+  if (!plantas.length) {
+    return htmlConsejoCard(cat, {
+      icono: '🌿',
+      titulo: 'Plantas en tu instalación activa',
+      texto: buildHtmlPlantasInstalacionResumen({ linkSistema: true }),
+      alerta: {
+        tipo: 'warn',
+        txt: '⚠️ Sin variedad en macetas/módulos, los consejos de EC y fase no pueden personalizarse por planta.',
+      },
+    });
+  }
+  return htmlConsejoCard(cat, {
+    icono: '🌿',
+    titulo: 'Plantas en tu instalación activa',
+    texto: buildHtmlPlantasInstalacionResumen({ linkSistema: false }),
+    alerta: {
+      tipo: 'ok',
+      txt: '✅ Los consejos de luz, EC y compatibilidad usan estas mismas fichas. Si cambias una planta, vuelve aquí o recarga la pestaña.',
+    },
+  });
+}
+
 function consejoPerfilLuzPorCultivo(cultivo) {
   const c = cultivo || {};
   if (c.grupo === 'frutos' || c.fructificacion) {
@@ -1600,16 +1752,12 @@ function buildConsejoLuzExposicionCultivo() {
   const temp = Number(m.temp);
   const uv = Number.isFinite(Number(m.uvMaxHoy)) ? Number(m.uvMaxHoy) : Number(m.uv);
   const filas = [];
-  const seen = {};
   const niv = (cfg.numNiveles || (state.torre || []).length || 0);
   for (let n = 0; n < niv; n++) {
-    (state.torre[n] || []).forEach(c => {
+    (state.torre[n] || []).forEach((c, ci) => {
       if (!c || !c.variedad) return;
       const cult = getCultivoDB(c.variedad);
       if (!cult) return;
-      const key = cult.id || cult.nombre;
-      if (seen[key]) return;
-      seen[key] = true;
       const fase = consejoFaseDesdeFicha(cult, c);
       const p = consejoPerfilLuzPorCultivo(cult);
       const extBase = p.exterior[fase] || p.exterior.vegetativo;
@@ -1617,6 +1765,10 @@ function buildConsejoLuzExposicionCultivo() {
       const ext = consejoAjusteClimaUbicacion(extBase, 'exterior', temp, uv);
       const intR = consejoAjusteClimaUbicacion(intBase, 'interior', temp, uv);
       filas.push({
+        ubicacion:
+          typeof hcLabelUbicacionCultivo === 'function'
+            ? hcLabelUbicacionCultivo(n, ci, cfg)
+            : 'Pos. ' + (n + 1) + '-' + (ci + 1),
         nombre: cultivoNombreLista(cult, c.variedad),
         fase,
         ext,
@@ -1646,6 +1798,8 @@ function buildConsejoLuzExposicionCultivo() {
     const rows = filas
       .map(r =>
         '<tr><td>' +
+        meteoEscHtml(r.ubicacion) +
+        '</td><td>' +
         meteoEscHtml(r.nombre) +
         '</td><td>' +
         meteoEscHtml(consejoFaseCultivoLabel(r.fase)) +
@@ -1657,7 +1811,7 @@ function buildConsejoLuzExposicionCultivo() {
       )
       .join('');
     tabla =
-      '<div class="hc-germ-table-scroll"><table class="hc-germ-table"><thead><tr><th>Cultivo</th><th>Fase detectada</th><th>Exterior (aclimatación controlable)</th><th>Interior (LED / apoyo natural)</th></tr></thead><tbody>' +
+      '<div class="hc-germ-table-scroll"><table class="hc-germ-table"><thead><tr><th>Posición</th><th>Variedad</th><th>Fase detectada</th><th>Exterior (aclimatación controlable)</th><th>Interior (LED / apoyo natural)</th></tr></thead><tbody>' +
       rows +
       '</tbody></table></div>';
   } else {
@@ -2111,7 +2265,8 @@ function buildConsejosDwc() {
           '</strong> · ' +
           cultivoEstadoChipHtml(recoCultivo.estado) +
           '.'
-        : ''),
+        : '') +
+      (typeof buildHtmlPlantasInstalacionSnippet === 'function' ? buildHtmlPlantasInstalacionSnippet() : ''),
     alerta: {
       tipo:
         recoCultivo && recoCultivo.estado === 'bad'
@@ -2298,6 +2453,9 @@ function renderConsejosLista() {
 
   if (consejoCatActiva === 'cultivo') {
     lista.innerHTML =
+      (typeof buildConsejoPlantasInstalacionActiva === 'function'
+        ? buildConsejoPlantasInstalacionActiva()
+        : '') +
       cat.consejos.map(c => htmlConsejoCard(cat, c)).join('') +
       (typeof buildConsejosCestasPorSistemaTabla === 'function' ? buildConsejosCestasPorSistemaTabla() : '') +
       buildConsejoCambioNutrientePorFase() +

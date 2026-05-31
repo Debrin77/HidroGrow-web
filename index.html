@@ -407,6 +407,7 @@
             </div>
           </div>
         </button>
+        <div id="hcPlantasInstalacionInicioCultivo" class="hc-plantas-instalacion hc-plantas-instalacion--dash setup-hidden" role="region" aria-live="polite" aria-label="Detalle de plantas en cultivo"></div>
       </section>
 
       <!-- Recarga depósito (resumen + acceso rápido) -->
@@ -1483,6 +1484,7 @@
 
       <!-- Avisos (cestas sin fecha, compatibilidad); nutriente solo en Inicio -->
       <section class="torre-tab-resumen-superior" aria-label="Avisos de esta instalación">
+        <div id="hcPlantasInstalacionSistema" class="hc-plantas-instalacion" role="region" aria-live="polite" aria-label="Plantas en esta instalación"></div>
         <div id="avisoCestasSinFechaTorre" class="aviso-cestas-sin-fecha setup-hidden" role="status"></div>
         <div id="compatAlert" class="info-banner setup-hidden compat-alert-banner">
           <span class="compat-alert-mark" aria-hidden="true">!</span>
@@ -2463,6 +2465,7 @@
         <p class="consejos-tab-intro">Orientaciones según tu instalación, agua y lo que registras. Los ejemplos de clima o calendario son orientativos si tu zona difiere.</p>
         <p class="consejos-tab-intro-meta">Elige <strong>Principiante</strong> o <strong>Avanzado</strong> y luego el tema. Textos largos se pueden ampliar en cada tarjeta. <button type="button" class="btn btn-ghost btn-sm consejos-intro-ayuda-btn" onclick="goTab('ayuda')">Ayuda — recorrido y FAQ</button></p>
       </div>
+      <div id="hcPlantasInstalacionConsejos" class="hc-plantas-instalacion hc-plantas-instalacion--consejos" role="region" aria-live="polite" aria-label="Plantas en la instalación activa"></div>
 
       <div class="consejos-top-stack">
         <div id="consejosModoRow" class="consejos-modo-row" role="group" aria-label="Nivel de detalle de los consejos"></div>
@@ -4680,7 +4683,7 @@
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-setup-save"></script>
-  <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
+  <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
   <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-recursion-fix"></script>
 
 
@@ -4703,10 +4706,10 @@
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-hist-full"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-05-31-consejos-iot"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-05-31-plantas-id"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
-  <script src="js/meteo-forecast-dashboard.js?v=21"></script>
+  <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-plantas-id"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=1"></script>
