@@ -53,6 +53,18 @@
     <symbol id="hc-i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M12 3v10m0 0 3-3m-3 3-3-3M5 21h14"/></symbol>
     <symbol id="hc-i-pause" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" d="M9 7v10M15 7v10"/></symbol>
     <symbol id="hc-i-leaf" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M11 20A7 7 0 0 1 9.8 6.1C15 5 20 10 20 15a7 7 0 0 1-9 5zm0 0c0-4-1-7-4-10"/></symbol>
+    <symbol id="hc-i-cannabis-leaf" viewBox="0 0 24 24">
+      <path fill="currentColor" d="M11.25 21.25h1.5v-4.5h-1.5v4.5z"/>
+      <g fill="currentColor" transform="translate(12, 13.5)">
+        <path d="M0 4.8 C-.55 3.6 -.72 -.75 0 -5.4 C.72 -.75 .55 3.6 0 4.8"/>
+        <path transform="rotate(-34)" d="M0 4.2 C-.5 3.1 -.65 -.65 0 -4.6 C.65 -.65 .5 3.1 0 4.2"/>
+        <path transform="rotate(34)" d="M0 4.2 C-.5 3.1 -.65 -.65 0 -4.6 C.65 -.65 .5 3.1 0 4.2"/>
+        <path transform="rotate(-68)" d="M0 3.4 C-.42 2.5 -.52 -.45 0 -3.7 C.52 -.45 .42 2.5 0 3.4"/>
+        <path transform="rotate(68)" d="M0 3.4 C-.42 2.5 -.52 -.45 0 -3.7 C.52 -.45 .42 2.5 0 3.4"/>
+        <path transform="rotate(-102)" d="M0 2.4 C-.32 1.75 -.38 -.28 0 -2.55 C.38 -.28 .32 1.75 0 2.4"/>
+        <path transform="rotate(102)" d="M0 2.4 C-.32 1.75 -.38 -.28 0 -2.55 C.38 -.28 .32 1.75 0 2.4"/>
+      </g>
+    </symbol>
     <symbol id="hc-i-pin" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M12 21s7-6.43 7-11a7 7 0 1 0-14 0c0 4.57 7 11 7 11z"/><circle cx="12" cy="10" r="2.25" fill="none" stroke="currentColor" stroke-width="1.75"/></symbol>
     <symbol id="hc-i-pin-mapa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s7-6.43 7-11a7 7 0 1 0-14 0c0 4.57 7 11 7 11z"/><circle cx="12" cy="10" r="3" fill="#fff"/></symbol>
     <symbol id="hc-i-flask" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" d="M10 2h4v3l4 10v2a3 3 0 0 1-3 3H9a3 3 0 0 1-3-3v-2l4-10V2"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" d="M9 14h6"/></symbol>
@@ -143,8 +155,8 @@
 <!-- ══ SPLASH SCREEN ══ -->
 <div class="splash" id="splashScreen">
   <div class="splash-img-wrap splash-img-wrap--brand" aria-hidden="true">
-    <img class="splash-img" alt="" src="icons/splash-brand.svg?v=2026-04-09-brand-c1" width="512" height="512" decoding="async" fetchpriority="high"
-      onerror="this.src='icons/splash-brand-icon.png?v=2026-04-09-brand-c1';">
+    <img class="splash-img" alt="" src="icons/splash-brand.svg?v=2026-05-31-cannabis" width="512" height="512" decoding="async" fetchpriority="high"
+      onerror="this.src='icons/splash-brand-icon.png?v=2026-05-31-cannabis';">
   </div>
   <div class="splash-title-wrap">
     <div class="splash-title">
@@ -160,8 +172,8 @@
 <!-- ══ PIN SCREEN ══ -->
 <div class="pin-screen" id="pinScreen" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="pinTitulo" tabindex="0">
   <div class="pin-brand" aria-hidden="true">
-    <img class="pin-brand-img" alt="" src="icons/splash-brand.svg?v=2026-04-09-brand-c1" width="96" height="96" decoding="async"
-      onerror="this.src='icons/splash-brand-icon.png?v=2026-04-09-brand-c1';">
+    <img class="pin-brand-img" alt="" src="icons/splash-brand.svg?v=2026-05-31-cannabis" width="96" height="96" decoding="async"
+      onerror="this.src='icons/splash-brand-icon.png?v=2026-05-31-cannabis';">
   </div>
   <div class="pin-logo" id="pinTitulo"><span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span></div>
   <div class="pin-sub pin-sub--tagline">HIDROPONÍA PARA TU SALA</div>
@@ -195,7 +207,10 @@
 
   <!-- HEADER -->
   <div class="header">
-    <div class="header-logo">HIDRO<span>Grow</span></div>
+    <div class="header-logo">
+      <svg class="header-logo-icon" aria-hidden="true" focusable="false"><use href="#hc-i-cannabis-leaf"/></svg>
+      <span class="header-logo-text">HIDRO<span>Grow</span></span>
+    </div>
     <div class="header-status">
       <button id="installPWABtn" class="install-pwa-btn" onclick="instalarPWA()"
         aria-label="Instalar HidroGrow">
@@ -2651,6 +2666,7 @@
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
   <div class="welcome-card welcome-card--guide">
     <div class="welcome-brand" aria-hidden="true">
+      <svg class="welcome-brand-icon" focusable="false"><use href="#hc-i-cannabis-leaf"/></svg>
       <span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span>
     </div>
     <p class="welcome-eyebrow">Planifica · Mide · Ajusta</p>
