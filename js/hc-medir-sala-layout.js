@@ -282,6 +282,14 @@
     if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
     if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
     var det = document.getElementById('sistemaEquipDetails');
+    if (det && !det.dataset.hcEquipBound) {
+      det.dataset.hcEquipBound = '1';
+      det.addEventListener('toggle', function () {
+        if (det.open && typeof renderMedirEquipamientoPanel === 'function') {
+          renderMedirEquipamientoPanel();
+        }
+      });
+    }
     if (det && typeof getCamposEquipamientoFaltantes === 'function') {
       var falt = getCamposEquipamientoFaltantes();
       if (falt.length && !det.open) det.open = true;

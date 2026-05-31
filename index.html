@@ -37,7 +37,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css?v=2026-05-31-layout-fix">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-premium">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
 <script>
@@ -1088,7 +1088,7 @@
           </button>
           <div class="config-section-collapse-body recarga-proxima-collapse-body" id="collapseBodyGrowRoom">
           <div class="medir-note-block">
-            Dimensiones de <strong>carpa/armario</strong>, potencia LED y extractor. Cálculos orientativos para cannabis en interior.
+            Dimensiones de <strong>carpa/armario</strong>, potencia LED y extractor. Se rellenan desde el asistente («Espacio y equipamiento»); editar aquí actualiza la instalación y los cálculos orientativos de sala.
           </div>
           <div class="medir-grid-2-gap-10 medir-mb-10">
             <div>
@@ -1156,9 +1156,14 @@
             <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
           </button>
           <div class="config-section-collapse-body recarga-proxima-collapse-body" id="collapseBodyInteriorGrow">
-          <div class="medir-note-block">
-            Ajustes de <strong>sala</strong> para el VPD (Magnus–Tetens). El <strong>origen de luz y las horas</strong> están arriba, en
-            <strong>«Ubicación del sistema y origen de luz»</strong>.
+          <div class="medir-note-block medir-note-block--sync">
+            <p class="medir-note-block-p"><strong>¿Se guardan?</strong> Sí: al cambiar un campo se guarda en la instalación activa.</p>
+            <p class="medir-note-block-p"><strong>¿Intervienen en cálculos?</strong> Temp. aire y HR alimentan el <strong>VPD</strong> y el módulo de <strong>Riego</strong>; la circulación de aire y la intensidad bajo focos ajustan recomendaciones de ambiente interior.</p>
+            <p class="medir-note-block-p"><strong>Medición diaria:</strong> en <strong>Medir → Paso 2 (Ambiente)</strong> puedes registrar temp., HR, PPFD y CO₂ del día; aquí defines valores de referencia cuando no hay medición reciente.</p>
+          </div>
+          <div id="interiorGrowSyncHint" class="medir-sync-hint setup-hidden" role="status"></div>
+          <div class="medir-note-block medir-note-block--muted">
+            El <strong>origen de luz y las horas</strong> están en el bloque «Ubicación, luz y sustrato» (más arriba en esta pestaña).
           </div>
           <div class="medir-grid-2-gap-10 medir-mb-10">
             <div>
@@ -4626,7 +4631,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-premium"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-equip-panel"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-scroll"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
@@ -4646,10 +4651,10 @@
 
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
   <script src="js/torre-render-build.js?v=2026-05-28-air-pump-torre"></script>
-<script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
+<script src="js/torre-render-main.js?v=2026-05-31-compat-fix"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-recursion-fix"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-panel"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-recursion-fix"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
@@ -4666,7 +4671,7 @@
   <script src="js/hc-setup-diario-fotos.js?v=1"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
   <script src="js/hc-setup-registro.js?v=5"></script>
-  <script src="js/hc-setup-agua-sustrato.js?v=11"></script>
+  <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-hint"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>

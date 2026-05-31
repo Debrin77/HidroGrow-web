@@ -1087,8 +1087,38 @@ function actualizarVisibilidadPanelInteriorGrow() {
   if (!p) return;
   const int = (state.configTorre || {}).ubicacion === 'interior';
   p.style.display = int ? 'block' : 'none';
+  if (int) p.classList.remove('setup-hidden');
   cargarUbicacionMedicionesUI();
   applyMedirCollapseUI();
+  renderInteriorGrowSyncHint();
+}
+
+/** Aclara qué campos vienen del asistente y cuáles intervienen en cálculos. */
+function renderInteriorGrowSyncHint() {
+  const host = document.getElementById('interiorGrowSyncHint');
+  if (!host) return;
+  const cfg = state.configTorre || {};
+  const bits = [];
+  if (cfg.premiumSetup || cfg.growRoomAnchoM || cfg.growRoomLedW) {
+    bits.push('carpa/LED del asistente (bloque «Sala de cultivo» arriba)');
+  }
+  if (cfg.interiorIntensidadLuz && cfg.premiumSetup && cfg.premiumSetup.intensidadLuz) {
+    bits.push('intensidad bajo focos copiada del asistente');
+  }
+  if (cfg.horasLuz != null && cfg.premiumSetup && cfg.premiumSetup.horasLuz != null) {
+    bits.push('horas de luz en «Ubicación, luz y sustrato»');
+  }
+  if (bits.length) {
+    host.innerHTML =
+      '<strong>Del asistente:</strong> ' +
+      bits.join(' · ') +
+      '. Temp. y HR de aire no están en el asistente: pon aquí valores de referencia o mídelos en <strong>Medir → Paso 2</strong>.';
+    host.classList.remove('setup-hidden');
+  } else {
+    host.innerHTML =
+      'Temp. y HR no vienen del asistente. Se guardan al salir del campo y alimentan <strong>Riego</strong> (VPD) y avisos de ambiente.';
+    host.classList.remove('setup-hidden');
+  }
 }
 
 function cargarCalentadorConsignaMedicionesUI() {
@@ -1468,6 +1498,7 @@ function cargarInteriorGrowUI() {
     el.classList.toggle('selected', sel);
     el.setAttribute('aria-checked', sel ? 'true' : 'false');
   });
+  renderInteriorGrowSyncHint();
 }
 
 function setInteriorLuzTipo(tipo) {

@@ -546,14 +546,15 @@ function toggleCompatPanel() {
 
   if (isOpen) {
     grid.classList.add('setup-hidden');
+    grid.style.display = '';
     if (arrow) arrow.style.transform = 'rotate(-90deg)';
-    if (btn) btn.setAttribute('aria-expanded','false');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
   } else {
     grid.classList.remove('setup-hidden');
     grid.style.display = 'flex';
     if (arrow) arrow.style.transform = 'rotate(0deg)';
-    if (btn) btn.setAttribute('aria-expanded','true');
-    renderCompatGrid(); // Actualizar al abrir
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    renderCompatGrid();
   }
 }
 
@@ -699,6 +700,9 @@ function renderCompatGrid() {
   } catch(e) {
     console.error('renderCompatGrid error:', e);
     if (grid) grid.innerHTML = '<div class="compat-error">Error: ' + e.message + '</div>';
+  }
+  if (grid && grid.classList.contains('setup-hidden')) {
+    grid.style.display = '';
   }
 }
 

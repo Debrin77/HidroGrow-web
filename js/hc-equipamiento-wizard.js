@@ -326,23 +326,44 @@
   function renderMedirEquipamientoPanel() {
     const card = el('medirEquipamientoCard');
     const panel = el('medirEquipamientoPanel');
-    if (!card || !panel) return;
+    if (!panel) return;
+    if (card) card.classList.remove('setup-hidden');
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    const interior = String(cfg.ubicacion || cfg.premiumSetup?.entorno || 'interior').toLowerCase() !== 'exterior';
-    card.classList.toggle('setup-hidden', !interior);
-    if (!interior) return;
+    const interior =
+      String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
+      'exterior';
+    if (!interior) {
+      panel.innerHTML =
+        '<p class="medir-equip-lead">Instalación en <strong>exterior</strong>: el catálogo de sala (LED, extractor, carpa…) no aplica. Configura ubicación en <strong>Sala → Ubicación, luz y sustrato</strong> si cultivas en interior.</p>';
+      if (typeof renderSalaLayoutPanel === 'function') {
+        const layHost = el('salaLayoutPanel');
+        if (layHost) layHost.innerHTML = '';
+      }
+      return;
+    }
     const inst = ensureEquipInstalado(cfg);
     const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
     const falt = getCamposEquipamientoFaltantes(cfg);
-    let html = '<p class="medir-equip-lead">Elige marca/modelo en el asistente o al reconfigurar; las medidas de sala se rellenan con la ficha técnica del catálogo.</p>';
+    let html =
+      '<p class="medir-equip-lead">Resumen del equipamiento guardado en esta instalación (desde el asistente o al reconfigurar). Para cambiar marca/modelo, abre el asistente de configuración.</p>';
     if (falt.length) {
-      html += '<p class="medir-equip-warn">⚠️ Completa: ' + falt.map(function (f) { return f.label; }).join(', ') + '</p>';
+      html +=
+        '<p class="medir-equip-warn">Completa en el asistente: ' +
+        falt.map(function (f) {
+          return f.label;
+        }).join(', ') +
+        '</p>';
     }
     html += '<ul class="medir-equip-list">';
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
       const cur = inst[key];
-      html += '<li><strong>' + cat.icon + ' ' + cat.label + ':</strong> ' +
+      html +=
+        '<li><strong>' +
+        cat.icon +
+        ' ' +
+        cat.label +
+        ':</strong> ' +
         (cur ? cur.marca + ' ' + cur.modelo : '<span class="medir-equip-muted">sin registrar</span>') +
         (cur && cur.nota ? ' <span class="medir-equip-muted">— ' + cur.nota + '</span>' : '') +
         '</li>';
