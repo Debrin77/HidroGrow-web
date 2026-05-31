@@ -897,3 +897,44 @@ html.hc-theme-dark .medir-quick-parse {
 .sala-sub-mount-inner {
   display: contents;
 }
+
+/* Cultivo e instalación — equipamiento bajo el esquema */
+.sistema-cultivo-extras {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.sistema-equip-details {
+  border: 1px solid var(--hc-border-soft, rgba(255, 255, 255, 0.08));
+  border-radius: var(--hc-radius-md, 12px);
+  background: var(--hc-surface-2, rgba(12, 20, 16, 0.6));
+  overflow: hidden;
+}
+.sistema-equip-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  list-style: none;
+}
+.sistema-equip-summary::-webkit-details-marker {
+  display: none;
+}
+.sistema-equip-summary .config-section-collapse-chevron {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+.sistema-equip-details[open] .sistema-equip-summary .config-section-collapse-chevron {
+  transform: rotate(180deg);
+}
+.sistema-equip-card {
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  border-top: 1px solid var(--hc-border-soft, rgba(255, 255, 255, 0.06));
+  box-shadow: none;
+}

@@ -1,12 +1,12 @@
 /**
  * Medir (registro) vs Sala (config) + sub-pestañas Sala + desplegables.
+ * Equipamiento / esquejes / semillero → Cultivo e instalación (#sistemaCultivoExtras).
  */
 (function () {
-  var SALA_SUB_ORDER = ['agua', 'equipo', 'iot', 'recarga'];
+  var SALA_SUB_ORDER = ['agua', 'iot', 'recarga'];
 
   var SALA_GROUPS = {
     agua: ['panelLocalidadMeteo', 'configPanel'],
-    equipo: ['medirInstalacionEsquema', 'medirEquipamientoCard', 'medirEsquejesCard', 'medirSemilleroCard'],
     iot: ['medirIotCard'],
     recarga: ['recargaCardMediciones'],
   };
@@ -116,6 +116,9 @@
       'aria-haspopup="dialog" aria-controls="modalHerramientasPro">' +
       '<span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-wrench"/></svg></span>' +
       '<span>Herramientas</span></button>' +
+      '<button type="button" class="quick-btn medir-flow-secondary" data-quick-icon="equipo" onclick="goTab(\'sistema\')">' +
+      '<span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-plug"/></svg></span>' +
+      '<span>Equipamiento</span></button>' +
       '<button type="button" class="quick-btn medir-flow-link-sala" onclick="goTabSala(\'iot\')">' +
       '<span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-bolt"/></svg></span>' +
       '<span>Sensores IoT</span></button>' +
@@ -156,8 +159,6 @@
       '<div class="sala-sub-tabs hist-tabs" id="salaSubTabs" role="tablist" aria-label="Apartados de sala de cultivo">' +
       '<button type="button" class="hist-tab active" role="tab" id="stab-agua" aria-selected="true" aria-controls="salaPanelAgua" onclick="salaSubTab(\'agua\')">' +
       '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg> Agua y ubicación</button>' +
-      '<button type="button" class="hist-tab" role="tab" id="stab-equipo" aria-selected="false" aria-controls="salaPanelEquipo" onclick="salaSubTab(\'equipo\')">' +
-      '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg> Equipamiento</button>' +
       '<button type="button" class="hist-tab" role="tab" id="stab-iot" aria-selected="false" aria-controls="salaPanelIot" onclick="salaSubTab(\'iot\')">' +
       '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg> IoT</button>' +
       '<button type="button" class="hist-tab" role="tab" id="stab-recarga" aria-selected="false" aria-controls="salaPanelRecarga" onclick="salaSubTab(\'recarga\')">' +
@@ -215,13 +216,20 @@
 
   function refreshSalaTab() {
     if (typeof initConfigUI === 'function') initConfigUI();
-    if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
     if (typeof renderIotPanel === 'function') renderIotPanel();
+    if (typeof updateRecargaBar === 'function') updateRecargaBar();
+    if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
+  }
+
+  function refreshSistemaCultivoExtras() {
     if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
     if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
     if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
-    if (typeof updateRecargaBar === 'function') updateRecargaBar();
-    if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
+    var det = document.getElementById('sistemaEquipDetails');
+    if (det && typeof getCamposEquipamientoFaltantes === 'function') {
+      var falt = getCamposEquipamientoFaltantes();
+      if (falt.length && !det.open) det.open = true;
+    }
   }
 
   function initMedirSalaLayout() {
@@ -230,6 +238,7 @@
     ensureGuiaWrap();
     wrapAmbienteCollapsible();
     salaSubTab(salaSubActive);
+    refreshSistemaCultivoExtras();
   }
 
   window.salaSubTab = salaSubTab;
@@ -245,6 +254,7 @@
     return typeof hcApplyMedirTabQuick === 'function' ? hcApplyMedirTabQuick(inp.value) : false;
   };
   window.hcRefreshSalaTab = refreshSalaTab;
+  window.hcRefreshSistemaCultivoExtras = refreshSistemaCultivoExtras;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
 
   document.addEventListener('DOMContentLoaded', initMedirSalaLayout);

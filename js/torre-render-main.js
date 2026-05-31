@@ -114,27 +114,9 @@ function renderTorre() {
   } catch (_) {}
 }
 
-var MEDIR_ESQUEMA_HINT_DEFAULT =
-  'Mismo esquema que en Cultivo e instalación: cubos, depósito y equipos. Toca una maceta para ver cultivo y días.';
-
-/** Medir: esquema solo en Cultivo e instalación (DWC/RDWC). */
+/** Medir: esquema retirado — solo en Cultivo e instalación. */
 function renderTorreMedirDiagram() {
-  const section = document.getElementById('medirInstalacionEsquema');
-  const medirWrap = document.getElementById('medirDiagramWrap');
-  if (!section || !medirWrap) return;
-
-  const cfg = state.configTorre || {};
-  const hintEl = section.querySelector('.medir-esquema-hint');
-  if (hintEl) hintEl.textContent = MEDIR_ESQUEMA_HINT_DEFAULT;
-
-  if (cfg.operativa === false) {
-    section.classList.add('setup-hidden');
-    medirWrap.innerHTML = '';
-    return;
-  }
-
-  section.classList.add('setup-hidden');
-  medirWrap.innerHTML = '';
+  /* noop: #medirInstalacionEsquema eliminado */
 }
 
 function bindRdwcLoopHelp(wrap) {

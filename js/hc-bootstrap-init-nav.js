@@ -417,6 +417,7 @@ function goTab(tab) {
   if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
   if (tab === 'sistema') {
     renderTorre();
+    if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
     requestAnimationFrame(() => {
       try {
         const w = document.getElementById('torreSVGWrap');

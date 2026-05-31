@@ -595,13 +595,6 @@
       </button>
       <div id="hcMultiCoachMedir" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
 
-      <section id="medirInstalacionEsquema" class="medir-instalacion-esquema setup-hidden" aria-labelledby="medirEsquemaTitulo">
-        <h2 id="medirEsquemaTitulo" class="medir-esquema-titulo">Esquema de tu instalación</h2>
-        <p class="medir-esquema-hint">DWC/RDWC: esquema de macetas. Toca cada cubo para genética, fase y fecha de entrada al hidro.</p>
-        <div id="medirDiagramWrap" class="torre-svg-canvas medir-diagram-canvas" role="img"
-          aria-label="Esquema orientativo de la instalación activa."></div>
-      </section>
-
       <div class="config-section medir-localidad-top" id="panelLocalidadMeteo">
         <div class="medir-localidad-cab">
           <span class="medir-localidad-cab-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ubicacion-mapa" focusable="false"><use href="#hc-i-pin-mapa"/></svg></span>
@@ -641,25 +634,9 @@
         <div id="medirProtocoloPanel" class="medir-protocolo-panel"></div>
       </div>
 
-      <div class="card medir-esquejes-card setup-hidden" id="medirEsquejesCard">
-        <div class="card-title">✂️ Esquejes y planta madre</div>
-        <div id="medirEsquejesPanel" class="medir-esquejes-panel"></div>
-      </div>
-
-      <div class="card medir-equip-card" id="medirEquipamientoCard">
-        <div class="card-title">🔧 Equipamiento de sala</div>
-        <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
-        <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
-      </div>
-
       <div class="card medir-iot-card" id="medirIotCard">
         <div class="card-title">📡 Sensores IoT (Bluetooth / WiFi)</div>
         <div id="medirIotPanel" class="medir-iot-panel"></div>
-      </div>
-
-      <div class="card medir-sem-card setup-hidden" id="medirSemilleroCard">
-        <div class="card-title">🏪 Perfil de semillero</div>
-        <div id="medirSemilleroPanel" class="medir-sem-panel"></div>
       </div>
 
       <div class="card medir-ambiente-card" id="medirAmbienteCard">
@@ -1439,11 +1416,11 @@
       </h1>
       <div id="tabContextHintSala" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          Configura <strong>ubicación, equipamiento, sensores IoT, tipo de agua y recargas</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
+          Configura <strong>ubicación, agua de base, sensores IoT y recargas</strong>. El <strong>equipamiento</strong> y el esquema de cultivo están en <strong>Cultivo e instalación</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sala')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
-      <p class="medir-sala-intro">Todo lo que describe <strong>cómo es tu sala</strong> y el mantenimiento del depósito — no cambia en cada medición.</p>
+      <p class="medir-sala-intro">Ubicación, agua de base, IoT y ciclos de recarga — configuración de sala que no cambia en cada medición.</p>
       <div id="tabSalaMount" class="tab-sala-mount"></div>
     </div>
     <!-- FIN TAB SALA -->
@@ -1456,7 +1433,7 @@
       </h1>
       <div id="tabContextHintSistema" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Cultivo e instalación</strong>: cultivo y fecha de trasplante en cada hueco. Sala, IoT y recargas en la pestaña <strong>Sala</strong>. Mediciones diarias en <strong>Medir</strong>.
+          <strong>Cultivo e instalación</strong>: esquema, equipamiento (LED, extractor, medidor…), cultivo y fecha en cada hueco. <strong>Sala</strong> = ubicación, agua, IoT y recargas. <strong>Medir</strong> = registro diario del depósito.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sistema')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1918,6 +1895,30 @@
           <div class="leyenda-item"><div class="leyenda-dot leyenda-dot-red"></div>Cosechar</div>
         </div>
       </div>
+
+      <section id="sistemaCultivoExtras" class="sistema-cultivo-extras" aria-label="Equipamiento y perfiles de cultivo">
+        <details class="sistema-equip-details" id="sistemaEquipDetails">
+          <summary class="sistema-equip-summary">
+            <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
+            Equipamiento de instalación (LED, extractor, medidor…)
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="card medir-equip-card sistema-equip-card" id="medirEquipamientoCard">
+            <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
+            <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
+          </div>
+        </details>
+
+        <div class="card medir-esquejes-card setup-hidden" id="medirEsquejesCard">
+          <div class="card-title">✂️ Esquejes y planta madre</div>
+          <div id="medirEsquejesPanel" class="medir-esquejes-panel"></div>
+        </div>
+
+        <div class="card medir-sem-card setup-hidden" id="medirSemilleroCard">
+          <div class="card-title">🏪 Perfil de semillero</div>
+          <div id="medirSemilleroPanel" class="medir-sem-panel"></div>
+        </div>
+      </section>
 
       <div id="rotacionCard" class="setup-hidden"></div>
 
@@ -4620,7 +4621,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-28-welcome-scroll-top"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-full"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-sistema-equip"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
