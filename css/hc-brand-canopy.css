@@ -1,28 +1,35 @@
 /**
- * HidroGrow — identidad «Deep Canopy»
- * Sala de cultivo oscura + lámpara dorada + esmeralda.
- * Distinto del teal/crema/mint de HidroCultivo.
+ * HidroGrow — identidad «Greenhouse Ledger» (modo claro principal)
+ * Pergamino cálido + bronce + bosque. Sin mint/teal/violeta de HidroCultivo.
  */
 
 :root {
-  --bg:         #e4e9e4;
-  --bg2:        #f6f8f5;
-  --bg3:        #d5ddd5;
-  --border:     rgba(20, 45, 30, 0.12);
-  --green:      #15803d;
-  --green-dim:  #14532d;
-  --green-pale: rgba(21, 128, 61, 0.1);
-  --gold:       #b8860b;
-  --gold-dim:   rgba(184, 134, 11, 0.12);
+  --bg:         #faf6ef;
+  --bg2:        #fffdf9;
+  --bg3:        #f0e9dc;
+  --border:     rgba(62, 47, 35, 0.14);
+  --white:      #1c1917;
+  --muted:      #57534e;
+  --green:      #166534;
+  --green-dim:  #1a4d32;
+  --green-pale: #e8f3ec;
+  --gold:       #b45309;
+  --gold-dim:   #fef3c7;
+  --bronze:     #92400e;
+  --copper:     #c2410c;
   --logo-hydro:       #166534;
-  --logo-cultivo:     #c9970c;
-  --logo-hydro-splash:  #4ade80;
-  --logo-cultivo-splash: #f5c542;
+  --logo-cultivo:     #b45309;
+  --logo-hydro-splash:  #15803d;
+  --logo-cultivo-splash: #d97706;
   --blue:       #1e40af;
-  --card-shadow-soft: 0 2px 4px rgba(15, 30, 20, 0.06), 0 10px 28px rgba(15, 30, 20, 0.08);
-  --focus-ring: 0 0 0 2px rgba(21, 128, 61, 0.35);
-  --hg-glow-gold: rgba(212, 160, 23, 0.14);
-  --hg-glow-green: rgba(34, 197, 94, 0.08);
+  --card-shadow-soft: 0 1px 0 rgba(62, 47, 35, 0.05), 0 8px 22px rgba(62, 47, 35, 0.07);
+  --focus-ring: 0 0 0 2px rgba(180, 83, 9, 0.38);
+  --hg-glow-gold: rgba(180, 83, 9, 0.1);
+  --hg-glow-green: rgba(22, 101, 52, 0.06);
+  --hg-surface-glass: rgba(255, 253, 249, 0.94);
+  --hg-surface-elevated: #fffdf9;
+  --hg-accent-line: linear-gradient(180deg, var(--gold), var(--green-dim));
+  --hg-modal-scrim: rgba(28, 25, 23, 0.45);
 }
 
 html.hc-theme-dark {
@@ -44,12 +51,11 @@ html.hc-theme-dark {
   --hg-glow-green: rgba(34, 197, 94, 0.1);
 }
 
-/* ── Fondo tipo sala (rejilla sutil + lámpara arriba) ── */
+/* ── Fondo: pergamino (sin rejilla verde HC) ── */
 body {
   background:
-    radial-gradient(ellipse 90% 55% at 50% -15%, var(--hg-glow-gold) 0%, transparent 52%),
-    radial-gradient(ellipse 55% 45% at 100% 60%, var(--hg-glow-green) 0%, transparent 48%),
-    radial-gradient(ellipse 45% 35% at 0% 90%, rgba(21, 94, 52, 0.12) 0%, transparent 42%),
+    radial-gradient(ellipse 85% 50% at 50% -8%, var(--hg-glow-gold) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 100% 85%, var(--hg-glow-green) 0%, transparent 50%),
     var(--bg);
 }
 
@@ -67,14 +73,18 @@ body::after {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.035;
+  opacity: 0.025;
+  background-image:
+    linear-gradient(rgba(180, 83, 9, 0.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(180, 83, 9, 0.35) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+html.hc-theme-dark body::after {
+  opacity: 0.055;
   background-image:
     linear-gradient(rgba(212, 160, 23, 0.45) 1px, transparent 1px),
     linear-gradient(90deg, rgba(212, 160, 23, 0.45) 1px, transparent 1px);
   background-size: 28px 28px;
-}
-html.hc-theme-dark body::after {
-  opacity: 0.055;
 }
 
 .app {
@@ -82,28 +92,29 @@ html.hc-theme-dark body::after {
   z-index: 1;
 }
 
-/* ── Splash / PIN (coherente con logo dorado) ── */
+/* ── Splash / PIN (claro + emblema dorado) ── */
 .splash {
   background:
-    radial-gradient(110% 90% at 50% -5%, rgba(212, 160, 23, 0.12) 0%, transparent 55%),
-    radial-gradient(80% 60% at 100% 100%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
-    linear-gradient(165deg, #0a0f0c 0%, #121a14 48%, #080b09 100%);
+    radial-gradient(110% 85% at 50% 0%, rgba(254, 243, 199, 0.65) 0%, transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(232, 243, 236, 0.5) 0%, transparent 50%),
+    linear-gradient(165deg, #fffdf9 0%, #faf6ef 48%, #f5efe4 100%);
 }
 
 .splash.splash--brand-emblem .splash-title .t-hydro,
 .pin-screen--brand-emblem .pin-logo .t-hydro {
-  color: #6ee7b7 !important;
-  text-shadow: 0 0 20px rgba(110, 231, 183, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
+  color: #166534 !important;
+  text-shadow: none;
   -webkit-text-stroke: 0;
 }
 .splash.splash--brand-emblem .splash-title .t-caru,
 .pin-screen--brand-emblem .pin-logo .t-caru {
-  color: #f5c542 !important;
-  text-shadow: 0 0 18px rgba(245, 197, 66, 0.32), 0 2px 8px rgba(0, 0, 0, 0.5);
+  color: #b45309 !important;
+  text-shadow: none;
   -webkit-text-stroke: 0;
 }
 .splash.splash--brand-emblem .splash-sub {
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  color: #57534e;
+  text-shadow: none;
 }
 .splash.splash--brand-emblem .splash-title {
   text-shadow: none;
@@ -111,19 +122,19 @@ html.hc-theme-dark body::after {
 
 .pin-screen--brand-emblem {
   background:
-    radial-gradient(100% 80% at 50% 0%, rgba(212, 160, 23, 0.1) 0%, transparent 55%),
-    linear-gradient(165deg, #0a0f0c 0%, #121a14 50%, #0a0f0c 100%);
+    radial-gradient(100% 75% at 50% 0%, rgba(254, 243, 199, 0.55) 0%, transparent 58%),
+    linear-gradient(165deg, #fffdf9 0%, #faf6ef 52%, #f5efe4 100%);
 }
 .pin-screen--brand-emblem .pin-logo {
   flex-shrink: 0;
   margin-top: 0;
 }
 .pin-screen--brand-emblem .pin-sub--tagline {
-  background-image: linear-gradient(90deg, #6ee7b7 0%, #4ade80 42%, #f5c542 100%);
+  background-image: linear-gradient(90deg, #166534 0%, #15803d 42%, #b45309 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: #86efac;
+  color: #166534;
   background-color: transparent;
   border: none;
   box-shadow: none;
@@ -131,48 +142,57 @@ html.hc-theme-dark body::after {
 }
 @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
   .pin-screen--brand-emblem .pin-sub--tagline {
-    -webkit-text-fill-color: #86efac;
-    color: #86efac;
+    -webkit-text-fill-color: #166534;
+    color: #166534;
   }
 }
 .pin-screen--brand-emblem .pin-key {
-  background: rgba(20, 28, 23, 0.92);
-  border-color: rgba(212, 160, 23, 0.18);
-  color: #e8f0ea;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: #fffdf9;
+  border-color: rgba(180, 83, 9, 0.28);
+  color: #1c1917;
+  box-shadow: 0 2px 8px rgba(62, 47, 35, 0.08);
+}
+.pin-screen--brand-emblem .pin-key:active {
+  background: #fef3c7;
+  border-color: rgba(180, 83, 9, 0.45);
 }
 .pin-screen--brand-emblem .pin-dot {
-  border-color: rgba(143, 163, 150, 0.45);
-  background: rgba(10, 15, 12, 0.55);
+  border-color: rgba(87, 83, 78, 0.35);
+  background: #f0e9dc;
+}
+.pin-screen--brand-emblem .pin-dot.on {
+  background: #166534;
+  border-color: #166534;
+  box-shadow: 0 0 8px rgba(22, 101, 52, 0.35);
 }
 .pin-screen--brand-emblem .pin-sub--status {
-  color: #c5d4ca;
+  color: #57534e;
 }
-.pin-screen--brand-emblem .pin-footer-hint { color: #a8bdb0; }
-.pin-screen--brand-emblem .pin-footer-hint strong { color: #e8f0ea; }
-.pin-screen--brand-emblem .pin-err { color: #fca5a5; }
+.pin-screen--brand-emblem .pin-footer-hint { color: #78716c; }
+.pin-screen--brand-emblem .pin-footer-hint strong { color: #44403c; }
+.pin-screen--brand-emblem .pin-err { color: #b91c1c; }
 
 .splash-img-wrap--brand-emblem .splash-img {
   filter:
-    drop-shadow(0 0 20px rgba(212, 160, 23, 0.28))
-    drop-shadow(0 12px 32px rgba(0, 0, 0, 0.5));
+    drop-shadow(0 0 14px rgba(180, 83, 9, 0.22))
+    drop-shadow(0 10px 24px rgba(62, 47, 35, 0.12));
   box-shadow: none;
 }
 .splash-img-wrap::before {
-  background: radial-gradient(circle, rgba(212, 160, 23, 0.12) 0%, rgba(34, 197, 94, 0.04) 46%, transparent 72%);
+  background: radial-gradient(circle, rgba(254, 243, 199, 0.45) 0%, rgba(232, 243, 236, 0.2) 46%, transparent 72%);
 }
 
 .splash-tagline {
-  background-image: linear-gradient(90deg, #4ade80 0%, #6ee7b7 42%, #f5c542 100%);
+  background-image: linear-gradient(90deg, #166534 0%, #15803d 42%, #b45309 100%);
 }
 
-/* ── Shell: header + tabs (cristal oscuro / papel botánico) ── */
+/* ── Shell: header + tabs (pergamino) ── */
 .header {
-  background: color-mix(in srgb, var(--bg2) 88%, transparent);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom-color: var(--border);
-  box-shadow: 0 1px 0 rgba(212, 160, 23, 0.08) inset, 0 4px 24px rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--bg2) 92%, transparent);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  border-bottom: 1px solid rgba(180, 83, 9, 0.18);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.85) inset, 0 4px 16px rgba(62, 47, 35, 0.06);
 }
 
 html.hc-theme-dark .header {
@@ -181,11 +201,11 @@ html.hc-theme-dark .header {
 }
 
 .tab-bar {
-  background: color-mix(in srgb, var(--bg2) 90%, transparent);
-  backdrop-filter: blur(14px) saturate(1.15);
-  -webkit-backdrop-filter: blur(14px) saturate(1.15);
-  border-top-color: var(--border);
-  box-shadow: 0 -1px 0 rgba(212, 160, 23, 0.08) inset, 0 -8px 28px rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--bg2) 94%, transparent);
+  backdrop-filter: blur(12px) saturate(1.08);
+  -webkit-backdrop-filter: blur(12px) saturate(1.08);
+  border-top: 1px solid rgba(180, 83, 9, 0.16);
+  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.9) inset, 0 -6px 20px rgba(62, 47, 35, 0.05);
 }
 
 html.hc-theme-dark .tab-bar {
@@ -199,17 +219,30 @@ html.hc-theme-dark .tab-bar {
 .tab-btn.active::before {
   background: linear-gradient(90deg, var(--green-dim), var(--gold));
 }
+html:not(.hc-theme-dark) .tab-btn.active svg.hc-ico--ion-tab {
+  color: var(--gold);
+}
 
 .header-logo-text span {
   color: var(--logo-cultivo);
 }
 
-/* ── Tarjetas (cristal + borde dorado sutil) ── */
+/* ── Tarjetas (borde bronce + etiquetas) ── */
 .card,
 .recarga-card,
 .param-card {
-  border-color: var(--border);
+  background: var(--bg2);
+  border: 1px solid rgba(180, 83, 9, 0.16);
+  border-top: 2px solid rgba(180, 83, 9, 0.32);
   box-shadow: var(--card-shadow-soft);
+}
+.card-title {
+  color: var(--green-dim);
+  letter-spacing: -0.01em;
+}
+.card-title::after {
+  background: linear-gradient(90deg, var(--gold), transparent);
+  opacity: 0.55;
 }
 
 html.hc-theme-dark .card,
@@ -228,12 +261,12 @@ html.hc-theme-dark .param-card {
   border-color: color-mix(in srgb, var(--gold) 40%, var(--border));
 }
 
-/* ── Inicio: banners y etiquetas (sin mint HidroCultivo) ── */
+/* ── Inicio: banners (franja bronce, no mint HC) ── */
 .dash-torre-banner,
 .medir-torre-banner {
-  background: linear-gradient(135deg, rgba(21, 94, 52, 0.14) 0%, var(--bg2) 100%);
-  border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--border));
-  border-left: 3px solid var(--gold);
+  background: linear-gradient(135deg, #fef3c7 0%, var(--bg2) 62%);
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  border-left: 4px solid var(--gold);
   box-shadow: var(--card-shadow-soft);
 }
 
@@ -259,13 +292,23 @@ html.hc-theme-dark .dash-torre-nombre {
 .dash-instalacion-label,
 .dash-block-label,
 .dash-subtitle--ultima-medicion {
-  border-left-color: var(--gold);
+  display: inline-block;
+  padding: 4px 10px 4px 8px;
+  margin-bottom: 6px;
+  border-left: 3px solid var(--gold);
+  background: var(--gold-dim);
+  color: var(--bronze);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 10px;
+  border-radius: 0 6px 6px 0;
 }
 
 .install-pwa-btn {
-  background: var(--green-pale);
-  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
-  color: var(--green-dim);
+  background: var(--gold-dim);
+  border-color: rgba(180, 83, 9, 0.35);
+  color: var(--bronze);
 }
 html.hc-theme-dark .install-pwa-btn {
   background: rgba(74, 222, 128, 0.1);
@@ -274,8 +317,8 @@ html.hc-theme-dark .install-pwa-btn {
 }
 
 .header-instal-activa {
-  border-color: rgba(212, 160, 23, 0.32);
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(212, 160, 23, 0.08));
+  border-color: rgba(180, 83, 9, 0.35);
+  background: linear-gradient(135deg, var(--green-pale), var(--gold-dim));
 }
 html.hc-theme-dark .header-instal-activa {
   border-color: rgba(212, 160, 23, 0.35);
@@ -287,16 +330,28 @@ html.hc-theme-dark .header-instal-activa {
 .setup-btn-next:not(:disabled) {
   background: linear-gradient(135deg, var(--green-dim), var(--green));
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
+  box-shadow: 0 4px 14px rgba(22, 101, 52, 0.22);
+}
+.btn-secondary {
+  background: var(--bg2);
+  border-color: rgba(180, 83, 9, 0.28);
+  color: var(--bronze);
 }
 
 .section-title .accent {
   color: var(--gold);
 }
+html:not(.hc-theme-dark) .section-title .accent {
+  color: var(--gold);
+}
+html:not(.hc-theme-dark) h1.section-title {
+  color: var(--green-dim);
+}
 
 .hc-multi-coach {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(212, 160, 23, 0.1));
-  border: 1px solid rgba(212, 160, 23, 0.22);
+  background: linear-gradient(135deg, var(--green-pale), var(--gold-dim));
+  border: 1px solid rgba(180, 83, 9, 0.22);
+  color: var(--green-dim);
 }
 html.hc-theme-dark .hc-multi-coach {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(212, 160, 23, 0.12));
@@ -304,7 +359,7 @@ html.hc-theme-dark .hc-multi-coach {
 }
 
 .welcome-overlay {
-  background: linear-gradient(165deg, #e8ede8 0%, #f2f5f0 55%, #f5f0e4 100%);
+  background: linear-gradient(165deg, #faf6ef 0%, #fffdf9 55%, #fef3c7 100%);
 }
 html.hc-theme-dark #welcomeOverlay[data-welcome-theme="light"] {
   background: rgba(6, 10, 8, 0.52);
@@ -337,12 +392,12 @@ html.hc-theme-dark #welcomeOverlay[data-welcome-theme="dark"] {
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  --hg-surface-glass: rgba(246, 248, 245, 0.92);
-  --hg-surface-elevated: #f6f8f5;
+  --hg-surface-glass: rgba(255, 253, 249, 0.94);
+  --hg-surface-elevated: #fffdf9;
   --hg-accent-line: linear-gradient(180deg, var(--gold), var(--green-dim));
-  --hg-glow-emerald: 0 0 18px rgba(21, 128, 61, 0.2);
-  --hg-glow-gold: 0 0 22px rgba(184, 134, 11, 0.18);
-  --hg-modal-scrim: rgba(8, 14, 10, 0.72);
+  --hg-glow-emerald: 0 0 18px rgba(22, 101, 52, 0.15);
+  --hg-glow-gold: 0 0 22px rgba(180, 83, 9, 0.12);
+  --hg-modal-scrim: rgba(28, 25, 23, 0.45);
 }
 
 html.hc-theme-dark {
@@ -731,19 +786,102 @@ html.hc-theme-dark .status-dot {
   animation: pulse 2s infinite, hg-live-pulse 3.5s ease-in-out infinite;
 }
 
-/* ── Modo claro refinado (papel botánico, no mint HC) ── */
-html:not(.hc-theme-dark) .card,
-html:not(.hc-theme-dark) .param-tile,
-html:not(.hc-theme-dark) .quick-btn {
-  border-color: color-mix(in srgb, var(--gold) 18%, var(--border));
-}
+/* ── Modo claro «Greenhouse Ledger» (principal) ── */
 html:not(.hc-theme-dark) h1.dash-greeting {
+  background: linear-gradient(118deg, #1a4d32 0%, #166534 45%, #b45309 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: var(--green-dim);
+}
+html:not(.hc-theme-dark) .param-tile {
+  background: var(--bg2);
+  border: 1px solid rgba(180, 83, 9, 0.14);
+  border-left: 3px solid rgba(180, 83, 9, 0.45);
+  box-shadow: var(--card-shadow-soft);
+}
+html:not(.hc-theme-dark) .param-tile.ok {
+  border-left-color: var(--green);
+  background: linear-gradient(105deg, var(--green-pale) 0%, var(--bg2) 55%);
+}
+html:not(.hc-theme-dark) .param-tile.warn {
+  border-left-color: var(--gold);
+  background: linear-gradient(105deg, var(--gold-dim) 0%, var(--bg2) 55%);
+}
+html:not(.hc-theme-dark) .param-tile.bad {
+  border-left-color: #b91c1c;
+  background: linear-gradient(105deg, #fee2e2 0%, var(--bg2) 55%);
+}
+html:not(.hc-theme-dark) .param-tile.empty {
+  border-left-color: rgba(120, 113, 108, 0.35);
+  opacity: 0.88;
+}
+html:not(.hc-theme-dark) .tile-status.ok {
+  background: var(--green-pale);
+  color: var(--green-dim);
+  border: 1px solid rgba(22, 101, 52, 0.2);
+}
+html:not(.hc-theme-dark) .tile-status.warn {
+  background: var(--gold-dim);
+  color: var(--bronze);
+  border: 1px solid rgba(180, 83, 9, 0.25);
+}
+html:not(.hc-theme-dark) .tile-status.bad {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid rgba(185, 28, 28, 0.2);
+}
+html:not(.hc-theme-dark) .tile-value.ok { color: var(--green-dim); }
+html:not(.hc-theme-dark) .tile-value.warn { color: var(--bronze); }
+html:not(.hc-theme-dark) .quick-btn {
+  background: var(--bg2);
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  color: var(--green-dim);
+}
+html:not(.hc-theme-dark) .quick-btn:active,
+html:not(.hc-theme-dark) .quick-btn:hover {
+  background: var(--gold-dim);
+  border-color: rgba(180, 83, 9, 0.35);
+}
+html:not(.hc-theme-dark) .param-card {
+  background: var(--bg2);
+  border: 1px solid rgba(180, 83, 9, 0.14);
+  border-top: 2px solid rgba(22, 101, 52, 0.35);
+}
+html:not(.hc-theme-dark) .param-label {
+  color: var(--green-dim);
+  font-weight: 700;
+}
+html:not(.hc-theme-dark) .param-range {
+  background: var(--gold-dim);
+  color: var(--bronze);
+  border: 1px solid rgba(180, 83, 9, 0.2);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+}
+html:not(.hc-theme-dark) .dash-torre-cambiar {
+  background: var(--gold-dim);
+  color: var(--bronze);
+  border: 1px solid rgba(180, 83, 9, 0.28);
+}
+html:not(.hc-theme-dark) .medir-flow {
+  background: var(--bg2);
+  border: 1px solid rgba(180, 83, 9, 0.18);
+  border-top: 2px solid rgba(180, 83, 9, 0.35);
+}
+html:not(.hc-theme-dark) .medir-step-kicker {
+  color: var(--bronze);
+}
+html:not(.hc-theme-dark) .tab-context-hint-inner {
+  background: linear-gradient(135deg, var(--green-pale), var(--gold-dim));
+  border: 1px solid rgba(180, 83, 9, 0.22);
   color: var(--green-dim);
 }
 html:not(.hc-theme-dark) .dash-torre-banner,
-html:not(.hc-theme-dark) .medir-torre-banner,
 html:not(.hc-theme-dark) .medir-torre-banner {
-  border-left-width: 3px;
+  border-left-width: 4px;
 }
 
 /* ── Medir: flujo interactivo ── */

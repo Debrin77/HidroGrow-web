@@ -1,26 +1,27 @@
 /**
  * Apariencia: modo claro/oscuro/auto (sistema) persistido en localStorage (hcAppearance).
+ * HidroGrow: modo claro por defecto (identidad «Greenhouse Ledger»).
  */
 (function () {
   var KEY = 'hcAppearance';
-  var BRAND_THEME_KEY = 'hcBrandDeepCanopyV1';
+  var BRAND_LIGHT_KEY = 'hcBrandLightGrowV2';
   var _mql = null;
 
   function readStored() {
     try {
-      if (!localStorage.getItem(BRAND_THEME_KEY)) {
-        localStorage.setItem(BRAND_THEME_KEY, '1');
-        localStorage.setItem(KEY, 'dark');
+      if (!localStorage.getItem(BRAND_LIGHT_KEY)) {
+        localStorage.setItem(BRAND_LIGHT_KEY, '1');
+        localStorage.setItem(KEY, 'light');
       }
       var v = localStorage.getItem(KEY);
       if (v === 'dark' || v === 'light' || v === 'auto') return v;
       if (!localStorage.getItem('hcAppearanceInitialized')) {
         localStorage.setItem('hcAppearanceInitialized', '1');
-        return 'dark';
+        return 'light';
       }
       return 'auto';
     } catch (e) {
-      return 'auto';
+      return 'light';
     }
   }
 
@@ -44,6 +45,8 @@
     document.documentElement.classList.toggle('hc-theme-dark', dark);
     var cs = document.querySelector('meta[name="color-scheme"]');
     if (cs) cs.setAttribute('content', dark ? 'dark' : 'light');
+    var tc = document.querySelector('meta[name="theme-color"]');
+    if (tc) tc.setAttribute('content', dark ? '#0a0f0c' : '#faf6ef');
     try {
       localStorage.setItem(KEY, mode);
     } catch (e) {}
