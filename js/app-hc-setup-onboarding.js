@@ -58,6 +58,13 @@ function hcResetSetupWizardSession(opts) {
   setupCoordenadas = { lat: null, lon: null, ciudad: '' };
   setupNutriente = 'canna_aqua';
   setupUbicacion = 'exterior';
+  if (typeof ensurePremiumSetup === 'function') {
+    setupData.premium = null;
+    ensurePremiumSetup();
+  }
+  try {
+    if (typeof window !== 'undefined') window._nutrientesMostrarCatalogoCompleto = false;
+  } catch (_) {}
   if (typeof setupRdwcDraft !== 'undefined') setupRdwcDraft = null;
   try {
     delete window._hcPostSetupPrevListo;

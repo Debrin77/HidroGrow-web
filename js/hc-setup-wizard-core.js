@@ -240,7 +240,7 @@ function seleccionarSetupTorreMontajeOrigen(_mode) {
     typeof setupTipoInstalacion !== 'undefined' &&
     setupTipoInstalacion === 'torre' &&
     typeof setupPagina !== 'undefined' &&
-    setupPagina === 1;
+    setupPagina === SETUP_PAGE_GEOMETRY;
   if (sec) {
     if (torreSoloGraficoSliders) {
       sec.classList.add('setup-hidden');
@@ -2434,7 +2434,30 @@ let setupUbicacion = 'exterior';
 let setupNutriente = 'canna_aqua';
 let setupCoordenadas = { lat: null, lon: null, ciudad: '' };
 
-const SETUP_TOTAL_PAGES = 8; // 0=bienvenida, 1=torre, 2=equipo, 3=nutrientes
+const SETUP_PAGE_WELCOME = 0;
+const SETUP_PAGE_PREMIUM_START = 1;
+const SETUP_PAGE_PREMIUM_END = 7;
+const SETUP_PAGE_PREMIUM_1 = 1;
+const SETUP_PAGE_PREMIUM_2 = 2;
+const SETUP_PAGE_PREMIUM_3 = 3;
+const SETUP_PAGE_PREMIUM_4 = 4;
+const SETUP_PAGE_PREMIUM_5 = 5;
+const SETUP_PAGE_PREMIUM_6 = 6;
+const SETUP_PAGE_PREMIUM_7 = 7;
+const SETUP_PAGE_GEOMETRY = 8;
+const SETUP_PAGE_EQUIP = 9;
+const SETUP_PAGE_AGUA = 10;
+const SETUP_PAGE_NUTRIENTES = 11;
+const SETUP_PAGE_UBICACION = 12;
+const SETUP_PAGE_CULTIVOS = 13;
+const SETUP_PAGE_RESUMEN = 14;
+const SETUP_TOTAL_PAGES = 15;
+const SETUP_PAGE_IDS = [
+  'spage0',
+  'spagePremium1', 'spagePremium2', 'spagePremium3', 'spagePremium4',
+  'spagePremium5', 'spagePremium6', 'spagePremium7',
+  'spage1', 'spage2', 'spage3', 'spage4', 'spage5', 'spage6', 'spage7',
+];
 
 function abrirSetup() {
   // Reconfigurar instalación existente (no crear ranura nueva) salvo que se abra «Nuevo sistema»
@@ -2721,11 +2744,11 @@ function cerrarSetup() {
 
 function iniciarConfiguracionTorre() {
   if (setupEsNuevaTorre && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
-    showToast('Elige Torre, NFT, DWC, RDWC o SRF antes de continuar', true);
+    showToast('Elige DWC o RDWC antes de continuar', true);
     return;
   }
   setupTipoTorre = 'custom';
-  setupPagina = 1;
+  setupPagina = SETUP_PAGE_PREMIUM_START;
   renderSetupPage();
 }
 
@@ -2738,7 +2761,7 @@ function aplicarSetupWizardExclusividadTorreVertical() {
   const tipo = typeof setupTipoInstalacion !== 'undefined' ? setupTipoInstalacion : 'torre';
   const pag = typeof setupPagina !== 'undefined' ? setupPagina : 0;
   const sec = document.getElementById('seccionTuboBomba');
-  const mostrarBloqueTorreMontajeYTubo = tipo === 'torre' && pag === 1;
+  const mostrarBloqueTorreMontajeYTubo = tipo === 'torre' && pag === SETUP_PAGE_GEOMETRY;
   if (!mostrarBloqueTorreMontajeYTubo) {
     if (sec) {
       sec.style.display = 'none';
@@ -2838,7 +2861,7 @@ function refrescarSetupTipoInstalacionUI() {
   try {
     aplicarSetupWizardExclusividadTorreVertical();
   } catch (_) {}
-  if (setupPagina !== 1) {
+  if (setupPagina !== SETUP_PAGE_GEOMETRY) {
     try {
       refreshDwcTapHintSetup();
     } catch (eTapEarly) {}
@@ -2940,7 +2963,7 @@ function refrescarSetupTipoInstalacionUI() {
 
 /** Actualiza el gráfico del paso 1 (DWC / RDWC). */
 function syncSetupPreviewDiagramPorTipoInstalacion() {
-  if (typeof setupPagina === 'undefined' || setupPagina !== 1) return;
+  if (typeof setupPagina === 'undefined' || setupPagina !== SETUP_PAGE_GEOMETRY) return;
   if (setupTipoInstalacion === 'rdwc') {
     try {
       if (typeof onSetupRdwcInput === 'function') onSetupRdwcInput();
@@ -2959,8 +2982,8 @@ function onSetupVolSliderInput() {
     const m = parseFloat(String(mezEl.value).replace(',', '.'));
     if (Number.isFinite(m) && m > maxL) mezEl.value = String(maxL);
   }
-  if (typeof setupPagina !== 'undefined' && setupPagina >= 4) renderDosisSetup();
-  if (typeof setupPagina !== 'undefined' && setupPagina === 7) actualizarResumenSetup();
+  if (typeof setupPagina !== 'undefined' && setupPagina >= SETUP_PAGE_NUTRIENTES) renderDosisSetup();
+  if (typeof setupPagina !== 'undefined' && setupPagina === SETUP_PAGE_RESUMEN) actualizarResumenSetup();
 }
 
 function onSetupVolMezclaInput() {
@@ -2991,8 +3014,8 @@ function onSetupVolMezclaInput() {
       }
     }
   }
-  if (typeof setupPagina !== 'undefined' && setupPagina >= 4) renderDosisSetup();
-  if (typeof setupPagina !== 'undefined' && setupPagina === 7) actualizarResumenSetup();
+  if (typeof setupPagina !== 'undefined' && setupPagina >= SETUP_PAGE_NUTRIENTES) renderDosisSetup();
+  if (typeof setupPagina !== 'undefined' && setupPagina === SETUP_PAGE_RESUMEN) actualizarResumenSetup();
 }
 
 /**
@@ -4552,7 +4575,7 @@ function abrirAsistenteNftCanalYTuboDesdeSistema() {
   saveState();
   abrirSetup();
   setupTipoInstalacion = 'nft';
-  setupPagina = 1;
+  setupPagina = SETUP_PAGE_PREMIUM_START;
   renderSetupPage();
   try {
     updateNftSetupPreview();

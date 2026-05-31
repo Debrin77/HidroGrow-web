@@ -83,11 +83,13 @@ function normalizarNotifOpcionesEnState(s) {
   }
 }
 
-/** Origen de la planta en ficha: vivero | germinacion | '' */
+/** Origen de la planta en ficha: vivero | germinacion | clon | madre | '' */
 function normalizarOrigenPlanta(v) {
   const s = String(v == null ? '' : v).trim().toLowerCase();
   if (s === 'germinacion' || s === 'germinación') return 'germinacion';
   if (s === 'vivero') return 'vivero';
+  if (s === 'clon' || s === 'esqueje') return 'clon';
+  if (s === 'madre') return 'madre';
   return '';
 }
 

@@ -14,10 +14,20 @@ async function guardarMedicion() {
   const temp  = document.getElementById('inputTemp').value.trim();
   const vol   = document.getElementById('inputVol').value.trim();
   const humS  = '';
-  const notas = document.getElementById('inputNotas').value.trim();
+  const notas = document.getElementById('inputNotas')?.value.trim() || '';
+  const amb   = typeof collectAmbienteMedicion === 'function' ? collectAmbienteMedicion() : {};
+  const ambPayload = {
+    tempAire: Number.isFinite(amb.tempAire) ? amb.tempAire : '',
+    humSala: Number.isFinite(amb.humSala) ? amb.humSala : '',
+    vpd: Number.isFinite(amb.vpd) ? amb.vpd : '',
+    ppfd: Number.isFinite(amb.ppfd) ? amb.ppfd : '',
+    lux: Number.isFinite(amb.lux) ? amb.lux : '',
+    tempExt: Number.isFinite(amb.tempExt) ? amb.tempExt : '',
+    fase: amb.fase || '',
+  };
 
-  if (!ec && !ph && !temp && !vol) {
-    showToast('⚠️ Introduce al menos un valor', true);
+  if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd) {
+    showToast('⚠️ Introduce al menos un valor (depósito o ambiente)', true);
     const firstInput = document.getElementById('inputEC');
     if (firstInput) {
       firstInput.focus();
@@ -34,9 +44,9 @@ async function guardarMedicion() {
   const hora  = now.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
 
   // ── 1. GUARDAR SIEMPRE EN LOCAL PRIMERO ───────────────────────────────────
-  state.ultimaMedicion = { fecha, hora, ec, ph, temp, vol, humSustrato: humS };
+  state.ultimaMedicion = { fecha, hora, ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload };
   if (!state.mediciones) state.mediciones = [];
-  state.mediciones.unshift({ fecha, hora, tipo:'medicion', ec, ph, temp, vol, humSustrato: humS, notas });
+  state.mediciones.unshift({ fecha, hora, tipo:'medicion', ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload });
   if (state.mediciones.length > 200)
     state.mediciones = state.mediciones.slice(0, 200);
 
@@ -62,7 +72,7 @@ async function guardarMedicion() {
   } catch (_) {}
 
   // Línea única en el registro unificado (Historial → Registro)
-  addRegistro('medicion', { ec, ph, temp, vol, humSustrato: humS, notas, icono: '📊' });
+  addRegistro('medicion', { ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload, icono: '📊' });
 
   // Si es una recarga marcada
   if (esRecarga) {
@@ -114,6 +124,7 @@ async function guardarMedicion() {
   ['correccionEC','correccionPH','correccionTemp','correccionVol'].forEach(id => {
     showCorreccion(id, '');
   });
+  try { cargarUltimaMedicion(); } catch (_) {}
 
   updateDashboard();
   updateRecargaBar();
@@ -151,10 +162,16 @@ async function guardarMedicion() {
   if (ph && (parseFloat(ph) < 5.7  || parseFloat(ph) > 6.4))  alertas.push('pH ' + ph + ' fuera de rango');
   if (temp && (parseFloat(temp) < 18 || parseFloat(temp) > 22)) alertas.push('Temp ' + temp + '°C fuera de rango');
   if (vol && parseFloat(vol) < 16) alertas.push('Vol ' + vol + 'L bajo');
+  const ambAlert = typeof ambienteAlertasTexto === 'function' ? ambienteAlertasTexto(ambPayload) : '';
+  if (ambAlert) alertas.push(ambAlert);
 
   await hcPostSheets({
     action: 'medicion', fecha, hora, ec, ph, temp, volumen: vol,
     humSustrato: humS || null,
+    tempAire: ambPayload.tempAire || null,
+    humSala: ambPayload.humSala || null,
+    vpd: ambPayload.vpd || null,
+    ppfd: ambPayload.ppfd || null,
     notas, alertas: alertas.join(' | ')
   });
 }

@@ -423,6 +423,8 @@
     try { renderInsights(); } catch (_) {}
     try { renderHero(); } catch (_) {}
     try { syncWizardRangeLabels(getTargets()); } catch (_) {}
+    try { if (typeof syncWizFromAmbienteInputs === 'function') syncWizFromAmbienteInputs(); } catch (_) {}
+    try { if (typeof renderProtocoloMedicionPanel === 'function') renderProtocoloMedicionPanel(); } catch (_) {}
     showStep(1);
   }
 
@@ -642,9 +644,13 @@
     const diag = getCorrections();
 
     if (!ec && !ph && !temp && !vol) {
-      if (typeof showToast === 'function') showToast('⚠️ Introduce al menos un valor', true);
-      showStep(1);
-      return;
+      const ta = valNum('wizTempAire');
+      const hu = valNum('wizHumSala');
+      if (!ta && !hu && !valNum('wizPPFD')) {
+        if (typeof showToast === 'function') showToast('⚠️ Introduce al menos un valor', true);
+        showStep(1);
+        return;
+      }
     }
 
     busy = true;
@@ -656,6 +662,9 @@
     try { el('inputTemp').value = temp; } catch (_) {}
     try { el('inputVol').value = vol; } catch (_) {}
     try { el('inputNotas').value = notas; } catch (_) {}
+    try {
+      if (typeof syncWizardAmbienteFromWiz === 'function') syncWizardAmbienteFromWiz();
+    } catch (_) {}
 
     // si el usuario marca recarga completa, reutilizar switch existente
     try {

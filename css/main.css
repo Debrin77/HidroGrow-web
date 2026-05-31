@@ -8746,6 +8746,10 @@ button.dia-card {
   border-radius: 20px;
 }
 
+.hist-tabla-header--ambient,
+.hist-tabla-header.hist-tabla-header--ambient {
+  grid-template-columns: 78px repeat(6, minmax(0, 1fr)) 40px;
+}
 .hist-tabla-header {
   display: grid;
   grid-template-columns: 78px repeat(4, minmax(0, 1fr)) 40px;
@@ -8759,6 +8763,9 @@ button.dia-card {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+}
+.hist-row--ambient {
+  grid-template-columns: 78px repeat(6, minmax(0, 1fr)) 40px;
 }
 .hist-row {
   display: grid;
@@ -16700,6 +16707,7 @@ button.toggle-switch:focus-visible {
   margin-bottom: 16px;
 }
 .nutriente-card {
+  position: relative;
   background: #ffffff;
   border: 2px solid #e5e7eb;
   border-radius: 14px;
@@ -16725,6 +16733,68 @@ button.toggle-switch:focus-visible {
   color: #111827;
 }
 .nutriente-detalle { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.nutriente-par-flores { display: block; font-size: 10px; color: #059669; margin-top: 2px; }
+.nutriente-top-badge {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 2px 5px;
+  border-radius: 6px;
+}
+.setup-link-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 4px 0;
+}
+.setup-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+}
+.setup-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+.setup-checklist-preview { margin: 0; padding-left: 1.2rem; font-size: 13px; color: #374151; }
+.setup-checklist-preview li { margin-bottom: 6px; }
+.medir-protocolo-card { margin-bottom: 12px; }
+.medir-protocolo-panel { font-size: 13px; color: #374151; }
+.medir-protocolo-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.medir-protocolo-fase { font-weight: 700; font-size: 14px; }
+.medir-protocolo-badge { font-size: 11px; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 8px; }
+.medir-protocolo-nota { margin: 0 0 10px; color: #6b7280; font-size: 12px; }
+.medir-protocolo-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 10px; }
+.medir-protocolo-cols ul { margin: 4px 0 0; padding-left: 1.1rem; font-size: 12px; }
+.medir-protocolo-rangos { font-size: 11px; color: #059669; background: #ecfdf5; padding: 8px 10px; border-radius: 8px; }
+.medir-esquejes-card { margin-bottom: 12px; }
+.medir-esquejes-panel { font-size: 13px; color: #374151; }
+.medir-esquejes-lead { margin: 0 0 10px; font-size: 12px; color: #6b7280; }
+.medir-esquejes-stats { font-size: 12px; margin-bottom: 8px; }
+.medir-esquejes-last { font-size: 12px; color: #6b7280; margin: 0 0 10px; }
+.medir-esquejes-actions { margin-bottom: 10px; }
+.medir-esquejes-details { font-size: 12px; }
+.medir-esquejes-details summary { cursor: pointer; font-weight: 600; margin-bottom: 6px; }
+.medir-esquejes-details h4 { font-size: 12px; margin: 10px 0 4px; }
+.medir-esquejes-details ul { margin: 0 0 8px; padding-left: 1.1rem; }
+.medir-ambiente-card { margin-bottom: 12px; }
+.medir-ambiente-lead { font-size: 12px; color: #6b7280; margin: 0 0 12px; }
+.medir-ambiente-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+.medir-lux-row { margin-top: 6px; }
+.medir-wizard-grid--ambient { margin-top: 12px; grid-template-columns: repeat(3, 1fr); }
+.hist-val--muted { color: var(--muted); font-size: 12px; }
 .nutriente-card .nutriente-nombre,
 .nutriente-card .nutriente-detalle { display: block; }
 .nutriente-buffer {

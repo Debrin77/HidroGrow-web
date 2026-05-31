@@ -1,6 +1,31 @@
 /**
- * HidroGrow — catálogo de nutrientes orientado a cannabis (DWC/RDWC/NFT).
+ * HidroGrow — catálogo de nutrientes orientado a cannabis (DWC/RDWC).
+ * Top 10: marcas más habituales en growshops españoles (2024–2026).
  */
+const NUTRIENTES_TOP10_ES = [
+  'canna_aqua',
+  'advanced_ph_perfect',
+  'plagron_hydro',
+  'ghe_flora',
+  'biobizz_bio_grow',
+  'hesi_hidro',
+  'atami_bcuzz_hydro',
+  'top_crop_hydro',
+  'campeador',
+  'house_garden_aqua',
+];
+
+function getNutrientesTop10ES() {
+  if (!Array.isArray(NUTRIENTES_DB)) return [];
+  return NUTRIENTES_TOP10_ES.map(function (id) {
+    return NUTRIENTES_DB.find(function (n) { return n.id === id; });
+  }).filter(Boolean);
+}
+
+function getNutrienteById(id) {
+  return (NUTRIENTES_DB || []).find(function (n) { return n.id === id; }) || null;
+}
+
 const NUTRIENTES_DB = [
   {
     id: 'canna_aqua',
@@ -29,6 +54,9 @@ const NUTRIENTES_DB = [
     nota: 'Referencia habitual en cannabis en sistemas cerrados.',
     precio: '€€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 1,
+    par_flores: 'canna_aqua_flores',
   },
   {
     id: 'canna_aqua_flores',
@@ -117,6 +145,8 @@ const NUTRIENTES_DB = [
     nota: 'Muy usado en cannabis — ajustar Grow/Bloom según fase.',
     precio: '€€€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 2,
   },
   {
     id: 'plagron_hydro',
@@ -139,6 +169,8 @@ const NUTRIENTES_DB = [
     nota: 'Versión A veg / B bloom según ficha Plagron.',
     precio: '€€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 3,
   },
   {
     id: 'biobizz_bio_grow',
@@ -161,6 +193,9 @@ const NUTRIENTES_DB = [
     nota: 'Combinar con Bio-Bloom en floración.',
     precio: '€€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 5,
+    par_flores: 'biobizz_bio_bloom',
   },
   {
     id: 'biobizz_bio_bloom',
@@ -205,6 +240,9 @@ const NUTRIENTES_DB = [
     nota: 'Pasar a Hesi Hydro Bloom en 12/12.',
     precio: '€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 6,
+    par_flores: 'hesi_hydro_bloom',
   },
   {
     id: 'hesi_hydro_bloom',
@@ -249,6 +287,109 @@ const NUTRIENTES_DB = [
     nota: 'Buena relación calidad/precio en autocultivo.',
     precio: '€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 9,
+    par_flores: 'campeador_flor',
+  },
+  {
+    id: 'campeador_flor',
+    nombre: 'Campeador Flor A+B',
+    bandera: '🇪🇸',
+    faseUso: 'bloom',
+    partes: 2,
+    buffer: false,
+    sistema: 'recirculante',
+    ecPorMl: 22,
+    ecObjetivo: [1200, 1900],
+    calmagNecesario: true,
+    calmagMl: 6,
+    pHBuffer: false,
+    pHRango: [5.5, 6.5],
+    pHIntervenir: [5.5, 6.5],
+    orden: ['Campeador Flor A', 'Campeador Flor B'],
+    dosis: { min: 0.5, max: 2.5, unidad: 'ml/L c/u', recomendado: 1 },
+    detalle: 'A+B · Floración · marca española',
+    nota: 'Cambiar de Hoja a Flor en prefloración.',
+    precio: '€',
+    disponible_es: true,
+  },
+  {
+    id: 'atami_bcuzz_hydro',
+    nombre: "Atami B'cuzz Hydro A+B",
+    bandera: '🇳🇱',
+    faseUso: 'both',
+    partes: 2,
+    buffer: false,
+    sistema: 'recirculante',
+    ecPorMl: 24,
+    ecObjetivo: [1100, 1900],
+    calmagNecesario: true,
+    calmagMl: 8,
+    pHBuffer: false,
+    pHRango: [5.5, 6.2],
+    pHIntervenir: [5.5, 6.5],
+    orden: ["B'cuzz Hydro A", "B'cuzz Hydro B"],
+    dosis: { min: 1, max: 3, unidad: 'ml/L c/u', recomendado: 2 },
+    protocolo: [
+      '1. Agua RO o blanda',
+      '2. CalMag si EC base < 200 µS/cm',
+      '3. Hydro A → remover → Hydro B',
+      '4. pH 5.5–6.2 en DWC/RDWC',
+    ],
+    detalle: 'A+B · Muy presente en growshops ES',
+    nota: 'Versión A veg / B bloom según fase; misma línea en hidro recirculante.',
+    precio: '€€',
+    disponible_es: true,
+    top_es: true,
+    rank_es: 7,
+  },
+  {
+    id: 'top_crop_hydro',
+    nombre: 'Top Crop Top Hydro A+B',
+    bandera: '🇪🇸',
+    faseUso: 'both',
+    partes: 2,
+    buffer: false,
+    sistema: 'recirculante',
+    ecPorMl: 22,
+    ecObjetivo: [1100, 1800],
+    calmagNecesario: true,
+    calmagMl: 8,
+    pHBuffer: false,
+    pHRango: [5.5, 6.5],
+    pHIntervenir: [5.5, 6.5],
+    orden: ['Top Hydro A', 'Top Hydro B'],
+    dosis: { min: 1, max: 3, unidad: 'ml/L c/u', recomendado: 2 },
+    detalle: 'A+B · Marca española · mineral',
+    nota: 'Buena relación calidad/precio; carta semanal en envase.',
+    precio: '€',
+    disponible_es: true,
+    top_es: true,
+    rank_es: 8,
+  },
+  {
+    id: 'house_garden_aqua',
+    nombre: 'House & Garden Aqua Flakes',
+    bandera: '🇳🇱',
+    faseUso: 'both',
+    partes: 2,
+    buffer: false,
+    sistema: 'recirculante',
+    ecPorMl: 26,
+    ecObjetivo: [1200, 2000],
+    calmagNecesario: true,
+    calmagMl: 10,
+    pHBuffer: false,
+    pHRango: [5.5, 6.2],
+    pHIntervenir: [5.5, 6.5],
+    orden: ['Aqua Flakes A', 'Aqua Flakes B'],
+    dosis: { min: 1, max: 3, unidad: 'ml/L c/u', recomendado: 2.5 },
+    detalle: 'A+B · Polvo líquido · recirculación',
+    nota: 'Muy usado en salas profesionales; seguir carta A/B por semana.',
+    precio: '€€€',
+    disponible_es: true,
+    top_es: true,
+    rank_es: 10,
   },
   {
     id: 'ghe_flora',
@@ -271,5 +412,7 @@ const NUTRIENTES_DB = [
     nota: 'Ratio veg/bloom según tabla GHE para cannabis.',
     precio: '€€',
     disponible_es: true,
+    top_es: true,
+    rank_es: 4,
   },
 ];

@@ -1469,7 +1469,7 @@ function guardarSetupYContinuar() {
     if (inpNom) setupNombreNuevaTorre = (inpNom.value || '').trim().slice(0, 40);
     if (!setupNombreNuevaTorre) {
       showToast('Escribe un nombre para esta instalación (paso de dimensiones)', true);
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       document.getElementById('setupNombreInstalacionInput')?.focus();
       return;
@@ -1492,14 +1492,14 @@ function guardarSetupYContinuar() {
   if (isNft) {
     if (typeof nftSetupFormularioCompleto === 'function' && !nftSetupFormularioCompleto()) {
       showToast('Indica tubos y huecos por tubo en el bloque NFT.', true);
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }
     const nftMont = readNftMontajeFromSetupUi();
     if ((nftMont.disposicion === 'pared' || nftMont.disposicion === 'escalera') && nftMont.alturaBombeoCm <= 0) {
       showToast('Indica la altura de bombeo (cm) hasta el 1.º tubo: en pared y escalera es imprescindible para calcular la bomba.', true);
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       document.getElementById('nftAlturaBombeoCm')?.focus();
       return;
@@ -1522,7 +1522,7 @@ function guardarSetupYContinuar() {
         'Completa medidas del cubo, cesta (Ø y altura) y rejilla (filas × macetas) en el bloque DWC.',
         true
       );
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }
@@ -1537,7 +1537,7 @@ function guardarSetupYContinuar() {
         'Completa sitios, filas, litros de cubo y depósito de control, y medidas de cesta en el bloque RDWC.',
         true
       );
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }
@@ -1551,7 +1551,7 @@ function guardarSetupYContinuar() {
   if (!isNft && !isDwc && !isRdwc && !isSrf) {
     if (typeof torreSetupFormularioCompleto === 'function' && !torreSetupFormularioCompleto()) {
       showToast('Indica niveles, cestas por nivel y litros del depósito en la torre.', true);
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }
@@ -1562,7 +1562,7 @@ function guardarSetupYContinuar() {
         'Completa el bloque SRF: medidas del estanque, filas × plantas en la balsa y diámetro/profundidad de cesta.',
         true
       );
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }
@@ -1677,7 +1677,7 @@ function guardarSetupYContinuar() {
         'En exterior indica la ciudad del mapa en el paso de luz y ubicación: cada instalación usa el clima de su municipio.',
         true
       );
-      setupPagina = 5;
+      setupPagina = SETUP_PAGE_UBICACION;
       renderSetupPage();
       return;
     }
@@ -1718,6 +1718,11 @@ function guardarSetupYContinuar() {
     torreObjetivoCultivo:
       ((state.configTorre && state.configTorre.torreObjetivoCultivo) || 'final'),
   };
+  try {
+    if (typeof persistPremiumSetupToConfig === 'function') {
+      persistPremiumSetupToConfig(state.configTorre);
+    }
+  } catch (_) {}
   try {
     delete state.configTorre.hcPlantillaAutogenerada;
   } catch (_) {}
@@ -1924,7 +1929,7 @@ function guardarSetupYContinuar() {
       typeof dwcValidarVolumenManualSegunForma === 'function' &&
       !dwcValidarVolumenManualSegunForma(state.configTorre, 'setup')
     ) {
-      setupPagina = 1;
+      setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       return;
     }

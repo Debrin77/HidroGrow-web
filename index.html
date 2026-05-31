@@ -554,6 +554,92 @@
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-clock"/></svg> Última medición</div>
         <div id="ultimaMedicionInfo" class="ultima-medicion-info"></div>
       </div>
+
+      <div class="card medir-protocolo-card" id="medirProtocoloCard">
+        <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg> Protocolo de mediciones</div>
+        <div id="medirProtocoloPanel" class="medir-protocolo-panel"></div>
+      </div>
+
+      <div class="card medir-esquejes-card setup-hidden" id="medirEsquejesCard">
+        <div class="card-title">✂️ Esquejes y planta madre</div>
+        <div id="medirEsquejesPanel" class="medir-esquejes-panel"></div>
+      </div>
+
+      <div class="card medir-ambiente-card" id="medirAmbienteCard">
+        <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Ambiente y luz</div>
+        <p class="medir-ambiente-lead">Registra sala y depósito. VPD se calcula solo con temp. aire + HR. Las correcciones aparecen al escribir.</p>
+        <div class="medir-ambiente-grid">
+          <div class="param-card" id="cardTempAire">
+            <div class="param-header">
+              <div class="param-label">Temp. aire sala</div>
+              <div class="param-range" id="paramRangeTempAire">20 – 28 °C</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputTempAire" placeholder="24" inputmode="decimal" step="0.1" min="0" max="45"
+                oninput="actualizarVPDEnUI();evalAmbiente();evalParam()">
+              <div class="param-unit">°C</div>
+            </div>
+            <div class="param-status empty" id="statusTempAire"></div>
+            <div class="correccion-box" id="correccionTempAire"></div>
+          </div>
+          <div class="param-card" id="cardHumSala">
+            <div class="param-header">
+              <div class="param-label">Humedad relativa</div>
+              <div class="param-range" id="paramRangeHum">55 – 70 %</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputHumSala" placeholder="58" inputmode="numeric" step="1" min="0" max="100"
+                oninput="actualizarVPDEnUI();evalAmbiente();evalParam()">
+              <div class="param-unit">%</div>
+            </div>
+            <div class="param-status empty" id="statusHumSala"></div>
+            <div class="correccion-box" id="correccionHumSala"></div>
+          </div>
+          <div class="param-card" id="cardVPD">
+            <div class="param-header">
+              <div class="param-label">VPD (calculado)</div>
+              <div class="param-range" id="paramRangeVPD">0.8 – 1.2 kPa</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputVPD" placeholder="—" inputmode="decimal" step="0.01" min="0" max="3" readonly tabindex="-1">
+              <div class="param-unit">kPa</div>
+            </div>
+            <div class="param-status empty" id="statusVPD"></div>
+            <div class="correccion-box" id="correccionVPD"></div>
+          </div>
+          <div class="param-card" id="cardPPFD">
+            <div class="param-header">
+              <div class="param-label">PPFD bajo foco</div>
+              <div class="param-range" id="paramRangePPFD">400 – 600 µmol/m²/s</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputPPFD" placeholder="500" inputmode="numeric" step="10" min="0" max="2000"
+                oninput="syncLuxPpfd('ppfd');evalAmbiente()">
+              <div class="param-unit">µmol</div>
+            </div>
+            <div class="param-input-row medir-lux-row">
+              <input type="number" class="param-input" id="inputLux" placeholder="Lux (opc.)" inputmode="numeric" step="100" min="0"
+                oninput="syncLuxPpfd('lux');evalAmbiente()">
+              <div class="param-unit">lux</div>
+            </div>
+            <div class="param-status empty" id="statusPPFD"></div>
+            <div class="correccion-box" id="correccionPPFD"></div>
+          </div>
+          <div class="param-card" id="cardTempExt">
+            <div class="param-header">
+              <div class="param-label">Temp. exterior</div>
+              <div class="param-range">Opcional · exterior</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputTempExt" placeholder="28" inputmode="decimal" step="0.1" min="-10" max="50"
+                oninput="evalAmbiente()">
+              <div class="param-unit">°C</div>
+            </div>
+            <div class="param-status empty" id="statusTempExt"></div>
+            <div class="correccion-box" id="correccionTempExt"></div>
+          </div>
+        </div>
+      </div>
       <div class="medir-assistant-cta-wrap">
         <button type="button" class="quick-btn quick-btn-info medir-assistant-cta" data-quick-icon="asistentepro" onclick="abrirWizardMedicion()"
           aria-haspopup="dialog" aria-controls="modalWizardMedicion" aria-label="Abrir Asistente de mediciones">
@@ -2403,13 +2489,23 @@
               <div id="histVolActual" class="hist-um-val hist-um-val--blue">—</div>
               <div class="hist-um-unit">L</div>
             </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>VPD</span></div>
+              <div id="histVPDActual" class="hist-um-val hist-um-val--green">—</div>
+              <div class="hist-um-unit">kPa</div>
+            </div>
+            <div class="hist-ultima-cell">
+              <div class="hist-um-lab"><span>HR</span></div>
+              <div id="histHumActual" class="hist-um-val hist-um-val--blue">—</div>
+              <div class="hist-um-unit">%</div>
+            </div>
           </div>
         </div>
 
         <!-- Tabla últimas mediciones (alineada con .hist-row) -->
         <div class="hist-tabla">
-          <div class="hist-tabla-header" role="row">
-            <span>Fecha</span><span>EC</span><span>pH</span><span>°C</span><span>Vol</span>
+          <div class="hist-tabla-header hist-tabla-header--ambient" role="row">
+            <span>Fecha</span><span>EC</span><span>pH</span><span>°C agua</span><span>Vol</span><span>VPD</span><span>HR</span>
             <span class="hist-tabla-col-actions" aria-hidden="true"></span>
           </div>
           <div id="histTabla"></div>
@@ -2639,6 +2735,13 @@
       <div class="setup-step-dot" id="sdot5"></div>
       <div class="setup-step-dot" id="sdot6"></div>
       <div class="setup-step-dot" id="sdot7"></div>
+      <div class="setup-step-dot" id="sdot8"></div>
+      <div class="setup-step-dot" id="sdot9"></div>
+      <div class="setup-step-dot" id="sdot10"></div>
+      <div class="setup-step-dot" id="sdot11"></div>
+      <div class="setup-step-dot" id="sdot12"></div>
+      <div class="setup-step-dot" id="sdot13"></div>
+      <div class="setup-step-dot" id="sdot14"></div>
     </div>
     <div class="setup-steps-label" id="setupStepLabel">Paso 1 de 8</div>
   </div>
@@ -2677,6 +2780,205 @@
         Empezar asistente
       </button>
       <p class="welcome-hint">Tras el asistente: revisa todo en <strong>Cultivo e instalación</strong>, asigna variedades y fechas en las cestas, y usa el <strong>checklist de recarga</strong> para preparar el nutriente en el depósito. También podrás afinar datos en Medir → Configuración.</p>
+    </div>
+
+    <div class="setup-page" id="spagePremium1">
+      <div class="setup-title">Objetivo y legalidad</div>
+      <div class="setup-subtitle">HidroGrow orienta el cultivo hidropónico personal de cannabis. Confirma tu contexto antes de dimensionar sala y sistema.</div>
+      <div class="setup-box-warn setup-mb-16">
+        <strong>Uso personal responsable.</strong> Esta app es una herramienta técnica (EC, pH, VPD, oxígeno, checklist). Respeta la normativa de tu territorio sobre autocultivo.
+      </div>
+      <div class="setup-block-title">¿Cuál es tu objetivo?</div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
+        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumObjAutocultivo" onclick="seleccionarPremiumObjetivo('autocultivo')">
+          <div class="setup-option-title-md">Autocultivo personal</div>
+          <div class="setup-option-desc-sm">Pocas plantas · calidad · aprendizaje</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumObjExperimento" onclick="seleccionarPremiumObjetivo('experimento')">
+          <div class="setup-option-title-md">Experimento / prueba</div>
+          <div class="setup-option-desc-sm">Comparar genéticas o nutrientes</div>
+        </button>
+      </div>
+      <p class="setup-field-hint">Tras el asistente registrarás mediciones diarias (depósito + ambiente) con correcciones sugeridas.</p>
+    </div>
+
+    <div class="setup-page" id="spagePremium2">
+      <div class="setup-title">Entorno de cultivo</div>
+      <div class="setup-subtitle">Interior o exterior define clima, VPD y equipamiento.</div>
+      <div class="setup-block-title">¿Dónde estará el sistema?</div>
+      <div class="setup-grid-2 setup-grid-gap-10 setup-mb-16">
+        <button type="button" class="equip-card equip-card-pad-14 selected" id="setupPremiumLocInterior" onclick="seleccionarPremiumEntorno('interior')">
+          <div class="setup-loc-title">Interior</div>
+          <div class="setup-loc-desc">Grow room / carpa · LED · extractor · VPD controlable</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-14" id="setupPremiumLocExterior" onclick="seleccionarPremiumEntorno('exterior')">
+          <div class="setup-loc-title">Exterior</div>
+          <div class="setup-loc-desc">Terraza, jardín · sol natural · más VPD en verano</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="setup-page" id="spagePremium3">
+      <div class="setup-title">Espacio y equipamiento</div>
+      <div class="setup-subtitle">Dimensiona carpa, LED y extractor. Validaremos plantas vs m² más adelante.</div>
+      <div id="setupPremiumSalaInterior">
+        <div class="setup-block-title">Sala / carpa</div>
+        <div class="setup-mb-8">
+          <label class="setup-field-label" for="setupPremiumTentPreset">Tamaño habitual</label>
+          <select id="setupPremiumTentPreset" class="setup-input-city" onchange="aplicarPremiumTentPreset()">
+            <option value="">Medidas personalizadas</option>
+          </select>
+        </div>
+        <div class="setup-grid-3 setup-grid-gap-8 setup-mb-8">
+          <div>
+            <label class="setup-field-label" for="setupPremiumAnchoM">Ancho (m)</label>
+            <input type="number" id="setupPremiumAnchoM" class="setup-input-city" min="0.3" max="5" step="0.1" placeholder="1.2" oninput="calcularPremiumSala()">
+          </div>
+          <div>
+            <label class="setup-field-label" for="setupPremiumLargoM">Largo (m)</label>
+            <input type="number" id="setupPremiumLargoM" class="setup-input-city" min="0.3" max="5" step="0.1" placeholder="1.2" oninput="calcularPremiumSala()">
+          </div>
+          <div>
+            <label class="setup-field-label" for="setupPremiumAltoM">Alto (m)</label>
+            <input type="number" id="setupPremiumAltoM" class="setup-input-city" min="1" max="3" step="0.1" placeholder="2" oninput="calcularPremiumSala()">
+          </div>
+        </div>
+        <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">
+          <div>
+            <label class="setup-field-label" for="setupPremiumLedW">LED instalado (W)</label>
+            <input type="number" id="setupPremiumLedW" class="setup-input-city" min="50" max="2000" step="10" placeholder="400" oninput="calcularPremiumSala()">
+          </div>
+          <div>
+            <label class="setup-field-label" for="setupPremiumExtractorM3h">Extractor (m³/h)</label>
+            <input type="number" id="setupPremiumExtractorM3h" class="setup-input-city" min="50" max="5000" step="10" placeholder="350" oninput="calcularPremiumSala()">
+          </div>
+        </div>
+        <label class="setup-check-row setup-mb-12">
+          <input type="checkbox" id="setupPremiumCarpaReflectante" checked onchange="togglePremiumCarpaReflectante()">
+          Carpa reflectante Mylar (recomendado)
+        </label>
+        <div id="setupPremiumSalaResult" class="setup-box-info setup-mb-16"></div>
+      </div>
+      <div id="setupPremiumExteriorHint" class="setup-box-warn setup-hidden setup-mb-12">
+        En exterior usa el municipio para meteo y registra temp. exterior en Medir. Prioriza sombrear el depósito en verano.
+      </div>
+    </div>
+
+    <div class="setup-page" id="spagePremium4">
+      <div class="setup-title">Clima, luz y fotoperiodo</div>
+      <div class="setup-subtitle">Objetivos de VPD y PPFD según fase. Se usarán en el protocolo de mediciones.</div>
+      <div class="setup-mb-8">
+        <label class="setup-field-label" for="setupPremiumFase">Fase inicial del cultivo</label>
+        <select id="setupPremiumFase" class="setup-input-city" onchange="calcularPremiumSala();refreshPremiumClimaResumen()">
+          <option value="esqueje">Esqueje / plántula</option>
+          <option value="vegetativo" selected>Vegetativo</option>
+          <option value="prefloracion">Prefloración</option>
+          <option value="floracion">Floración</option>
+        </select>
+      </div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
+        <div>
+          <label class="setup-field-label" for="setupPremiumHorasLuz">Horas de luz / día</label>
+          <input type="number" id="setupPremiumHorasLuz" class="setup-input-city" min="12" max="24" step="1" value="18" onchange="refreshPremiumClimaResumen()">
+        </div>
+        <div>
+          <label class="setup-field-label" for="setupPremiumIntensidadLuz">Intensidad bajo foco</label>
+          <select id="setupPremiumIntensidadLuz" class="setup-input-city" onchange="refreshPremiumClimaResumen()">
+            <option value="baja">Baja (plántula)</option>
+            <option value="media" selected>Media (veg)</option>
+            <option value="alta">Alta (flor)</option>
+          </select>
+        </div>
+      </div>
+      <div id="setupPremiumClimaResumen" class="setup-box-info setup-mb-12"></div>
+      <p class="setup-field-hint">En Medir registrarás temp. aire, HR y VPD; la app sugerirá humidificador, extractor o ajuste LED.</p>
+    </div>
+
+    <div class="setup-page" id="spagePremium5">
+      <div class="setup-title">Genética y método</div>
+      <div class="setup-subtitle">SOG o SCROG según porte. En el paso Cultivos elegirás variedades concretas.</div>
+      <div class="setup-block-title">Método de cultivo</div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-16">
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumMetodoSOG" onclick="seleccionarPremiumMetodo('sog')">
+          <div class="setup-option-title-md">SOG</div>
+          <div class="setup-option-desc-sm">Muchas plantas bajas · indica / autos</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumMetodoSCROG" onclick="seleccionarPremiumMetodo('scrog')">
+          <div class="setup-option-title-md">SCROG</div>
+          <div class="setup-option-desc-sm">Red / pantalla · sativas y híbridas</div>
+        </button>
+      </div>
+      <div class="setup-block-title">Preferencia genética</div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
+        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumGenFoto" onclick="seleccionarPremiumGenetica('foto')">
+          <div class="setup-option-title-md">Fotoperíodo</div>
+          <div class="setup-option-desc-sm">12/12 en flor · más control</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumGenAuto" onclick="seleccionarPremiumGenetica('auto')">
+          <div class="setup-option-title-md">Autofloreciente</div>
+          <div class="setup-option-desc-sm">Ciclo fijo · compactas</div>
+        </button>
+      </div>
+      <div id="setupPremiumGeneticaHint" class="setup-box-info"></div>
+    </div>
+
+    <div class="setup-page" id="spagePremium6">
+      <div class="setup-title">Germinación, clones y madre</div>
+      <div class="setup-subtitle">Semilla, clon recibido o <strong>planta madre</strong> en DWC/RDWC (18/6) para esquejes repetidos.</div>
+      <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
+      <div class="setup-block-title">Origen de plantas</div>
+      <div class="setup-grid-3 setup-grid-gap-8 setup-mb-12">
+        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
+          <div class="setup-option-title-md">Semilla</div>
+          <div class="setup-option-desc-sm">Germinador → rockwool → net pot</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
+          <div class="setup-option-title-md">Clon / esqueje</div>
+          <div class="setup-option-desc-sm">Ya enraizado o en domo</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
+          <div class="setup-option-title-md">Madre DWC/RDWC</div>
+          <div class="setup-option-desc-sm">18/6 · esquejes cada 10–14 d</div>
+        </button>
+      </div>
+      <div id="setupPremiumGerminacionPasos" class="setup-grid-2 setup-grid-gap-8 setup-mb-8"></div>
+      <div id="setupPremiumEsquejesPrep" class="setup-hidden">
+        <div class="setup-block-title">1 · Preparar madre (antes del corte)</div>
+        <div id="setupPremiumEsquejesPrepGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
+      </div>
+      <div id="setupPremiumEsquejesCorte" class="setup-hidden">
+        <div class="setup-block-title">2 · Día del corte</div>
+        <div id="setupPremiumEsquejesCorteGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
+      </div>
+      <div id="setupPremiumEsquejesEnraizar" class="setup-hidden">
+        <div class="setup-block-title">3 · Enraizar → net pot → cubo</div>
+        <div id="setupPremiumEsquejesEnraizarGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
+      </div>
+      <div id="setupPremiumEsquejesMadre" class="setup-hidden">
+        <div class="setup-block-title">4 · Mantener madre en producción</div>
+        <div id="setupPremiumEsquejesMadreGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-8"></div>
+        <label class="setup-field-label" for="setupPremiumNotasMadre">Notas de la madre (genética, fecha inicio)</label>
+        <input type="text" id="setupPremiumNotasMadre" class="setup-input-city setup-mb-8" maxlength="200" placeholder="Ej. OG Kush madre desde mar 2026"
+          onchange="persistEsquejesNotasMadre()" onblur="persistEsquejesNotasMadre()">
+      </div>
+    </div>
+
+    <div class="setup-page" id="spagePremium7">
+      <div class="setup-title">Sistema hidro y checklist</div>
+      <div class="setup-subtitle">Confirma DWC o RDWC. Tras el asistente tendrás checklist de compra y recarga.</div>
+      <div class="setup-box-info setup-mb-12">
+        <strong>DWC:</strong> 1–8 cubos con aireador 24 h.<br>
+        <strong>RDWC:</strong> recirculación entre depósito de control y macetas (escala sala).
+      </div>
+      <ul class="setup-checklist-preview setup-mb-12">
+        <li>Bomba de aire + difusoras por cubo</li>
+        <li>Medidor EC/pH calibrado</li>
+        <li>CalMag si agua blanda</li>
+        <li>Net pots + bolas de arcilla</li>
+        <li>Semillas/clones + rockwool 4×4 cm</li>
+        <li>Nutriente elegido en paso siguiente</li>
+      </ul>
+      <p class="setup-field-hint">El tipo DWC/RDWC lo confirmas en la pantalla de bienvenida o en el paso de geometría.</p>
     </div>
 
     <div class="setup-page" id="spage1">
@@ -3155,10 +3457,16 @@
 
     <div class="setup-page" id="spage4">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg> Nutriente</div>
-      <div class="setup-subtitle">¿Qué marca de nutrientes usarás? Adaptaremos todos los cálculos y el checklist a tu elección.</div>
+      <div class="setup-subtitle">Top 10 marcas más habituales en growshops de España. Adaptaremos cálculos y checklist a tu elección.</div>
 
+      <div class="setup-block-title setup-mb-8">Más vendidos en España</div>
       <div class="nutrientes-grid" id="nutrientesGrid">
         <!-- Generado por JS -->
+      </div>
+      <div class="setup-mb-12">
+        <button type="button" class="setup-link-btn" id="nutrientesToggleCatalogo" onclick="toggleNutrientesCatalogoCompleto()">
+          Ver catálogo completo
+        </button>
       </div>
 
       <!-- Botón para ver protocolo del nutriente seleccionado -->
@@ -3586,6 +3894,23 @@
             <div class="wiz-field-scale-meta"><span>0</span><span>20L</span></div>
             <div class="wiz-field-scale-opt">Fill Min - Fill Max</div>
           </div>
+        </div>
+      </div>
+      <div class="medir-wizard-grid medir-wizard-grid--ambient">
+        <div class="wiz-field">
+          <label class="form-label" for="wizTempAire">Temp. aire sala</label>
+          <input id="wizTempAire" class="form-input wiz-input" type="number" inputmode="decimal" step="0.1" placeholder="24"
+            oninput="syncWizardAmbienteFromWiz()">
+        </div>
+        <div class="wiz-field">
+          <label class="form-label" for="wizHumSala">HR %</label>
+          <input id="wizHumSala" class="form-input wiz-input" type="number" inputmode="numeric" step="1" placeholder="58"
+            oninput="syncWizardAmbienteFromWiz()">
+        </div>
+        <div class="wiz-field">
+          <label class="form-label" for="wizPPFD">PPFD µmol/m²/s</label>
+          <input id="wizPPFD" class="form-input wiz-input" type="number" inputmode="numeric" step="10" placeholder="500"
+            oninput="syncWizardAmbienteFromWiz()">
         </div>
       </div>
     </section>
@@ -4024,6 +4349,7 @@
   <script src="js/backup-capacitor.js"></script>
   <script src="js/hc-ui-icons.js?v=1"></script>
   <script src="js/genetics-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/hc-genetics-premium.js?v=2026-05-31-premium"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-grow-room.js?v=2026-05-31-hidrogrow"></script>
@@ -4056,8 +4382,10 @@
   <script src="js/torre-render-build.js?v=2026-05-28-air-pump-torre"></script>
 <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
-  <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-hidrogrow"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
+  <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
+  <script src="js/hc-esquejes-madre.js?v=2026-05-31-esquejes"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-esquejes"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-premium7"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
 <script src="js/hc-setup-wizard-pages.js?v=2026-05-28-nft-vol-deposito"></script>
 
@@ -4070,7 +4398,8 @@
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
   <script src="js/hc-setup-registro.js?v=5"></script>
   <script src="js/hc-setup-agua-sustrato.js?v=11"></script>
-  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-28-nft-dosis-fallback"></script>
+  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-ambient"></script>
+  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ambient"></script>
   <script src="js/hc-medicion-wizard.js?v=6"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>

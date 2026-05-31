@@ -54,6 +54,36 @@ const GERMINACION_GRUPO = {
     planton: '5–12 d hasta primer corte; EC muy baja o solo agua al inicio.',
     nota: 'No confundir con cultivo a tamaño adulto: ciclo corto en bandeja.',
   },
+  auto: {
+    osc: '1–3 d en domo húmedo 22–26 °C (papel o jiffy).',
+    emerg: '2–5 d hasta radícula visible.',
+    planton: '10–14 d en cubo lana de roca pH 5.5 antes de net pot DWC.',
+    nota: 'Autofloreciente: no trasplantar tarde; raíz estable desde inicio. NO semilla directa en depósito.',
+  },
+  indica: {
+    osc: '1–3 d en germinador 22–26 °C.',
+    emerg: '2–5 d.',
+    planton: '12–18 d en lana de roca hasta raíz por fuera del cubo.',
+    nota: 'Ruta hidro: rockwool → net pot + arcilla → DWC/RDWC con EC 400–600 µS inicial.',
+  },
+  hibrida: {
+    osc: '1–3 d en germinador 22–26 °C.',
+    emerg: '2–5 d.',
+    planton: '12–20 d en rockwool antes de traslado.',
+    nota: 'Vigilar estiramiento si luz baja; pH cubo 5.5 antes del sistema.',
+  },
+  sativa: {
+    osc: '1–3 d; sativas largas pueden tardar 3–6 d en emergencia.',
+    emerg: '3–7 d.',
+    planton: '14–21 d; plantón vigoroso antes de net pot.',
+    nota: 'Planifica altura en SCROG; no sumergir semilla en depósito DWC.',
+  },
+  cbd: {
+    osc: '1–3 d en germinador.',
+    emerg: '3–6 d.',
+    planton: '14–20 d en rockwool.',
+    nota: 'EC inicial más baja que genéticas THC altas.',
+  },
 };
 
 /** Sobrescrituras por nombre exacto (como en CULTIVOS_DB). */
@@ -171,8 +201,9 @@ const GERMINACION_POR_NOMBRE = {
 function getGerminacionSpecPorVariedad(nombreVariedad) {
   const nom = String(nombreVariedad || '').trim();
   const c = typeof getCultivoDB === 'function' ? getCultivoDB(nom) : null;
-  const grupo = c && GERMINACION_GRUPO[c.grupo] ? c.grupo : 'lechugas';
-  const base = { ...GERMINACION_GRUPO[grupo] };
+  const grupoKeys = ['auto', 'indica', 'hibrida', 'sativa', 'cbd', 'lechugas', 'hojas', 'asiaticas', 'hierbas', 'frutos', 'fresas', 'raices', 'microgreens'];
+  const grupo = c && GERMINACION_GRUPO[c.grupo] ? c.grupo : 'hibrida';
+  const base = { ...GERMINACION_GRUPO[grupoKeys.includes(grupo) ? grupo : 'hibrida'] };
   const ov = nom && GERMINACION_POR_NOMBRE[nom];
   return ov ? { ...base, ...ov } : base;
 }
@@ -181,6 +212,8 @@ function etiquetaOrigenPlantaBreve(val) {
   const o = typeof normalizarOrigenPlanta === 'function' ? normalizarOrigenPlanta(val) : '';
   if (o === 'vivero') return '🏪 Vivero';
   if (o === 'germinacion') return '🫘 Germ. propia';
+  if (o === 'clon') return '✂️ Esqueje';
+  if (o === 'madre') return '🌿 Madre';
   return '';
 }
 

@@ -1487,30 +1487,43 @@ function renderSetupPage() {
   document.querySelectorAll('.setup-page').forEach(p => p.classList.remove('active'));
 
   // Mostrar página actual
-  const curr = document.getElementById('spage' + setupPagina);
+  const pageId = (typeof SETUP_PAGE_IDS !== 'undefined' && SETUP_PAGE_IDS[setupPagina])
+    ? SETUP_PAGE_IDS[setupPagina]
+    : ('spage' + setupPagina);
+  const curr = document.getElementById(pageId);
   if (curr) curr.classList.add('active');
 
   const nomWrap = document.getElementById('setupNombreInstalacionWrap');
   const nomInp = document.getElementById('setupNombreInstalacionInput');
   if (nomWrap && nomInp) {
-    const showNom = setupEsNuevaTorre && setupPagina === 1;
+    const showNom = setupEsNuevaTorre && setupPagina === SETUP_PAGE_GEOMETRY;
     nomWrap.classList.toggle('setup-hidden', !showNom);
     if (showNom && document.activeElement !== nomInp) {
       nomInp.value = setupNombreNuevaTorre || '';
     }
   }
 
-  // Acciones específicas por página (refrescar en p.1 incluye sync del gráfico Torre/NFT)
-  if (setupPagina === 0 || setupPagina === 1) refrescarSetupTipoInstalacionUI();
-  if (setupPagina === 2) {
+  // Acciones específicas por página
+  if (setupPagina === SETUP_PAGE_WELCOME || setupPagina === SETUP_PAGE_GEOMETRY) {
+    refrescarSetupTipoInstalacionUI();
+  }
+  if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+    setTimeout(function () {
+      if (typeof cargarPremiumSetupUI === 'function') cargarPremiumSetupUI(setupPagina);
+    }, 0);
+  }
+  if (setupPagina === SETUP_PAGE_EQUIP) {
     cargarSetupSensoresHwUI();
     refreshSetupCalentadorConsignaVis();
   }
-  if (setupPagina === 3) setTimeout(() => seleccionarSustrato(setupData.sustrato), 0);
-  if (setupPagina === 4) { renderNutrientesGrid(); setTimeout(renderDosisSetup, 100); }
-  if (setupPagina === 5) setTimeout(syncWizardLuzUI, 0);
-  if (setupPagina === 6) setTimeout(renderSetupPlantasGrid, 50);
-  if (setupPagina === 7) setTimeout(actualizarResumenSetup, 50);
+  if (setupPagina === SETUP_PAGE_AGUA) setTimeout(() => seleccionarSustrato(setupData.sustrato), 0);
+  if (setupPagina === SETUP_PAGE_NUTRIENTES) {
+    renderNutrientesGrid();
+    setTimeout(renderDosisSetup, 100);
+  }
+  if (setupPagina === SETUP_PAGE_UBICACION) setTimeout(syncWizardLuzUI, 0);
+  if (setupPagina === SETUP_PAGE_CULTIVOS) setTimeout(renderSetupPlantasGrid, 50);
+  if (setupPagina === SETUP_PAGE_RESUMEN) setTimeout(actualizarResumenSetup, 50);
 
   // Dots de progreso
   for (let i = 0; i < SETUP_TOTAL_PAGES; i++) {
@@ -1523,14 +1536,21 @@ function renderSetupPage() {
 
   // Labels de cada paso
   const labels = [
-    'Bienvenida',        // 0
-    'Geometría',         // 1 (torre, NFT o DWC)
-    'Equipamiento',      // 2
-    'Agua y sustrato',   // 3
-    'Nutrientes',        // 4
-    'Ubicación',         // 5
-    'Cultivos',          // 6
-    'Resumen',           // 7
+    'Bienvenida',           // 0
+    'Objetivo',             // 1
+    'Entorno',              // 2
+    'Espacio',              // 3
+    'Clima y luz',          // 4
+    'Genética',             // 5
+    'Germinación',          // 6
+    'Sistema hidro',        // 7
+    'Geometría',            // 8
+    'Equipamiento',         // 9
+    'Agua y sustrato',      // 10
+    'Nutrientes',           // 11
+    'Ubicación',            // 12
+    'Cultivos',             // 13
+    'Resumen',              // 14
   ];
   const labelEl = document.getElementById('setupStepLabel');
   if (labelEl) {
@@ -1581,13 +1601,23 @@ function setupNext() {
     iniciarConfiguracionTorre();
     return;
   }
-  if (setupEsNuevaTorre && setupPagina === 1) {
+  if (setupEsNuevaTorre && setupPagina === SETUP_PAGE_GEOMETRY) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
     if (inpNom) setupNombreNuevaTorre = (inpNom.value || '').trim().slice(0, 40);
     if (!setupNombreNuevaTorre) {
       showToast('Escribe un nombre para esta instalación', true);
       inpNom?.focus();
       return;
+    }
+  }
+  if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+    if (typeof validarPremiumSetupPaso === 'function' && !validarPremiumSetupPaso(setupPagina)) return;
+  }
+  if (setupPagina === SETUP_PAGE_CULTIVOS && typeof validarPlantasVsSalaPremium === 'function') {
+    const nPl = typeof setupPlantasSeleccionadas !== 'undefined' ? setupPlantasSeleccionadas.size : 0;
+    const v = validarPlantasVsSalaPremium(nPl);
+    if (v && v.ok === false && typeof showToast === 'function') {
+      showToast(v.msg, true);
     }
   }
   const ultimoPaso = setupEsNuevaTorre ? SETUP_TOTAL_PAGES - 2 : SETUP_TOTAL_PAGES - 1;
@@ -1600,11 +1630,17 @@ function setupNext() {
 }
 
 function setupBack() {
-  if (setupPagina > 1) {
+  if (setupPagina > SETUP_PAGE_GEOMETRY) {
     setupPagina--;
     renderSetupPage();
-  } else if (setupPagina === 1) {
-    setupPagina = 0;
+  } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
+    setupPagina = SETUP_PAGE_PREMIUM_END;
+    renderSetupPage();
+  } else if (setupPagina > SETUP_PAGE_WELCOME && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+    setupPagina--;
+    renderSetupPage();
+  } else if (setupPagina === SETUP_PAGE_PREMIUM_START) {
+    setupPagina = SETUP_PAGE_WELCOME;
     renderSetupPage();
   }
 }
@@ -2622,22 +2658,65 @@ function persistSetupSensoresHardware() {
   s.humedad = !!document.getElementById('setupSensHwHum')?.checked;
 }
 
+let _nutrientesMostrarCatalogoCompleto = false;
+try { window._nutrientesMostrarCatalogoCompleto = false; } catch (_) {}
+
+function toggleNutrientesCatalogoCompleto() {
+  _nutrientesMostrarCatalogoCompleto = !_nutrientesMostrarCatalogoCompleto;
+  try { window._nutrientesMostrarCatalogoCompleto = _nutrientesMostrarCatalogoCompleto; } catch (_) {}
+  renderNutrientesGrid();
+}
+
+function renderNutrienteCardHtml(n) {
+  const parNote = n.par_flores && typeof getNutrienteById === 'function'
+    ? getNutrienteById(n.par_flores)
+    : null;
+  const rankBadge = n.top_es && n.rank_es
+    ? '<span class="nutriente-top-badge">#' + n.rank_es + ' ES</span>'
+    : '';
+  const parLine = parNote
+    ? '<span class="nutriente-par-flores">+ flor: ' + parNote.nombre + '</span>'
+    : '';
+  return (
+    '<button type="button" class="nutriente-card ' + (n.id === setupNutriente ? 'selected' : '') + '"' +
+    ' id="nut-' + n.id + '" onclick="selNutriente(\'' + n.id + '\')" aria-pressed="' +
+    (n.id === setupNutriente ? 'true' : 'false') + '"' +
+    ' aria-label="Nutriente ' + n.nombre + (n.buffer ? ', con buffer de pH' : '') + '">' +
+    rankBadge +
+    '<span class="nutriente-bandera" aria-hidden="true">' + n.bandera + '</span>' +
+    '<span class="nutriente-info">' +
+    '<span class="nutriente-nombre">' + n.nombre + '</span>' +
+    '<span class="nutriente-detalle">' + n.detalle + '</span>' +
+    parLine +
+    '</span>' +
+    '<span class="nutriente-buffer ' + (n.buffer ? 'si' : 'no') + '" aria-hidden="true">' +
+    (n.buffer ? 'pH buffer' : 'Sin buffer') +
+    '</span></button>'
+  );
+}
+
 function renderNutrientesGrid() {
   const grid = document.getElementById('nutrientesGrid');
   if (!grid) return;
-  grid.innerHTML = NUTRIENTES_DB.map(n => `
-    <button type="button" class="nutriente-card ${n.id === setupNutriente ? 'selected' : ''}"
-      id="nut-${n.id}" onclick="selNutriente('${n.id}')" aria-pressed="${n.id === setupNutriente ? 'true' : 'false'}"
-      aria-label="Nutriente ${n.nombre}${n.buffer ? ', con buffer de pH' : ''}">
-      <span class="nutriente-bandera" aria-hidden="true">${n.bandera}</span>
-      <span class="nutriente-info">
-        <span class="nutriente-nombre">${n.nombre}</span>
-        <span class="nutriente-detalle">${n.detalle}</span>
-      </span>
-      <span class="nutriente-buffer ${n.buffer ? 'si' : 'no'}" aria-hidden="true">
-        ${n.buffer ? 'pH buffer' : 'Sin buffer'}
-      </span>
-    </button>
-  `).join('');
+  if (typeof window !== 'undefined' && window._nutrientesMostrarCatalogoCompleto != null) {
+    _nutrientesMostrarCatalogoCompleto = !!window._nutrientesMostrarCatalogoCompleto;
+  }
+  const toggleBtn = document.getElementById('nutrientesToggleCatalogo');
+  let list;
+  if (_nutrientesMostrarCatalogoCompleto) {
+    list = NUTRIENTES_DB.filter(function (n) {
+      return n.faseUso !== 'bloom' || !NUTRIENTES_TOP10_ES.some(function (id) {
+        const top = NUTRIENTES_DB.find(function (t) { return t.id === id; });
+        return top && top.par_flores === n.id;
+      });
+    });
+    if (toggleBtn) toggleBtn.textContent = 'Ver top 10 España';
+  } else {
+    list = typeof getNutrientesTop10ES === 'function'
+      ? getNutrientesTop10ES()
+      : NUTRIENTES_DB.filter(function (n) { return n.top_es; });
+    if (toggleBtn) toggleBtn.textContent = 'Ver catálogo completo';
+  }
+  grid.innerHTML = list.map(renderNutrienteCardHtml).join('');
 }
 

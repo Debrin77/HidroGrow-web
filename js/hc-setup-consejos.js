@@ -391,6 +391,21 @@ const REF_DOSIS_FABRICANTE = {
     mlPorLitro: [4.5],
     calmagGrifoNota: 'CalMag proporcional a dureza.',
   },
+  top_crop_hydro: {
+    fuente: 'Top Crop Top Hydro A+B: 1–3 ml/L por parte; referencia media 2 ml/L c/u en vegetativo.',
+    mlPorLitro: [2, 2],
+    calmagGrifoNota: 'Marca española; CalMag según EC del grifo.',
+  },
+  house_garden_aqua: {
+    fuente: 'House & Garden Aqua Flakes A+B: carta semanal; veg orientativo ~2,5 ml/L por parte.',
+    mlPorLitro: [2.5, 2.5],
+    calmagGrifoNota: 'Recirculación: medir EC tras mezclar; grifo duro = menos CalMag.',
+  },
+  campeador_flor: {
+    fuente: 'Campeador Flor A+B: misma banda que línea Hoja (~1 ml/L c/u base; subir si EC baja).',
+    mlPorLitro: [1, 1],
+    calmagGrifoNota: 'Cambiar botellas en prefloración.',
+  },
   hortalan: {
     fuente: 'Hortalan: orientativa ~4 ml/L; confirmar envase.',
     mlPorLitro: [4],

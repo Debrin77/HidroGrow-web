@@ -654,11 +654,15 @@ function renderHistMediciones() {
   document.getElementById('histPHActual').textContent   = ult.ph   || '—';
   document.getElementById('histTempActual').textContent = ult.temp || '—';
   document.getElementById('histVolActual').textContent  = ult.vol  || '—';
+  const histVpd = document.getElementById('histVPDActual');
+  const histHum = document.getElementById('histHumActual');
+  if (histVpd) histVpd.textContent = ult.vpd != null && ult.vpd !== '' ? ult.vpd : '—';
+  if (histHum) histHum.textContent = ult.humSala != null && ult.humSala !== '' ? ult.humSala : '—';
 
   // Tabla
   const tabla = document.getElementById('histTabla');
     tabla.innerHTML = mediciones.map((m, i) => `
-    <div class="hist-row${i===0 ? ' hist-row--latest' : ''}">
+    <div class="hist-row hist-row--ambient${i===0 ? ' hist-row--latest' : ''}">
       <span class="hist-fecha"><span class="hist-fecha-dia">${m.fecha}</span><br>
         <span class="hist-fecha-hora">${m.hora}</span>
         ${(() => { const sis = infoSistemaEntrada(m); return `<span class="hist-torre-chip">${sis.emoji||'🌿'} ${sis.nombre}</span>`; })()}
@@ -667,6 +671,8 @@ function renderHistMediciones() {
       <span class="hist-val ${getClaseVal('ph',   m.ph)}">${m.ph   || '—'}</span>
       <span class="hist-val ${getClaseVal('temp', m.temp)}">${m.temp || '—'}</span>
       <span class="hist-val ${getClaseVal('vol',  m.vol)}">${m.vol  || '—'}</span>
+      <span class="hist-val hist-val--muted">${m.vpd != null && m.vpd !== '' ? m.vpd : '—'}</span>
+      <span class="hist-val hist-val--muted">${m.humSala != null && m.humSala !== '' ? m.humSala : '—'}</span>
       <span class="hist-action-cell">
         <button type="button" class="hist-btn-delete js-hist-med-del"
           data-hc-fecha="${escRegistroAttr(m.fecha || '')}"
