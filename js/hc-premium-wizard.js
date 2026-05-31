@@ -259,6 +259,7 @@
       }).join('');
     }
     if (typeof renderEsquejesSetupUI === 'function') renderEsquejesSetupUI();
+    if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(orig);
   }
 
   function populatePremiumTentSelect() {
@@ -322,7 +323,14 @@
     calcularPremiumSala();
     refreshPremiumClimaResumen();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+    if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
+    if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
+    if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
 
+    if (pagina === SETUP_PAGE_PREMIUM_5 && typeof renderSemillerosGrid === 'function') {
+      renderSemillerosGrid();
+      renderSemilleroPerfilPanel();
+    }
     if (pagina === SETUP_PAGE_PREMIUM_6) refreshPremiumGerminacionUI();
     if (pagina === SETUP_PAGE_PREMIUM_3 && typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
   }
@@ -353,6 +361,7 @@
     cfg.ubicacion = p.entorno;
     if (typeof persistEsquejesToConfig === 'function') persistEsquejesToConfig(cfg);
     if (typeof persistEquipamientoToConfig === 'function') persistEquipamientoToConfig(cfg);
+    if (typeof persistSemilleroToConfig === 'function') persistSemilleroToConfig(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
   }

@@ -105,9 +105,11 @@
       const cat = cats[key];
       const cur = inst[key];
       const selId = 'setupPremiumEquip_' + key;
+      const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
+      const iconHtml = typeof hcVisualIconSvg === 'function' ? hcVisualIconSvg(visKey, 'hc-visual-ico--sm') : (cat.icon || '');
       return (
         '<div class="equip-catalog-card">' +
-        '<div class="equip-catalog-head">' + cat.icon + ' ' + cat.label +
+        '<div class="equip-catalog-head">' + iconHtml + ' ' + cat.label +
         (cat.indispensable ? ' <span class="equip-catalog-req">indispensable</span>' : '') + '</div>' +
         '<select id="' + selId + '" class="setup-input-city equip-catalog-select"></select>' +
         (cur ? '<p class="equip-catalog-ok">✓ ' + cur.marca + ' ' + cur.modelo + '</p>' : '') +

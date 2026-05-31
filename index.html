@@ -574,6 +574,11 @@
         <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
       </div>
 
+      <div class="card medir-sem-card setup-hidden" id="medirSemilleroCard">
+        <div class="card-title">🏪 Perfil de semillero</div>
+        <div id="medirSemilleroPanel" class="medir-sem-panel"></div>
+      </div>
+
       <div class="card medir-ambiente-card" id="medirAmbienteCard">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Ambiente y luz</div>
         <p class="medir-ambiente-lead">Registra sala y depósito. VPD se calcula solo con temp. aire + HR. Las correcciones aparecen al escribir.</p>
@@ -2933,23 +2938,31 @@
         </button>
       </div>
       <div id="setupPremiumGeneticaHint" class="setup-box-info"></div>
+      <div class="setup-block-title setup-mt-12">Tu semillero <span class="setup-optional-tag">opcional</span></div>
+      <p class="setup-field-hint setup-mb-8">Top 10 en España · elige marca → revisa perfil → <strong>Usar tal cual</strong> o ajusta a mano.</p>
+      <div id="setupPremiumSemillerosGrid" class="hc-semilleros-grid setup-mb-12"></div>
+      <div id="setupPremiumSemilleroPerfil" class="hc-sem-perfil-panel setup-hidden setup-mb-12"></div>
     </div>
 
     <div class="setup-page" id="spagePremium6">
       <div class="setup-title">Germinación, clones y madre</div>
       <div class="setup-subtitle">Semilla, clon recibido o <strong>planta madre</strong> en DWC/RDWC (18/6) para esquejes repetidos.</div>
+      <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
       <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div class="setup-block-title">Origen de plantas</div>
       <div class="setup-grid-3 setup-grid-gap-8 setup-mb-12">
-        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
+          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
           <div class="setup-option-title-md">Semilla</div>
           <div class="setup-option-desc-sm">Germinador → rockwool → net pot</div>
         </button>
-        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
+          <span class="hc-visual-origin-icon" data-visual="esqueje"></span>
           <div class="setup-option-title-md">Clon / esqueje</div>
           <div class="setup-option-desc-sm">Ya enraizado o en domo</div>
         </button>
-        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
+          <span class="hc-visual-origin-icon" data-visual="madre"></span>
           <div class="setup-option-title-md">Madre DWC/RDWC</div>
           <div class="setup-option-desc-sm">18/6 · esquejes cada 10–14 d</div>
         </button>
@@ -4362,6 +4375,9 @@
   <script src="js/backup-capacitor.js"></script>
   <script src="js/hc-ui-icons.js?v=1"></script>
   <script src="js/genetics-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/hc-visual-flow.js?v=2026-05-31-visual"></script>
+  <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
+  <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
@@ -4397,7 +4413,7 @@
 <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-visual"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-equip"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-premium7"></script>

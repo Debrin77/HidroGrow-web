@@ -46,6 +46,9 @@ const CONSEJOS_DATA = {
       { icono:'🔧', titulo:'Equipamiento — marca y modelo',
         texto:'En el asistente premium (paso Espacio) elige <strong>marca/modelo</strong> de carpa, LED, extractor, humidificador, deshumidificador y medidor. La app rellena W, m³/h y dimensiones desde el catálogo y los usa en correcciones VPD/PPFD y calendario de calibración.',
         alerta:{ tipo:'ok', txt:'✅ Si tu modelo no está listado, introduce medidas manualmente — los fabricantes publican W reales, caudal y cobertura en la ficha técnica.' } },
+      { icono:'🏪', titulo:'Top 10 semilleros — perfil editable',
+        texto:'En Genética y método elige tu <strong>semillero</strong> (Dinafem, Sweet Seeds, RQS…). Verás germinación, EC veg/flor y pH orientativos. Pulsa <strong>Usar tal cual</strong> o ajusta campos y guarda.',
+        alerta:{ tipo:'info', txt:'ℹ️ Iconos y mini-flujos en el asistente guían cada paso sin logos de marcas (evitamos derechos de imagen). Prioriza siempre el pack y la web del breeder.' } },
     ]
   },
   agua: {
