@@ -1,91 +1,109 @@
 /**
- * HidroGrow — identidad visual «Canopy»
- * Inspiración: dashboards grow (oscuro tipo sala + acento mint/teal),
- * distinto del verde-violeta genérico de apps hidro clásicas.
- * Carga después de main.css; redefine tokens y superficies clave.
+ * HidroGrow — identidad «Deep Canopy»
+ * Sala de cultivo oscura + lámpara dorada + esmeralda.
+ * Distinto del teal/crema/mint de HidroCultivo.
  */
 
 :root {
-  --bg:         #e8ebf0;
-  --bg2:        #f4f6f9;
-  --bg3:        #dde2ea;
-  --border:     rgba(15, 23, 42, 0.1);
-  --green:      #0d9488;
-  --green-dim:  #0f766e;
-  --green-pale: #ccfbf1;
-  --gold:       #d97706;
-  --gold-dim:   #fef3c7;
-  --logo-hydro:       #14b8a6;
-  --logo-cultivo:     #f59e0b;
-  --logo-hydro-splash:  #2dd4bf;
-  --logo-cultivo-splash: #fbbf24;
-  --blue:       #2563eb;
-  --card-shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.05), 0 8px 24px rgba(15, 23, 42, 0.07);
-  --focus-ring: 0 0 0 2px rgba(13, 148, 136, 0.35);
+  --bg:         #e4e9e4;
+  --bg2:        #f6f8f5;
+  --bg3:        #d5ddd5;
+  --border:     rgba(20, 45, 30, 0.12);
+  --green:      #15803d;
+  --green-dim:  #14532d;
+  --green-pale: rgba(21, 128, 61, 0.1);
+  --gold:       #b8860b;
+  --gold-dim:   rgba(184, 134, 11, 0.12);
+  --logo-hydro:       #166534;
+  --logo-cultivo:     #c9970c;
+  --logo-hydro-splash:  #4ade80;
+  --logo-cultivo-splash: #f5c542;
+  --blue:       #1e40af;
+  --card-shadow-soft: 0 2px 4px rgba(15, 30, 20, 0.06), 0 10px 28px rgba(15, 30, 20, 0.08);
+  --focus-ring: 0 0 0 2px rgba(21, 128, 61, 0.35);
+  --hg-glow-gold: rgba(212, 160, 23, 0.14);
+  --hg-glow-green: rgba(34, 197, 94, 0.08);
 }
 
 html.hc-theme-dark {
-  --bg: #0f1419;
-  --bg2: #171e27;
-  --bg3: #1f2833;
-  --border: rgba(226, 232, 240, 0.08);
-  --white: #e2e8f0;
-  --muted: #94a3b8;
-  --green: #34d399;
-  --green-dim: #059669;
-  --green-pale: rgba(52, 211, 153, 0.12);
-  --gold: #fbbf24;
-  --gold-dim: rgba(251, 191, 36, 0.12);
-  --card-shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.45), 0 12px 32px rgba(0, 0, 0, 0.35);
+  --bg: #0a0f0c;
+  --bg2: #141c17;
+  --bg3: #1c2620;
+  --border: rgba(212, 160, 23, 0.14);
+  --white: #e8f0ea;
+  --muted: #8fa396;
+  --green: #4ade80;
+  --green-dim: #22c55e;
+  --green-pale: rgba(74, 222, 128, 0.1);
+  --gold: #d4a017;
+  --gold-dim: rgba(212, 160, 23, 0.14);
+  --logo-hydro: #6ee7b7;
+  --logo-cultivo: #f5c542;
+  --card-shadow-soft: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(212, 160, 23, 0.06);
+  --hg-glow-gold: rgba(212, 160, 23, 0.18);
+  --hg-glow-green: rgba(34, 197, 94, 0.1);
 }
 
+/* ── Fondo tipo sala (rejilla sutil + lámpara arriba) ── */
 body {
   background:
-    radial-gradient(120% 80% at 100% 0%, rgba(13, 148, 136, 0.06) 0%, transparent 55%),
-    radial-gradient(90% 60% at 0% 100%, rgba(217, 119, 6, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 55% at 50% -15%, var(--hg-glow-gold) 0%, transparent 52%),
+    radial-gradient(ellipse 55% 45% at 100% 60%, var(--hg-glow-green) 0%, transparent 48%),
+    radial-gradient(ellipse 45% 35% at 0% 90%, rgba(21, 94, 52, 0.12) 0%, transparent 42%),
     var(--bg);
 }
 
 html.hc-theme-dark body {
   background:
-    radial-gradient(100% 70% at 50% -10%, rgba(52, 211, 153, 0.07) 0%, transparent 50%),
-    radial-gradient(80% 50% at 100% 100%, rgba(99, 102, 241, 0.06) 0%, transparent 45%),
-    var(--bg);
+    radial-gradient(ellipse 100% 60% at 50% -20%, rgba(212, 160, 23, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 100% 40%, rgba(34, 197, 94, 0.07) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 0% 100%, rgba(15, 60, 35, 0.35) 0%, transparent 45%),
+    #0a0f0c;
 }
 
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.035;
+  background-image:
+    linear-gradient(rgba(212, 160, 23, 0.45) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 160, 23, 0.45) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+html.hc-theme-dark body::after {
+  opacity: 0.055;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Splash / PIN (coherente con logo dorado) ── */
 .splash {
   background:
-    radial-gradient(100% 85% at 15% 10%, rgba(45, 212, 191, 0.28) 0%, transparent 50%),
-    radial-gradient(90% 75% at 88% 20%, rgba(251, 191, 36, 0.2) 0%, transparent 52%),
-    linear-gradient(165deg, #f0f4f8 0%, #e6f7f5 52%, #ecfdf5 100%);
-}
-
-/* Splash de arranque: fondo oscuro + emblema dorado (PNG transparente) */
-.splash.splash--brand-emblem {
-  background:
-    radial-gradient(110% 90% at 50% -5%, rgba(45, 212, 191, 0.14) 0%, transparent 55%),
-    radial-gradient(80% 60% at 100% 100%, rgba(13, 148, 136, 0.1) 0%, transparent 50%),
-    linear-gradient(165deg, #0f1419 0%, #121820 48%, #0a0e12 100%);
+    radial-gradient(110% 90% at 50% -5%, rgba(212, 160, 23, 0.12) 0%, transparent 55%),
+    radial-gradient(80% 60% at 100% 100%, rgba(34, 197, 94, 0.08) 0%, transparent 50%),
+    linear-gradient(165deg, #0a0f0c 0%, #121a14 48%, #080b09 100%);
 }
 
 .splash.splash--brand-emblem .splash-title .t-hydro,
 .pin-screen--brand-emblem .pin-logo .t-hydro {
-  color: #2dd4bf !important;
-  text-shadow:
-    0 0 18px rgba(45, 212, 191, 0.35),
-    0 2px 8px rgba(0, 0, 0, 0.45);
+  color: #6ee7b7 !important;
+  text-shadow: 0 0 20px rgba(110, 231, 183, 0.35), 0 2px 8px rgba(0, 0, 0, 0.5);
   -webkit-text-stroke: 0;
 }
 .splash.splash--brand-emblem .splash-title .t-caru,
 .pin-screen--brand-emblem .pin-logo .t-caru {
-  color: #fbbf24 !important;
-  text-shadow:
-    0 0 16px rgba(251, 191, 36, 0.28),
-    0 2px 8px rgba(0, 0, 0, 0.45);
+  color: #f5c542 !important;
+  text-shadow: 0 0 18px rgba(245, 197, 66, 0.32), 0 2px 8px rgba(0, 0, 0, 0.5);
   -webkit-text-stroke: 0;
 }
 .splash.splash--brand-emblem .splash-sub {
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
 }
 .splash.splash--brand-emblem .splash-title {
   text-shadow: none;
@@ -93,17 +111,17 @@ html.hc-theme-dark body {
 
 .pin-screen--brand-emblem {
   background:
-    radial-gradient(100% 80% at 50% 0%, rgba(45, 212, 191, 0.1) 0%, transparent 55%),
-    linear-gradient(165deg, #0f1419 0%, #121820 50%, #0f1419 100%);
+    radial-gradient(100% 80% at 50% 0%, rgba(212, 160, 23, 0.1) 0%, transparent 55%),
+    linear-gradient(165deg, #0a0f0c 0%, #121a14 50%, #0a0f0c 100%);
 }
 .pin-screen--brand-emblem .pin-sub {
-  color: #5eead4;
-  background: rgba(15, 23, 42, 0.55);
-  border-color: rgba(45, 212, 191, 0.28);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  color: #a7f3d0;
+  background: rgba(10, 15, 12, 0.65);
+  border-color: rgba(212, 160, 23, 0.28);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
 }
 .pin-screen--brand-emblem .pin-sub--tagline {
-  background-image: linear-gradient(90deg, #2dd4bf 0%, #34d399 45%, #fbbf24 100%);
+  background-image: linear-gradient(90deg, #6ee7b7 0%, #4ade80 42%, #f5c542 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -114,81 +132,74 @@ html.hc-theme-dark body {
   padding: 0;
 }
 .pin-screen--brand-emblem .pin-key {
-  background: rgba(23, 30, 39, 0.92);
-  border-color: rgba(226, 232, 240, 0.12);
-  color: #e2e8f0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  background: rgba(20, 28, 23, 0.92);
+  border-color: rgba(212, 160, 23, 0.18);
+  color: #e8f0ea;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .pin-screen--brand-emblem .pin-dot {
-  border-color: rgba(148, 163, 184, 0.45);
-  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(143, 163, 150, 0.45);
+  background: rgba(10, 15, 12, 0.55);
 }
-.pin-screen--brand-emblem .pin-footer-hint {
-  color: #94a3b8;
-}
-.pin-screen--brand-emblem .pin-footer-hint strong {
-  color: #cbd5e1;
-}
-
-html.hc-theme-dark .splash {
-  background:
-    radial-gradient(100% 80% at 20% 15%, rgba(52, 211, 153, 0.15) 0%, transparent 55%),
-    linear-gradient(165deg, #0f1419 0%, #121820 50%, #0f1419 100%);
-}
-
-.splash-img-wrap--brand .splash-img {
-  filter:
-    drop-shadow(0 0 10px rgba(45, 212, 191, 0.28))
-    drop-shadow(0 6px 16px rgba(15, 118, 110, 0.22))
-    drop-shadow(0 10px 18px rgba(15, 23, 42, 0.18));
-}
+.pin-screen--brand-emblem .pin-footer-hint { color: #8fa396; }
+.pin-screen--brand-emblem .pin-footer-hint strong { color: #c5d4ca; }
 
 .splash-img-wrap--brand-emblem .splash-img {
   filter:
-    drop-shadow(0 0 16px rgba(251, 191, 36, 0.24))
-    drop-shadow(0 10px 28px rgba(0, 0, 0, 0.42));
+    drop-shadow(0 0 20px rgba(212, 160, 23, 0.28))
+    drop-shadow(0 12px 32px rgba(0, 0, 0, 0.5));
   box-shadow: none;
 }
-
 .splash-img-wrap::before {
-  background: radial-gradient(circle, rgba(13, 148, 136, 0.14) 0%, rgba(13, 148, 136, 0.03) 46%, transparent 72%);
+  background: radial-gradient(circle, rgba(212, 160, 23, 0.12) 0%, rgba(34, 197, 94, 0.04) 46%, transparent 72%);
 }
 
 .splash-tagline {
-  background-image: linear-gradient(90deg, #0d9488 0%, #2dd4bf 42%, #f59e0b 100%);
+  background-image: linear-gradient(90deg, #4ade80 0%, #6ee7b7 42%, #f5c542 100%);
 }
 
-.welcome-overlay {
-  background: linear-gradient(165deg, #f4f7fa 0%, #e8f5f3 55%, #fef9ee 100%);
-}
-
-html.hc-theme-dark .welcome-overlay {
-  background: linear-gradient(165deg, #0f1419 0%, #151c24 55%, #121820 100%);
-}
-
+/* ── Shell: header + tabs (cristal oscuro / papel botánico) ── */
 .header {
-  background: linear-gradient(180deg, rgba(244, 246, 249, 0.97) 0%, rgba(232, 235, 240, 0.95) 100%);
+  background: color-mix(in srgb, var(--bg2) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
   border-bottom-color: var(--border);
+  box-shadow: 0 1px 0 rgba(212, 160, 23, 0.08) inset, 0 4px 24px rgba(0, 0, 0, 0.12);
 }
 
 html.hc-theme-dark .header {
-  background: linear-gradient(180deg, rgba(23, 30, 39, 0.98) 0%, rgba(15, 20, 25, 0.96) 100%);
+  background: rgba(10, 15, 12, 0.82);
+  box-shadow: 0 1px 0 rgba(212, 160, 23, 0.1) inset, 0 8px 32px rgba(0, 0, 0, 0.45);
 }
 
 .tab-bar {
-  background: linear-gradient(0deg, rgba(244, 246, 249, 0.98) 0%, rgba(244, 246, 249, 0.92) 100%);
+  background: color-mix(in srgb, var(--bg2) 90%, transparent);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
   border-top-color: var(--border);
+  box-shadow: 0 -1px 0 rgba(212, 160, 23, 0.08) inset, 0 -8px 28px rgba(0, 0, 0, 0.12);
 }
 
 html.hc-theme-dark .tab-bar {
-  background: linear-gradient(0deg, rgba(23, 30, 39, 0.98) 0%, rgba(15, 20, 25, 0.95) 100%);
+  background: rgba(10, 15, 12, 0.88);
+  box-shadow: 0 -1px 0 rgba(212, 160, 23, 0.1) inset, 0 -8px 32px rgba(0, 0, 0, 0.5);
 }
 
+.tab-btn.active {
+  color: var(--gold);
+}
+.tab-btn.active::before {
+  background: linear-gradient(90deg, var(--green-dim), var(--gold));
+}
+
+.header-logo-text span {
+  color: var(--logo-cultivo);
+}
+
+/* ── Tarjetas (cristal + borde dorado sutil) ── */
 .card,
 .recarga-card,
-.param-card,
-.dash-torre-banner,
-.medir-torre-banner {
+.param-card {
   border-color: var(--border);
   box-shadow: var(--card-shadow-soft);
 }
@@ -196,177 +207,469 @@ html.hc-theme-dark .tab-bar {
 html.hc-theme-dark .card,
 html.hc-theme-dark .recarga-card,
 html.hc-theme-dark .param-card {
-  background: var(--bg2);
+  background: rgba(20, 28, 23, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-color: rgba(212, 160, 23, 0.12);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+.card:active {
+  border-color: color-mix(in srgb, var(--gold) 40%, var(--border));
+}
+
+/* ── Inicio: banners y etiquetas (sin mint HidroCultivo) ── */
+.dash-torre-banner,
+.medir-torre-banner {
+  background: linear-gradient(135deg, rgba(21, 94, 52, 0.14) 0%, var(--bg2) 100%);
+  border: 1px solid color-mix(in srgb, var(--gold) 35%, var(--border));
+  border-left: 3px solid var(--gold);
+  box-shadow: var(--card-shadow-soft);
+}
+
+html.hc-theme-dark .dash-torre-banner,
+html.hc-theme-dark .medir-torre-banner {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(20, 28, 23, 0.95) 100%);
+  border-color: rgba(212, 160, 23, 0.28);
+  border-left-color: var(--gold);
+}
+
+.dash-torre-nombre {
+  color: var(--green-dim);
+}
+html.hc-theme-dark .dash-torre-nombre {
+  color: #86efac;
+}
+
+.dash-subtitle,
+.dash-subtitle--fecha {
+  color: var(--muted);
+}
+
+.dash-instalacion-label,
+.dash-block-label,
+.dash-subtitle--ultima-medicion {
+  border-left-color: var(--gold);
+}
+
+.install-pwa-btn {
+  background: var(--green-pale);
+  border-color: color-mix(in srgb, var(--green) 55%, var(--border));
+  color: var(--green-dim);
+}
+html.hc-theme-dark .install-pwa-btn {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #86efac;
+}
+
+.header-instal-activa {
+  border-color: rgba(212, 160, 23, 0.32);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(212, 160, 23, 0.08));
+}
+html.hc-theme-dark .header-instal-activa {
+  border-color: rgba(212, 160, 23, 0.35);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(212, 160, 23, 0.1));
+}
+
+/* ── Botones y acentos ── */
 .btn-primary,
 .setup-btn-next:not(:disabled) {
   background: linear-gradient(135deg, var(--green-dim), var(--green));
   border-color: transparent;
-}
-
-.dash-torre-banner {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08) 0%, rgba(217, 119, 6, 0.06) 100%);
-  border-color: rgba(13, 148, 136, 0.22);
-}
-
-html.hc-theme-dark .dash-torre-banner {
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.1) 0%, rgba(251, 191, 36, 0.06) 100%);
-  border-color: rgba(52, 211, 153, 0.25);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
 }
 
 .section-title .accent {
-  color: var(--green);
+  color: var(--gold);
 }
 
-.tab-btn.active {
-  color: var(--green);
-}
-
-/* Multi-sistema coach */
 .hc-multi-coach {
-  margin: 0 0 var(--space-4);
-  padding: 10px 12px;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.1), rgba(217, 119, 6, 0.08));
-  border: 1px solid rgba(13, 148, 136, 0.25);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(212, 160, 23, 0.1));
+  border: 1px solid rgba(212, 160, 23, 0.22);
 }
-.hc-multi-coach-inner {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+html.hc-theme-dark .hc-multi-coach {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(212, 160, 23, 0.12));
+  border-color: rgba(212, 160, 23, 0.28);
 }
-.hc-multi-coach-text {
-  flex: 1 1 200px;
-  margin: 0;
-  font-size: var(--text-sm);
-  line-height: 1.45;
-}
-.hc-multi-coach-btn { flex-shrink: 0; }
 
-.hc-nuevo-sis-lead {
-  font-size: var(--text-sm);
-  line-height: 1.5;
-  margin: 0 0 10px;
+.welcome-overlay {
+  background: linear-gradient(165deg, #e8ede8 0%, #f2f5f0 55%, #f5f0e4 100%);
 }
-.hc-nuevo-sis-list {
-  list-style: none;
-  margin: 0 0 12px;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+html.hc-theme-dark .welcome-overlay {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(212, 160, 23, 0.1) 0%, transparent 50%),
+    linear-gradient(165deg, #0a0f0c 0%, #121a14 55%, #0a0f0c 100%);
 }
-.hc-nuevo-sis-list li {
-  display: grid;
-  grid-template-columns: 32px 1fr;
-  gap: 8px;
-  align-items: start;
-  font-size: var(--text-sm);
+
+.status-dot {
+  background: var(--green);
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.55);
 }
-.hc-nuevo-sis-emoji { font-size: 1.25rem; line-height: 1; }
-.hc-nuevo-sis-hint {
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
+
+/* ── Multi-sistema / wizard salas ── */
 .hc-nuevo-sis-note {
-  font-size: var(--text-xs);
-  color: var(--muted);
-  margin: 0;
-  padding-top: 8px;
-  border-top: 1px dashed var(--border);
-}
-
-/* Header: instalación activa */
-.header-instal-activa {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  max-width: 42vw;
-  min-width: 0;
-  padding: 4px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(13, 148, 136, 0.28);
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.1), rgba(217, 119, 6, 0.06));
-  cursor: pointer;
-  font-family: var(--font-ui);
-  -webkit-tap-highlight-color: transparent;
-  text-align: center;
-}
-.header-instal-kicker {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--green);
-  line-height: 1.1;
-}
-.header-instal-nombre {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--white);
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.2;
-}
-html.hc-theme-dark .header-instal-activa {
-  border-color: rgba(52, 211, 153, 0.3);
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(251, 191, 36, 0.06));
-}
-.header-logo { min-width: 0; }
-.header-status { justify-self: end; flex-shrink: 0; }
-
-/* Wizard salas primer uso */
-.hc-salas-plan-modal { max-width: 420px; }
-.hc-salas-plan-body { max-height: 58vh; overflow-y: auto; margin-bottom: 12px; }
-.hc-salas-plan-foot { display: flex; justify-content: flex-end; gap: 8px; }
-.hc-salas-lead { font-size: var(--text-sm); line-height: 1.45; margin: 0 0 12px; }
-.hc-salas-count-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-}
-.hc-salas-count-btn {
-  display: grid;
-  grid-template-columns: 40px 1fr;
-  grid-template-rows: auto auto;
-  gap: 2px 10px;
-  align-items: center;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1.5px solid var(--border);
-  background: var(--bg2);
-  cursor: pointer;
-  text-align: left;
-  font-family: var(--font-ui);
-  -webkit-tap-highlight-color: transparent;
+  border-top-color: var(--border);
 }
 .hc-salas-count-btn.is-selected {
-  border-color: var(--green);
-  background: var(--green-pale);
+  border-color: var(--gold);
+  background: var(--gold-dim);
 }
 .hc-salas-count-num {
-  grid-row: 1 / 3;
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--green);
-  text-align: center;
+  color: var(--gold);
 }
-.hc-salas-count-lbl { font-size: var(--text-sm); font-weight: 700; color: var(--white); }
-.hc-salas-count-sub { grid-column: 2; font-size: var(--text-xs); color: var(--muted); }
-.hc-salas-name-row { margin-bottom: 12px; }
-.hc-salas-name-row--later { opacity: 0.72; }
-.hc-salas-name-hint { font-size: 10px; color: var(--muted); margin: 4px 0 0; }
-.hc-salas-later-lbl { font-size: var(--text-xs); }
-.hc-salas-note {
-  font-size: var(--text-xs);
+
+/* ═══════════════════════════════════════════════════════════
+   Deep Canopy — refinamiento UI (dashboard grow / SCADA)
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --hg-surface-glass: rgba(246, 248, 245, 0.92);
+  --hg-surface-elevated: #f6f8f5;
+  --hg-accent-line: linear-gradient(180deg, var(--gold), var(--green-dim));
+  --hg-glow-emerald: 0 0 18px rgba(21, 128, 61, 0.2);
+  --hg-glow-gold: 0 0 22px rgba(184, 134, 11, 0.18);
+  --hg-modal-scrim: rgba(8, 14, 10, 0.72);
+}
+
+html.hc-theme-dark {
+  --hg-surface-glass: rgba(16, 24, 19, 0.86);
+  --hg-surface-elevated: #141c17;
+  --hg-glow-emerald: 0 0 20px rgba(74, 222, 128, 0.22);
+  --hg-glow-gold: 0 0 24px rgba(212, 160, 23, 0.2);
+  --hg-modal-scrim: rgba(4, 8, 6, 0.88);
+  --focus-ring: 0 0 0 2px rgba(212, 160, 23, 0.45);
+}
+
+html.hc-theme-dark body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse 115% 85% at 50% 45%, transparent 35%, rgba(0, 0, 0, 0.42) 100%);
+}
+
+html.hc-theme-dark :focus-visible {
+  outline-color: var(--gold);
+}
+
+/* ── Tipografía hero ── */
+html.hc-theme-dark h1.dash-greeting {
+  background: linear-gradient(118deg, #f0fdf4 0%, #86efac 38%, #f5c542 92%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 2px 12px rgba(0, 0, 0, 0.35));
+}
+
+html.hc-theme-dark .section-title {
+  letter-spacing: -0.03em;
+}
+
+html.hc-theme-dark .dash-instalacion-label,
+html.hc-theme-dark .dash-block-label,
+html.hc-theme-dark .dash-subtitle--ultima-medicion {
+  color: color-mix(in srgb, var(--white) 92%, var(--gold));
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* ── Contenido: halo bajo header ── */
+html.hc-theme-dark .content {
+  background: linear-gradient(180deg, rgba(212, 160, 23, 0.045) 0%, transparent 72px);
+}
+
+/* ── Tarjetas métricas (SCADA) ── */
+html.hc-theme-dark .param-tile {
+  background: var(--hg-surface-glass);
+  border-color: rgba(212, 160, 23, 0.14);
+  border-top: 2px solid rgba(212, 160, 23, 0.28);
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+html.hc-theme-dark .param-tile.ok {
+  border-top-color: rgba(74, 222, 128, 0.65);
+  background: linear-gradient(165deg, rgba(34, 197, 94, 0.12) 0%, var(--hg-surface-glass) 55%);
+}
+html.hc-theme-dark .param-tile.warn {
+  border-top-color: rgba(245, 197, 66, 0.7);
+  background: linear-gradient(165deg, rgba(212, 160, 23, 0.12) 0%, var(--hg-surface-glass) 55%);
+}
+html.hc-theme-dark .param-tile.bad {
+  border-top-color: rgba(248, 113, 113, 0.65);
+  background: linear-gradient(165deg, rgba(248, 113, 113, 0.1) 0%, var(--hg-surface-glass) 55%);
+}
+html.hc-theme-dark .param-tile.empty {
+  opacity: 0.78;
+  border-top-color: rgba(143, 163, 150, 0.25);
+}
+
+html.hc-theme-dark .tile-value.ok { color: #86efac; }
+html.hc-theme-dark .tile-value.warn { color: #fcd34d; }
+html.hc-theme-dark .tile-value.bad { color: #fca5a5; }
+html.hc-theme-dark .tile-value.empty { color: #64748b; }
+
+html.hc-theme-dark .tile-status.ok {
+  background: rgba(74, 222, 128, 0.14);
+  color: #86efac;
+  border: 1px solid rgba(74, 222, 128, 0.22);
+}
+html.hc-theme-dark .tile-status.warn {
+  background: rgba(212, 160, 23, 0.14);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 160, 23, 0.25);
+}
+html.hc-theme-dark .tile-status.bad {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(248, 113, 113, 0.22);
+}
+
+/* ── Inicio: chips y sistema ── */
+html.hc-theme-dark .dash-torre-cambiar {
+  background: rgba(212, 160, 23, 0.16);
+  color: #fcd34d;
+  border: 1px solid rgba(212, 160, 23, 0.28);
+}
+
+html.hc-theme-dark .dash-sistema-info[role="button"] {
+  background: var(--hg-surface-glass);
+  border-color: rgba(212, 160, 23, 0.16);
+  box-shadow: var(--card-shadow-soft);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+html.hc-theme-dark .dash-sistema-info[role="button"]:active {
+  border-color: rgba(212, 160, 23, 0.32);
+}
+
+html.hc-theme-dark .dash-nutriente-nombre { color: var(--white); }
+html.hc-theme-dark .dash-nutriente-detalle { color: var(--muted); }
+html.hc-theme-dark .dash-nutriente-estado { color: #86efac; }
+html.hc-theme-dark .dash-nutriente-recomendado { color: #6ee7b7; }
+html.hc-theme-dark .dash-nutriente-fuente { color: #fcd34d; }
+html.hc-theme-dark .dash-nutriente-razon { color: #d6b86a; }
+html.hc-theme-dark .dash-nutriente-tag {
+  background: rgba(10, 15, 12, 0.55);
+  border-color: rgba(212, 160, 23, 0.18);
+}
+html.hc-theme-dark .dash-nutriente-aviso {
+  background: rgba(212, 160, 23, 0.12);
+  border-color: rgba(212, 160, 23, 0.32);
+  color: #fde68a;
+}
+
+html.hc-theme-dark .dash-ubicacion-badge {
+  background: rgba(10, 15, 12, 0.72);
+  border-color: rgba(212, 160, 23, 0.22);
   color: var(--muted);
-  margin: 8px 0 0;
-  padding: 8px;
-  border-radius: 8px;
-  background: var(--bg3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+html.hc-theme-dark .dash-btn-cambiar-nutriente {
+  background: rgba(74, 222, 128, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #86efac;
+}
+
+html.hc-theme-dark .dash-post-setup-camino {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(212, 160, 23, 0.08));
+  border-color: rgba(212, 160, 23, 0.28);
+}
+
+/* ── Meteo ── */
+html.hc-theme-dark .meteo-alert.ok {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.14), rgba(16, 24, 19, 0.85));
+  border-color: rgba(74, 222, 128, 0.35);
+}
+html.hc-theme-dark .meteo-alert.warn {
+  background: linear-gradient(135deg, rgba(212, 160, 23, 0.14), rgba(16, 24, 19, 0.85));
+  border-color: rgba(245, 197, 66, 0.35);
+}
+html.hc-theme-dark .meteo-alert.bad {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.12), rgba(16, 24, 19, 0.85));
+  border-color: rgba(248, 113, 113, 0.35);
+}
+
+html.hc-theme-dark .dia-card {
+  background: var(--hg-surface-glass);
+  border-color: rgba(212, 160, 23, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+html.hc-theme-dark .dia-card.active,
+html.hc-theme-dark .dia-card.selected {
+  border-color: var(--gold);
+  box-shadow: var(--hg-glow-gold);
+}
+
+/* ── Acciones rápidas ── */
+html.hc-theme-dark .quick-btn {
+  background: var(--hg-surface-glass);
+  border-color: rgba(212, 160, 23, 0.12);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+html.hc-theme-dark .quick-btn:active {
+  background: rgba(28, 38, 32, 0.95);
+  border-color: rgba(212, 160, 23, 0.28);
+}
+
+/* ── Modales (bottom sheet cristal) ── */
+html.hc-theme-dark .modal-overlay {
+  background: var(--hg-modal-scrim);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+}
+html.hc-theme-dark .modal,
+html.hc-theme-dark .medir-wizard-modal {
+  background: rgba(14, 20, 16, 0.97);
+  border-color: rgba(212, 160, 23, 0.2);
+  box-shadow:
+    0 -12px 48px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(212, 160, 23, 0.1);
+}
+html.hc-theme-dark .modal-handle {
+  width: 48px;
+  height: 4px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--green-dim), var(--gold));
+  opacity: 0.85;
+}
+html.hc-theme-dark .modal-close-btn {
+  background: rgba(10, 15, 12, 0.65);
+  border-color: rgba(212, 160, 23, 0.22);
+}
+
+/* ── Formularios ── */
+html.hc-theme-dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+html.hc-theme-dark select,
+html.hc-theme-dark textarea {
+  background: rgba(8, 12, 10, 0.75);
+  border-color: rgba(212, 160, 23, 0.2);
+  color: var(--white);
+}
+html.hc-theme-dark input:focus-visible,
+html.hc-theme-dark select:focus-visible,
+html.hc-theme-dark textarea:focus-visible {
+  border-color: rgba(212, 160, 23, 0.45);
+  box-shadow: var(--focus-ring);
+}
+
+/* ── Toggles ── */
+html.hc-theme-dark .toggle-switch.on {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.45), rgba(212, 160, 23, 0.28));
+  border-color: rgba(74, 222, 128, 0.45);
+  box-shadow: var(--hg-glow-emerald);
+}
+html.hc-theme-dark .toggle-switch.on .toggle-knob {
+  background: #ecfdf5;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.55);
+}
+
+/* ── Botones ── */
+html.hc-theme-dark .btn-primary,
+html.hc-theme-dark .setup-btn-next:not(:disabled) {
+  background: linear-gradient(135deg, #15803d 0%, #22c55e 55%, #d4a017 140%);
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.28), 0 2px 8px rgba(212, 160, 23, 0.15);
+}
+html.hc-theme-dark .btn-ghost {
+  background: rgba(10, 15, 12, 0.45);
+  border-color: rgba(212, 160, 23, 0.2);
+  color: var(--muted);
+}
+html.hc-theme-dark .btn-secondary {
+  background: rgba(212, 160, 23, 0.12);
+  border-color: rgba(212, 160, 23, 0.32);
+  color: #fcd34d;
+}
+
+/* ── Pestañas ── */
+html.hc-theme-dark .tab-btn {
+  color: var(--muted);
+  opacity: 0.82;
+}
+html.hc-theme-dark .tab-btn.active {
+  opacity: 1;
+  color: var(--gold);
+}
+html.hc-theme-dark .tab-btn.active::after {
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+}
+
+/* ── Bienvenida / setup rail ── */
+html.hc-theme-dark .welcome-card--guide {
+  background: rgba(14, 20, 16, 0.96);
+  border: 1px solid rgba(212, 160, 23, 0.22);
+  box-shadow:
+    0 28px 72px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(212, 160, 23, 0.08);
+}
+html.hc-theme-dark .welcome-value-card {
+  background: rgba(10, 15, 12, 0.55);
+  border-color: rgba(212, 160, 23, 0.14);
+}
+html.hc-theme-dark .welcome-kpi {
+  background: rgba(10, 15, 12, 0.5);
+  border-color: rgba(212, 160, 23, 0.16);
+}
+html.hc-theme-dark .welcome-theme-btn.is-active {
+  background: rgba(212, 160, 23, 0.18);
+  border-color: rgba(212, 160, 23, 0.35);
+  color: #fcd34d;
+}
+
+html.hc-theme-dark .hc-post-setup-rail-inner {
+  background: var(--hg-surface-glass);
+  border: 1px solid rgba(212, 160, 23, 0.16);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+html.hc-theme-dark .hc-post-setup-rail-chip--active {
+  background: rgba(212, 160, 23, 0.16);
+  border-color: rgba(212, 160, 23, 0.35);
+  color: #fcd34d;
+}
+html.hc-theme-dark .hc-post-setup-rail-chip--done {
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.3);
+  color: #86efac;
+}
+
+html.hc-theme-dark .hc-card-slate {
+  background: linear-gradient(180deg, rgba(20, 28, 23, 0.95), rgba(14, 20, 16, 0.9));
+  border-color: rgba(212, 160, 23, 0.16);
+}
+
+/* ── Header logo + live dot ── */
+html.hc-theme-dark .header-logo {
+  text-shadow: 0 0 24px rgba(110, 231, 183, 0.12);
+}
+
+@keyframes hg-live-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(74, 222, 128, 0.55); }
+  50% { box-shadow: 0 0 14px rgba(212, 160, 23, 0.4), 0 0 6px rgba(74, 222, 128, 0.35); }
+}
+html.hc-theme-dark .status-dot {
+  animation: pulse 2s infinite, hg-live-pulse 3.5s ease-in-out infinite;
+}
+
+/* ── Modo claro refinado (papel botánico, no mint HC) ── */
+html:not(.hc-theme-dark) .card,
+html:not(.hc-theme-dark) .param-tile,
+html:not(.hc-theme-dark) .quick-btn {
+  border-color: color-mix(in srgb, var(--gold) 18%, var(--border));
+}
+html:not(.hc-theme-dark) h1.dash-greeting {
+  color: var(--green-dim);
+}
+html:not(.hc-theme-dark) .dash-torre-banner,
+html:not(.hc-theme-dark) .medir-torre-banner {
+  border-left-width: 3px;
 }

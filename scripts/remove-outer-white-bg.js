@@ -1,6 +1,6 @@
 /**
- * Quita el fondo blanco EXTERIOR (conectado a los bordes del lienzo).
- * No toca blancos interiores del emblema (p. ej. cielo del círculo).
+ * Quita el fondo EXTERIOR conectado a los bordes (blanco o negro de export).
+ * No toca blancos/negros interiores del emblema.
  */
 const path = require('path');
 const fs = require('fs');
@@ -14,7 +14,9 @@ if (!input || !output || !fs.existsSync(input)) {
 }
 
 function isOuterBg(r, g, b) {
-  return r >= 228 && g >= 228 && b >= 228;
+  if (r >= 228 && g >= 228 && b >= 228) return true;
+  if (r <= 28 && g <= 28 && b <= 28) return true;
+  return false;
 }
 
 async function main() {
