@@ -38,7 +38,8 @@
     "@capacitor/filesystem": "^6.0.2",
     "@capacitor/ios": "^6.2.0",
     "@capacitor/share": "^6.0.2",
-    "esbuild": "^0.25.12"
+    "esbuild": "^0.25.12",
+    "sharp": "^0.34.5"
   },
   "dependencies": {
     "@capgo/capacitor-native-biometric": "^6.0.4",
