@@ -37,6 +37,9 @@
       setupData._sustratoAuto = true;
     }
     if (!setupData.agua) setupData.agua = 'osmosis';
+    if (p.consejosModoUi === 'avanzado' || p.consejosModoUi === 'principiante') {
+      setupData.consejosModoUi = p.consejosModoUi;
+    }
   }
 
   function getSetupSkippedPages() {

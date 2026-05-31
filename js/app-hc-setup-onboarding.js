@@ -62,6 +62,9 @@ function hcResetSetupWizardSession(opts) {
     setupData.premium = null;
     ensurePremiumSetup();
   }
+  if (typeof seleccionarConsejosModoSetup === 'function') {
+    seleccionarConsejosModoSetup('principiante');
+  }
   try {
     if (typeof window !== 'undefined') window._nutrientesMostrarCatalogoCompleto = false;
   } catch (_) {}
@@ -940,9 +943,33 @@ function seleccionarLuz(tipo) {
   document.getElementById('luz' + suf)?.classList.add('selected');
 }
 
+function getConsejosModoSetupActivo() {
+  const p =
+    typeof setupData !== 'undefined' && setupData.premium && typeof setupData.premium === 'object'
+      ? setupData.premium
+      : null;
+  if (p && p.consejosModoUi === 'avanzado') return 'avanzado';
+  if (typeof setupData !== 'undefined' && setupData.consejosModoUi === 'avanzado') return 'avanzado';
+  const cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
+  if (cfg && cfg.consejosModoUi === 'avanzado') return 'avanzado';
+  if (p && p.consejosModoUi === 'principiante') return 'principiante';
+  return 'principiante';
+}
+
+function persistConsejosModoSetupToPremium() {
+  const m = getConsejosModoSetupActivo();
+  setupData.consejosModoUi = m;
+  if (typeof ensurePremiumSetup === 'function') {
+    ensurePremiumSetup().consejosModoUi = m;
+  }
+}
+
 function seleccionarConsejosModoSetup(modo) {
   const m = modo === 'avanzado' ? 'avanzado' : 'principiante';
   setupData.consejosModoUi = m;
+  if (typeof ensurePremiumSetup === 'function') {
+    ensurePremiumSetup().consejosModoUi = m;
+  }
   const principianteIds = ['setupConsejosModoPrincipiante', 'setupPremiumConsejosPrincipiante'];
   const avanzadoIds = ['setupConsejosModoAvanzado', 'setupPremiumConsejosAvanzado'];
   principianteIds.forEach(function (id) {
@@ -960,6 +987,10 @@ function seleccionarConsejosModoSetup(modo) {
     }
   });
 }
+
+window.getConsejosModoSetupActivo = getConsejosModoSetupActivo;
+window.persistConsejosModoSetupToPremium = persistConsejosModoSetupToPremium;
+window.seleccionarConsejosModoSetup = seleccionarConsejosModoSetup;
 
 function onBuscarCiudadSetup(val) {
   // Reusar la función de búsqueda de ciudad del setup original
@@ -1028,7 +1059,7 @@ function aplicarSetupDataATorre() {
   state.configTorre.luz       = setupData.luz || 'led';
   state.configTorre.horasLuz  = Math.max(12, Math.min(20,
     parseInt(String(document.getElementById('sliderHorasLuz')?.value || setupData.horasLuz || 16), 10) || 16));
-  state.configTorre.consejosModoUi = setupData.consejosModoUi === 'avanzado' ? 'avanzado' : 'principiante';
+  state.configTorre.consejosModoUi = getConsejosModoSetupActivo() === 'avanzado' ? 'avanzado' : 'principiante';
   if (setupData.ciudad) {
     state.configTorre.ciudad  = setupData.ciudad;
     state.configTorre.lat     = setupData.lat;

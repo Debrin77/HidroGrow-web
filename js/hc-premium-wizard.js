@@ -71,6 +71,7 @@
         origenPlanta: 'semilla',
         germinacionChecklist: {},
         metodoCultivo: 'scrog',
+        consejosModoUi: 'principiante',
       };
     }
     return setupData.premium;
@@ -346,6 +347,10 @@
     p.horasLuz = parseInt(String(el('setupPremiumHorasLuz')?.value || p.horasLuz || 18), 10) || 18;
     p.intensidadLuz = String(el('setupPremiumIntensidadLuz')?.value || 'media');
     if (typeof setupData !== 'undefined') setupData.ubicacion = p.entorno;
+    if (typeof getConsejosModoSetupActivo === 'function') {
+      p.consejosModoUi = getConsejosModoSetupActivo();
+      setupData.consejosModoUi = p.consejosModoUi;
+    }
   }
 
   function cargarPremiumSetupUI(pagina) {
@@ -353,6 +358,10 @@
     const p = ensurePremiumSetup();
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     if (cfg.premiumSetup) Object.assign(p, cfg.premiumSetup);
+    if (cfg.consejosModoUi === 'avanzado' || cfg.consejosModoUi === 'principiante') {
+      p.consejosModoUi = cfg.consejosModoUi;
+      if (typeof setupData !== 'undefined') setupData.consejosModoUi = cfg.consejosModoUi;
+    }
     if (cfg.growRoomAnchoM && !p.anchoM) p.anchoM = cfg.growRoomAnchoM;
     if (cfg.growRoomLargoM && !p.largoM) p.largoM = cfg.growRoomLargoM;
     if (cfg.growRoomAltoM && !p.altoM) p.altoM = cfg.growRoomAltoM;
@@ -377,9 +386,10 @@
     if (el('setupPremiumIntensidadLuz') && p.intensidadLuz) el('setupPremiumIntensidadLuz').value = p.intensidadLuz;
 
     seleccionarPremiumObjetivo(p.objetivo || 'autocultivo');
-    if (typeof seleccionarConsejosModoSetup === 'function') {
+    if (pagina === SETUP_PAGE_PREMIUM_1 && typeof seleccionarConsejosModoSetup === 'function') {
       const modoConsejos =
-        (typeof setupData !== 'undefined' && setupData.consejosModoUi) ||
+        p.consejosModoUi ||
+        (typeof getConsejosModoSetupActivo === 'function' ? getConsejosModoSetupActivo() : null) ||
         cfg.consejosModoUi ||
         'principiante';
       seleccionarConsejosModoSetup(modoConsejos);
@@ -435,6 +445,11 @@
     if (typeof inferLuzFromPremium === 'function') cfg.luz = inferLuzFromPremium(p);
     else if (p.entorno === 'exterior') cfg.luz = 'natural';
     else cfg.luz = 'led';
+    if (typeof getConsejosModoSetupActivo === 'function') {
+      cfg.consejosModoUi = getConsejosModoSetupActivo() === 'avanzado' ? 'avanzado' : 'principiante';
+    } else {
+      cfg.consejosModoUi = p.consejosModoUi === 'avanzado' ? 'avanzado' : 'principiante';
+    }
   }
 
   function validarPremiumSetupPaso(pagina) {

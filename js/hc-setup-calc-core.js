@@ -1734,6 +1734,7 @@ function guardarSetupYContinuar() {
   const locWizard = ciudadWizard.split(',')[0].trim();
   const ubicEffGuardar = setupData.ubicacion || setupUbicacion || 'exterior';
   if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
+  if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
   if (ubicEffGuardar === 'exterior') {
     if (!ciudadWizard || !Number.isFinite(latWizard) || !Number.isFinite(lonWizard)) {
       showToast(
@@ -1777,7 +1778,10 @@ function guardarSetupYContinuar() {
     lon:          Number.isFinite(lonWizard) ? lonWizard : null,
     localidadMeteo: usarNuevaEntrada ? (locWizard || '') : (locWizard || prevLocMet || ''),
     sensoresHardware: sensHwGuardar,
-    consejosModoUi: setupData.consejosModoUi === 'avanzado' ? 'avanzado' : 'principiante',
+    consejosModoUi:
+      typeof getConsejosModoSetupActivo === 'function' && getConsejosModoSetupActivo() === 'avanzado'
+        ? 'avanzado'
+        : 'principiante',
     torreObjetivoCultivo:
       ((state.configTorre && state.configTorre.torreObjetivoCultivo) || 'final'),
   };
@@ -2182,7 +2186,9 @@ function guardarSetupYContinuar() {
     }
   } else {
     // ── RECONFIGURAR TORRE EXISTENTE ──────────────────────────────────────
-    // No escribir directamente en el slot: el persist central valida y clona.
+    try {
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    } catch (_) {}
   }
 
   try {
@@ -2195,10 +2201,17 @@ function guardarSetupYContinuar() {
     window._hcChecklistGuidedFlow = true;
   } catch (_) {}
 
-  saveState();
+  const savedOk = saveState();
+  if (savedOk === false) {
+    showToast('No se pudo guardar la instalación. Revisa los datos e inténtalo de nuevo.', true);
+    return;
+  }
   aplicarConfigTorre();
   actualizarHeaderTorre();
   actualizarBadgesNutriente();
+  try {
+    if (typeof renderConsejos === 'function') renderConsejos();
+  } catch (_) {}
   renderTorre();
   updateTorreStats();
   updateDashboard();

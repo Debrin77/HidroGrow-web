@@ -1667,6 +1667,9 @@ function setupNext() {
   }
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     if (typeof validarPremiumSetupPaso === 'function' && !validarPremiumSetupPaso(setupPagina)) return;
+    if (setupPagina === SETUP_PAGE_PREMIUM_1 && typeof persistConsejosModoSetupToPremium === 'function') {
+      persistConsejosModoSetupToPremium();
+    }
     if (setupPagina === SETUP_PAGE_PREMIUM_END && typeof syncSetupDataFromPremium === 'function') {
       syncSetupDataFromPremium();
     }

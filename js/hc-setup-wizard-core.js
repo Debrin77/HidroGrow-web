@@ -2666,6 +2666,14 @@ function abrirSetup() {
   setupData.lat = setupCoordenadas.lat;
   setupData.lon = setupCoordenadas.lon;
   setupData.consejosModoUi = c.consejosModoUi === 'avanzado' ? 'avanzado' : 'principiante';
+  if (typeof ensurePremiumSetup === 'function') {
+    ensurePremiumSetup().consejosModoUi = setupData.consejosModoUi;
+  }
+  try {
+    if (typeof seleccionarConsejosModoSetup === 'function') {
+      seleccionarConsejosModoSetup(setupData.consejosModoUi);
+    }
+  } catch (_) {}
 
   const o = document.getElementById('setupOverlay');
   o.classList.add('open');

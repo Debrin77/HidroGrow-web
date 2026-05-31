@@ -1224,6 +1224,16 @@ html.hc-theme-dark .medir-quick-parse {
 .sistema-equip-details[open] .sistema-equip-summary .config-section-collapse-chevron {
   transform: rotate(180deg);
 }
+#setupOverlay .equip-card.selected,
+#setupOverlay .equip-card[aria-checked="true"] {
+  border-color: var(--gold, #b45309);
+  background: var(--gold-dim, #fef3c7);
+  box-shadow: 0 0 0 2px rgba(180, 83, 9, 0.28);
+}
+#setupOverlay .setup-consejos-modo-grid .equip-card {
+  cursor: pointer;
+  text-align: left;
+}
 .sistema-equip-card {
   margin: 0;
   border: none;
@@ -1266,4 +1276,73 @@ html.hc-theme-dark .medir-quick-parse {
 
 .app:has(.content.is-scrolling) .status-dot {
   animation-play-state: paused;
+}
+
+/* ── Móvil táctil: scroll vertical fluido ── */
+@media (hover: none) and (pointer: coarse) {
+  /* Un solo contenedor de scroll: diagramas no capturan el gesto vertical */
+  #torreSVGWrap.torre-svg-canvas,
+  #medirDiagramWrap.torre-svg-canvas {
+    overflow: visible;
+    max-height: none;
+    touch-action: pan-y;
+  }
+
+  /* :active al deslizar dispara repintados en cadena */
+  .card:active,
+  .recarga-card:active,
+  .param-card:active,
+  .param-tile:active,
+  .info-banner:active,
+  .meteo-alert:active,
+  .dash-torre-banner:active,
+  .medir-torre-banner:active,
+  .dash-sistema-info[role="button"]:active,
+  .quick-btn:active,
+  .btn:active,
+  .equip-card:active,
+  .dia-card:active,
+  .torre-summary:active,
+  .torre-lista-cesta-btn:active,
+  .medir-wizard-choice:active {
+    transform: none !important;
+    box-shadow: inherit !important;
+    opacity: 1 !important;
+    filter: none !important;
+  }
+
+  .content .card,
+  .content .recarga-card,
+  .content .param-card,
+  .content .param-tile,
+  .content .quick-btn,
+  .content .info-banner,
+  .content .meteo-alert,
+  .content .btn,
+  .content .dia-card,
+  .content .equip-card,
+  .content .dash-torre-banner,
+  .content .medir-torre-banner {
+    transition: none !important;
+  }
+
+  .status-dot {
+    animation: none !important;
+  }
+
+  .tab-btn:active svg {
+    transform: none !important;
+  }
+
+  .content .card,
+  .content .recarga-card,
+  .content .param-card {
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04) !important;
+  }
+
+  html.hc-theme-dark .content .card,
+  html.hc-theme-dark .content .recarga-card,
+  html.hc-theme-dark .content .param-card {
+    box-shadow: none !important;
+  }
 }
