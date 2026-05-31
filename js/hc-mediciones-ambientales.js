@@ -13,6 +13,7 @@
       tempAire: { min: 20, max: 26, warnLow: 18, warnHigh: 28 },
       tempAgua: { min: 18, max: 22, warnLow: 16, warnHigh: 24 },
       ppfd: { min: 100, max: 350, warnLow: 80, warnHigh: 450 },
+      co2: { min: 400, max: 800, warnLow: 350, warnHigh: 1000 },
       hrFlorMax: null,
     },
     vegetativo: {
@@ -21,6 +22,7 @@
       tempAire: { min: 22, max: 28, warnLow: 18, warnHigh: 30 },
       tempAgua: { min: 18, max: 22, warnLow: 16, warnHigh: 24 },
       ppfd: { min: 400, max: 600, warnLow: 300, warnHigh: 750 },
+      co2: { min: 400, max: 1200, warnLow: 350, warnHigh: 1500 },
       hrFlorMax: null,
     },
     prefloracion: {
@@ -29,6 +31,7 @@
       tempAire: { min: 20, max: 26, warnLow: 18, warnHigh: 28 },
       tempAgua: { min: 18, max: 21, warnLow: 16, warnHigh: 23 },
       ppfd: { min: 550, max: 800, warnLow: 450, warnHigh: 900 },
+      co2: { min: 400, max: 1200, warnLow: 350, warnHigh: 1500 },
       hrFlorMax: 55,
     },
     floracion: {
@@ -37,6 +40,7 @@
       tempAire: { min: 20, max: 26, warnLow: 18, warnHigh: 28 },
       tempAgua: { min: 18, max: 21, warnLow: 16, warnHigh: 23 },
       ppfd: { min: 700, max: 1000, warnLow: 550, warnHigh: 1100 },
+      co2: { min: 400, max: 1200, warnLow: 350, warnHigh: 1500 },
       hrFlorMax: 50,
     },
   };
@@ -181,6 +185,7 @@
       ppfd: Number.isFinite(ppfd) ? ppfd : luxToPpfdApprox(lux),
       lux: numRaw('inputLux'),
       tempExt: numRaw('inputTempExt'),
+      co2: numRaw('inputCO2'),
       fase: getFaseCultivoActual(),
     };
   }
@@ -248,6 +253,31 @@
         (deshEquip || 'HR actual ~' + (hr || '—') + '%') + '</span></div>' +
         '<div class="correccion-item"><span>Circulación</span><span class="correccion-valor">Clip fan bajo copa</span></div>' +
         '<div class="correccion-muted">HR muy alta en floración → riesgo de moho en cogollos.</div>'
+      );
+    }
+    return '';
+  }
+
+  function correccionCO2(co2, rango) {
+    if (!Number.isFinite(co2)) return '';
+    const co2Equip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('co2') : '';
+    const extEquip = typeof getCorreccionEquipamientoSugerido === 'function' ? getCorreccionEquipamientoSugerido('extractor') : '';
+    if (co2 > rango.max) {
+      return (
+        '<div class="correccion-title">🫧 CO₂ alto (' + co2 + ' ppm)</div>' +
+        '<div class="correccion-item"><span>Ventilar</span><span class="correccion-valor">' +
+        (extEquip || 'Subir extractor / abrir entrada aire') + '</span></div>' +
+        '<div class="correccion-muted">Por encima de ~1200–1500 ppm sin control → riesgo en sala cerrada.</div>'
+      );
+    }
+    if (co2 < rango.min) {
+      return (
+        '<div class="correccion-title">🌬️ CO₂ bajo (' + co2 + ' ppm)</div>' +
+        '<div class="correccion-item"><span>Renovar aire</span><span class="correccion-valor">' +
+        (extEquip || 'Entrada/salida aire · evitar sala estanca') + '</span></div>' +
+        (co2Equip
+          ? '<div class="correccion-item"><span>Enriquecer</span><span class="correccion-valor">' + co2Equip + '</span></div>'
+          : '<div class="correccion-muted">400–450 ppm es ambiente normal sin botella CO₂.</div>')
       );
     }
     return '';
@@ -335,7 +365,16 @@
       showAmbCorreccion('correccionPPFD', '');
     }
 
-    if (!interior && Number.isFinite(amb.tempExt)) {
+    if (Number.isFinite(amb.co2) && rangos.co2) {
+      const ev = evalRangoSimple(amb.co2, rangos.co2, 'CO₂', ' ppm');
+      setAmbStatus('statusCO2', ev.estado, ev.estado === 'ok' ? '✅' : ev.estado === 'bad' ? '🔴' : ev.estado === 'warn' ? '🟡' : '', ev.msg);
+      showAmbCorreccion('correccionCO2', ev.estado === 'ok' || ev.estado === 'empty' ? '' : correccionCO2(amb.co2, rangos.co2));
+    } else {
+      setAmbStatus('statusCO2', 'empty', '', 'Opcional · detector o sensor IoT');
+      showAmbCorreccion('correccionCO2', '');
+    }
+
+    if (Number.isFinite(amb.tempExt)) {
       const rExt = { min: 15, max: 32, warnLow: 10, warnHigh: 38 };
       const ev = evalRangoSimple(amb.tempExt, rExt, 'Temp. exterior', ' °C');
       setAmbStatus('statusTempExt', ev.estado, ev.estado === 'ok' ? '✅' : '🟡', ev.msg);
@@ -351,6 +390,8 @@
     if (rangeEl) rangeEl.textContent = rangos.vpd.min + ' – ' + rangos.vpd.max + ' kPa (' + fase + ')';
     const ppfdRange = el('paramRangePPFD');
     if (ppfdRange) ppfdRange.textContent = rangos.ppfd.min + ' – ' + rangos.ppfd.max + ' µmol/m²/s';
+    const co2Range = el('paramRangeCO2');
+    if (co2Range && rangos.co2) co2Range.textContent = rangos.co2.min + ' – ' + rangos.co2.max + ' ppm';
   }
 
   function renderProtocoloMedicionPanel() {
@@ -384,27 +425,19 @@
     set('inputPPFD', m.ppfd);
     set('inputLux', m.lux);
     set('inputTempExt', m.tempExt);
+    set('inputCO2', m.co2);
     actualizarVPDEnUI();
     evalAmbiente();
   }
 
   function ambienteAlertasTexto(amb) {
-    const alertas = [];
-    if (!amb) return '';
-    const fase = amb.fase || getFaseCultivoActual();
-    const r = getRangosFase(fase);
-    if (Number.isFinite(amb.vpd)) {
-      if (amb.vpd < r.vpd.min) alertas.push('VPD bajo ' + amb.vpd + ' kPa');
-      else if (amb.vpd > r.vpd.max) alertas.push('VPD alto ' + amb.vpd + ' kPa');
+    if (typeof evaluarMedicionCompleta === 'function') {
+      var payload = amb || {};
+      if (!payload.fase) payload.fase = getFaseCultivoActual();
+      var r = evaluarMedicionCompleta(payload);
+      return typeof alertasToTexto === 'function' ? alertasToTexto(r) : '';
     }
-    if (Number.isFinite(amb.humSala) && amb.humSala > (r.hrFlorMax || r.hr.max)) {
-      alertas.push('HR ' + amb.humSala + '% alta para ' + fase);
-    }
-    if (Number.isFinite(amb.ppfd)) {
-      if (amb.ppfd < r.ppfd.min) alertas.push('PPFD bajo');
-      else if (amb.ppfd > r.ppfd.max) alertas.push('PPFD alto');
-    }
-    return alertas.join(' | ');
+    return '';
   }
 
   window.calcVPDkPa = calcVPDkPa;
@@ -417,6 +450,9 @@
   window.renderProtocoloMedicionPanel = renderProtocoloMedicionPanel;
   window.cargarAmbienteDesdeUltimaMedicion = cargarAmbienteDesdeUltimaMedicion;
   window.ambienteAlertasTexto = ambienteAlertasTexto;
+  window.correccionVPD = correccionVPD;
+  window.correccionPPFD = correccionPPFD;
+  window.correccionCO2 = correccionCO2;
   window.PROTOCOLO_MEDICION = PROTOCOLO_MEDICION;
 
   function syncWizardAmbienteFromWiz() {

@@ -33,7 +33,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-hidrogrow-brand">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-canopy">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-canopy">
 </head>
 <body>
 <script>
@@ -45,7 +46,7 @@
   } catch (_) {}
 })();
 </script>
-  <script src="js/hc-theme.js?v=2"></script>
+  <script src="js/hc-theme.js?v=2026-05-31-salas"></script>
 
 <!-- Iconos UI reutilizables (trazo 1.75, currentColor) -->
 <svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false">
@@ -211,6 +212,12 @@
       <svg class="header-logo-icon" aria-hidden="true" focusable="false"><use href="#hc-i-cannabis-leaf"/></svg>
       <span class="header-logo-text">HIDRO<span>Grow</span></span>
     </div>
+    <button type="button" id="headerInstActiva" class="header-instal-activa setup-hidden"
+      onclick="abrirSelectorTorres()"
+      aria-label="Instalación activa. Pulsa para cambiar.">
+      <span class="header-instal-kicker">Activa</span>
+      <span id="headerInstActivaNombre" class="header-instal-nombre">—</span>
+    </button>
     <div class="header-status">
       <button id="installPWABtn" class="install-pwa-btn" onclick="instalarPWA()"
         aria-label="Instalar HidroGrow">
@@ -260,6 +267,7 @@
           Cambiar ›
         </span>
       </button>
+      <div id="hcMultiCoachInicio" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
       <div class="dash-operativa-row" role="group" aria-label="Estado operativo de la instalación activa">
         <div>
           <div class="dash-operativa-title">Estado del sistema</div>
@@ -497,7 +505,7 @@
           <option value="light">Claro</option>
           <option value="dark">Oscuro</option>
         </select>
-        <div class="config-help-text">Auto sigue el tema del sistema. También puedes forzar claro u oscuro en este dispositivo.</div>
+        <div class="config-help-text">Auto sigue el tema del sistema. <strong>Oscuro</strong> recomendado en sala de cultivo (menos deslumbramiento). También puedes forzar claro u oscuro.</div>
         <button type="button" class="btn btn-secondary setup-mt-8" onclick="forzarReautenticacion()">
           Cerrar sesión ahora
         </button>
@@ -537,6 +545,7 @@
         </div>
         <span class="medir-torre-banner-action">Cambiar ›</span>
       </button>
+      <div id="hcMultiCoachMedir" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
 
       <section id="medirInstalacionEsquema" class="medir-instalacion-esquema setup-hidden" aria-labelledby="medirEsquemaTitulo">
         <h2 id="medirEsquemaTitulo" class="medir-esquema-titulo">Esquema de tu instalación</h2>
@@ -592,6 +601,12 @@
       <div class="card medir-equip-card" id="medirEquipamientoCard">
         <div class="card-title">🔧 Equipamiento de sala</div>
         <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
+        <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
+      </div>
+
+      <div class="card medir-iot-card" id="medirIotCard">
+        <div class="card-title">📡 Sensores IoT (Bluetooth / WiFi)</div>
+        <div id="medirIotPanel" class="medir-iot-panel"></div>
       </div>
 
       <div class="card medir-sem-card setup-hidden" id="medirSemilleroCard">
@@ -662,7 +677,7 @@
           <div class="param-card" id="cardTempExt">
             <div class="param-header">
               <div class="param-label">Temp. exterior</div>
-              <div class="param-range">Opcional · exterior</div>
+              <div class="param-range">Opcional · sonda exterior</div>
             </div>
             <div class="param-input-row">
               <input type="number" class="param-input" id="inputTempExt" placeholder="28" inputmode="decimal" step="0.1" min="-10" max="50"
@@ -671,6 +686,19 @@
             </div>
             <div class="param-status empty" id="statusTempExt"></div>
             <div class="correccion-box" id="correccionTempExt"></div>
+          </div>
+          <div class="param-card" id="cardCO2">
+            <div class="param-header">
+              <div class="param-label">CO₂ sala</div>
+              <div class="param-range" id="paramRangeCO2">400 – 1200 ppm</div>
+            </div>
+            <div class="param-input-row">
+              <input type="number" class="param-input" id="inputCO2" placeholder="850" inputmode="numeric" step="10" min="300" max="5000"
+                oninput="evalAmbiente();evalParam()">
+              <div class="param-unit">ppm</div>
+            </div>
+            <div class="param-status empty" id="statusCO2"></div>
+            <div class="correccion-box" id="correccionCO2"></div>
           </div>
         </div>
       </div>
@@ -2950,7 +2978,7 @@
       <div class="setup-title">Genética y método</div>
       <div class="setup-subtitle">SOG o SCROG según porte. En el paso Cultivos elegirás variedades concretas.</div>
       <div class="setup-block-title">Método de cultivo</div>
-      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-16">
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">
         <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumMetodoSOG" onclick="seleccionarPremiumMetodo('sog')">
           <div class="setup-option-title-md">SOG</div>
           <div class="setup-option-desc-sm">Muchas plantas bajas · indica / autos</div>
@@ -2960,6 +2988,7 @@
           <div class="setup-option-desc-sm">Red / pantalla · sativas y híbridas</div>
         </button>
       </div>
+      <div id="setupPremiumMetodoHint" class="setup-metodo-hint setup-box-info setup-mb-16" role="note" aria-live="polite"></div>
       <div class="setup-block-title">Preferencia genética</div>
       <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
         <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumGenFoto" onclick="seleccionarPremiumGenetica('foto')">
@@ -3646,7 +3675,8 @@
 
     <div class="setup-page" id="spage6">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-sprout"/></svg> ¿Qué vas a cultivar?</div>
-      <div class="setup-subtitle"><strong>Arriba, grupos de genética</strong> (índica, sativa, híbrida, auto, CBD): orientan EC, pH y el resumen del asistente; puedes marcar varios. <strong>Abajo, opcional:</strong> variedad <em>concreta</em> por fila y cesta (o hueco NFT): es lo que queda en tu esquema; si rellenas variedad, al guardar ponemos la <strong>fecha de entrada al hidro en hoy</strong> salvo que ya la hubieras puesto. Si lo dejas vacío, lo harás cesta a cesta en Cultivo e instalación.</div>
+      <div class="setup-subtitle">Marca grupos genéticos (orientan EC/pH). Abajo, opcional: variedad y fecha por cesta. Si lo dejas vacío, lo completas después en Cultivo e instalación.</div>
+      <div id="setupCultivosResumen" class="setup-cultivos-resumen setup-box-info setup-mb-12 setup-hidden" role="status" aria-live="polite"></div>
 
       <div id="setupPlantasGrid" class="setup-plantas-grid">
         <!-- Generado por JS -->
@@ -3671,7 +3701,7 @@
 
     <div class="setup-page" id="spage7">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-layers"/></svg> ¿Una o varias instalaciones?</div>
-      <div class="setup-subtitle">Hasta <strong>10 sistemas independientes</strong> (torre, NFT o DWC en cualquier combinación). Cada uno tiene su nutriente, plantas, historial y <strong>ubicación / clima</strong> aunque compartan el mismo balcón o estén en localidades distintas.</div>
+      <div class="setup-subtitle">Hasta <strong>10 sistemas DWC/RDWC independientes</strong>. Cada uno tiene sus plantas, mediciones, nutriente y clima. Ejemplos: <strong>Esquejes</strong>, <strong>Veg 18/6</strong>, <strong>Flor 12/12</strong>. La germinación en domo no necesita instalación salvo que uses un cubo dedicado.</div>
 
       <div class="setup-grid-2 setup-grid-gap-10 setup-mb-16">
         <button type="button" class="equip-card selected equip-card-pad-14-center" id="torreSolo" onclick="seleccionarNumTorres('una')">
@@ -3682,15 +3712,13 @@
         <button type="button" class="equip-card equip-card-pad-14-center" id="torreVarias" onclick="seleccionarNumTorres('varias')">
           <div class="setup-sp7-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-leaf"/></svg><svg class="hc-ico" focusable="false"><use href="#hc-i-leaf"/></svg></div>
           <div class="setup-sp7-title">Varias instalaciones</div>
-          <div class="setup-sp7-hint">Mismo tipo o mezclados.<br>Datos y EC por sistema.</div>
+          <div class="setup-sp7-hint">Germinación, clones, veg y flor<br>con nombres claros.</div>
         </button>
       </div>
 
       <div id="infoVarTorres" class="setup-hidden setup-box-warn setup-box-warn-relaxed setup-box-warn--ico-row">
         <svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg>
-        <span>Podrás añadir y configurar cada instalación adicional desde la pestaña <strong>Cultivo e instalación</strong>
-        usando el botón <strong><svg class="hc-ico hc-ico--inline" style="vertical-align:-2px;margin-right:2px" aria-hidden="true" focusable="false"><use href="#hc-i-plus"/></svg> Nuevo sistema</strong>. Pueden ser <strong>torre, NFT o DWC</strong> mezclados; varias en la misma terraza o una por localidad, cada una con su
-        nutriente, historial de mediciones, plantas y <strong>ubicación / clima</strong> (municipio en el asistente y en Mediciones).</span>
+        <span>Tras guardar la primera, añade más con <strong><svg class="hc-ico hc-ico--inline" style="vertical-align:-2px;margin-right:2px" aria-hidden="true" focusable="false"><use href="#hc-i-plus"/></svg> Nuevo sistema</strong> en Cultivo e instalación. Antes de medir otra sala, pulsa <strong>Cambiar ›</strong> en Inicio o Medir. Cada instalación guarda EC, historial y checklist por separado.</span>
       </div>
 
       <!-- Resumen final -->
@@ -3789,6 +3817,51 @@
     <div class="ctp-actions">
       <button type="button" class="btn btn-ghost ctp-action-btn" onclick="cerrarModalConsejosTablaPersonal()">Ahora no</button>
       <button type="button" class="btn btn-primary ctp-action-btn" onclick="guardarConsejosTablaPersonal()">Guardar tabla</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: ¿Cuántas salas? (primer uso) -->
+<div class="modal-overlay ctp-modal-overlay" id="modalSalasPlan"
+  onclick="hcCloseSalasPlanWizard(event)"
+  role="dialog" aria-modal="true" aria-labelledby="salasPlanWizardTitle">
+  <div class="modal hc-salas-plan-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="salasPlanWizardTitle">¿Cuántas salas?</div>
+    <div id="salasPlanWizardBody" class="hc-salas-plan-body"></div>
+    <div class="hc-salas-plan-foot">
+      <button type="button" class="btn btn-ghost btn-sm" id="salasPlanBtnBack" onclick="hcSalasPlanWizardBack()">← Atrás</button>
+      <button type="button" class="btn btn-primary btn-sm" id="salasPlanBtnNext" onclick="hcSalasPlanWizardNext()">Siguiente →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: guía al añadir otra instalación -->
+<div class="modal-overlay ctp-modal-overlay" id="modalNuevoSistema"
+  onclick="hcCloseNuevoSistemaPrimer(event)"
+  role="dialog" aria-modal="true" aria-labelledby="nuevoSistemaPrimerTitle">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="nuevoSistemaPrimerTitle"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-plus"/></svg> Otra instalación</div>
+    <div id="nuevoSistemaPrimerBody"></div>
+    <button type="button" class="btn btn-primary setup-mt-8" style="width:100%" onclick="hcConfirmNuevoSistemaPrimer()">Entendido, configurar</button>
+  </div>
+</div>
+
+<!-- Modal: asistente WiFi IoT -->
+<div class="modal-overlay ctp-modal-overlay" id="modalIotWifi"
+  onclick="hcIotCloseWifiWizard(event)"
+  role="dialog" aria-modal="true" aria-labelledby="iotWifiWizardTitle">
+  <div class="modal hc-iot-wiz-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="iotWifiWizardTitle">Asistente WiFi IoT</div>
+    <p class="hc-iot-wiz-intro">Opcional. Si no tienes gateway, cierra y sigue registrando manualmente en Medir.</p>
+    <div id="iotWifiWizardBody" class="hc-iot-wiz-body"></div>
+    <div class="hc-iot-wiz-foot">
+      <button type="button" class="btn btn-ghost btn-sm" id="iotWizBtnPrev" onclick="hcIotWizardPrev()">← Anterior</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="hcIotWizardReset()">Reiniciar</button>
+      <button type="button" class="btn btn-primary btn-sm" id="iotWizBtnNext" onclick="hcIotWizardNext()">Siguiente →</button>
+      <button type="button" class="btn btn-primary btn-sm" id="iotWizBtnFinish" style="display:none" onclick="hcIotWizardFinish()">Confirmar vínculo</button>
     </div>
   </div>
 </div>
@@ -4451,28 +4524,31 @@
 <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-visual"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-eval"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-germ-clar"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-sog-scrog"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flow"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-flow"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-sog-scrog"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-premium7"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
 <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-guias"></script>
 
 
 
-<script src="js/hc-setup-calc-core.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
+<script src="js/hc-setup-calc-core.js?v=2026-05-31-salas"></script>
   <script src="js/hc-setup-rotacion.js?v=2"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=1"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
   <script src="js/hc-setup-registro.js?v=5"></script>
   <script src="js/hc-setup-agua-sustrato.js?v=11"></script>
-  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-ambient"></script>
-  <script src="js/hc-monitor-sistema.js?v=2026-05-31-monitor"></script>
-  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ambient"></script>
-  <script src="js/hc-medicion-wizard.js?v=6"></script>
+  <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-iot-bridge.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-monitor-sistema.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-eval"></script>
+  <script src="js/hc-medicion-wizard.js?v=2026-05-31-eval"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
   <script src="js/hc-setup-historial-tabs.js?v=13"></script>
@@ -4486,7 +4562,9 @@
   <script src="js/app-hc-medicion-toast.js?v=6"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-28-mm-tubos-uniform"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-28-rdwc-ecph-nft-dif"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-multi"></script>
+  <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
+  <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

@@ -649,10 +649,11 @@ button.pin-key {
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
   box-shadow: 0 1px 0 rgba(255,255,255,0.7) inset, 0 4px 20px rgba(15, 23, 42, 0.04);
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, auto);
   align-items: flex-end;
-  justify-content: space-between;
-  padding: 0 16px calc(10px);
+  gap: 6px;
+  padding: 0 10px calc(10px);
   padding-top: env(safe-area-inset-top, 47px);
   flex-shrink: 0;
 }
@@ -14213,6 +14214,43 @@ button.toggle-switch:focus-visible {
   color: #0369a1;
   font-weight: 600;
 }
+.setup-metodo-hint {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.setup-metodo-hint-l1 {
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+.setup-metodo-hint-l2 {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: #334155;
+}
+.setup-cultivos-resumen-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.02em;
+}
+.setup-cultivos-resumen-list {
+  margin: 0;
+  padding: 0 0 0 16px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #14532d;
+}
+.setup-cultivos-resumen-list li {
+  margin: 0 0 4px;
+}
+.setup-cultivos-resumen-foot {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: #166534;
+  opacity: 0.9;
+}
 
 .setup-content {
   flex: 1;
@@ -17729,4 +17767,134 @@ html.hc-theme-dark .torre-nft-p-note strong {
 .grow-room-result-host .grow-room-foot {
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+/* Motor eval + alertas post-guardado */
+.medir-alertas-panel {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fffbeb;
+  border: 1.5px solid #fcd34d;
+}
+.medir-alertas-head {
+  font-size: 12px;
+  font-weight: 800;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+.hc-eval-alerta {
+  font-size: 11px;
+  line-height: 1.45;
+  padding: 6px 0;
+  border-bottom: 1px dashed #fde68a;
+}
+.hc-eval-alerta:last-child { border-bottom: 0; }
+.hc-eval-alerta--bad { color: #991b1b; }
+.hc-eval-alerta--warn { color: #92400e; }
+.hc-eval-sol { margin: 4px 0 0; font-size: 10px; opacity: 0.9; }
+
+/* Plano sala */
+.hc-sala-layout-panel {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+.hc-sala-layout-hint {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.hc-sala-layout-svg {
+  max-width: 100%;
+  border-radius: 10px;
+  background: #fff;
+}
+.hc-sala-legend {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hc-sala-legend-row {
+  display: grid;
+  grid-template-columns: 24px 1fr 1.2fr;
+  gap: 6px;
+  font-size: 10px;
+  align-items: center;
+  color: #64748b;
+}
+.hc-sala-legend-row--ok { color: #047857; }
+.hc-sala-legend-val { font-weight: 600; text-align: right; }
+
+/* IoT */
+.medir-iot-panel { font-size: 12px; }
+.hc-iot-hint {
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 0 0 8px;
+}
+.hc-iot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.hc-iot-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 11px;
+}
+.hc-iot-type {
+  font-size: 9px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.hc-iot-empty { font-size: 11px; color: var(--muted); margin: 0; }
+.hc-iot-wiz-ok { font-size: 11px; color: #047857; margin: 6px 0; font-weight: 600; }
+.hc-iot-wiz-warn { font-size: 11px; color: #b45309; margin: 6px 0; }
+.hc-iot-live-badge { margin-top: 8px; }
+.hc-iot-link-btn { font-size: 10px; margin-left: 6px; }
+
+.hc-iot-wiz-modal { max-width: 440px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+.hc-iot-wiz-intro { font-size: 11px; color: var(--muted); margin: 0 0 10px; line-height: 1.4; }
+.hc-iot-wiz-body { flex: 1; overflow-y: auto; max-height: 55vh; margin-bottom: 12px; }
+.hc-iot-wiz-foot { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 10px; }
+.hc-iot-wiz-block { font-size: 12px; line-height: 1.45; }
+.hc-iot-wiz-lead { margin: 0 0 10px; }
+.hc-iot-wiz-note { font-size: 10px; color: var(--muted); margin: 6px 0 0; }
+.hc-iot-wiz-steps-list { margin: 8px 0 0 18px; padding: 0; }
+.hc-iot-wiz-steps-list li { margin-bottom: 4px; }
+.hc-iot-wiz-checklist { margin: 8px 0 0 18px; padding: 0; }
+.hc-iot-wiz-checklist li { margin-bottom: 6px; }
+.hc-iot-code { display: inline-block; margin-top: 4px; padding: 4px 6px; background: #f1f5f9; border-radius: 6px; font-size: 10px; word-break: break-all; }
+.hc-iot-wiz-actions-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.hc-iot-wiz-summary { margin: 8px 0 0 18px; padding: 0; }
+.hc-iot-wiz-summary li { margin-bottom: 4px; }
+.hc-iot-wiz-sub { font-size: 9px; color: var(--muted); }
+
+.hc-iot-val-table-wrap { overflow-x: auto; margin-top: 8px; }
+.hc-iot-val-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.hc-iot-val-table th,
+.hc-iot-val-table td { border: 1px solid var(--border); padding: 6px 4px; text-align: left; vertical-align: top; }
+.hc-iot-val-table th { background: #f8fafc; font-weight: 700; }
+.hc-iot-val--ok td { background: #f0fdf4; }
+.hc-iot-val--bad td { background: #fef2f2; }
+.hc-iot-val-msg { max-width: 120px; }
+.hc-iot-confirm-lbl { display: flex; align-items: center; gap: 4px; font-size: 10px; white-space: nowrap; cursor: pointer; }
+
+/* Monitor: valor fuera de rango */
+.hc-monitor-alert {
+  font-weight: 800;
+  margin-left: 4px;
+}
+.hc-monitor-alert--bad { color: #dc2626; }
+.hc-monitor-alert--warn { color: #d97706; }
+.hc-monitor-sol {
+  display: block;
+  font-size: 10px;
+  color: #92400e;
+  margin-top: 2px;
 }

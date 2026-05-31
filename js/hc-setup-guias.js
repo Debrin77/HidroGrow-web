@@ -26,8 +26,8 @@
       l2: 'No volverás a ajustar el slider de horas más adelante.',
     },
     5: {
-      l1: 'SOG/SCROG y genética orientan densidad; semillero = referencia EC/pH.',
-      l2: 'Variedades concretas en cestas van al final (paso Cultivos).',
+      l1: 'SOG = muchas plantas bajas; SCROG = red con pocas plantas. El recuadro explica al elegir.',
+      l2: 'Semillero = referencia EC/pH. Variedades en cestas van al paso Cultivos.',
     },
     6: {
       l1: 'Las 6 casillas son fases en orden hasta el cubo hidro, no opciones alternativas.',
@@ -58,12 +58,12 @@
       l2: 'Ubicación, luz y horas ya vienen de Entorno y Clima.',
     },
     13: {
-      l1: 'Grupos genéticos + variedad/fecha por cesta — aquí sí asignas plantas.',
+      l1: 'Grupos genéticos + variedad/fecha por cesta. Revisa el resumen de tu configuración arriba.',
       l2: 'Distinto del semillero (referencia) y del medio en net pot (paso Agua).',
     },
     14: {
-      l1: 'Revisa litros, equipamiento, mezcla y cultivos antes de guardar.',
-      l2: 'Tras guardar: checklist diario en Medir.',
+      l1: '¿Varias salas? Crea instalaciones con nombres claros (Esquejes, Veg, Flor). Germinación en domo no necesita cubo DWC.',
+      l2: 'Antes de medir otra sala: Cambiar › en Inicio o Medir. Cada sistema guarda EC e historial aparte.',
     },
   };
 
@@ -240,7 +240,48 @@
     if (section) section.classList.add('setup-dwc-preview-section--diagram');
   }
 
+  function metodoLabel(m) {
+    return m === 'sog' ? 'SOG (muchas plantas bajas)' : 'SCROG (red / pantalla)';
+  }
+
+  function renderSetupCultivosResumen() {
+    var panel = document.getElementById('setupCultivosResumen');
+    if (!panel) return;
+    syncSetupDataFromPremium();
+    var p = ensurePremium();
+    var tipo =
+      typeof setupTipoInstalacion !== 'undefined'
+        ? String(setupTipoInstalacion || 'dwc').toUpperCase()
+        : 'DWC';
+    var ent = p && p.entorno === 'exterior' ? 'Exterior' : 'Interior';
+    var met = metodoLabel((p && p.metodoCultivo) || 'scrog');
+    var agua = aguaLabel(setupData.agua || 'osmosis');
+    var su = sustratoLabel(setupData.sustrato || inferSustratoFromOrigen((p && p.origenPlanta) || 'semilla'));
+    var nutId = typeof setupNutriente !== 'undefined' ? setupNutriente : 'canna_aqua';
+    var nutNom = nutId;
+    try {
+      if (typeof NUTRIENTES_DB !== 'undefined' && NUTRIENTES_DB) {
+        var nut = NUTRIENTES_DB.find(function (n) {
+          return n.id === nutId;
+        });
+        if (nut) nutNom = nut.marca ? nut.marca + ' ' + (nut.nombre || '') : nut.nombre || nutId;
+      }
+    } catch (_) {}
+    var hLuz = Number.isFinite(p && p.horasLuz) ? p.horasLuz + ' h luz/día' : setupData.horasLuz ? setupData.horasLuz + ' h' : '—';
+    panel.innerHTML =
+      '<p class="setup-cultivos-resumen-title">Resumen antes de guardar</p>' +
+      '<ul class="setup-cultivos-resumen-list">' +
+      '<li><strong>Sistema:</strong> ' + esc(tipo) + ' · ' + esc(ent) + ' · ' + esc(hLuz) + '</li>' +
+      '<li><strong>Método:</strong> ' + esc(met) + '</li>' +
+      '<li><strong>Mezcla:</strong> agua ' + esc(agua) + ' · fijación ' + esc(su) + '</li>' +
+      '<li><strong>Nutriente:</strong> ' + esc(String(nutNom).trim()) + '</li>' +
+      '</ul>' +
+      '<p class="setup-cultivos-resumen-foot">Pulsa «Guardar y empezar» para crear la instalación con estos datos.</p>';
+    panel.classList.remove('setup-hidden');
+  }
+
   global.renderSetupGuiaPanel = renderSetupGuiaPanel;
+  global.renderSetupCultivosResumen = renderSetupCultivosResumen;
   global.buildSetupEquipamientoMerged = buildSetupEquipamientoMerged;
   global.renderSetupDiagramEquipLegend = renderSetupDiagramEquipLegend;
   global.renderSetupDiagramEquipLegendForPreviews = renderSetupDiagramEquipLegendForPreviews;

@@ -105,6 +105,17 @@
     refreshPremiumGerminacionUI();
   }
 
+  const METODO_HINTS = {
+    sog: {
+      l1: '<strong>SOG</strong> (Sea of Green): muchas plantas bajas y juntas; veg corto y una cola principal por maceta.',
+      l2: 'Más plantas/m², menos altura. Ideal para índicas, autos y salas compactas.',
+    },
+    scrog: {
+      l1: '<strong>SCROG</strong> (Screen of Green): pocas plantas guiadas con red/pantalla ~40 cm sobre el sustrato.',
+      l2: 'Copa plana y uniforme. Ideal para sativas e híbridas altas; menos macetas, más tiempo en veg.',
+    },
+  };
+
   function seleccionarPremiumMetodo(metodo) {
     ensurePremiumSetup().metodoCultivo = metodo === 'sog' ? 'sog' : 'scrog';
     refreshPremiumMetodoUI();
@@ -222,13 +233,23 @@
     out.innerHTML = html;
   }
 
+  function refreshPremiumMetodoHint() {
+    const out = el('setupPremiumMetodoHint');
+    if (!out) return;
+    const m = ensurePremiumSetup().metodoCultivo || 'scrog';
+    const h = METODO_HINTS[m] || METODO_HINTS.scrog;
+    out.innerHTML = '<p class="setup-metodo-hint-l1">' + h.l1 + '</p><p class="setup-metodo-hint-l2">' + h.l2 + '</p>';
+  }
+
   function refreshPremiumGeneticaHint() {
     const out = el('setupPremiumGeneticaHint');
     if (!out) return;
     const p = ensurePremiumSetup();
-    const met = p.metodoCultivo === 'sog' ? 'SOG (plantas bajas, muchas macetas)' : 'SCROG (red, pocas plantas, sativas)';
-    const gen = p.geneticaPref === 'auto' ? 'Autoflorecientes: ciclo fijo, evita trasplantes tardíos.' : 'Fotoperíodo: controlas veg con 18/6 y flor con 12/12.';
-    out.innerHTML = '<p>' + met + '</p><p>' + gen + '</p>';
+    const gen =
+      p.geneticaPref === 'auto'
+        ? 'Autoflorecientes: ciclo fijo · evita trasplantes tardíos.'
+        : 'Fotoperíodo: controlas veg con 18/6 y flor con 12/12.';
+    out.innerHTML = '<p>' + gen + '</p>';
   }
 
   function togglePremiumGermPaso(id) {
@@ -253,6 +274,7 @@
     const m = ensurePremiumSetup().metodoCultivo || 'scrog';
     el('setupPremiumMetodoSOG')?.classList.toggle('selected', m === 'sog');
     el('setupPremiumMetodoSCROG')?.classList.toggle('selected', m === 'scrog');
+    refreshPremiumMetodoHint();
   }
 
   function refreshPremiumGerminacionUI() {

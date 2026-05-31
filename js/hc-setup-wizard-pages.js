@@ -1542,7 +1542,12 @@ function renderSetupPage() {
       else if (typeof syncWizardLuzUI === 'function') syncWizardLuzUI();
     }, 0);
   }
-  if (setupPagina === SETUP_PAGE_CULTIVOS) setTimeout(renderSetupPlantasGrid, 50);
+  if (setupPagina === SETUP_PAGE_CULTIVOS) {
+    setTimeout(function () {
+      if (typeof renderSetupPlantasGrid === 'function') renderSetupPlantasGrid();
+      if (typeof renderSetupCultivosResumen === 'function') renderSetupCultivosResumen();
+    }, 50);
+  }
   if (setupPagina === SETUP_PAGE_RESUMEN) setTimeout(actualizarResumenSetup, 50);
 
   // Dots de progreso (ocultar pasos saltados)

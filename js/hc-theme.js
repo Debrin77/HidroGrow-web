@@ -9,6 +9,17 @@
     try {
       var v = localStorage.getItem(KEY);
       if (v === 'dark' || v === 'light' || v === 'auto') return v;
+      if (!localStorage.getItem('hcAppearanceInitialized')) {
+        localStorage.setItem('hcAppearanceInitialized', '1');
+        var mobile = false;
+        try {
+          mobile =
+            window.matchMedia &&
+            (window.matchMedia('(max-width: 768px)').matches ||
+              (window.matchMedia('(pointer: coarse)').matches && window.matchMedia('(max-width: 1024px)').matches));
+        } catch (_) {}
+        if (mobile) return 'dark';
+      }
       return 'auto';
     } catch (e) {
       return 'auto';

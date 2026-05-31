@@ -96,7 +96,7 @@
     meds.forEach(function (m) {
       var d = parseMedFecha(m.fecha);
       if (!d || d.getTime() !== target.getTime()) return;
-      ['ec', 'ph', 'temp', 'vol', 'tempAire', 'humSala', 'vpd', 'ppfd', 'lux', 'tempExt'].forEach(function (k) {
+      ['ec', 'ph', 'temp', 'vol', 'tempAire', 'humSala', 'vpd', 'ppfd', 'lux', 'tempExt', 'co2'].forEach(function (k) {
         if (campoTieneValor(m[k])) out[k] = { valor: m[k], hora: m.hora || '' };
       });
     });
@@ -104,7 +104,7 @@
     if (um && um.fecha) {
       var du = parseMedFecha(um.fecha);
       if (du && du.getTime() === target.getTime()) {
-        ['ec', 'ph', 'temp', 'vol', 'tempAire', 'humSala', 'vpd', 'ppfd', 'lux', 'tempExt'].forEach(function (k) {
+        ['ec', 'ph', 'temp', 'vol', 'tempAire', 'humSala', 'vpd', 'ppfd', 'lux', 'tempExt', 'co2'].forEach(function (k) {
           if (campoTieneValor(um[k]) && !out[k]) out[k] = { valor: um[k], hora: um.hora || '' };
         });
       }
@@ -193,9 +193,20 @@
     var campos = getCamposRegistradosEnDia(fechaRef);
     var interior = String(cfg.ubicacion || cfg.premiumSetup?.entorno || 'interior').toLowerCase() !== 'exterior';
 
-    function mapItems(list, freq) {
+  function evalItemValor(item, campos) {
+    if (!item.field || !campos[item.field]) return null;
+    var raw = campos[item.field].valor;
+    if (typeof evaluarParametro !== 'function') return null;
+    var fase = typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : 'vegetativo';
+    return evaluarParametro(item.field, raw, { fase: fase });
+  }
+
+  function mapItems(list, freq, campos) {
       return (list || []).filter(function (it) { return !it.hidden; }).map(function (it) {
         var ok = itemRegistradoHoy(it, campos);
+        var evalRes = it.field && !it.virtual ? evalItemValor(it, campos) : null;
+        var evalEstado = evalRes ? evalRes.estado : null;
+        if (evalEstado === 'bad' || evalEstado === 'warn') ok = false;
         return {
           id: it.id || it.field,
           label: it.label,
@@ -206,12 +217,15 @@
           rango: formatRango(it, rangos, recEcPh),
           valor: getValorMostrar(it, campos),
           hora: it.field && campos[it.field] ? campos[it.field].hora : '',
+          evalEstado: evalEstado,
+          evalMsg: evalRes ? evalRes.msg : '',
+          solucionTexto: evalRes ? evalRes.solucionTexto : '',
         };
       });
     }
 
-    var diario = mapItems(plan.diario, 'diario');
-    var semanal = mapItems(plan.semanal, 'semanal');
+    var diario = mapItems(plan.diario, 'diario', campos);
+    var semanal = mapItems(plan.semanal, 'semanal', campos);
     var okD = diario.filter(function (x) { return x.ok; }).length;
     var okS = semanal.filter(function (x) { return x.ok; }).length;
 
@@ -317,9 +331,21 @@
           : '';
         var val = it.valor ? ' <span class="hc-monitor-val">' + it.valor + (it.hora ? ' · ' + it.hora : '') + '</span>' : '';
         var rng = it.rango ? ' <span class="hc-monitor-rango">' + it.rango + '</span>' : '';
+        var alert =
+          it.evalEstado === 'bad' || it.evalEstado === 'warn'
+            ? ' <span class="hc-monitor-alert hc-monitor-alert--' +
+              it.evalEstado +
+              '" title="' +
+              (it.solucionTexto || it.evalMsg || '') +
+              '">⚠</span>'
+            : '';
+        var sol =
+          it.solucionTexto && (it.evalEstado === 'bad' || it.evalEstado === 'warn')
+            ? ' <span class="hc-monitor-sol">' + it.solucionTexto + '</span>'
+            : '';
         return (
           '<li class="' + cls + '" role="listitem">' + btn +
-          '<span class="hc-monitor-label">' + it.label + val + rng + jump + '</span></li>'
+          '<span class="hc-monitor-label">' + it.label + val + rng + alert + sol + jump + '</span></li>'
         );
       }).join('') +
       '</ul>'

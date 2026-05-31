@@ -23,10 +23,11 @@ async function guardarMedicion() {
     ppfd: Number.isFinite(amb.ppfd) ? amb.ppfd : '',
     lux: Number.isFinite(amb.lux) ? amb.lux : '',
     tempExt: Number.isFinite(amb.tempExt) ? amb.tempExt : '',
+    co2: Number.isFinite(amb.co2) ? amb.co2 : '',
     fase: amb.fase || '',
   };
 
-  if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd) {
+  if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
     showToast('⚠️ Introduce al menos un valor (depósito o ambiente)', true);
     const firstInput = document.getElementById('inputEC');
     if (firstInput) {
@@ -141,30 +142,31 @@ async function guardarMedicion() {
   } catch (_) {}
   showToast('✅ Medición guardada · EC:' + (ec||'—') + ' pH:' + (ph||'—'));
 
-  // ── 3. INTENTAR ENVIAR A GOOGLE SHEETS (opcional) ────────────────────────
-  const alertas = [];
-  const ecNumSheets = ec ? parseFloat(String(ec).replace(',', '.')) : NaN;
-  if (ec && Number.isFinite(ecNumSheets)) {
-    const cfgS = state.configTorre || {};
-    const mObj = cfgS.checklistEcObjetivoUs;
-    if (Number.isFinite(mObj) && mObj >= 200 && mObj <= 6000) {
-      const o = Math.round(mObj);
-      const t = EC_MEDICION_TOLERANCIA_OBJETIVO_US;
-      if (ecNumSheets < o - t || ecNumSheets > o + t) {
-        alertas.push('EC ' + ec + ' µS/cm fuera del margen del objetivo (' + o + ' ±' + t + ')');
-      }
-    } else {
-      const eo = getECOptimaTorre();
-      if (ecNumSheets < eo.min || ecNumSheets > eo.max) {
-        alertas.push('EC ' + ec + ' µS/cm fuera del rango cultivo (' + eo.min + '–' + eo.max + ')');
-      }
-    }
+  // Alertas unificadas (motor único)
+  var evalPayload = {
+    ec: ec,
+    ph: ph,
+    temp: temp,
+    vol: vol,
+    tempAire: ambPayload.tempAire,
+    humSala: ambPayload.humSala,
+    vpd: ambPayload.vpd,
+    ppfd: ambPayload.ppfd,
+    lux: ambPayload.lux,
+    tempExt: ambPayload.tempExt,
+    co2: ambPayload.co2,
+    fase: ambPayload.fase || (typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : ''),
+  };
+  var evalResult =
+    typeof evaluarMedicionCompleta === 'function' ? evaluarMedicionCompleta(evalPayload) : null;
+  if (evalResult && evalResult.alertas && evalResult.alertas.length) {
+    if (typeof showAlertasPostGuardado === 'function') showAlertasPostGuardado(evalResult);
+    showToast('⚠️ ' + evalResult.alertas.length + ' valor(es) fuera de rango — revisa avisos', true);
   }
-  if (ph && (parseFloat(ph) < 5.7  || parseFloat(ph) > 6.4))  alertas.push('pH ' + ph + ' fuera de rango');
-  if (temp && (parseFloat(temp) < 18 || parseFloat(temp) > 22)) alertas.push('Temp ' + temp + '°C fuera de rango');
-  if (vol && parseFloat(vol) < 16) alertas.push('Vol ' + vol + 'L bajo');
-  const ambAlert = typeof ambienteAlertasTexto === 'function' ? ambienteAlertasTexto(ambPayload) : '';
-  if (ambAlert) alertas.push(ambAlert);
+
+  // ── 3. INTENTAR ENVIAR A GOOGLE SHEETS (opcional) ────────────────────────
+  const alertasText =
+    evalResult && typeof alertasToTexto === 'function' ? alertasToTexto(evalResult) : '';
 
   await hcPostSheets({
     action: 'medicion', fecha, hora, ec, ph, temp, volumen: vol,
@@ -173,7 +175,7 @@ async function guardarMedicion() {
     humSala: ambPayload.humSala || null,
     vpd: ambPayload.vpd || null,
     ppfd: ambPayload.ppfd || null,
-    notas, alertas: alertas.join(' | ')
+    notas, alertas: alertasText
   });
 }
 

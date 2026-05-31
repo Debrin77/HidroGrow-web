@@ -1521,6 +1521,11 @@ async function detectarCiudadSetup() {
 }
 
 function guardarSetupYContinuar() {
+  try {
+    if (!setupEsNuevaTorre && typeof hcApplySalasPlanFirstInstallName === 'function') {
+      hcApplySalasPlanFirstInstallName();
+    }
+  } catch (_) {}
   if (setupEsNuevaTorre) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
     if (inpNom) setupNombreNuevaTorre = (inpNom.value || '').trim().slice(0, 40);
@@ -2197,6 +2202,9 @@ function guardarSetupYContinuar() {
   renderTorre();
   updateTorreStats();
   updateDashboard();
+  try {
+    if (typeof hcShowPendingSalasReminder === 'function') hcShowPendingSalasReminder();
+  } catch (_) {}
 
   // Cerrar asistente primero para que el paso a Cultivo / checklist sea continuo (sin solapamiento visual).
   try {

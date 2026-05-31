@@ -406,6 +406,9 @@ function cambiarTorreActiva(idx) {
   if (document.getElementById('tab-calendario')?.classList.contains('active')) renderCalendario();
   if (document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
   if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
+  try {
+    if (typeof hcRefreshMultiSystemCoach === 'function') hcRefreshMultiSystemCoach();
+  } catch (_) {}
 }
 
 /** Cestas con cultivo asignado (para detectar datos de torre más recientes en la raíz del state). */
@@ -622,6 +625,9 @@ function actualizarHeaderTorre() {
     const nTorres = Array.isArray(state.torres) ? state.torres.length : 0;
     btnCrear.style.display = nTorres >= MAX_TORRES ? 'none' : 'block';
   }
+  try {
+    if (typeof hcRefreshHeaderInstActiva === 'function') hcRefreshHeaderInstActiva();
+  } catch (_) {}
 }
 
 function sistemaEstaOperativa(cfg) {

@@ -227,7 +227,7 @@
       vol ? Number(vol) : NaN
     );
 
-    if (manual) {
+      if (manual) {
       const blocks = [
         manual.correccionHtml.correccionEC,
         manual.correccionHtml.correccionPH,
@@ -235,6 +235,24 @@
         manual.correccionHtml.correccionVol
       ].filter(Boolean);
       const items = blocks.map(htmlToText).filter(Boolean);
+      if (typeof evaluarMedicionCompleta === 'function') {
+        const tempA = valNum('wizTempAire');
+        const humA = valNum('wizHumSala');
+        const ppfdA = valNum('wizPPFD');
+        if (tempA || humA || ppfdA) {
+          const ambEval = evaluarMedicionCompleta({
+            tempAire: tempA,
+            humSala: humA,
+            ppfd: ppfdA,
+            fase: typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : 'vegetativo',
+          });
+          if (ambEval.alertas) {
+            ambEval.alertas.forEach(function (a) {
+              items.push(a.msg + (a.solucionTexto ? ' — ' + a.solucionTexto : ''));
+            });
+          }
+        }
+      }
       return { items, targets: t, manualBlocksHtml: blocks };
     }
 
@@ -262,6 +280,26 @@
       if (volN < low) items.push('Volumen bajo (' + volN + ' L): repón hasta cerca de ' + t.volTarget + ' L para estabilizar EC/pH.');
       if (volN > high) items.push('Volumen alto (' + volN + ' L): revisa sobrellenado para mantener margen de seguridad.');
     }
+
+    if (typeof evaluarMedicionCompleta === 'function') {
+      const tempA = valNum('wizTempAire');
+      const humA = valNum('wizHumSala');
+      const ppfdA = valNum('wizPPFD');
+      if (tempA || humA || ppfdA) {
+        const ambEval = evaluarMedicionCompleta({
+          tempAire: tempA,
+          humSala: humA,
+          ppfd: ppfdA,
+          fase: typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : 'vegetativo',
+        });
+        if (ambEval.alertas && ambEval.alertas.length) {
+          ambEval.alertas.forEach(function (a) {
+            items.push(a.msg + (a.solucionTexto ? ' — ' + a.solucionTexto : ''));
+          });
+        }
+      }
+    }
+
     return { items, targets: t, manualBlocksHtml: [] };
   }
 

@@ -352,6 +352,8 @@
     }
     html += '<p class="medir-equip-foot">Los fabricantes publican W reales, m³/h, cobertura y calibración en ficha técnica — la app usa esos datos cuando eliges modelo del catálogo.</p>';
     panel.innerHTML = html;
+    if (typeof renderSalaLayoutPanel === 'function') renderSalaLayoutPanel();
+    if (typeof renderIotPanel === 'function') renderIotPanel();
   }
 
   function persistEquipamientoToConfig(cfg) {
