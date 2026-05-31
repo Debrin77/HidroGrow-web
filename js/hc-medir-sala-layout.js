@@ -6,7 +6,13 @@
   var SALA_SUB_ORDER = ['agua', 'iot', 'recarga'];
 
   var SALA_GROUPS = {
-    agua: ['panelLocalidadMeteo', 'configPanel'],
+    agua: [
+      'panelLocalidadMeteo',
+      'configPanel',
+      'panelGrowRoomSala',
+      'panelConfigInteriorGrow',
+      'panelMedirCalentadorConsigna',
+    ],
     iot: ['medirIotCard'],
     recarga: ['recargaCardMediciones'],
   };
@@ -272,6 +278,10 @@
 
   function refreshSalaTab() {
     if (typeof initConfigUI === 'function') initConfigUI();
+    if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
+    if (typeof actualizarVisibilidadPanelInteriorGrow === 'function') actualizarVisibilidadPanelInteriorGrow();
+    if (typeof cargarInteriorGrowUI === 'function') cargarInteriorGrowUI();
+    if (typeof actualizarVisibilidadPanelCalentadorConsigna === 'function') actualizarVisibilidadPanelCalentadorConsigna();
     if (typeof renderIotPanel === 'function') renderIotPanel();
     if (typeof updateRecargaBar === 'function') updateRecargaBar();
     if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();

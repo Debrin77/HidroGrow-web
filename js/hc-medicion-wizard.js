@@ -654,7 +654,7 @@
     if (!ec && !ph && !temp && !vol) {
       const ta = valNum('wizTempAire');
       const hu = valNum('wizHumSala');
-      if (!ta && !hu && !valNum('wizPPFD')) {
+      if (!ta && !hu && !valNum('wizPPFD') && !valNum('wizCO2') && !valNum('wizTempExt')) {
         if (typeof showToast === 'function') showToast('⚠️ Introduce al menos un valor', true);
         showStep(1);
         return;

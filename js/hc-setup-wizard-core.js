@@ -2430,7 +2430,7 @@ function seleccionarNftCanalDiam(mm) {
     renderNftCultivoRecoStatus('setup');
   } catch (_) {}
 }
-let setupUbicacion = 'exterior';
+let setupUbicacion = 'interior';
 let setupNutriente = 'canna_aqua';
 let setupCoordenadas = { lat: null, lon: null, ciudad: '' };
 
@@ -2665,6 +2665,13 @@ function abrirSetup() {
   setupData.ciudad = setupCoordenadas.ciudad || null;
   setupData.lat = setupCoordenadas.lat;
   setupData.lon = setupCoordenadas.lon;
+  const ubicCfg =
+    c.ubicacion ||
+    (c.premiumSetup && c.premiumSetup.entorno) ||
+    'interior';
+  setupData.ubicacion = ubicCfg === 'exterior' ? 'exterior' : 'interior';
+  setupUbicacion = setupData.ubicacion;
+  if (c.luz) setupData.luz = c.luz;
   setupData.consejosModoUi = c.consejosModoUi === 'avanzado' ? 'avanzado' : 'principiante';
   if (typeof ensurePremiumSetup === 'function') {
     ensurePremiumSetup().consejosModoUi = setupData.consejosModoUi;

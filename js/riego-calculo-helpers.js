@@ -1214,8 +1214,7 @@ function getDiasEfectivosCicloRiego(cesta, cultivo, refFinMs) {
     typeof normalizarOrigenPlanta === 'function'
       ? normalizarOrigenPlanta(cesta.origenPlanta)
       : '';
-  if (origen === 'vivero') return dias;
-  if (origen === 'germinacion') return dias;
+  if (origen === 'vivero' || origen === 'germinacion' || origen === 'clon' || origen === 'madre') return dias;
   const ms = new Date(cesta.fecha).getTime();
   const soloTorre = Number.isFinite(ms)
     ? Math.max(0, Math.floor((fin - ms) / 86400000))

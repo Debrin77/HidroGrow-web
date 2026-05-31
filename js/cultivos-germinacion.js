@@ -221,8 +221,17 @@ function hcGerminacionPanelHtmlCompleto(nombreVariedad) {
   const nom = String(nombreVariedad || '').trim();
   const spec = getGerminacionSpecPorVariedad(nom);
   const esc = typeof meteoEscHtml === 'function' ? meteoEscHtml : s => String(s || '').replace(/</g, '&lt;').replace(/&/g, '&amp;');
+  const cult = typeof getCultivoDB === 'function' ? getCultivoDB(nom) : null;
+  const diasOff =
+    typeof getDiasPreHidroPorOrigen === 'function'
+      ? getDiasPreHidroPorOrigen(cult, 'germinacion')
+      : 0;
   const lead = nom
-    ? '<p class="hc-origen-hint-p">Tiempos <strong>orientativos</strong> en bandeja (~18–22 °C, sustrato húmedo sin encharcar).</p>'
+    ? '<p class="hc-origen-hint-p">Tiempos <strong>orientativos</strong> en bandeja (~18–22 °C, sustrato húmedo sin encharcar).' +
+      (diasOff > 0
+        ? ' Con origen <strong>germinación propia</strong>, la app suma <strong>~' + diasOff + ' d</strong> medios al calcular edad de ciclo (fecha = traslante al hidro).'
+        : '') +
+      '</p>'
     : '<p class="hc-origen-hint-p"><strong>Elige un cultivo</strong> en la lista para ver los rangos de esa variedad.</p>';
   const pasos =
     '<p class="hc-origen-hint-p"><strong>Proceso típico en la app</strong></p>' +

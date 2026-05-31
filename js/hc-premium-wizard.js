@@ -79,6 +79,23 @@
 
   function syncPremiumEntornoDesdeUbicacion() {
     const p = ensurePremiumSetup();
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const esNueva = typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre;
+    if (!esNueva && cfg.premiumSetup && (cfg.premiumSetup.entorno === 'interior' || cfg.premiumSetup.entorno === 'exterior')) {
+      p.entorno = cfg.premiumSetup.entorno;
+      if (typeof setupData !== 'undefined') {
+        setupData.ubicacion = p.entorno;
+        if (typeof setupUbicacion !== 'undefined') setupUbicacion = p.entorno;
+      }
+      return;
+    }
+    if (p.entorno === 'interior' || p.entorno === 'exterior') {
+      if (typeof setupData !== 'undefined') {
+        setupData.ubicacion = p.entorno;
+        if (typeof setupUbicacion !== 'undefined') setupUbicacion = p.entorno;
+      }
+      return;
+    }
     if (typeof setupData !== 'undefined' && setupData.ubicacion) {
       p.entorno = setupData.ubicacion === 'exterior' ? 'exterior' : 'interior';
     }
@@ -161,7 +178,7 @@
   }
 
   function salaTieneMedidasDesdeEquipamiento(cfg) {
-    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    cfg = cfg || (typeof getWizardEquipCfg === 'function' ? getWizardEquipCfg() : ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {}));
     const inst = cfg.equipamientoInstalado || {};
     const arm = inst.armario && inst.armario.specs ? inst.armario.specs : null;
     if (!arm) return false;
@@ -172,7 +189,7 @@
 
   function calcularPremiumSalaInterno() {
     const p = ensurePremiumSetup();
-    const cfgTor = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cfgTor = typeof getWizardEquipCfg === 'function' ? getWizardEquipCfg() : ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const inst = cfgTor.equipamientoInstalado || {};
     const armSpecs = inst.armario && inst.armario.specs ? inst.armario.specs : null;
     const ledSpecs = inst.led && inst.led.specs ? inst.led.specs : null;
@@ -395,7 +412,9 @@
     syncPremiumEntornoDesdeUbicacion();
     const p = ensurePremiumSetup();
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    if (cfg.premiumSetup) Object.assign(p, cfg.premiumSetup);
+    if (cfg.premiumSetup && !(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {
+      Object.assign(p, cfg.premiumSetup);
+    }
     if (cfg.consejosModoUi === 'avanzado' || cfg.consejosModoUi === 'principiante') {
       p.consejosModoUi = cfg.consejosModoUi;
       if (typeof setupData !== 'undefined') setupData.consejosModoUi = cfg.consejosModoUi;
@@ -448,7 +467,14 @@
       renderSemilleroPerfilPanel();
     }
     if (pagina === SETUP_PAGE_PREMIUM_6) refreshPremiumGerminacionUI();
-    if (pagina === SETUP_PAGE_PREMIUM_3 && typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+    if (pagina === SETUP_PAGE_PREMIUM_3) {
+      if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
+        syncSalaMedidasDesdeEquipamientoInstalado();
+      }
+      refreshPremiumEntornoUI();
+      if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+      calcularPremiumSala();
+    }
   }
 
   function persistPremiumSetupToConfig(cfg) {
@@ -471,7 +497,12 @@
       }
       cfg.carpaReflectante = !!p.carpaReflectante;
     }
-    cfg.origenPlanta = p.origenPlanta;
+    cfg.origenPlanta =
+      typeof normalizarOrigenPlanta === 'function'
+        ? normalizarOrigenPlanta(p.origenPlanta || 'semilla')
+        : p.origenPlanta === 'clon' || p.origenPlanta === 'madre'
+          ? p.origenPlanta
+          : 'germinacion';
     cfg.metodoCultivo = p.metodoCultivo;
     cfg.geneticaPref = p.geneticaPref;
     cfg.ubicacion = p.entorno;

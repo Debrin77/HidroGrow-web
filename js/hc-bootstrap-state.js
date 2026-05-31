@@ -88,9 +88,9 @@ function normalizarNotifOpcionesEnState(s) {
 /** Origen de la planta en ficha: vivero | germinacion | clon | madre | '' */
 function normalizarOrigenPlanta(v) {
   const s = String(v == null ? '' : v).trim().toLowerCase();
-  if (s === 'germinacion' || s === 'germinación') return 'germinacion';
+  if (s === 'germinacion' || s === 'germinación' || s === 'semilla') return 'germinacion';
   if (s === 'vivero') return 'vivero';
-  if (s === 'clon' || s === 'esqueje') return 'clon';
+  if (s === 'clon' || s === 'esqueje' || s === 'esquejes') return 'clon';
   if (s === 'madre') return 'madre';
   return '';
 }
@@ -112,10 +112,41 @@ function hcOrientacionViveroHtml() {
     : inner;
 }
 
+function hcOrientacionClonHtml(nombreVariedad) {
+  const nom = String(nombreVariedad || '').trim();
+  const cult = nom && typeof getCultivoDB === 'function' ? getCultivoDB(nom) : null;
+  const dias =
+    typeof getDiasPreHidroPorOrigen === 'function'
+      ? getDiasPreHidroPorOrigen(cult, 'clon')
+      : 10;
+  const inner =
+    '<p class="hc-origen-hint-p"><strong>Esqueje / clon</strong>: el tejido ya es adulto; no hay fase de germinación. ' +
+    'En propagador (18/6, HR alta, 22–26 °C) suelen enraizar en <strong>7–14 días</strong>.</p>' +
+    '<p class="hc-origen-hint-p">La <strong>fecha de la ficha</strong> = día que entra al DWC/RDWC (net pot en solución). ' +
+    'Con origen <strong>esqueje</strong>, la app suma unos <strong>' + dias + ' d</strong> medios de enraizado previo ' +
+    'para alinear EC, riego y avance de ciclo (orientativo).</p>' +
+    '<p class="hc-origen-hint-foot">Los primeros ~14 d en hidro siguen protocolo de enraizado (EC baja). Si la fecha es el día del corte, adelántala al traslado real.</p>';
+  return typeof hcWrapOrigenDetails === 'function'
+    ? hcWrapOrigenDetails(inner, 'Esqueje · enraizado y fecha', false)
+    : inner;
+}
+
 function hcOrientacionGerminacionHtml(nombreVariedad) {
   if (typeof hcGerminacionPanelHtmlCompleto === 'function') {
     return hcGerminacionPanelHtmlCompleto(nombreVariedad || '');
   }
+  const nom = String(nombreVariedad || '').trim();
+  const cult = nom && typeof getCultivoDB === 'function' ? getCultivoDB(nom) : null;
+  const diasOff =
+    typeof getDiasPreHidroPorOrigen === 'function'
+      ? getDiasPreHidroPorOrigen(cult, 'germinacion')
+      : 0;
+  const offTxt =
+    diasOff > 0
+      ? ' Con «germinación propia» marcada, la app suma unos <strong>' +
+        diasOff +
+        ' d</strong> medios (domo + rockwool) a los días en hidro para EC y ciclo.'
+      : '';
   const fb =
     '<p class="hc-origen-hint-p"><strong>Germinación propia</strong> — referencia orientativa (ajusta según semillero y variedad):</p>' +
     '<ol class="hc-origen-hint-ol">' +
@@ -124,7 +155,9 @@ function hcOrientacionGerminacionHtml(nombreVariedad) {
     '<li>Pasa a <strong>luz de crecimiento</strong> (14–18 h/día, intensidad suave al inicio) hasta <strong>2–3 hojas reales</strong> y buen desarrollo radicular.</li>' +
     '<li><strong>Trasplanta al sistema</strong> (DWC o RDWC) y registra la <strong>fecha de entrada al hidro</strong>: es el día desde el que la app cuenta el ciclo.</li>' +
     '</ol>' +
-    '<p class="hc-origen-hint-foot">Los días exactos dependen de la variedad y de la temperatura; revisa siempre el sobre del semillero.</p>';
+    '<p class="hc-origen-hint-foot">Los días exactos dependen de la variedad y de la temperatura; revisa siempre el sobre del semillero.' +
+    offTxt +
+    '</p>';
   return typeof hcWrapOrigenDetails === 'function'
     ? hcWrapOrigenDetails(fb, 'Germinación propia · guía rápida', false)
     : fb;
@@ -139,6 +172,10 @@ function onTorreAssignOrigenChange() {
     box.classList.remove('setup-hidden');
     const nom = document.getElementById('torreAssignVariedad')?.value?.trim() || '';
     box.innerHTML = hcOrientacionGerminacionHtml(nom);
+  } else if (v === 'clon' || v === 'madre') {
+    box.classList.remove('setup-hidden');
+    const nom = document.getElementById('torreAssignVariedad')?.value?.trim() || '';
+    box.innerHTML = hcOrientacionClonHtml(nom);
   } else if (v === 'vivero') {
     box.classList.remove('setup-hidden');
     box.innerHTML = hcOrientacionViveroHtml();
@@ -157,6 +194,10 @@ function onEditOrigenPlantaChange() {
     box.classList.remove('setup-hidden');
     const nom = document.getElementById('editVariedad')?.value?.trim() || '';
     box.innerHTML = hcOrientacionGerminacionHtml(nom);
+  } else if (v === 'clon' || v === 'madre') {
+    box.classList.remove('setup-hidden');
+    const nom = document.getElementById('editVariedad')?.value?.trim() || '';
+    box.innerHTML = hcOrientacionClonHtml(nom);
   } else if (v === 'vivero') {
     box.classList.remove('setup-hidden');
     box.innerHTML = hcOrientacionViveroHtml();

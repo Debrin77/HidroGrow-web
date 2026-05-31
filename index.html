@@ -1159,7 +1159,7 @@
           <div class="medir-note-block medir-note-block--sync">
             <p class="medir-note-block-p"><strong>¿Se guardan?</strong> Sí: al cambiar un campo se guarda en la instalación activa.</p>
             <p class="medir-note-block-p"><strong>¿Intervienen en cálculos?</strong> Temp. aire y HR alimentan el <strong>VPD</strong> y el módulo de <strong>Riego</strong>; la circulación de aire y la intensidad bajo focos ajustan recomendaciones de ambiente interior.</p>
-            <p class="medir-note-block-p"><strong>Medición diaria:</strong> en <strong>Medir → Paso 2 (Ambiente)</strong> puedes registrar temp., HR, PPFD y CO₂ del día; aquí defines valores de referencia cuando no hay medición reciente.</p>
+            <p class="medir-note-block-p"><strong>Medición diaria:</strong> en la pestaña <strong>Medir</strong>, bloque «Paso 2 · Ambiente» (temp., HR, PPFD, CO₂), registras el día; aquí defines valores de referencia cuando no hay medición reciente.</p>
           </div>
           <div id="interiorGrowSyncHint" class="medir-sync-hint setup-hidden" role="status"></div>
           <div class="medir-note-block medir-note-block--muted">
@@ -1427,7 +1427,7 @@
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sala')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
-      <p class="medir-sala-intro">Ubicación, agua de base, IoT y ciclos de recarga — configuración de sala que no cambia en cada medición.</p>
+      <p class="medir-sala-intro">Ubicación, agua de base, dimensiones de carpa/LED, referencia de ambiente para riego, IoT y recargas — configuración que no cambia en cada medición (DWC/RDWC, sin torre ni NFT).</p>
       <div id="tabSalaMount" class="tab-sala-mount"></div>
     </div>
     <!-- FIN TAB SALA -->
@@ -1440,7 +1440,7 @@
       </h1>
       <div id="tabContextHintSistema" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Cultivo e instalación</strong>: esquema, equipamiento (LED, extractor, medidor…), cultivo y fecha en cada hueco. <strong>Sala</strong> = ubicación, agua, IoT y recargas. <strong>Medir</strong> = registro diario del depósito.
+          <strong>Cultivo e instalación</strong>: esquema DWC/RDWC, equipamiento, genética y fecha en cada maceta/módulo. <strong>Sala</strong> = ubicación, agua, carpa/LED y referencia de ambiente. <strong>Medir</strong> = registro diario del depósito y ambiente del día.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sistema')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1788,8 +1788,10 @@
             <select id="torreAssignOrigen" class="form-select torre-assign-origen" aria-label="Origen de la planta"
               onchange="onTorreAssignOrigenChange()">
               <option value="">— No indicado —</option>
-              <option value="vivero">Plántula de vivero (sustrato limpiado / lista para el sistema)</option>
-              <option value="germinacion">Germinación propia (semillero en casa)</option>
+              <option value="germinacion">Semilla · germinación propia (domo → rockwool → hidro)</option>
+              <option value="clon">Esqueje / clon (enraizado en propagador)</option>
+              <option value="madre">Corte de planta madre</option>
+              <option value="vivero">Plántula en rockwool (comprada / ya enraizada)</option>
             </select>
             <div id="torreAssignOrigenHint" class="hc-origen-hint-box setup-hidden" aria-live="polite"></div>
             <div class="torre-assign-grid">
@@ -3009,7 +3011,7 @@
       <div class="setup-subtitle">Primero elige marca y modelo de cada elemento; después revisa las medidas de sala/carpa que rellenamos con la ficha técnica.</div>
       <div id="setupPremiumSalaInterior">
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
-        <p class="setup-field-hint setup-mb-8">Empieza por carpa/armario, LED, extractor y medidor. Cada selección aporta datos de ficha (m², W, m³/h…). Puedes dejar «Manual / otro modelo» en algún bloque.</p>
+        <p class="setup-field-hint setup-mb-8">Top 10 por categoría (marcas habituales en growshops ES). Cada selección aporta datos de ficha (m², W, m³/h…). Puedes dejar «Manual / otro modelo».</p>
         <div id="setupPremiumEquipGrid" class="equip-catalog-grid setup-mb-8"></div>
         <div id="setupPremiumEquipFaltantes" class="setup-box-warn setup-mb-16"></div>
 
@@ -4174,6 +4176,21 @@
         <div class="wiz-field">
           <label class="form-label" for="wizPPFD">PPFD µmol/m²/s</label>
           <input id="wizPPFD" class="form-input wiz-input" type="number" inputmode="numeric" step="10" placeholder="500"
+            oninput="syncLuxPpfdWizard('ppfd')">
+        </div>
+        <div class="wiz-field">
+          <label class="form-label" for="wizLux">Lux (opc.)</label>
+          <input id="wizLux" class="form-input wiz-input" type="number" inputmode="numeric" step="100" placeholder="27000"
+            oninput="syncLuxPpfdWizard('lux')">
+        </div>
+        <div class="wiz-field">
+          <label class="form-label" for="wizTempExt">Temp. exterior (°C)</label>
+          <input id="wizTempExt" class="form-input wiz-input" type="number" inputmode="decimal" step="0.1" placeholder="28"
+            oninput="syncWizardAmbienteFromWiz()">
+        </div>
+        <div class="wiz-field">
+          <label class="form-label" for="wizCO2">CO₂ (ppm)</label>
+          <input id="wizCO2" class="form-input wiz-input" type="number" inputmode="numeric" step="10" placeholder="850"
             oninput="syncWizardAmbienteFromWiz()">
         </div>
       </div>
@@ -4462,8 +4479,10 @@
       <select class="form-select" id="editOrigenPlanta" aria-label="Origen de la planta"
         onchange="onEditOrigenPlantaChange()">
         <option value="">— No indicado —</option>
-        <option value="vivero">Plántula de vivero (sustrato limpiado / lista para el sistema)</option>
-        <option value="germinacion">Germinación propia (semillero en casa)</option>
+        <option value="germinacion">Semilla · germinación propia</option>
+        <option value="clon">Esqueje / clon</option>
+        <option value="madre">Corte de planta madre</option>
+        <option value="vivero">Plántula en rockwool (comprada)</option>
       </select>
       <div id="editOrigenGerminacionHint" class="hc-origen-hint-box setup-hidden" aria-live="polite"></div>
     </div>
@@ -4617,8 +4636,9 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-top10"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/hc-origen-planta-dias.js?v=2026-05-31-origen"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-grow-room.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/state-torre-logic.js"></script>
@@ -4626,12 +4646,12 @@
   <script src="js/meteo-alarm-utils.js?v=1"></script>
   <script src="js/meteo-alarm-parse.js?v=1"></script>
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
-  <script src="js/hc-bootstrap-state.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-equip-panel"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-sala-layout"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-scroll"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
@@ -4650,13 +4670,13 @@
 
 
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
-  <script src="js/torre-render-build.js?v=2026-05-28-air-pump-torre"></script>
+  <script src="js/torre-render-build.js?v=2026-05-31-dwc-labels"></script>
 <script src="js/torre-render-main.js?v=2026-05-31-compat-fix"></script>
-  <script src="js/cultivos-germinacion.js?v=3"></script>
+  <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-panel"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-top10"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-recursion-fix"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-top10"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-setup-save"></script>
@@ -4665,20 +4685,20 @@
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-recursion-fix"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-origen"></script>
   <script src="js/hc-setup-rotacion.js?v=2"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=1"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
-  <script src="js/hc-setup-registro.js?v=5"></script>
+  <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast"></script>
   <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-hint"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
-  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-medir-ranges"></script>
+  <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-monitor-sistema.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-medir-ranges"></script>
-  <script src="js/hc-medicion-wizard.js?v=2026-05-31-eval"></script>
+  <script src="js/hc-medicion-wizard.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-hist-full"></script>

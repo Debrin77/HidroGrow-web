@@ -69,7 +69,7 @@ function getPhObjetivoManualRango(cfg, nut) {
 }
 
 /**
- * Días de ciclo biológico aproximados: días en hidro + media en plug de vivero si `origenPlanta === 'vivero'`.
+ * Días de ciclo biológico aproximados: días en hidro + media pre-hidro según origen (vivero, germinación, clon…).
  * La fecha de la ficha sigue siendo el trasplante al sistema; el offset alinea EC/pH y cosecha con edad real típica.
  * @param {object} c ficha cesta
  * @param {object|null} cultivo CULTIVOS_DB o null
@@ -77,12 +77,22 @@ function getPhObjetivoManualRango(cfg, nut) {
  */
 function getDiasEfectivosCicloBiologico(c, cultivo, refFinMs) {
   if (!c || !c.fecha) return 0;
-  const ms = new Date(c.fecha).getTime();
-  if (!Number.isFinite(ms)) return 0;
   const fin = Number.isFinite(refFinMs) ? refFinMs : Date.now();
-  let dias = Math.max(0, Math.floor((fin - ms) / 86400000));
+  let dias =
+    typeof getDiasEnSistemaDesdeFecha === 'function'
+      ? getDiasEnSistemaDesdeFecha(c, fin)
+      : 0;
+  if (!dias) {
+    const ms = new Date(c.fecha).getTime();
+    if (Number.isFinite(ms)) dias = Math.max(0, Math.floor((fin - ms) / 86400000));
+  }
   const cu = cultivo || (typeof getCultivoDB === 'function' ? getCultivoDB(c.variedad) : null);
-  if (typeof normalizarOrigenPlanta === 'function' && normalizarOrigenPlanta(c.origenPlanta) === 'vivero') {
+  if (typeof getDiasOffsetOrigenPlanta === 'function') {
+    dias += getDiasOffsetOrigenPlanta(c, cu);
+  } else if (
+    typeof normalizarOrigenPlanta === 'function' &&
+    normalizarOrigenPlanta(c.origenPlanta) === 'vivero'
+  ) {
     dias += typeof getDiasPlantonViveroEstimado === 'function' ? getDiasPlantonViveroEstimado(cu) : 0;
   }
   return dias;
@@ -137,10 +147,18 @@ function torreSliceEcPhCestaRaw(c, cfg) {
     const ms = new Date(c.fecha).getTime();
     if (Number.isFinite(ms)) {
       const dias = getDiasEfectivosCicloBiologico(c, cultivo, Date.now());
-      const origClon =
-        typeof normalizarOrigenPlanta === 'function' && normalizarOrigenPlanta(c.origenPlanta) === 'clon';
-      if (origClon && dias < 14 && typeof getEsquejesEcPhPorFase === 'function') {
-        const esq = getEsquejesEcPhPorFase(dias <= 2 ? 'clonador_48h' : dias <= 7 ? 'enraizamiento' : 'traslado_dwc', cfg);
+      const diasHydro =
+        typeof getDiasEnSistemaDesdeFecha === 'function'
+          ? getDiasEnSistemaDesdeFecha(c, Date.now())
+          : Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+      const origNorm =
+        typeof normalizarOrigenPlanta === 'function' ? normalizarOrigenPlanta(c.origenPlanta) : '';
+      const origClon = origNorm === 'clon' || origNorm === 'madre';
+      if (origClon && diasHydro < 14 && typeof getEsquejesEcPhPorFase === 'function') {
+        const esq = getEsquejesEcPhPorFase(
+          diasHydro <= 2 ? 'clonador_48h' : diasHydro <= 7 ? 'enraizamiento' : 'traslado_dwc',
+          cfg
+        );
         if (esq) {
           ecMin = esq.ec.min;
           ecMax = esq.ec.max;
@@ -897,7 +915,9 @@ function hcDiasCalendarioHastaFinVegetativoNutriente(c, cultivo) {
   const finVeg = hcDiasAcumPlantulaVegetativo(cultivo);
   if (finVeg <= 0) return 0;
   let offset = 0;
-  if (
+  if (c && cultivo && typeof getDiasOffsetOrigenPlanta === 'function') {
+    offset = getDiasOffsetOrigenPlanta(c, cultivo);
+  } else if (
     c &&
     typeof normalizarOrigenPlanta === 'function' &&
     normalizarOrigenPlanta(c.origenPlanta) === 'vivero' &&
@@ -1661,10 +1681,27 @@ function guardarSetupYContinuarCore() {
   const tipoNuevoPrevio = isNft ? 'nft' : isDwc ? 'dwc' : isRdwc ? 'rdwc' : isSrf ? 'srf' : 'torre';
 
   const cfgPrevWizard = state.configTorre || {};
-  const preservedEquipInstalado =
-    cfgPrevWizard.equipamientoInstalado && typeof cfgPrevWizard.equipamientoInstalado === 'object'
-      ? JSON.parse(JSON.stringify(cfgPrevWizard.equipamientoInstalado))
-      : null;
+  const preservedEquipInstalado = (function () {
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) {
+      const draft =
+        typeof setupData !== 'undefined' &&
+        setupData.equipamientoInstaladoDraft &&
+        typeof setupData.equipamientoInstaladoDraft === 'object'
+          ? setupData.equipamientoInstaladoDraft
+          : null;
+      if (draft && Object.keys(draft).length) {
+        return JSON.parse(JSON.stringify(draft));
+      }
+      return null;
+    }
+    if (
+      cfgPrevWizard.equipamientoInstalado &&
+      typeof cfgPrevWizard.equipamientoInstalado === 'object'
+    ) {
+      return JSON.parse(JSON.stringify(cfgPrevWizard.equipamientoInstalado));
+    }
+    return null;
+  })();
   const preservedCalibracionMedidor = cfgPrevWizard.ultimaCalibracionMedidor || null;
   const preservedSalaLayout =
     cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'

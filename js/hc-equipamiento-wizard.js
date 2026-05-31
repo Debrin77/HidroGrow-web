@@ -6,8 +6,19 @@
     return document.getElementById(id);
   }
 
+  /** Config de equipamiento en asistente: borrador si es instalación nueva (no pisa la torre activa). */
+  function getWizardEquipCfg() {
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && typeof setupData !== 'undefined') {
+      if (!setupData.equipamientoInstaladoDraft || typeof setupData.equipamientoInstaladoDraft !== 'object') {
+        setupData.equipamientoInstaladoDraft = {};
+      }
+      return { equipamientoInstalado: setupData.equipamientoInstaladoDraft };
+    }
+    return (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  }
+
   function ensureEquipInstalado(cfg) {
-    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    cfg = cfg || getWizardEquipCfg();
     if (!cfg.equipamientoInstalado || typeof cfg.equipamientoInstalado !== 'object') {
       cfg.equipamientoInstalado = {};
     }
@@ -31,7 +42,7 @@
 
   /** Rellena campos de sala (asistente) desde equipamiento ya elegido en catálogo. */
   function syncSalaMedidasDesdeEquipamientoInstalado(cfg) {
-    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    cfg = cfg || getWizardEquipCfg();
     const inst = cfg.equipamientoInstalado || {};
     Object.keys(inst).forEach(function (key) {
       const entry = inst[key];
@@ -71,7 +82,7 @@
   }
 
   function seleccionarEquipamientoPremium(catId, equipId) {
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    const cfg = getWizardEquipCfg();
     if (!cfg) return;
     const inst = ensureEquipInstalado(cfg);
     if (!equipId) {
@@ -96,8 +107,10 @@
         aplicarEquipamientoASala(item);
       }
     }
-    if (typeof saveState === 'function') saveState();
-    if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    if (!(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {
+      if (typeof saveState === 'function') saveState();
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    }
     renderEquipamientoPremiumUI();
     renderMedirEquipamientoPanel();
     try {
@@ -110,9 +123,12 @@
   function renderEquipSelect(catId, selectId, onchangeName) {
     const sel = el(selectId);
     if (!sel) return;
-    const list = typeof getEquipamientoByCategoria === 'function' ? getEquipamientoByCategoria(catId) : [];
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cfg = getWizardEquipCfg();
     const cur = (ensureEquipInstalado(cfg)[catId] || {}).id || '';
+    const limit = typeof EQUIP_TOP_ES_LIMIT !== 'undefined' ? EQUIP_TOP_ES_LIMIT : 10;
+    const list = typeof getEquipTopPorCategoria === 'function'
+      ? getEquipTopPorCategoria(catId, limit, cur)
+      : (typeof getEquipamientoByCategoria === 'function' ? getEquipamientoByCategoria(catId) : []);
     sel.innerHTML = '<option value="">— Manual / otro modelo —</option>' +
       list.map(function (e) {
         return '<option value="' + e.id + '"' + (e.id === cur ? ' selected' : '') + '>' +
@@ -127,7 +143,7 @@
     const host = el('setupPremiumEquipGrid');
     if (!host) return;
     const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cfg = getWizardEquipCfg();
     const inst = ensureEquipInstalado(cfg);
     host.innerHTML = Object.keys(cats).map(function (key) {
       const cat = cats[key];
@@ -406,6 +422,7 @@
     renderMedirEquipamientoPanel();
   }
 
+  window.getWizardEquipCfg = getWizardEquipCfg;
   window.syncSalaMedidasDesdeEquipamientoInstalado = syncSalaMedidasDesdeEquipamientoInstalado;
   window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
   window.seleccionarEquipamientoPremium = seleccionarEquipamientoPremium;

@@ -450,11 +450,28 @@
   window.correccionCO2 = correccionCO2;
   window.PROTOCOLO_MEDICION = PROTOCOLO_MEDICION;
 
+  function syncLuxPpfdWizard(source) {
+    const ppfdEl = el('wizPPFD');
+    const luxEl = el('wizLux');
+    if (!ppfdEl || !luxEl) return;
+    if (source === 'lux') {
+      const lux = numRaw('wizLux');
+      if (Number.isFinite(lux)) ppfdEl.value = String(Math.round(lux / 54.4));
+    } else if (source === 'ppfd') {
+      const ppfd = numRaw('wizPPFD');
+      if (Number.isFinite(ppfd)) luxEl.value = String(Math.round(ppfd * 54.4));
+    }
+    syncWizardAmbienteFromWiz();
+  }
+
   function syncWizardAmbienteFromWiz() {
     const map = [
       ['wizTempAire', 'inputTempAire'],
       ['wizHumSala', 'inputHumSala'],
       ['wizPPFD', 'inputPPFD'],
+      ['wizLux', 'inputLux'],
+      ['wizTempExt', 'inputTempExt'],
+      ['wizCO2', 'inputCO2'],
     ];
     map.forEach(function (pair) {
       const src = el(pair[0]);
@@ -470,6 +487,9 @@
       ['wizTempAire', 'inputTempAire'],
       ['wizHumSala', 'inputHumSala'],
       ['wizPPFD', 'inputPPFD'],
+      ['wizLux', 'inputLux'],
+      ['wizTempExt', 'inputTempExt'],
+      ['wizCO2', 'inputCO2'],
     ];
     map.forEach(function (pair) {
       const dst = el(pair[0]);
@@ -478,6 +498,7 @@
     });
   }
 
+  window.syncLuxPpfdWizard = syncLuxPpfdWizard;
   window.syncWizardAmbienteFromWiz = syncWizardAmbienteFromWiz;
   window.syncWizFromAmbienteInputs = syncWizFromAmbienteInputs;
 })();

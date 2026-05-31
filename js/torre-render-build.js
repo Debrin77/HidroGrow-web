@@ -382,8 +382,10 @@ function renderTorreLista() {
       if (faseTit) ariaLabel += ', fase: ' + faseTit;
       if (origL) {
         const oa = typeof normalizarOrigenPlanta === 'function' ? normalizarOrigenPlanta(dat.origenPlanta) : '';
-        if (oa === 'vivero') ariaLabel += ', origen vivero';
+        if (oa === 'vivero') ariaLabel += ', origen rockwool comprado';
         else if (oa === 'germinacion') ariaLabel += ', origen germinación propia';
+        else if (oa === 'clon') ariaLabel += ', origen esqueje';
+        else if (oa === 'madre') ariaLabel += ', origen madre';
       }
       ariaLabel = ariaLabel.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
       const multiKeyLista = n + ',' + c;
@@ -464,11 +466,14 @@ function torreOnCestaActivada(n, c) {
       } catch (_) {}
       const cult = getCultivoDB(v);
       mostrarBarraSeleccionCesta(n, c);
-      const esNft = state.configTorre?.tipoInstalacion === 'nft';
-      showToast(
-        'Asignado: ' + cultivoNombreLista(getCultivoDB(v), v) +
-        (esNft ? ' · canal ' + (n + 1) + ' · hueco ' + (c + 1) : ' · N' + (n + 1) + ' C' + (c + 1))
-      );
+      const tInst = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(state.configTorre || {}) : 'dwc';
+      const ubi =
+        tInst === 'rdwc'
+          ? ' · módulo ' + (n + 1) + '-' + (c + 1)
+          : tInst === 'dwc'
+            ? ' · maceta ' + (n + 1) + '-' + (c + 1)
+            : ' · ' + (n + 1) + '-' + (c + 1);
+      showToast('Asignado: ' + cultivoNombreLista(getCultivoDB(v), v) + ubi);
     } else {
       const k = n + ',' + c;
       if (torreCestasMultiSel.has(k)) {
@@ -1330,7 +1335,7 @@ function renderTablaVariedades() {
   let html = '<div class="torre-prog-wrap">' +
     '<div class="torre-prog-head">' +
     '<span>N·C</span><span>Variedad</span><span>Días</span><span>Estado</span>' +
-    '<span title="EC según edad de ciclo: días en hidro + media en vivero si marcaste «Plántula de vivero» (como en Medir). Debajo, referencia Semillero si aplica.">EC (µS/cm)</span>' +
+    '<span title="EC según edad efectiva: días en hidro + media pre-hidro (germinación, esqueje o rockwool comprado) si indicaste origen en la ficha.">EC (µS/cm)</span>' +
     '</div>';
 
   const faseEcEtq = {

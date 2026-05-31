@@ -47,7 +47,7 @@ function hcResetSetupWizardSession(opts) {
   setupNumTorres = 'una';
   setupData.agua = 'destilada';
   setupData.sustrato = 'lana';
-  setupData.ubicacion = 'exterior';
+  setupData.ubicacion = 'interior';
   setupData.luz = 'led';
   setupData.horasLuz = 16;
   setupData.ciudad = null;
@@ -55,9 +55,10 @@ function hcResetSetupWizardSession(opts) {
   setupData.lon = null;
   setupData.sensoresHardware = { ec: false, ph: false, humedad: false };
   setupData.consejosModoUi = 'principiante';
+  setupData.equipamientoInstaladoDraft = {};
   setupCoordenadas = { lat: null, lon: null, ciudad: '' };
   setupNutriente = 'canna_aqua';
-  setupUbicacion = 'exterior';
+  setupUbicacion = 'interior';
   if (typeof ensurePremiumSetup === 'function') {
     setupData.premium = null;
     ensurePremiumSetup();

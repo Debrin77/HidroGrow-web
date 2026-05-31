@@ -195,6 +195,17 @@ function saveCesta() {
   try {
     if (typeof hcNotificarCambioCultivoSistema === 'function') hcNotificarCambioCultivoSistema();
   } catch (_) {}
+  const nom = cultivoNombreLista(getCultivoDB(state.torre[nivel][cesta].variedad), state.torre[nivel][cesta].variedad);
+  const tInst = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(state.configTorre || {}) : 'dwc';
+  const ubi =
+    tInst === 'rdwc'
+      ? ' · módulo ' + (nivel + 1) + '-' + (cesta + 1)
+      : tInst === 'dwc'
+        ? ' · maceta ' + (nivel + 1) + '-' + (cesta + 1)
+        : ' · ' + (nivel + 1) + '-' + (cesta + 1);
+  if (typeof showToast === 'function') {
+    showToast('✅ Cultivo guardado: ' + (nom || '—') + ubi);
+  }
 }
 
 function clearCesta() {
