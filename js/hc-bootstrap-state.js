@@ -62,6 +62,7 @@ function normalizarNotifOpcionesEnState(s) {
     recarga: typeof p.recarga === 'boolean' ? p.recarga : false,
     medicion: typeof p.medicion === 'boolean' ? p.medicion : false,
     cosecha: typeof p.cosecha === 'boolean' ? p.cosecha : false,
+    esquejes: typeof p.esquejes === 'boolean' ? p.esquejes : false,
   };
   if (Array.isArray(s.torres) && s.torres.length) {
     s.torres.forEach((t) => {
@@ -72,6 +73,7 @@ function normalizarNotifOpcionesEnState(s) {
         t.notifOpciones.recarga = !!t.notifOpciones.recarga;
         t.notifOpciones.medicion = !!t.notifOpciones.medicion;
         t.notifOpciones.cosecha = !!t.notifOpciones.cosecha;
+        t.notifOpciones.esquejes = !!t.notifOpciones.esquejes;
       }
     });
     s.notifOpciones = { panelInicioColapsado };

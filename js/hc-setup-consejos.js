@@ -37,6 +37,12 @@ const CONSEJOS_DATA = {
       { icono:'🧩', titulo:'Genéticas compatibles o no (y por qué)',
         texto:'En un solo depósito (torre, NFT, DWC, RDWC) todas comparten <strong>EC y pH</strong>. Mezcla <strong>índicas con híbridas</strong> si están en fase similar. <strong>No mezcles autoflorecientes con fotodependientes</strong> en la misma sala: el 12/12 de las fotos fuerza flor en autos demasiado pronto. Sativas altas pueden sombrear índicas compactas en torre. CBD suele ir con EC más baja: mejor depósito dedicado si mezclas con genéticas THC muy exigentes.',
         alerta:{ tipo:'info', txt:'ℹ️ En <strong>Cultivo e instalación → Compatibilidad</strong> la app avisa si combinas grupos poco recomendables.' } },
+      { icono:'🌿', titulo:'Planta madre en DWC/RDWC',
+        texto:'Mantén <strong>1 cubo dedicado</strong> bajo <strong>18/6</strong> permanente. Tras 5–6 semanas en veg estable puedes tomar esquejes cada <strong>10–14 días</strong> sin volver a sembrar. En el asistente premium elige <strong>Madre DWC/RDWC</strong>; la app programa prep (EC −20–30 %), sesión de corte y enraizamiento en el <strong>calendario</strong>.',
+        alerta:{ tipo:'ok', txt:'✅ Renueva la madre cada 6–12 meses desde el esqueje más vigoroso para evitar fatiga de clon.' } },
+      { icono:'✂️', titulo:'Esquejes — EC/pH por fase',
+        texto:'<strong>Prep madre (7 d antes):</strong> EC ~800–1000 µS. <strong>Domo 48 h:</strong> 0–400 µS. <strong>Enraizamiento:</strong> 300–600 µS, pH 5.5–6.0. <strong>Net pot → cubo:</strong> 400–600 µS la primera semana. Marca origen <strong>Esqueje</strong> en la ficha para que Medir use el rango correcto.',
+        alerta:{ tipo:'info', txt:'ℹ️ Registra cada sesión en Medir → «Registrar sesión hoy» para sincronizar avisos y calendario.' } },
     ]
   },
   agua: {

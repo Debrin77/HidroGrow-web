@@ -575,8 +575,9 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
           recarga: !!slotAct.notifOpciones.recarga,
           medicion: !!slotAct.notifOpciones.medicion,
           cosecha: !!slotAct.notifOpciones.cosecha,
+          esquejes: !!slotAct.notifOpciones.esquejes,
         }
-      : { recarga: false, medicion: false, cosecha: false };
+      : { recarga: false, medicion: false, cosecha: false, esquejes: false };
   if (
     slotAct &&
     slotAct.config &&

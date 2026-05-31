@@ -412,11 +412,17 @@ function evalEC(ec, vol) {
     return;
   }
   // EC óptima según cultivos presentes (si no hay plantas, usa el nutriente)
-  const ecOptima   = getECOptimaTorre();
+  const recEcPh = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+  const esqEc = recEcPh && recEcPh.esquejesOverlay;
+  let ecOptima   = getECOptimaTorre();
+  if (esqEc && esqEc.activo && (esqEc.fase !== 'madre_mantener' || !recEcPh.conFaseReal)) {
+    ecOptima = { min: esqEc.ec.min, max: esqEc.ec.max };
+  }
   const ecMin      = ecOptima.min;
   const ecMax      = ecOptima.max;
   const ecIdeal    = Math.round((ecMin + ecMax) / 2);
   const ecCritica  = Math.round(ecMin * 0.7);
+  const esqEcSuffix = esqEc && esqEc.activo ? ' · ' + esqEc.label : '';
 
   const cfgTorre = state.configTorre || {};
   const ecObjExplicito = typeof getEcObjetivoManualUs === 'function'
@@ -472,9 +478,9 @@ function evalEC(ec, vol) {
 
   if (ec >= ecMin && ec <= ecMax) {
     const ecOptima2 = getECOptimaTorre();
-    const msgOk = ecOptima2.advertencia
+    const msgOk = (ecOptima2.advertencia
       ? 'EC en rango promedio — cultivos con EC diferente, considera torres separadas'
-      : 'EC correcta para ' + nut.nombre;
+      : 'EC correcta para ' + nut.nombre) + esqEcSuffix;
     setStatus('statusEC','ok','✅', msgOk);
     setCard('cardEC','ok');
     showCorreccion('correccionEC','');
@@ -543,8 +549,15 @@ function evalPH(ph, vol) {
 
   // Rangos del nutriente activo
   const phObj     = typeof getPhOptimaTorre === 'function' ? getPhOptimaTorre(nut, state.configTorre || {}) : null;
-  const phMin     = phObj && Number.isFinite(phObj[0]) ? phObj[0] : (nut.pHRango ? nut.pHRango[0] : 5.5);
-  const phMax     = phObj && Number.isFinite(phObj[1]) ? phObj[1] : (nut.pHRango ? nut.pHRango[1] : 6.5);
+  const recPhFull = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
+  const esqPh = recPhFull && recPhFull.esquejesOverlay;
+  let phMin     = phObj && Number.isFinite(phObj[0]) ? phObj[0] : (nut.pHRango ? nut.pHRango[0] : 5.5);
+  let phMax     = phObj && Number.isFinite(phObj[1]) ? phObj[1] : (nut.pHRango ? nut.pHRango[1] : 6.5);
+  if (esqPh && esqPh.activo && (esqPh.fase !== 'madre_mantener' || !recPhFull.conFaseReal)) {
+    phMin = esqPh.ph.min;
+    phMax = esqPh.ph.max;
+  }
+  const esqPhSuffix = esqPh && esqPh.activo ? ' · ' + esqPh.label : '';
   const phActMin  = nut.pHIntervenir ? nut.pHIntervenir[0] : 5.2;
   const phActMax  = nut.pHIntervenir ? nut.pHIntervenir[1] : 6.8;
   const tieneBuffer = nut.pHBuffer || false;
@@ -559,7 +572,7 @@ function evalPH(ph, vol) {
 
   // ── pH EN RANGO ÓPTIMO ──────────────────────────────────────────────────
   if (ph >= phMin && ph <= phMax) {
-    setStatus('statusPH','ok','✅','pH óptimo para ' + nut.nombre);
+    setStatus('statusPH','ok','✅','pH óptimo para ' + nut.nombre + esqPhSuffix);
     setCard('cardPH','ok');
     showCorreccion('correccionPH','');
     return;

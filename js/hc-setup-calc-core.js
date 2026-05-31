@@ -137,17 +137,31 @@ function torreSliceEcPhCestaRaw(c, cfg) {
     const ms = new Date(c.fecha).getTime();
     if (Number.isFinite(ms)) {
       const dias = getDiasEfectivosCicloBiologico(c, cultivo, Date.now());
-      const fd = cultivoFaseDesdeDias(cultivo, dias, { desdeTrasplante: true });
-      if (fd && fd.fase) {
-        conFasePorFecha = true;
-        faseKey = fd.key;
-        if (Array.isArray(fd.fase.ec) && fd.fase.ec.length >= 2) {
-          ecMin = Number(fd.fase.ec[0]);
-          ecMax = Number(fd.fase.ec[1]);
+      const origClon =
+        typeof normalizarOrigenPlanta === 'function' && normalizarOrigenPlanta(c.origenPlanta) === 'clon';
+      if (origClon && dias < 14 && typeof getEsquejesEcPhPorFase === 'function') {
+        const esq = getEsquejesEcPhPorFase(dias <= 2 ? 'clonador_48h' : dias <= 7 ? 'enraizamiento' : 'traslado_dwc');
+        if (esq) {
+          ecMin = esq.ec.min;
+          ecMax = esq.ec.max;
+          phMin = esq.ph.min;
+          phMax = esq.ph.max;
+          faseKey = esq.key;
+          conFasePorFecha = true;
         }
-        if (Array.isArray(fd.fase.ph) && fd.fase.ph.length >= 2) {
-          phMin = Number(fd.fase.ph[0]);
-          phMax = Number(fd.fase.ph[1]);
+      } else {
+        const fd = cultivoFaseDesdeDias(cultivo, dias, { desdeTrasplante: true });
+        if (fd && fd.fase) {
+          conFasePorFecha = true;
+          faseKey = fd.key;
+          if (Array.isArray(fd.fase.ec) && fd.fase.ec.length >= 2) {
+            ecMin = Number(fd.fase.ec[0]);
+            ecMax = Number(fd.fase.ec[1]);
+          }
+          if (Array.isArray(fd.fase.ph) && fd.fase.ph.length >= 2) {
+            phMin = Number(fd.fase.ph[0]);
+            phMax = Number(fd.fase.ph[1]);
+          }
         }
       }
     }
@@ -726,11 +740,32 @@ function getRecomendacionEcPhTorre() {
     ecMediaFasesCatalogo = cultivoEcMediaTodasFasesMicros(cuU);
     if (cuU) variedadUnicaNombre = cuU.nombre || varUnica;
   }
+
+  let esquejesOverlay = null;
+  if (typeof getRecomendacionEcPhEsquejes === 'function') {
+    try {
+      esquejesOverlay = getRecomendacionEcPhEsquejes(cfg);
+      if (esquejesOverlay && esquejesOverlay.activo && rangosEc.length === 0) {
+        ecRec = { min: esquejesOverlay.ec.min, max: esquejesOverlay.ec.max };
+        phRec = { min: esquejesOverlay.ph.min, max: esquejesOverlay.ph.max };
+      } else if (esquejesOverlay && esquejesOverlay.activo && typeof origenEsMadreOClon === 'function' && origenEsMadreOClon()) {
+        const mezcla = esquejesOverlay.fase === 'prep_madre' || esquejesOverlay.fase === 'madre_mantener';
+        if (mezcla || rangosEc.length <= 1) {
+          ecRec = {
+            min: Math.min(ecRec.min, esquejesOverlay.ec.min),
+            max: Math.max(ecRec.max, esquejesOverlay.ec.max),
+            esquejesContexto: esquejesOverlay.label,
+          };
+        }
+      }
+    } catch (_) {}
+  }
+
   return {
     ec: ecRec,
     ph: phRec,
-    faseDominante: dom ? dom[0] : null,
-    conFaseReal: totalConFecha > 0,
+    faseDominante: dom ? dom[0] : (esquejesOverlay ? esquejesOverlay.fase : null),
+    conFaseReal: totalConFecha > 0 || !!(esquejesOverlay && esquejesOverlay.activo),
     contexto: ctx,
     estrategia: 'auto',
     ecAgregacion,
@@ -738,6 +773,7 @@ function getRecomendacionEcPhTorre() {
     ecMediaFasesCatalogo,
     variedadUnicaId: varUnica || null,
     variedadUnicaNombre,
+    esquejesOverlay,
   };
 }
 
@@ -2076,8 +2112,9 @@ function guardarSetupYContinuar() {
             recarga: !!prevSlot.notifOpciones.recarga,
             medicion: !!prevSlot.notifOpciones.medicion,
             cosecha: !!prevSlot.notifOpciones.cosecha,
+            esquejes: !!prevSlot.notifOpciones.esquejes,
           }
-        : { recarga: false, medicion: false, cosecha: false };
+        : { recarga: false, medicion: false, cosecha: false, esquejes: false };
     const nuevaTorre = {
       id: Date.now(),
       nombre: setupNombreNuevaTorre,

@@ -382,6 +382,13 @@ function generarEventos(fecha) {
     });
   }
 
+  if (typeof generarEventosEsquejesDia === 'function') {
+    try {
+      const evEs = generarEventosEsquejesDia(d, hoy);
+      if (Array.isArray(evEs) && evEs.length) eventos.push.apply(eventos, evEs);
+    } catch (_) {}
+  }
+
   return eventos;
 }
 
@@ -573,6 +580,12 @@ function renderCalendario() {
       }
     });
   });
+
+  if (typeof marcarEsquejesCalendarioGrid === 'function') {
+    try {
+      marcarEsquejesCalendarioGrid(addEvento, mes, año);
+    } catch (_) {}
+  }
 
   // ── Renderizar grid ──────────────────────────────────────────────────────
   const grid = document.getElementById('calGrid');

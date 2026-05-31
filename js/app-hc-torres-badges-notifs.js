@@ -177,6 +177,7 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
             recarga: !!o.notifOpciones.recarga,
             medicion: !!o.notifOpciones.medicion,
             cosecha: !!o.notifOpciones.cosecha,
+            esquejes: !!o.notifOpciones.esquejes,
           }
         : { recarga: false, medicion: false, cosecha: false },
     fotosSistemaCompleto:
@@ -222,7 +223,7 @@ function initTorres() {
       modoActual: modoActual || 'vegetativo',
       mediciones: hcClonePlainData(state.mediciones, []),
       registro: hcClonePlainData(state.registro, []),
-      notifOpciones: { recarga: false, medicion: false, cosecha: false },
+      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
       fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
     }];
     state.torreActiva = 0; // índice en el array
@@ -239,7 +240,7 @@ function initTorres() {
       modoActual: modoActual || 'vegetativo',
       mediciones: hcClonePlainData(state.mediciones, []),
       registro: hcClonePlainData(state.registro, []),
-      notifOpciones: { recarga: false, medicion: false, cosecha: false },
+      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
       fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
     }];
     state.torreActiva = 0;
@@ -1326,14 +1327,16 @@ function persistNotifOpciones() {
   const slot = state.torres && state.torres[i];
   if (!slot) return;
   if (!slot.notifOpciones || typeof slot.notifOpciones !== 'object') {
-    slot.notifOpciones = { recarga: false, medicion: false, cosecha: false };
+    slot.notifOpciones = { recarga: false, medicion: false, cosecha: false, esquejes: false };
   }
   const nr = document.getElementById('notifOptRecarga');
   const nm = document.getElementById('notifOptMedicion');
   const nc = document.getElementById('notifOptCosecha');
+  const ne = document.getElementById('notifOptEsquejes');
   slot.notifOpciones.recarga = !!(nr && nr.checked);
   slot.notifOpciones.medicion = !!(nm && nm.checked);
   slot.notifOpciones.cosecha = !!(nc && nc.checked);
+  slot.notifOpciones.esquejes = !!(ne && ne.checked);
   saveState();
 }
 
@@ -1347,18 +1350,20 @@ function refreshDashNotificacionesUI() {
   const nr = document.getElementById('notifOptRecarga');
   const nm = document.getElementById('notifOptMedicion');
   const nc = document.getElementById('notifOptCosecha');
+  const ne = document.getElementById('notifOptEsquejes');
   const panelCol = !!state.notifOpciones.panelInicioColapsado;
   const i = state.torreActiva || 0;
   const slot = state.torres && state.torres[i];
   const o =
     slot && slot.notifOpciones && typeof slot.notifOpciones === 'object'
       ? slot.notifOpciones
-      : { recarga: false, medicion: false, cosecha: false };
+      : { recarga: false, medicion: false, cosecha: false, esquejes: false };
   if (panel) panel.hidden = panelCol;
   if (btn) btn.setAttribute('aria-expanded', panelCol ? 'false' : 'true');
   if (nr) nr.checked = !!o.recarga;
   if (nm) nm.checked = !!o.medicion;
   if (nc) nc.checked = !!o.cosecha;
+  if (ne) ne.checked = !!o.esquejes;
   const granted = 'Notification' in window && Notification.permission === 'granted';
   if (fs) fs.disabled = !granted;
   if (hint) hint.classList.toggle('setup-hidden', granted);
@@ -1469,6 +1474,13 @@ function programarRecordatorios() {
           ''
         );
       }
+    }
+
+    if (prefs.esquejes && typeof evaluarAvisosEsquejesNotif === 'function') {
+      const avisosEs = evaluarAvisosEsquejesNotif(slot);
+      avisosEs.forEach(function (av) {
+        enviarNotificacion(av.titulo, av.cuerpo, '');
+      });
     }
   });
 
