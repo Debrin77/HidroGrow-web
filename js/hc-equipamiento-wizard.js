@@ -29,7 +29,22 @@
     return null;
   }
 
-  function aplicarEquipamientoASala(item) {
+  /** Rellena campos de sala (asistente) desde equipamiento ya elegido en catálogo. */
+  function syncSalaMedidasDesdeEquipamientoInstalado(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const inst = cfg.equipamientoInstalado || {};
+    Object.keys(inst).forEach(function (key) {
+      const entry = inst[key];
+      if (!entry || !entry.specs) return;
+      const item = typeof getEquipamientoById === 'function' && entry.id
+        ? getEquipamientoById(entry.id)
+        : { categoria: key, specs: entry.specs };
+      if (item && item.specs) aplicarEquipamientoASala(item, { skipRecalc: true });
+    });
+  }
+
+  function aplicarEquipamientoASala(item, opts) {
+    opts = opts || {};
     if (!item || !item.specs) return;
     const s = item.specs;
     const cat = item.categoria;
@@ -49,8 +64,10 @@
       if (el('setupPremiumExtractorM3h') && s.m3h != null) el('setupPremiumExtractorM3h').value = String(s.m3h);
       if (el('growRoomExtractorM3h') && s.m3h != null) el('growRoomExtractorM3h').value = String(s.m3h);
     }
-    if (typeof calcularPremiumSala === 'function') calcularPremiumSala();
-    if (typeof calcularGrowRoom === 'function') calcularGrowRoom();
+    if (!opts.skipRecalc) {
+      if (typeof calcularPremiumSala === 'function') calcularPremiumSala();
+      if (typeof calcularGrowRoom === 'function') calcularGrowRoom();
+    }
   }
 
   function seleccionarEquipamientoPremium(catId, equipId) {
@@ -368,6 +385,8 @@
     renderMedirEquipamientoPanel();
   }
 
+  window.syncSalaMedidasDesdeEquipamientoInstalado = syncSalaMedidasDesdeEquipamientoInstalado;
+  window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
   window.seleccionarEquipamientoPremium = seleccionarEquipamientoPremium;
   window.renderEquipamientoPremiumUI = renderEquipamientoPremiumUI;
   window.renderMedirEquipamientoPanel = renderMedirEquipamientoPanel;

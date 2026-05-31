@@ -1690,8 +1690,14 @@ function setupNext() {
     try {
       if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
       if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
+      if (typeof window.syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
+        window.syncSalaMedidasDesdeEquipamientoInstalado();
+      }
     } catch (_) {}
-    guardarSetupYContinuar();
+    const ok = guardarSetupYContinuar();
+    if (ok === false && typeof showToast === 'function') {
+      showToast('No se pudo guardar. Revisa los pasos anteriores del asistente.', true);
+    }
   }
 }
 

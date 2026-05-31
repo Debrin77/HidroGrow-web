@@ -1522,6 +1522,21 @@ async function detectarCiudadSetup() {
 
 function guardarSetupYContinuar() {
   try {
+    return guardarSetupYContinuarCore();
+  } catch (err) {
+    console.error('guardarSetupYContinuar', err);
+    if (typeof showToast === 'function') {
+      showToast(
+        'No se pudo completar el guardado: ' + (err && err.message ? err.message : 'revisa los pasos del asistente'),
+        true
+      );
+    }
+    return false;
+  }
+}
+
+function guardarSetupYContinuarCore() {
+  try {
     if (!setupEsNuevaTorre && typeof hcApplySalasPlanFirstInstallName === 'function') {
       hcApplySalasPlanFirstInstallName();
     }
@@ -1645,6 +1660,17 @@ function guardarSetupYContinuar() {
 
   const tipoNuevoPrevio = isNft ? 'nft' : isDwc ? 'dwc' : isRdwc ? 'rdwc' : isSrf ? 'srf' : 'torre';
 
+  const cfgPrevWizard = state.configTorre || {};
+  const preservedEquipInstalado =
+    cfgPrevWizard.equipamientoInstalado && typeof cfgPrevWizard.equipamientoInstalado === 'object'
+      ? JSON.parse(JSON.stringify(cfgPrevWizard.equipamientoInstalado))
+      : null;
+  const preservedCalibracionMedidor = cfgPrevWizard.ultimaCalibracionMedidor || null;
+  const preservedSalaLayout =
+    cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'
+      ? JSON.parse(JSON.stringify(cfgPrevWizard.salaLayout))
+      : null;
+
   if (!isNft && !isDwc && !isRdwc && !isSrf) {
     const prevCfg = state.configTorre || {};
     if (prevCfg.diametroTubo != null && Number(prevCfg.diametroTubo) > 0) {
@@ -1716,17 +1742,6 @@ function guardarSetupYContinuar() {
     humedad: !!(setupData.sensoresHardware && setupData.sensoresHardware.humedad),
   };
 
-  const cfgPrevWizard = state.configTorre || {};
-  const preservedEquipInstalado =
-    cfgPrevWizard.equipamientoInstalado && typeof cfgPrevWizard.equipamientoInstalado === 'object'
-      ? JSON.parse(JSON.stringify(cfgPrevWizard.equipamientoInstalado))
-      : null;
-  const preservedCalibracionMedidor = cfgPrevWizard.ultimaCalibracionMedidor || null;
-  const preservedSalaLayout =
-    cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'
-      ? JSON.parse(JSON.stringify(cfgPrevWizard.salaLayout))
-      : null;
-
   const prevLocMet = (!setupEsNuevaTorre && state.configTorre && state.configTorre.localidadMeteo)
     ? String(state.configTorre.localidadMeteo).trim() : '';
   const ciudadWizard = String(setupCoordenadas.ciudad || setupData.ciudad || '').trim();
@@ -1743,20 +1758,31 @@ function guardarSetupYContinuar() {
   const latWizard = parseCoord(setupCoordenadas.lat, setupData.lat);
   const lonWizard = parseCoord(setupCoordenadas.lon, setupData.lon);
   const locWizard = ciudadWizard.split(',')[0].trim();
-  const ubicEffGuardar = setupData.ubicacion || setupUbicacion || 'exterior';
   if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
   if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
+  if (typeof window.syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
+    window.syncSalaMedidasDesdeEquipamientoInstalado();
+  }
   const premEntorno =
-    typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup().entorno : ubicEffGuardar;
+    typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup().entorno : null;
+  const ubicEffGuardar =
+    setupData.ubicacion ||
+    setupUbicacion ||
+    (premEntorno === 'exterior' ? 'exterior' : premEntorno === 'interior' ? 'interior' : 'interior');
   if (
-    premEntorno === 'interior' &&
+    ubicEffGuardar === 'interior' &&
+    !(typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
+      window.salaTieneMedidasDesdeEquipamiento(cfgPrevWizard)) &&
     typeof validarPremiumSetupPaso === 'function' &&
     typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' &&
     !validarPremiumSetupPaso(SETUP_PAGE_PREMIUM_3)
   ) {
     setupPagina = SETUP_PAGE_PREMIUM_3;
     renderSetupPage();
-    return;
+    if (typeof showToast === 'function') {
+      showToast('Revisa ancho y largo de la sala o elige carpa/armario en el catálogo.', true);
+    }
+    return false;
   }
   if (ubicEffGuardar === 'exterior') {
     if (!ciudadWizard || !Number.isFinite(latWizard) || !Number.isFinite(lonWizard)) {
@@ -1766,7 +1792,7 @@ function guardarSetupYContinuar() {
       );
       setupPagina = SETUP_PAGE_UBICACION;
       renderSetupPage();
-      return;
+      return false;
     }
   }
 
@@ -2039,7 +2065,10 @@ function guardarSetupYContinuar() {
     ) {
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      if (typeof showToast === 'function') {
+        showToast('Revisa el volumen del cubo DWC en el paso de dimensiones.', true);
+      }
+      return false;
     }
     dwcSincronizarTamanoCestaDesdeRim(state.configTorre);
     try {
@@ -2245,7 +2274,7 @@ function guardarSetupYContinuar() {
   const savedOk = saveState();
   if (savedOk === false) {
     showToast('No se pudo guardar la instalación. Revisa los datos e inténtalo de nuevo.', true);
-    return;
+    return false;
   }
   aplicarConfigTorre();
   actualizarHeaderTorre();
@@ -2274,6 +2303,10 @@ function guardarSetupYContinuar() {
   } catch (_) {}
   try {
     if (typeof cerrarSetup === 'function') cerrarSetup();
+    else {
+      const so = document.getElementById('setupOverlay');
+      if (so) so.classList.remove('open');
+    }
   } catch (_) {}
   try {
     if (typeof hcMaybeOfferPuestaMarcha === 'function') hcMaybeOfferPuestaMarcha();
@@ -2281,9 +2314,15 @@ function guardarSetupYContinuar() {
   // Tras configurar: pestaña Cultivo e instalación para cultivos; el checklist se ofrece cuando el usuario confirme.
   if (typeof iniciarFlujoSistemaAntesChecklistPostSetup === 'function') {
     iniciarFlujoSistemaAntesChecklistPostSetup();
-  } else {
+  } else if (typeof preguntarIniciarChecklist === 'function') {
     preguntarIniciarChecklist();
+  } else if (typeof goTab === 'function') {
+    goTab('sistema');
+    if (typeof showToast === 'function') {
+      showToast('Instalación guardada. Continúa en Cultivo e instalación.');
+    }
   }
+  return true;
 }
 
 function preguntarIniciarChecklist() {

@@ -153,31 +153,58 @@
     calcularPremiumSala();
   }
 
+  function numValDomOrMem(inputId, memVal) {
+    const n = numVal(inputId);
+    if (Number.isFinite(n)) return n;
+    if (Number.isFinite(memVal)) return memVal;
+    return NaN;
+  }
+
+  function salaTieneMedidasDesdeEquipamiento(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const inst = cfg.equipamientoInstalado || {};
+    const arm = inst.armario && inst.armario.specs ? inst.armario.specs : null;
+    if (!arm) return false;
+    const ancho = Number(arm.anchoM);
+    const largo = Number(arm.largoM);
+    return Number.isFinite(ancho) && ancho > 0 && Number.isFinite(largo) && largo > 0;
+  }
+
   function calcularPremiumSalaInterno() {
     const p = ensurePremiumSetup();
-    const ancho = numVal('setupPremiumAnchoM');
-    const largo = numVal('setupPremiumLargoM');
-    const alto = numVal('setupPremiumAltoM');
-    const ledW = numVal('setupPremiumLedW');
-    const extM3h = numVal('setupPremiumExtractorM3h');
+    const cfgTor = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const inst = cfgTor.equipamientoInstalado || {};
+    const armSpecs = inst.armario && inst.armario.specs ? inst.armario.specs : null;
+    const ledSpecs = inst.led && inst.led.specs ? inst.led.specs : null;
+    const extSpecs = inst.extractor && inst.extractor.specs ? inst.extractor.specs : null;
+    const ancho = numValDomOrMem('setupPremiumAnchoM', armSpecs && armSpecs.anchoM);
+    const largo = numValDomOrMem('setupPremiumLargoM', armSpecs && armSpecs.largoM);
+    const alto = numValDomOrMem('setupPremiumAltoM', armSpecs && armSpecs.altoM);
+    const ledW = numValDomOrMem('setupPremiumLedW', ledSpecs && ledSpecs.watts);
+    const extM3h = numValDomOrMem('setupPremiumExtractorM3h', extSpecs && extSpecs.m3h);
+    const anchoEff = Number.isFinite(ancho) ? ancho : (Number.isFinite(p.anchoM) ? p.anchoM : NaN);
+    const largoEff = Number.isFinite(largo) ? largo : (Number.isFinite(p.largoM) ? p.largoM : NaN);
+    const altoEff = Number.isFinite(alto) ? alto : (Number.isFinite(p.altoM) ? p.altoM : NaN);
+    const ledWEff = Number.isFinite(ledW) ? ledW : (Number.isFinite(p.ledW) ? p.ledW : NaN);
+    const extM3hEff = Number.isFinite(extM3h) ? extM3h : (Number.isFinite(p.extractorM3h) ? p.extractorM3h : NaN);
     const fase = String(el('setupPremiumFase')?.value || p.faseSala || 'vegetativo');
-    p.anchoM = Number.isFinite(ancho) ? ancho : null;
-    p.largoM = Number.isFinite(largo) ? largo : null;
-    p.altoM = Number.isFinite(alto) ? alto : null;
-    p.ledW = Number.isFinite(ledW) ? ledW : null;
-    p.extractorM3h = Number.isFinite(extM3h) ? extM3h : null;
+    p.anchoM = Number.isFinite(anchoEff) ? anchoEff : null;
+    p.largoM = Number.isFinite(largoEff) ? largoEff : null;
+    p.altoM = Number.isFinite(altoEff) ? altoEff : null;
+    p.ledW = Number.isFinite(ledWEff) ? ledWEff : null;
+    p.extractorM3h = Number.isFinite(extM3hEff) ? extM3hEff : null;
     p.faseSala = fase;
 
-    if (!Number.isFinite(ancho) || !Number.isFinite(largo) || ancho <= 0 || largo <= 0) {
-      return { error: 'Indica ancho y largo de la sala (m).' };
+    if (!Number.isFinite(anchoEff) || !Number.isFinite(largoEff) || anchoEff <= 0 || largoEff <= 0) {
+      return { error: 'Indica ancho y largo de la sala (m) o elige carpa/armario en el catálogo.' };
     }
-    const area = ancho * largo;
-    const vol = area * (Number.isFinite(alto) && alto > 0 ? alto : 2);
+    const area = anchoEff * largoEff;
+    const vol = area * (Number.isFinite(altoEff) && altoEff > 0 ? altoEff : 2);
     const wM2 = (typeof GROW_ROOM_W_M2 !== 'undefined' && GROW_ROOM_W_M2[fase]) || GROW_ROOM_W_M2.vegetativo;
     const ledObj = Math.round(area * wM2.obj);
     const ledMin = Math.round(area * wM2.min);
     const ledMax = Math.round(area * wM2.max);
-    const densidad = Number.isFinite(ledW) && ledW > 0 ? ledW / area : null;
+    const densidad = Number.isFinite(ledWEff) && ledWEff > 0 ? ledWEff / area : null;
     const exch = typeof GROW_ROOM_AIR_EXCHANGES !== 'undefined' ? GROW_ROOM_AIR_EXCHANGES : { obj: 60, min: 30 };
     const m3hObj = Math.round(vol * exch.obj);
     const m3hMin = Math.round(vol * (exch.min || 30));
@@ -334,19 +361,30 @@
       }).join('');
   }
 
+  function persistPremiumFieldFromUI(inputId, p, key) {
+    const n = numVal(inputId);
+    if (Number.isFinite(n)) {
+      p[key] = n;
+      return;
+    }
+    if (!Number.isFinite(p[key])) p[key] = null;
+  }
+
   function persistPremiumSetupFromUI() {
     const p = ensurePremiumSetup();
-    p.anchoM = numVal('setupPremiumAnchoM');
-    p.largoM = numVal('setupPremiumLargoM');
-    p.altoM = numVal('setupPremiumAltoM');
-    p.ledW = numVal('setupPremiumLedW');
-    p.extractorM3h = numVal('setupPremiumExtractorM3h');
+    persistPremiumFieldFromUI('setupPremiumAnchoM', p, 'anchoM');
+    persistPremiumFieldFromUI('setupPremiumLargoM', p, 'largoM');
+    persistPremiumFieldFromUI('setupPremiumAltoM', p, 'altoM');
+    persistPremiumFieldFromUI('setupPremiumLedW', p, 'ledW');
+    persistPremiumFieldFromUI('setupPremiumExtractorM3h', p, 'extractorM3h');
     p.faseSala = String(el('setupPremiumFase')?.value || 'vegetativo');
     p.tentPreset = String(el('setupPremiumTentPreset')?.value || '');
     p.carpaReflectante = !!el('setupPremiumCarpaReflectante')?.checked;
     p.horasLuz = parseInt(String(el('setupPremiumHorasLuz')?.value || p.horasLuz || 18), 10) || 18;
     p.intensidadLuz = String(el('setupPremiumIntensidadLuz')?.value || 'media');
-    if (typeof setupData !== 'undefined') setupData.ubicacion = p.entorno;
+    if (typeof setupData !== 'undefined') {
+      setupData.ubicacion = p.entorno === 'exterior' ? 'exterior' : 'interior';
+    }
     if (typeof getConsejosModoSetupActivo === 'function') {
       p.consejosModoUi = getConsejosModoSetupActivo();
       setupData.consejosModoUi = p.consejosModoUi;
@@ -455,6 +493,10 @@
   function validarPremiumSetupPaso(pagina) {
     persistPremiumSetupFromUI();
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
+      if (typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
+          window.salaTieneMedidasDesdeEquipamiento()) {
+        return true;
+      }
       const r = calcularPremiumSalaInterno();
       if (r.error) {
         if (typeof showToast === 'function') showToast(r.error, true);
