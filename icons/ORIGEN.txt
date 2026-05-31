@@ -1,9 +1,12 @@
 Iconos generados desde el arte maestro:
-  ..\.cursor\projects\c-Users-carua-Downloads\assets\cultiva-icon-master.png
+  icons/splash-brand-card.png  ← logo circular (cannabis + raíces + agua) en tarjeta crema
 
-Splash de arranque:
-  splash-brand-icon.png   ← export típico; esquinas blancas se recortan vía CSS (border-radius ~22.37%)
-  splash-brand.svg        ← alternativa vectorial sin lienzo blanco
+Splash de arranque y PIN:
+  splash-brand-card.png   ← fondo oscuro en app; la tarjeta crema aporta contraste
 
-Para regenerar tras cambiar el diseño (desde HidroCultivo-web con sharp instalado):
-  node scripts\resize-icons.js   (crear script si lo necesitas)
+Iconos PWA (192 / 512 / maskable):
+  node scripts/resize-icons.js icons/splash-brand-card.png
+
+Legacy (HidroCultivo / icono cuadrado oscuro):
+  splash-brand-icon.png
+  splash-brand.svg

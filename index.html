@@ -4,13 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
-<meta name="theme-color" content="#15803d">
+<meta name="theme-color" content="#0f1419">
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="HidroGrow">
 
 <!-- SEO y descripción -->
@@ -33,8 +33,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-canopy">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-canopy">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-grow-logo">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-grow-logo">
 </head>
 <body>
 <script>
@@ -154,10 +154,9 @@
 <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
 <!-- ══ SPLASH SCREEN ══ -->
-<div class="splash" id="splashScreen">
-  <div class="splash-img-wrap splash-img-wrap--brand" aria-hidden="true">
-    <img class="splash-img" alt="" src="icons/splash-brand.svg?v=2026-05-31-cannabis" width="512" height="512" decoding="async" fetchpriority="high"
-      onerror="this.src='icons/splash-brand-icon.png?v=2026-05-31-cannabis';">
+<div class="splash splash--brand-card" id="splashScreen">
+  <div class="splash-img-wrap splash-img-wrap--brand splash-img-wrap--brand-card" aria-hidden="true">
+    <img class="splash-img" alt="" src="icons/splash-brand-card.png?v=2026-05-31-grow" width="512" height="512" decoding="async" fetchpriority="high">
   </div>
   <div class="splash-title-wrap">
     <div class="splash-title">
@@ -209,7 +208,7 @@
   <!-- HEADER -->
   <div class="header">
     <div class="header-logo">
-      <svg class="header-logo-icon" aria-hidden="true" focusable="false"><use href="#hc-i-cannabis-leaf"/></svg>
+      <img class="header-logo-emblem" alt="" src="icons/splash-brand-card.png?v=2026-05-31-grow" width="36" height="36" decoding="async">
       <span class="header-logo-text">HIDRO<span>Grow</span></span>
     </div>
     <button type="button" id="headerInstActiva" class="header-instal-activa setup-hidden"
@@ -2728,7 +2727,7 @@
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
   <div class="welcome-card welcome-card--guide">
     <div class="welcome-brand" aria-hidden="true">
-      <svg class="welcome-brand-icon" focusable="false"><use href="#hc-i-cannabis-leaf"/></svg>
+      <img class="welcome-brand-emblem" alt="" src="icons/splash-brand-card.png?v=2026-05-31-grow" width="40" height="40" decoding="async">
       <span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span>
     </div>
     <p class="welcome-eyebrow">Planifica · Mide · Ajusta</p>
