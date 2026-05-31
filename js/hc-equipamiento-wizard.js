@@ -83,6 +83,11 @@
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     renderEquipamientoPremiumUI();
     renderMedirEquipamientoPanel();
+    try {
+      if (typeof renderSetupDiagramEquipLegendForPreviews === 'function') {
+        renderSetupDiagramEquipLegendForPreviews();
+      }
+    } catch (_) {}
   }
 
   function renderEquipSelect(catId, selectId, onchangeName) {

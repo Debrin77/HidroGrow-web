@@ -14027,6 +14027,125 @@ button.toggle-switch:focus-visible {
   margin-top: 6px;
   font-weight: 600;
 }
+.setup-roadmap-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+.setup-roadmap-chip {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+.setup-roadmap-chip--active {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #6ee7b7;
+}
+.setup-roadmap-chip--done {
+  color: #475569;
+}
+.setup-guia-panel {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+}
+.setup-guia-l1 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #14532d;
+}
+.setup-guia-l2 {
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #166534;
+  opacity: 0.92;
+}
+.setup-diagram-equip-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd5e1;
+}
+.setup-diagram-equip-kicker {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-right: 2px;
+}
+.setup-diagram-equip-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #334155;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  max-width: 100%;
+  line-height: 1.25;
+}
+.setup-diagram-equip-emoji {
+  font-size: 12px;
+  line-height: 1;
+}
+/* Diagramas del asistente: ancho completo y nítidos (no miniatura 220px) */
+.setup-dwc-preview-section--diagram .torre-preview--dwc:has(svg),
+#setupDwcPreview.torre-preview--dwc.setup-diagram-crisp,
+#setupRdwcPreview.torre-preview--rdwc.setup-diagram-crisp {
+  max-width: 100%;
+  width: 100%;
+  min-height: min(42vh, 320px);
+  align-self: stretch;
+}
+.setup-dwc-preview-section--diagram .torre-preview--dwc:has(svg) svg,
+#setupDwcPreview.setup-diagram-crisp svg,
+#setupRdwcPreview.setup-diagram-crisp svg {
+  width: 100%;
+  max-width: min(100%, 640px);
+  min-height: min(38vh, 280px);
+  height: auto;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+.setup-diagram-crisp svg {
+  filter: none;
+}
+.setup-diagram-crisp svg .dwc-scada-callout text,
+.setup-diagram-crisp svg text.hc-illo-label,
+.setup-diagram-crisp svg .rdwc-scada-module text {
+  paint-order: normal;
+  stroke: none;
+  stroke-width: 0;
+}
+.setup-diagram-crisp svg path[opacity="0.45"],
+.setup-diagram-crisp svg path[opacity="0.4"],
+.setup-diagram-crisp svg path[opacity="0.38"] {
+  opacity: 0.72;
+}
+.setup-dwc-preview-section--diagram {
+  background: #ffffff;
+  border-color: #cbd5e1;
+}
 
 .setup-content {
   flex: 1;

@@ -1507,6 +1507,14 @@ function renderSetupPage() {
   if (setupPagina === SETUP_PAGE_WELCOME || setupPagina === SETUP_PAGE_GEOMETRY) {
     refrescarSetupTipoInstalacionUI();
   }
+  if (setupPagina === SETUP_PAGE_GEOMETRY) {
+    setTimeout(function () {
+      try {
+        if (typeof refreshDwcSetupPreview === 'function') refreshDwcSetupPreview();
+        if (typeof refreshRdwcSetupPreview === 'function') refreshRdwcSetupPreview();
+      } catch (_) {}
+    }, 0);
+  }
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     setTimeout(function () {
       if (typeof cargarPremiumSetupUI === 'function') cargarPremiumSetupUI(setupPagina);
@@ -1593,6 +1601,9 @@ function renderSetupPage() {
     if (typeof aplicarSetupWizardExclusividadTorreVertical === 'function') {
       aplicarSetupWizardExclusividadTorreVertical();
     }
+  } catch (_) {}
+  try {
+    if (typeof renderSetupGuiaPanel === 'function') renderSetupGuiaPanel(setupPagina);
   } catch (_) {}
 }
 
@@ -1811,7 +1822,9 @@ function renderDwcIlloSetupPreview(previewEl, filas, cols, volLitros, draftExtra
   draft = Object.assign({ tipoInstalacion: 'dwc' }, draft);
   draft.numNiveles = Math.max(1, filas);
   draft.numCestas = Math.max(1, cols);
-  if (typeof setupEquipamiento !== 'undefined' && setupEquipamiento) {
+  if (typeof buildSetupEquipamientoMerged === 'function') {
+    draft = buildSetupEquipamientoMerged(draft);
+  } else if (typeof setupEquipamiento !== 'undefined' && setupEquipamiento) {
     draft.equipamiento = [...setupEquipamiento];
   }
   if (volLitros != null && Number(volLitros) > 0) {
@@ -1845,6 +1858,8 @@ function renderDwcIlloSetupPreview(previewEl, filas, cols, volLitros, draftExtra
     previewEl.innerHTML = renderFn();
     previewEl.classList.add('torre-preview--dwc', 'hc-illo-diagram');
     try {
+      if (typeof markSetupDiagramCrisp === 'function') markSetupDiagramCrisp(previewEl);
+      if (typeof renderSetupDiagramEquipLegend === 'function') renderSetupDiagramEquipLegend(previewEl);
       if (typeof bindDwcScadaCestaHover === 'function') bindDwcScadaCestaHover(previewEl);
     } catch (_) {}
   } catch (err) {
@@ -2037,6 +2052,9 @@ function refreshRdwcSetupPreview() {
       draft = setupRdwcDraft;
     }
     if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(draft);
+    if (typeof buildSetupEquipamientoMerged === 'function') {
+      draft = buildSetupEquipamientoMerged(draft);
+    }
     const sites = Math.max(2, Math.round(Number(draft.rdwcSites) || 4));
     const rows = Math.max(1, Math.min(4, Math.round(Number(draft.rdwcRows) || 1)));
     const dist =
@@ -2071,6 +2089,8 @@ function refreshRdwcSetupPreview() {
       preview.innerHTML = generarSVGRdwc();
       preview.classList.add('torre-preview--rdwc');
       try {
+        if (typeof markSetupDiagramCrisp === 'function') markSetupDiagramCrisp(preview);
+        if (typeof renderSetupDiagramEquipLegend === 'function') renderSetupDiagramEquipLegend(preview);
         if (typeof disposeDwcScadaViewport === 'function') disposeDwcScadaViewport(preview);
         if (typeof bindDwcScadaCestaHover === 'function') bindDwcScadaCestaHover(preview);
       } catch (_) {}
@@ -2590,6 +2610,10 @@ function toggleEquip(id) {
     card.className = 'equip-card selected';
   }
   refreshSetupCalentadorConsignaVis();
+  try {
+    if (typeof refreshDwcSetupPreview === 'function') refreshDwcSetupPreview();
+    if (typeof refreshRdwcSetupPreview === 'function') refreshRdwcSetupPreview();
+  } catch (_) {}
 }
 
 function refreshSetupCalentadorConsignaVis() {
