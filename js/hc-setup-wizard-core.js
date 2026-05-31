@@ -2737,7 +2737,9 @@ function cerrarSetup() {
     hcSetSetupSlidersBlankMode(false);
   } catch (_) {}
   try {
-    if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();
+    if (typeof hcResetSetupWizardSession === 'function') {
+      hcResetSetupWizardSession({ keepPostSetupFlow: !!(state && state.hcPostSetupChecklistPendiente) });
+    }
   } catch (_) {}
   try {
     if (

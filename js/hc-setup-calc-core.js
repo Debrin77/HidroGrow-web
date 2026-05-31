@@ -1716,6 +1716,17 @@ function guardarSetupYContinuar() {
     humedad: !!(setupData.sensoresHardware && setupData.sensoresHardware.humedad),
   };
 
+  const cfgPrevWizard = state.configTorre || {};
+  const preservedEquipInstalado =
+    cfgPrevWizard.equipamientoInstalado && typeof cfgPrevWizard.equipamientoInstalado === 'object'
+      ? JSON.parse(JSON.stringify(cfgPrevWizard.equipamientoInstalado))
+      : null;
+  const preservedCalibracionMedidor = cfgPrevWizard.ultimaCalibracionMedidor || null;
+  const preservedSalaLayout =
+    cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'
+      ? JSON.parse(JSON.stringify(cfgPrevWizard.salaLayout))
+      : null;
+
   const prevLocMet = (!setupEsNuevaTorre && state.configTorre && state.configTorre.localidadMeteo)
     ? String(state.configTorre.localidadMeteo).trim() : '';
   const ciudadWizard = String(setupCoordenadas.ciudad || setupData.ciudad || '').trim();
@@ -1735,6 +1746,18 @@ function guardarSetupYContinuar() {
   const ubicEffGuardar = setupData.ubicacion || setupUbicacion || 'exterior';
   if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
   if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
+  const premEntorno =
+    typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup().entorno : ubicEffGuardar;
+  if (
+    premEntorno === 'interior' &&
+    typeof validarPremiumSetupPaso === 'function' &&
+    typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' &&
+    !validarPremiumSetupPaso(SETUP_PAGE_PREMIUM_3)
+  ) {
+    setupPagina = SETUP_PAGE_PREMIUM_3;
+    renderSetupPage();
+    return;
+  }
   if (ubicEffGuardar === 'exterior') {
     if (!ciudadWizard || !Number.isFinite(latWizard) || !Number.isFinite(lonWizard)) {
       showToast(
@@ -1753,7 +1776,7 @@ function guardarSetupYContinuar() {
   setupData.horasLuz = horasLuzGuardar;
 
   state.configTorre = {
-    tipoInstalacion: isRdwc ? 'rdwc' : 'dwc',
+    tipoInstalacion: tipoNuevoPrevio,
     torreVistaModo: 'esquema',
     torreDiagramaVista: 'esquema',
     tipoTorre:    'custom',
@@ -1789,7 +1812,25 @@ function guardarSetupYContinuar() {
     if (typeof persistPremiumSetupToConfig === 'function') {
       persistPremiumSetupToConfig(state.configTorre);
     }
-  } catch (_) {}
+    if (preservedEquipInstalado && Object.keys(preservedEquipInstalado).length) {
+      state.configTorre.equipamientoInstalado = preservedEquipInstalado;
+    }
+    if (preservedCalibracionMedidor) {
+      state.configTorre.ultimaCalibracionMedidor = preservedCalibracionMedidor;
+    }
+    if (preservedSalaLayout) {
+      state.configTorre.salaLayout = preservedSalaLayout;
+    }
+    if (typeof persistEquipamientoToConfig === 'function') {
+      persistEquipamientoToConfig(state.configTorre);
+    }
+  } catch (errPremium) {
+    console.error('persistPremiumSetupToConfig', errPremium);
+    showToast('Error al guardar equipamiento o sala. Revisa el paso «Espacio y equipamiento».', true);
+    setupPagina = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
+    renderSetupPage();
+    return;
+  }
   try {
     delete state.configTorre.hcPlantillaAutogenerada;
   } catch (_) {}
@@ -2227,9 +2268,6 @@ function guardarSetupYContinuar() {
     const tabCoach = document.getElementById('hcTabBarCoach');
     if (tabCoach) tabCoach.classList.add('setup-hidden');
     document.body.classList.remove('hc-tab-coach-open');
-  } catch (_) {}
-  try {
-    if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();
   } catch (_) {}
   try {
     setupPagina = 0;

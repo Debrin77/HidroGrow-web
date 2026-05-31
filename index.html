@@ -3001,11 +3001,17 @@
 
     <div class="setup-page" id="spagePremium3">
       <div class="setup-title">Espacio y equipamiento</div>
-      <div class="setup-subtitle">Dimensiona carpa, LED y extractor. Validaremos plantas vs m² más adelante.</div>
+      <div class="setup-subtitle">Primero elige marca y modelo de cada elemento; después revisa las medidas de sala/carpa que rellenamos con la ficha técnica.</div>
       <div id="setupPremiumSalaInterior">
-        <div class="setup-block-title">Sala / carpa</div>
+        <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
+        <p class="setup-field-hint setup-mb-8">Empieza por carpa/armario, LED, extractor y medidor. Cada selección aporta datos de ficha (m², W, m³/h…). Puedes dejar «Manual / otro modelo» en algún bloque.</p>
+        <div id="setupPremiumEquipGrid" class="equip-catalog-grid setup-mb-8"></div>
+        <div id="setupPremiumEquipFaltantes" class="setup-box-warn setup-mb-16"></div>
+
+        <div class="setup-block-title setup-mt-4">Revisa sala / carpa</div>
+        <p class="setup-field-hint setup-mb-8">Medidas condicionadas por tu equipamiento. Comprueba que coinciden con tu montaje real; ajusta solo si hace falta.</p>
         <div class="setup-mb-8">
-          <label class="setup-field-label" for="setupPremiumTentPreset">Tamaño habitual</label>
+          <label class="setup-field-label" for="setupPremiumTentPreset">Atajo por tamaño habitual</label>
           <select id="setupPremiumTentPreset" class="setup-input-city" onchange="aplicarPremiumTentPreset()">
             <option value="">Medidas personalizadas</option>
           </select>
@@ -3039,10 +3045,6 @@
           Carpa reflectante Mylar (recomendado)
         </label>
         <div id="setupPremiumSalaResult" class="setup-box-info setup-mb-16"></div>
-        <div class="setup-block-title setup-mt-12">Marca y modelo (catálogo ES)</div>
-        <p class="setup-field-hint setup-mb-8">Elige fabricante/modelo para rellenar medidas automáticamente. Datos orientativos de ficha técnica — puedes dejar «Manual» y escribir arriba.</p>
-        <div id="setupPremiumEquipGrid" class="equip-catalog-grid setup-mb-8"></div>
-        <div id="setupPremiumEquipFaltantes" class="setup-box-warn setup-mb-8"></div>
       </div>
       <div id="setupPremiumExteriorHint" class="setup-box-warn setup-hidden setup-mb-12">
         En exterior usa el municipio para meteo y registra temp. exterior en Medir. Prioriza sombrear el depósito en verano.
@@ -4621,7 +4623,7 @@
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-ios-a11y"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-save2"></script>
@@ -4647,18 +4649,18 @@
 <script src="js/torre-render-main.js?v=2026-05-28-nft-difusor-rdwc-ec"></script>
   <script src="js/cultivos-germinacion.js?v=3"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-eval"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-order"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-consejos-save"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-15-wizard-aislado"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-consejos-save"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-setup-save"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-consejos-save"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-setup-rotacion.js?v=2"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=1"></script>
@@ -4684,7 +4686,7 @@
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=1"></script>
   <script src="js/app-hc-medicion-toast.js?v=6"></script>
-  <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-consejos-save"></script>
+  <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-medir-ranges"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>

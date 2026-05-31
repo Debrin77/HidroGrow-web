@@ -142,7 +142,7 @@
       return;
     }
     hint.innerHTML = 'Faltan datos de: <strong>' + falt.map(function (f) { return f.label; }).join(', ') + '</strong>. ' +
-      'Selecciona marca/modelo o rellena medidas manualmente.';
+      'Selecciona marca/modelo en el catálogo y revisa las medidas de sala más abajo.';
   }
 
   function getCamposEquipamientoFaltantes(cfg) {
@@ -317,7 +317,7 @@
     const inst = ensureEquipInstalado(cfg);
     const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
     const falt = getCamposEquipamientoFaltantes(cfg);
-    let html = '<p class="medir-equip-lead">Marca/modelo registrados alimentan dimensionado de sala, correcciones VPD y protocolo de calibración.</p>';
+    let html = '<p class="medir-equip-lead">Elige marca/modelo en el asistente o al reconfigurar; las medidas de sala se rellenan con la ficha técnica del catálogo.</p>';
     if (falt.length) {
       html += '<p class="medir-equip-warn">⚠️ Completa: ' + falt.map(function (f) { return f.label; }).join(', ') + '</p>';
     }

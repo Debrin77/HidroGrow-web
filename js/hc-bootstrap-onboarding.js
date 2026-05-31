@@ -237,7 +237,7 @@ function welcomeEmpezar() {
 function welcomeAbrirSetup() {
   cerrarBienvenidaPrimeraVez({ skipLanzarSetup: true });
   try {
-    setTimeout(() => {
+    setTimeout(function () {
       if (typeof abrirSetup === 'function') abrirSetup();
     }, 450);
   } catch (_) {}

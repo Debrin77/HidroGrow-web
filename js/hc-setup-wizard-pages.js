@@ -1687,6 +1687,10 @@ function setupNext() {
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : setupPagina + 1;
     renderSetupPage();
   } else {
+    try {
+      if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
+      if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
+    } catch (_) {}
     guardarSetupYContinuar();
   }
 }

@@ -69,10 +69,12 @@ function hcResetSetupWizardSession(opts) {
     if (typeof window !== 'undefined') window._nutrientesMostrarCatalogoCompleto = false;
   } catch (_) {}
   if (typeof setupRdwcDraft !== 'undefined') setupRdwcDraft = null;
-  try {
-    delete window._hcPostSetupPrevListo;
-    delete window._hcChecklistGuidedFlow;
-  } catch (_) {}
+  if (!opts.keepPostSetupFlow) {
+    try {
+      delete window._hcPostSetupPrevListo;
+      delete window._hcChecklistGuidedFlow;
+    } catch (_) {}
+  }
   if (!opts.keepNuevaFlag) {
     setupEsNuevaTorre = false;
   }
