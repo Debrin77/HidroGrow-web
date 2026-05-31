@@ -404,7 +404,8 @@ function cambiarTorreActiva(idx) {
   }
   if (document.getElementById('tab-meteo')?.classList.contains('active')) cargarMeteo();
   if (document.getElementById('tab-calendario')?.classList.contains('active')) renderCalendario();
-  if (document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
+  if (document.getElementById('tab-sala')?.classList.contains('active') ||
+    document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
   if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   try {
     if (typeof hcRefreshMultiSystemCoach === 'function') hcRefreshMultiSystemCoach();
@@ -595,7 +596,8 @@ function cargarEstadoTorre(idx) {
   cargarLocalidadMeteoUI();
   try { refreshUbicacionInstalacionUI(); } catch (_) {}
   syncRiegoAvanzadoUI();
-  if (document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
+  if (document.getElementById('tab-sala')?.classList.contains('active') ||
+    document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
   try {
     if (typeof updateRecargaBar === 'function') updateRecargaBar();
   } catch (_) {}
@@ -677,8 +679,15 @@ function setStandbyLockDisabled(el, on) {
 
 function aplicarBloqueosStandbyPorTab(on) {
   const tabMediciones = document.getElementById('tab-mediciones');
+  const tabSala = document.getElementById('tab-sala');
   if (tabMediciones) {
     tabMediciones.querySelectorAll('input, textarea, select').forEach(el => {
+      setStandbyLockDisabled(el, !on);
+    });
+  }
+  if (tabSala) {
+    tabSala.querySelectorAll('input, textarea, select, button').forEach(el => {
+      if (el.id === 'recargaSwitch') return;
       setStandbyLockDisabled(el, !on);
     });
   }
@@ -695,7 +704,7 @@ function aplicarEstadoStandbyUI() {
   const on = sistemaEstaOperativa();
   const appRoot = document.getElementById('app');
   if (appRoot) appRoot.classList.toggle('is-standby-active', !on);
-  ['tab-inicio', 'tab-mediciones', 'tab-sistema', 'tab-riego'].forEach(id => {
+  ['tab-inicio', 'tab-mediciones', 'tab-sala', 'tab-sistema', 'tab-riego'].forEach(id => {
     const tab = document.getElementById(id);
     if (tab) tab.classList.toggle('is-standby', !on);
   });

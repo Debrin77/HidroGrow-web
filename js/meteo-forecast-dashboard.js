@@ -291,6 +291,24 @@ function updateRecargaBar() {
   notaEl.textContent = nota;
   notaEl.style.color = evalRec.level === 'change' ? '#dc2626' : '#6b7280';
 
+  var dashDias = document.getElementById('dashRecargaDias');
+  var dashBar = document.getElementById('dashRecargaBar');
+  var dashNota = document.getElementById('dashRecargaNota');
+  var dashNombre = document.getElementById('dashRecargaSistemaNombre');
+  if (dashDias) {
+    dashDias.textContent = diasEl.textContent;
+    dashDias.style.color = color;
+  }
+  if (dashBar) {
+    dashBar.style.width = barEl.style.width;
+    dashBar.style.background = color;
+  }
+  if (dashNota) {
+    dashNota.textContent = notaEl.textContent;
+    dashNota.style.color = notaEl.style.color;
+  }
+  if (dashNombre) dashNombre.textContent = sysLbl || '—';
+
   // Depósito visual: mismo objetivo que Medir — litros de mezcla si los configuraste;
   // si no, tope seguro / depósito (getVolumenMezclaLitros ya hace ese fallback).
   const vol = state.ultimaMedicion?.vol ? parseFloat(state.ultimaMedicion.vol) : 0;
@@ -341,6 +359,15 @@ function updateRecargaBar() {
       sysLbl +
       ' (checklist o interruptor al guardar medición).';
     notaEl.style.color = '#6b7280';
+    var dashDias0 = document.getElementById('dashRecargaDias');
+    var dashBar0 = document.getElementById('dashRecargaBar');
+    var dashNota0 = document.getElementById('dashRecargaNota');
+    if (dashDias0) { dashDias0.textContent = '—'; dashDias0.style.color = '#6b7280'; }
+    if (dashBar0) dashBar0.style.width = '0%';
+    if (dashNota0) {
+      dashNota0.textContent = notaEl.textContent;
+      dashNota0.style.color = notaEl.style.color;
+    }
   }
 
   const nPlantasTorre = contarPlantasTorreConVariedad();

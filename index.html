@@ -34,7 +34,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/main.css?v=2026-05-31-deep-canopy-v2">
-  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-deep-canopy-v2">
+  <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-medir-full">
 </head>
 <body>
 <script>
@@ -406,8 +406,57 @@
         </button>
       </section>
 
-      <!-- 6. Acciones rápidas: núcleo siempre visible; resto en «Más» hasta tener config + medición -->
+      <!-- Recarga depósito (resumen + acceso rápido) -->
+      <section class="dash-recarga-card config-section-collapsible" id="dashRecargaCard" aria-labelledby="dashRecargaTitle">
+        <button type="button" class="config-section-collapse-head medir-disclosure-main-head dash-recarga-head"
+          id="btnDashRecarga" onclick="toggleDashRecargaCard()"
+          aria-expanded="true" aria-controls="dashRecargaBody">
+          <span class="config-section-collapse-title-wrap">
+            <span class="config-section-collapse-title" id="dashRecargaTitle">
+              <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-refresh"/></svg>
+              Próxima recarga completa
+            </span>
+            <span class="recarga-dias" id="dashRecargaDias">—</span>
+          </span>
+          <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+        </button>
+        <div class="config-section-collapse-body dash-recarga-body" id="dashRecargaBody">
+          <p class="recarga-instalacion-aviso" role="note"><strong id="dashRecargaSistemaNombre">—</strong></p>
+          <div class="progress-track dash-recarga-track">
+            <div class="progress-fill-bar" id="dashRecargaBar"></div>
+          </div>
+          <p class="recarga-nota" id="dashRecargaNota">—</p>
+          <div class="dash-recarga-actions">
+            <button type="button" class="btn btn-primary btn-sm" onclick="intentarAbrirChecklistDesdeInicio(false)">
+              Checklist recarga
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="goTabSala('recarga')">
+              Reposición y avisos
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Acciones rápidas -->
       <div class="quick-actions-wrap" id="quickActionsWrap">
+        <div class="quick-actions quick-actions--core" id="quickActionsCore">
+          <button type="button" class="quick-btn quick-btn-info" data-quick-icon="mediciones" onclick="goTab('mediciones')">
+            <span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-ion-pulse"/></svg></span>
+            <span>Medir ahora</span>
+          </button>
+          <button type="button" class="quick-btn" data-quick-icon="recarga" onclick="goTabSala('recarga')">
+            <span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-ion-refresh"/></svg></span>
+            <span>Recarga</span>
+          </button>
+          <button type="button" class="quick-btn" data-quick-icon="sistema" onclick="goTab('sistema')">
+            <span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-ion-settings"/></svg></span>
+            <span>Cultivo</span>
+          </button>
+          <button type="button" class="quick-btn" data-quick-icon="sala" onclick="goTabSala('agua')">
+            <span class="quick-btn-icon" aria-hidden="true"><svg class="hc-ico hc-ico--ion-quick" focusable="false"><use href="#hc-i-bulb"/></svg></span>
+            <span>Sala</span>
+          </button>
+        </div>
         <details class="quick-actions-more" id="quickActionsMore">
           <summary class="quick-actions-more-summary" id="quickActionsMoreSummary">Más opciones (seguridad, alertas…)</summary>
           <div class="quick-actions quick-actions--extra quick-actions--stacked">
@@ -518,11 +567,11 @@
 
       <h1 class="section-title section-title--with-ico">
         <svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-chart"/></svg>
-        <span><span class="accent">Mediciones</span> diarias</span>
+        <span><span class="accent">Medir</span> solución y ambiente</span>
       </h1>
       <div id="tabContextHintMediciones" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Medir</strong> es donde registras datos <strong>reales</strong> (EC, pH, temperatura del agua, volumen). Son la referencia más fiable frente a previsiones o sugerencias de riego.
+          <strong>Medir</strong> = registro rápido de EC, pH, temperatura del agua y volumen. La <strong>sala</strong>, IoT, agua de base y recargas están en la pestaña <strong>Sala</strong> (icono casa).
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('mediciones')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1382,6 +1431,23 @@
     </div>
     <!-- FIN TAB MEDICIONES -->
 
+    <!-- TAB: SALA DE CULTIVO ═══════════════════════════ -->
+    <div class="tab-panel" id="tab-sala" role="tabpanel" aria-labelledby="btn-sala" aria-hidden="true">
+      <h1 class="section-title section-title--with-ico">
+        <svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg>
+        <span><span class="accent">Sala</span> de cultivo</span>
+      </h1>
+      <div id="tabContextHintSala" class="tab-context-hint setup-hidden" role="note">
+        <div class="tab-context-hint-inner">
+          Configura <strong>ubicación, equipamiento, sensores IoT, tipo de agua y recargas</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
+          <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sala')" aria-label="Entendido, ocultar aviso">Entendido</button>
+        </div>
+      </div>
+      <p class="medir-sala-intro">Todo lo que describe <strong>cómo es tu sala</strong> y el mantenimiento del depósito — no cambia en cada medición.</p>
+      <div id="tabSalaMount" class="tab-sala-mount"></div>
+    </div>
+    <!-- FIN TAB SALA -->
+
     <!-- TAB 3: TORRE ══════════════════════════════════ -->
     <div class="tab-panel" id="tab-sistema" role="tabpanel" aria-labelledby="btn-sistema" aria-hidden="true">
       <h1 class="section-title section-title--with-ico">
@@ -1390,7 +1456,7 @@
       </h1>
       <div id="tabContextHintSistema" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Cultivo e instalación</strong>: cultivo y fecha de trasplante en cada hueco. Sin fecha válida, riego y EC/pH son solo orientativos. El checklist de recarga está en <strong>Inicio</strong> o <strong>Medir</strong>.
+          <strong>Cultivo e instalación</strong>: cultivo y fecha de trasplante en cada hueco. Sala, IoT y recargas en la pestaña <strong>Sala</strong>. Mediciones diarias en <strong>Medir</strong>.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sistema')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1423,7 +1489,7 @@
         <p id="torreNombreCardLocalidad" class="torre-nombre-localidad-line" role="status"></p>
         <button type="button" id="torreBtnIrMedirMunicipio" class="torre-btn-ir-medir-municipio setup-hidden"
           onclick="irMedirMunicipioClima()">
-          Ir a Medir — municipio (clima y avisos)
+          Ir a Sala — municipio (clima)
         </button>
         <button type="button" class="torre-btn-puesta-marcha btn btn-secondary btn-sm"
           onclick="hcOpenPuestaMarchaChecklist()">
@@ -2674,6 +2740,9 @@
     <button class="tab-btn tab-bar-group-start" type="button" role="tab" id="btn-mediciones" onclick="goTab('mediciones')" aria-label="Ir a Mediciones" aria-selected="false" aria-controls="tab-mediciones">
       <div class="tab-badge setup-hidden" id="alertBadge"></div>
       <svg class="hc-ico hc-ico--ion-tab" aria-hidden="true" focusable="false"><use href="#hc-i-ion-pulse"/></svg>
+    </button>
+    <button class="tab-btn" type="button" role="tab" id="btn-sala" onclick="goTab('sala')" aria-label="Ir a Sala de cultivo" title="Sala de cultivo" aria-selected="false" aria-controls="tab-sala">
+      <svg class="hc-ico hc-ico--ion-tab" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg>
     </button>
     <button class="tab-btn" type="button" role="tab" id="btn-sistema" onclick="goTab('sistema')" aria-label="Ir a Cultivo e instalación" title="Cultivo e instalación" aria-selected="false" aria-controls="tab-sistema">
       <svg class="hc-ico hc-ico--ion-tab" aria-hidden="true" focusable="false"><use href="#hc-i-ion-settings"/></svg>
@@ -4549,7 +4618,10 @@
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-28-welcome-scroll-top"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-28-welcome-scroll-top"></script>
+  <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
+  <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-medir-full"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>

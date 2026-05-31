@@ -397,7 +397,7 @@ function goTab(tab) {
   const activeBtn = document.getElementById('btn-' + tab);
   if (activeBtn) activeBtn.classList.add('active');
   scrollTabBarToActive(activeBtn);
-  ['inicio','mediciones','sistema','calendario','riego','meteo','historial','consejos','ayuda'].forEach(t => {
+  ['inicio','mediciones','sala','sistema','calendario','riego','meteo','historial','consejos','ayuda'].forEach(t => {
     const b = document.getElementById('btn-' + t);
     if (b) b.setAttribute('aria-selected', t === tab ? 'true' : 'false');
   });
@@ -407,8 +407,10 @@ function goTab(tab) {
   } catch (_) {}
   if (tab === 'mediciones') {
     cargarUltimaMedicion();
-    initConfigUI();
-    if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
+  }
+  if (tab === 'sala') {
+    if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
+    if (typeof salaSubTab === 'function') salaSubTab(window.salaSubActive || 'agua');
   }
   if (tab === 'inicio') updateDashboard();
   if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
@@ -454,7 +456,7 @@ function goTab(tab) {
 }
 
 function irMedirMunicipioClima() {
-  goTab('mediciones');
+  goTab('sala');
   setTimeout(() => {
     const panel = document.getElementById('panelLocalidadMeteo');
     const inp = document.getElementById('inputLocalidadMeteo');

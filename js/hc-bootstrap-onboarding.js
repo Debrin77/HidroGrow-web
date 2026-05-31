@@ -7,7 +7,7 @@
 // ══════════════════════════════════════════════════
 const HC_GUIDE_DISMISS_KEY = 'hc_guia_primer_dia_dismiss';
 const HC_ONBOARD_RIEGO_VISIT_KEY = 'hc_onboarding_visit_riego';
-const HC_HINT_CTX = { mediciones: 'hc_hint_ctx_med', sistema: 'hc_hint_ctx_sis', riego: 'hc_hint_ctx_riego' };
+const HC_HINT_CTX = { mediciones: 'hc_hint_ctx_med', sala: 'hc_hint_ctx_sala', sistema: 'hc_hint_ctx_sis', riego: 'hc_hint_ctx_riego' };
 const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_4';
 const HC_TAB_BAR_COACH_KEY = 'hc_tab_bar_coach_dismiss_v2';
 const HC_WELCOME_THEME_PREVIEW_KEY = 'hc_welcome_theme_preview';
@@ -501,7 +501,10 @@ function dismissTabContextHint(which) {
   if (k) {
     try { localStorage.setItem(k, '1'); } catch (_) {}
   }
-  const id = which === 'mediciones' ? 'tabContextHintMediciones' : which === 'sistema' ? 'tabContextHintSistema' : which === 'riego' ? 'tabContextHintRiego' : null;
+  const id = which === 'mediciones' ? 'tabContextHintMediciones'
+    : which === 'sala' ? 'tabContextHintSala'
+    : which === 'sistema' ? 'tabContextHintSistema'
+    : which === 'riego' ? 'tabContextHintRiego' : null;
   const el = id ? document.getElementById(id) : null;
   if (el) el.classList.add('setup-hidden');
 }
@@ -509,6 +512,7 @@ function dismissTabContextHint(which) {
 function actualizarTabContextHints(tab) {
   const map = {
     mediciones: 'tabContextHintMediciones',
+    sala: 'tabContextHintSala',
     sistema: 'tabContextHintSistema',
     riego: 'tabContextHintRiego',
   };

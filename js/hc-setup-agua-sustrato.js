@@ -1650,10 +1650,13 @@ function initConfigUI() {
       } catch (_) {}
     }
   }
-  if (document.getElementById('tab-mediciones')?.classList.contains('active') && typeof updateRecargaBar === 'function') {
+  var salaOrMedirActive =
+    document.getElementById('tab-sala')?.classList.contains('active') ||
+    document.getElementById('tab-mediciones')?.classList.contains('active');
+  if (salaOrMedirActive && typeof updateRecargaBar === 'function') {
     updateRecargaBar();
   }
-  if (document.getElementById('tab-mediciones')?.classList.contains('active') && typeof actualizarResumenReposicionParcialUI === 'function') {
+  if (salaOrMedirActive && typeof actualizarResumenReposicionParcialUI === 'function') {
     actualizarResumenReposicionParcialUI();
   }
   if (typeof actualizarEstadoOperativaUI === 'function') {

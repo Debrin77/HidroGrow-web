@@ -525,41 +525,11 @@
   }
 
   function parseQuick() {
-    const raw = txt(el('wizQuick')?.value || '').trim();
+    var raw = txt(el('wizQuick')?.value || '').trim();
     if (!raw) return;
-    // Acepta: "EC 1350 pH 6.0 T 20 V 18" o "1350 6.0 20 18" (en orden EC pH T V)
-    const norm = raw
-      .replace(/µS\/cm/gi, ' ')
-      .replace(/[=;,]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    const grab = (re) => {
-      const m = norm.match(re);
-      return m ? numFromAny(m[1]) : '';
-    };
-
-    const ec = grab(/\b(?:ec|ecs|conductividad)\s*([0-9]+(?:[.,][0-9]+)?)\b/i);
-    const ph = grab(/\bph\s*([0-9]+(?:[.,][0-9]+)?)\b/i);
-    const temp = grab(/\b(?:t|temp|temperatura)\s*([0-9]+(?:[.,][0-9]+)?)\b/i);
-    const vol = grab(/\b(?:v|vol|volumen|litros|l)\s*([0-9]+(?:[.,][0-9]+)?)\b/i);
-
-    // Fallback: 4 números en orden
-    if (!ec && !ph && !temp && !vol) {
-      const nums = norm.match(/[0-9]+(?:[.,][0-9]+)?/g) || [];
-      if (nums[0]) setVal('wizEC', numFromAny(nums[0]));
-      if (nums[1]) setVal('wizPH', numFromAny(nums[1]));
-      if (nums[2]) setVal('wizTemp', numFromAny(nums[2]));
-      if (nums[3]) setVal('wizVol', numFromAny(nums[3]));
+    if (typeof hcApplyWizardMedQuick === 'function' && hcApplyWizardMedQuick(raw)) {
       renderInsights();
-      return;
     }
-
-    if (ec) setVal('wizEC', ec);
-    if (ph) setVal('wizPH', ph);
-    if (temp) setVal('wizTemp', temp);
-    if (vol) setVal('wizVol', vol);
-    renderInsights();
   }
 
   function badge(kind, label, value) {
