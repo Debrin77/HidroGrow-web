@@ -35,7 +35,7 @@ async function hcPostSheets(payload) {
     });
     return true;
   } catch (e) {
-    console.error('HidroCultivo Sheets:', e);
+    console.error('HidroGrow Sheets:', e);
     hcSheetsNotifyFailure();
     return false;
   }
@@ -44,18 +44,18 @@ async function hcPostSheets(payload) {
 const PIN = '2506';
 const AUTH_REMEMBER_MIN_KEY = 'hc_auth_remember_min';
 const AUTH_TS_KEY = 'hc_auth';
-const STORAGE_KEY = 'cultiva_v1';
-const APP_BUILD_VERSION = '2026-05-26-esc2-mirror';
-const APP_BUILD_VERSION_KEY = 'hc_app_build_version';
-const AUTO_RESTORE_POINT_KEY = 'hc_auto_restore_point_v1';
-const AUTO_RESTORE_POINT_TRANSITION_KEY = 'hc_auto_restore_transition_v1';
+const STORAGE_KEY = 'hidrogrow_v1';
+const APP_BUILD_VERSION = '2026-05-31-hidrogrow-bootstrap';
+const APP_BUILD_VERSION_KEY = 'hg_app_build_version';
+const AUTO_RESTORE_POINT_KEY = 'hg_auto_restore_point_v1';
+const AUTO_RESTORE_POINT_TRANSITION_KEY = 'hg_auto_restore_transition_v1';
 /** Tutorial contextual “Asignar cultivo” (1 = usuario pidió no volver a mostrar) */
-const TUTORIAL_ASIGNAR_LS = 'cultiva_tutorial_asignar_v1';
-const TUTORIAL_EDITAR_LS = 'cultiva_tutorial_editar_v1';
+const TUTORIAL_ASIGNAR_LS = 'hidrogrow_tutorial_asignar_v1';
+const TUTORIAL_EDITAR_LS = 'hidrogrow_tutorial_editar_v1';
 /** Bienvenida pestaña Torre (1 = ya no auto-mostrar al entrar en Torre) */
-const TUTORIAL_TORRE_TAB_LS = 'cultiva_tutorial_torre_pestana_v1';
+const TUTORIAL_TORRE_TAB_LS = 'hidrogrow_tutorial_torre_pestana_v1';
 /** Ocultar texto “desliza para girar” tras primera interacción con el esquema */
-const TORRE_SWIPE_HINT_LS = 'cultiva_torre_swipe_hint_v1';
+const TORRE_SWIPE_HINT_LS = 'hidrogrow_torre_swipe_hint_v1';
 
 // Torre: 5 niveles, 5 cestas cada uno
 // Niveles activos: 1, 3 y 5 (índice 0, 2, 4)

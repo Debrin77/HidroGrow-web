@@ -1,8 +1,8 @@
 /**
- * HidroCultivo — Service Worker ligero (PWA).
+ * HidroGrow — Service Worker ligero (PWA).
  * Precache: shell offline básico. APIs (Open-Meteo, etc.) siguen yendo a red.
  */
-const CACHE_NAME = 'hidrocultivo-shell-v51';
+const CACHE_NAME = 'hidrogrow-shell-v1';
 const PRECACHE_URLS = [
   './index.html',
   './manifest.json',
@@ -22,14 +22,14 @@ self.addEventListener('install', (event) => {
         Promise.all(
           PRECACHE_URLS.map((url) =>
             cache.add(url).catch((err) => {
-              console.warn('[HidroCultivo SW] precache omitido:', url, err);
+              console.warn('[HidroGrow SW] precache omitido:', url, err);
               return null;
             })
           )
         )
       )
       .then(() => self.skipWaiting())
-      .catch((err) => console.warn('[HidroCultivo SW] install', err))
+      .catch((err) => console.warn('[HidroGrow SW] install', err))
   );
 });
 

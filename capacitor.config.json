@@ -1,6 +1,6 @@
 {
-  "appId": "es.hidrocultivo.app",
-  "appName": "HidroCultivo",
+  "appId": "es.hidrogrow.app",
+  "appName": "HidroGrow",
   "webDir": "www",
   "server": {
     "androidScheme": "https"

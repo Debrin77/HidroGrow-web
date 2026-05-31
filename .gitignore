@@ -1,4 +1,5 @@
 node_modules/
+.idea/
 www/
 docs/deposito-rpi/*.zip
 docs/deposito-rpi/**/*_firmada.pdf

@@ -1,7 +1,7 @@
 {
-  "name": "HidroCultivo — Cultivo hidropónico",
-  "short_name": "HidroCultivo",
-  "description": "Cultivo hidropónico (torre vertical, NFT o DWC): EC, pH, riego, clima e instalaciones independientes.",
+  "name": "HidroGrow — Hidroponía en sala",
+  "short_name": "HidroGrow",
+  "description": "Hidroponía para autocultivo: torre, NFT, DWC, RDWC y SRF — EC, pH, riego, clima e instalaciones independientes.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
