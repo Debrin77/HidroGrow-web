@@ -34,7 +34,8 @@
 
   var HIDRO_LABELS = {
     difusor: { icon: '🫧', label: 'Aireador / difusor' },
-    bomba: { icon: '⚙️', label: 'Bomba recirculación' },
+    bomba_aire: { icon: '🫧', label: 'Bomba de aire' },
+    bomba_recirc: { icon: '⚙️', label: 'Bomba recirculación' },
     calentador: { icon: '🌡️', label: 'Calentador depósito' },
     timer: { icon: '⏱️', label: 'Temporizador' },
     medidorEC: { icon: '📈', label: 'Sonda EC/pH' },
@@ -275,7 +276,8 @@
       : '';
 
     host.innerHTML =
-      '<p class="hc-sala-layout-hint">Vista de solo lectura según el <strong>configurador</strong>. Para cambiar modelos, abre el asistente — no se edita aquí.</p>' +
+      '<p class="hc-sala-layout-hint">Vista de solo lectura según el <strong>configurador</strong>. ' +
+      'Para cambiar modelos, abre el asistente (editable hasta el primer llenado del depósito).</p>' +
       armarioHtml +
       '<div class="hc-sala-plano-wrap">' +
       renderPlanoSvg(cfg, inst) +

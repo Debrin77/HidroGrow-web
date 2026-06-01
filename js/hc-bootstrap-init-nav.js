@@ -124,6 +124,9 @@ function initApp() {
   updateTorreStats();
   updateDashboard();
   initConfigUI();
+  try {
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+  } catch (_) {}
   setInterval(updateDashboard, 300000);
 
   actualizarHeaderTorre();
@@ -410,10 +413,12 @@ function goTab(tab) {
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
     if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
+    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
   }
   if (tab === 'sala') {
     if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
     if (typeof salaSubTab === 'function') salaSubTab(window.salaSubActive || 'agua');
+    if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio') updateDashboard();
   if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
@@ -440,6 +445,9 @@ function goTab(tab) {
   if (tab === 'ayuda') {
     try {
       document.getElementById('tab-ayuda')?.scrollTo(0, 0);
+    } catch (_) {}
+    try {
+      if (typeof refreshAyudaInstalacionUi === 'function') refreshAyudaInstalacionUi();
     } catch (_) {}
   }
   if (tab === 'riego') {

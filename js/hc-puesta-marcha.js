@@ -469,10 +469,12 @@
   function renderPmChecklistItem(it, cfg, checks) {
     var auto = isAutoDone(it, cfg);
     var checked = auto || !!checks[it.id];
+    var bloqueada = montajeEdicionBloqueada();
     return (
       '<li class="hc-pm-item' +
       (it.optional ? ' hc-pm-item--opt' : '') +
       (checked ? ' hc-pm-item--checked' : '') +
+      (bloqueada ? ' hc-pm-item--locked' : '') +
       '">' +
       '<div class="hc-pm-item-row">' +
       '<label class="hc-pm-lbl">' +
@@ -480,7 +482,7 @@
       it.id +
       '"' +
       (checked ? ' checked' : '') +
-      (auto ? ' disabled' : '') +
+      (auto || bloqueada ? ' disabled' : '') +
       ' onchange="hcPuestaMarchaToggle(\'' +
       it.id +
       '\', this.checked)">' +
@@ -589,6 +591,49 @@
     return false;
   }
 
+  function montajeEdicionBloqueada() {
+    return typeof montajePuedeEditarse === 'function' && !montajePuedeEditarse();
+  }
+
+  function limpiarVerificacionMontaje(checks) {
+    if (checks && checks.completedAt) {
+      delete checks.completedAt;
+      return true;
+    }
+    return false;
+  }
+
+  function refreshPuestaMarchaModalFoot(cfg, checks) {
+    var foot = document.querySelector('#modalPuestaMarcha .hc-pm-foot');
+    if (!foot) return;
+    var bloqueada = montajeEdicionBloqueada();
+    var verificada = !!(checks && checks.completedAt);
+    var finishBtn = document.getElementById('hcPmBtnFinish');
+    var hintEl = document.getElementById('hcPmFootHint');
+    if (finishBtn) {
+      finishBtn.style.display = bloqueada || verificada ? 'none' : '';
+      finishBtn.disabled = !!bloqueada;
+    }
+    if (!hintEl) {
+      hintEl = document.createElement('p');
+      hintEl.id = 'hcPmFootHint';
+      hintEl.className = 'hc-pm-foot-hint';
+      foot.insertBefore(hintEl, foot.firstChild);
+    }
+    if (bloqueada) {
+      hintEl.innerHTML =
+        '🔒 Montaje en solo lectura: ya completaste el <strong>primer llenado del depósito</strong>. ' +
+        'Para cambios físicos importantes, planifica vaciado y recarga.';
+    } else if (verificada) {
+      hintEl.innerHTML =
+        '✓ Montaje verificado. Puedes <strong>desmarcar puntos</strong> o abrir guías para revisar ' +
+        'hasta el primer llenado del depósito (mezcla de nutrientes).';
+    } else {
+      hintEl.innerHTML =
+        'Al verificar, confirmas que el montaje funciona. Podrás modificarlo hasta el primer llenado del depósito.';
+    }
+  }
+
   function countProgress(checks, cfg, items) {
     items = items || buildItemsForConfig(cfg);
     var done = 0;
@@ -614,8 +659,16 @@
       .map(function (k) { return equipLabel(inst[k], k); })
       .join(', ');
 
+    var bloqueada = montajeEdicionBloqueada();
+    var ventanaTxt = bloqueada
+      ? 'Montaje cerrado tras el primer llenado del depósito.'
+      : 'Editable hasta el <strong>primer llenado del depósito</strong> (mezcla de nutrientes). Después queda en solo lectura.';
+
     host.innerHTML =
-      '<p class="hc-pm-lead">Revisa el montaje <strong>una vez</strong> por instalación. Pulsa <strong>📖 Guía</strong> en cada paso para ver cómo montarlo según tu catálogo. No sustituye al checklist de <strong>recarga</strong>.</p>' +
+      '<p class="hc-pm-lead">' + ventanaTxt + ' Pulsa <strong>📖 Guía</strong> en cada paso. No sustituye al checklist de <strong>recarga</strong>.</p>' +
+      (!bloqueada
+        ? '<p class="hc-pm-config-link"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento o sistema (configurador)</button></p>'
+        : '') +
       (equipList
         ? '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' + equipList + '</p>'
         : '<p class="hc-pm-equip-ref hc-pm-equip-ref--warn">Sin equipamiento en catálogo: completa el asistente (Espacio y equipamiento) o la pestaña <strong>Sala</strong>.</p>') +
@@ -627,6 +680,7 @@
       '<ul class="hc-pm-list">' +
       items.map(function (it) { return renderPmChecklistItem(it, cfg, checks); }).join('') +
       '</ul>';
+    refreshPuestaMarchaModalFoot(cfg, checks);
   }
 
   function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items) {
@@ -635,10 +689,20 @@
     var nEquip = Object.keys(inst).filter(function (k) {
       return inst[k] && (inst[k].marca || inst[k].id);
     }).length;
+    var bloqueada = montajeEdicionBloqueada();
+    var btnLabel = bloqueada
+      ? 'Ver montaje (solo lectura)'
+      : verificada
+        ? 'Revisar montaje'
+        : 'Abrir checklist de montaje';
     return (
-      '<p class="hc-pm-inline-lead">Revisa el montaje <strong>una vez</strong> por instalación' +
-      (nEquip ? ' (' + nEquip + ' componentes en catálogo)' : '') +
-      '. Cada paso tiene enlace <strong>Guía</strong>. No sustituye al checklist de recarga.</p>' +
+      '<p class="hc-pm-inline-lead">' +
+      (bloqueada
+        ? 'Montaje verificado y cerrado tras el primer llenado del depósito.'
+        : 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>' +
+          (nEquip ? ' (' + nEquip + ' componentes en catálogo)' : '') +
+          '. Cada paso tiene enlace <strong>Guía</strong>.') +
+      '</p>' +
       '<p class="hc-pm-prog">' +
       (verificada ? '✓ Puesta en marcha verificada · ' : '') +
       prog.done +
@@ -667,9 +731,12 @@
         })
         .join('') +
       '</ul>' +
+      (!bloqueada
+        ? '<p class="hc-pm-inline-config"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento (configurador)</button></p>'
+        : '') +
       '<p class="hc-pm-inline-actions">' +
       '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
-      (verificada ? '✓ Puesta en marcha verificada' : 'Abrir checklist de montaje') +
+      btnLabel +
       '</button></p>'
     );
   }
@@ -693,41 +760,75 @@
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
     var verificada = !!checks.completedAt;
-    var btnTxt = verificada ? '✓ Puesta en marcha verificada' : 'Verificar puesta en marcha';
+    var bloqueada = montajeEdicionBloqueada();
+    var btnTxt = bloqueada
+      ? 'Ver montaje'
+      : verificada
+        ? 'Revisar montaje'
+        : 'Verificar puesta en marcha';
     document.querySelectorAll('.hc-btn-puesta-marcha').forEach(function (btn) {
       btn.textContent = btnTxt;
-      btn.classList.toggle('hc-btn-puesta-marcha--ok', verificada);
+      btn.classList.toggle('hc-btn-puesta-marcha--ok', verificada && !bloqueada);
       btn.setAttribute('aria-pressed', verificada ? 'true' : 'false');
     });
     var status = document.getElementById('medirPuestaMarchaStatus');
     if (status) {
-      status.textContent = verificada
-        ? 'Puesta en marcha verificada para esta instalación (' + prog.total + '/' + prog.total + ' puntos).'
-        : prog.done + '/' + prog.total + ' puntos esenciales · revisa montaje según equipamiento en Sala.';
+      if (bloqueada) {
+        status.textContent = 'Montaje verificado · cerrado tras primer llenado del depósito.';
+      } else if (verificada) {
+        status.textContent =
+          'Verificado · editable hasta el primer llenado (' + prog.total + '/' + prog.total + ' puntos).';
+      } else {
+        status.textContent = prog.done + '/' + prog.total + ' puntos esenciales · revisa montaje en Sala.';
+      }
     }
     var kicker = document.getElementById('medirPuestaMarchaKicker');
     if (kicker) {
-      kicker.textContent = verificada ? '✓ Puesta en marcha verificada' : 'Montaje de la instalación activa';
+      if (bloqueada) {
+        kicker.textContent = '✓ Montaje cerrado';
+      } else if (verificada) {
+        kicker.textContent = '✓ Verificado · editable hasta depósito';
+      } else {
+        kicker.textContent = 'Montaje de la instalación activa';
+      }
     }
     var card = document.getElementById('medirPuestaMarchaCard');
     if (card) card.classList.toggle('medir-pm-card--ok', verificada);
     var resumen = document.getElementById('sistemaMontajeChecksResumen');
     if (resumen) {
-      resumen.textContent = verificada
-        ? '✓ Verificada'
-        : prog.done + '/' + prog.total + ' esenciales';
+      if (bloqueada) {
+        resumen.textContent = '✓ Cerrado';
+      } else if (verificada) {
+        resumen.textContent = '✓ Editable';
+      } else {
+        resumen.textContent = prog.done + '/' + prog.total + ' esenciales';
+      }
     }
     var inicioSub = document.getElementById('hcMontajeInicioSub');
     if (inicioSub) {
-      inicioSub.textContent = verificada
-        ? '✓ Verificada · ' + prog.total + '/' + prog.total
-        : prog.done + '/' + prog.total + ' esenciales';
+      if (bloqueada) {
+        inicioSub.textContent = '✓ Cerrado tras depósito';
+      } else if (verificada) {
+        inicioSub.textContent = '✓ Editable hasta depósito';
+      } else {
+        inicioSub.textContent = prog.done + '/' + prog.total + ' esenciales';
+      }
     }
     var modalTitle = document.getElementById('puestaMarchaTitle');
     if (modalTitle) {
-      modalTitle.textContent = verificada ? '✓ Puesta en marcha verificada' : 'Puesta en marcha';
+      if (bloqueada) {
+        modalTitle.textContent = 'Montaje (solo lectura)';
+      } else if (verificada) {
+        modalTitle.textContent = 'Revisar montaje';
+      } else {
+        modalTitle.textContent = 'Puesta en marcha';
+      }
     }
     renderPuestaMarchaInlinePreview();
+    try {
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+      if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    } catch (_) {}
   }
 
   function openPmGuia(key) {
@@ -762,6 +863,10 @@
 
   function pmGuiaMarkDone() {
     if (!_pmGuiaKeyOpen) return;
+    if (montajeEdicionBloqueada()) {
+      if (typeof showToast === 'function') showToast('Montaje cerrado tras el primer llenado.', true);
+      return;
+    }
     toggleItem(_pmGuiaKeyOpen, true);
     closePmGuia();
     if (typeof showToast === 'function') showToast('Paso marcado en el checklist.');
@@ -777,6 +882,7 @@
     }
     renderPuestaMarchaBody();
     modal.classList.add('open');
+    refreshPuestaMarchaModalFoot(getCfg(), getChecks(getCfg()));
     try {
       modal.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } catch (_) {}
@@ -789,16 +895,61 @@
   }
 
   function toggleItem(id, checked) {
+    if (montajeEdicionBloqueada()) {
+      if (typeof showToast === 'function') {
+        showToast('Montaje cerrado: ya completaste el primer llenado del depósito.', true);
+      }
+      return;
+    }
     var cfg = getCfg();
     var checks = Object.assign({}, getChecks(cfg));
+    var items = buildItemsForConfig(cfg);
+    var item = items.find(function (it) { return it.id === id; });
+    if (!checked && item && !item.optional && checks.completedAt) {
+      limpiarVerificacionMontaje(checks);
+      if (typeof showToast === 'function') {
+        showToast('Verificación anulada: revisa el montaje y confirma de nuevo cuando esté listo.');
+      }
+      try {
+        if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+        if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+      } catch (_) {}
+    }
     checks[id] = !!checked;
     if (checked) checks[id + 'At'] = new Date().toISOString();
+    else delete checks[id + 'At'];
     saveChecks(checks);
     renderPuestaMarchaBody();
     refreshPuestaMarchaUi();
   }
 
+  function hcAbrirConfiguradorDesdeMontaje() {
+    if (montajeEdicionBloqueada()) {
+      if (typeof showToast === 'function') {
+        showToast('Configurador bloqueado tras el primer llenado del depósito.', true);
+      }
+      return;
+    }
+    if (
+      !confirm(
+        '¿Abrir el configurador?\n\nPodrás cambiar equipamiento y parámetros del sistema. ' +
+          'Revisa el checklist de montaje después si cambias algo físico.\n\n' +
+          'Disponible hasta completar el primer llenado del depósito.'
+      )
+    ) {
+      return;
+    }
+    try {
+      if (typeof hcClosePuestaMarchaChecklist === 'function') hcClosePuestaMarchaChecklist();
+    } catch (_) {}
+    if (typeof abrirSetup === 'function') abrirSetup();
+  }
+
   function finishPuestaMarcha() {
+    if (montajeEdicionBloqueada()) {
+      if (typeof showToast === 'function') showToast('Montaje ya cerrado tras el primer llenado.', true);
+      return;
+    }
     var cfg = getCfg();
     var checks = getChecks(cfg);
     var items = buildItemsForConfig(cfg);
@@ -809,11 +960,27 @@
       }
       return;
     }
+    if (
+      !confirm(
+        '¿Confirmas que el montaje funciona correctamente?\n\n' +
+          'Podrás revisarlo y modificarlo hasta completar el primer llenado del depósito (mezcla de nutrientes).'
+      )
+    ) {
+      return;
+    }
     checks.completedAt = new Date().toISOString();
     saveChecks(checks);
     closePuestaMarchaChecklist();
     refreshPuestaMarchaUi();
-    if (typeof showToast === 'function') showToast('✓ Puesta en marcha verificada para esta instalación.');
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    if (typeof showToast === 'function') {
+      showToast(
+        '✓ Montaje verificado. Siguiente: cultivos en el esquema y luego primer llenado del depósito.',
+        false,
+        { durationMs: 5600 }
+      );
+    }
   }
 
   function maybeOfferAfterSetup() {
@@ -840,4 +1007,6 @@
   global.hcMaybeOfferPuestaMarcha = maybeOfferAfterSetup;
   global.hcRefreshPuestaMarchaUi = refreshPuestaMarchaUi;
   global.hcBuildPuestaMarchaItems = buildItemsForConfig;
+  global.hcAbrirConfiguradorDesdeMontaje = hcAbrirConfiguradorDesdeMontaje;
+  global.montajeEdicionBloqueada = montajeEdicionBloqueada;
 })(typeof window !== 'undefined' ? window : globalThis);

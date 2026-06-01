@@ -540,19 +540,27 @@ function actualizarQuickActionsNoviceMode() {
 // Tras el asistente: Sistema (cultivos) → oferta de checklist
 // ══════════════════════════════════════════════════
 
-/** El rail va en el flujo del documento (debajo del título), no fijo abajo, para no tapar el esquema / modales de cesta. */
-function hcMountPostSetupChecklistRailInTabSistema() {
+/** El rail va debajo del título de la pestaña activa (Sala, Cultivo o Inicio). */
+function hcMountPostSetupChecklistRailInActiveTab() {
   const rail = document.getElementById('hcPostSetupChecklistRail');
-  const tab = document.getElementById('tab-sistema');
-  if (!rail || !tab) return;
+  if (!rail) return;
+  const tabId =
+    typeof currentTab !== 'undefined' && (currentTab === 'sala' || currentTab === 'sistema' || currentTab === 'inicio')
+      ? 'tab-' + currentTab
+      : 'tab-sistema';
+  const tab = document.getElementById(tabId);
+  if (!tab) return;
   const h1 = tab.querySelector('h1.section-title');
-  if (h1) {
-    if (rail.previousElementSibling !== h1) {
-      h1.insertAdjacentElement('afterend', rail);
-    }
-    return;
+  const anchor = h1 || tab.firstElementChild;
+  if (anchor && rail.previousElementSibling !== anchor) {
+    anchor.insertAdjacentElement('afterend', rail);
+  } else if (rail.parentNode !== tab) {
+    tab.insertBefore(rail, tab.firstChild);
   }
-  if (rail.parentNode !== tab) tab.insertBefore(rail, tab.firstChild);
+}
+
+function hcMountPostSetupChecklistRailInTabSistema() {
+  hcMountPostSetupChecklistRailInActiveTab();
 }
 
 function ensurePostSetupChecklistRail() {
@@ -565,25 +573,26 @@ function ensurePostSetupChecklistRail() {
   el.id = 'hcPostSetupChecklistRail';
   el.className = 'hc-post-setup-rail setup-hidden';
   el.setAttribute('role', 'region');
-  el.setAttribute('aria-label', 'Siguiente paso: cultivos y checklist');
+  el.setAttribute('aria-label', 'Siguiente paso de instalación');
   el.innerHTML =
     '<div class="hc-post-setup-rail-inner">' +
-      '<div class="hc-post-setup-rail-track" aria-hidden="true">' +
-        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--done">1 · Instalación</span>' +
+      '<div class="hc-post-setup-rail-track" id="hcPostSetupRailTrack" aria-hidden="true">' +
+        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--done" data-step="config">1 · Instalación</span>' +
         '<span class="hc-post-setup-rail-arrow" aria-hidden="true">→</span>' +
-        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--active">2 · Cultivo</span>' +
+        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--next" data-step="montaje">2 · Montaje</span>' +
         '<span class="hc-post-setup-rail-arrow" aria-hidden="true">→</span>' +
-        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--next">3 · Depósito</span>' +
+        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--next" data-step="cultivo">3 · Cultivo</span>' +
+        '<span class="hc-post-setup-rail-arrow" aria-hidden="true">→</span>' +
+        '<span class="hc-post-setup-rail-chip hc-post-setup-rail-chip--next" data-step="deposito">4 · Depósito</span>' +
       '</div>' +
-      '<div class="hc-post-setup-rail-title">Cultivos en el esquema</div>' +
+      '<div class="hc-post-setup-rail-title" id="hcPostSetupRailTitle">Montaje de sala</div>' +
       '<p class="hc-post-setup-rail-text" id="hcPostSetupRailText">' +
-        'Desplázate al <strong>esquema más abajo</strong> y completa cada cesta o hueco: variedad, <strong>fecha de trasplante al hidro</strong> y procedencia. ' +
-        'Cuando quieras mezclar el depósito, pulsa <strong>Continuar al checklist</strong>.' +
+        'En <strong>Sala</strong>, revisa el equipamiento y completa el checklist de <strong>montaje</strong> hasta verificar la puesta en marcha.' +
       '</p>' +
       '<p class="hc-post-setup-rail-status setup-hidden" id="hcPostSetupRailStatus" role="status"></p>' +
       '<div class="hc-post-setup-rail-actions">' +
         '<button type="button" class="btn btn-primary hc-post-setup-rail-btn-main" id="hcPostSetupBtnChecklist">' +
-          'Continuar al checklist' +
+          'Ir a montaje' +
         '</button>' +
         '<button type="button" class="btn btn-ghost hc-post-setup-rail-btn-later" id="hcPostSetupBtnLater">' +
           'Más tarde' +
@@ -602,49 +611,125 @@ function ensurePostSetupChecklistRail() {
   hcMountPostSetupChecklistRailInTabSistema();
   const b1 = document.getElementById('hcPostSetupBtnChecklist');
   const b2 = document.getElementById('hcPostSetupBtnLater');
-  if (b1) b1.addEventListener('click', () => hcAccionChecklistPostSetupDesdeSistema());
+  if (b1) b1.addEventListener('click', () => hcAccionInstalacionGuidadaDesdeRail());
   if (b2) b2.addEventListener('click', () => hcPostSetupChecklistMasTarde());
   return el;
 }
 
 function actualizarPostSetupChecklistRail() {
   const el = document.getElementById('hcPostSetupChecklistRail');
-  if (!state || !state.hcPostSetupChecklistPendiente) {
+  const guidada =
+    typeof instalacionGuidadaActiva === 'function' ? instalacionGuidadaActiva() : !!(state && state.hcPostSetupChecklistPendiente);
+  if (!state || !guidada) {
     if (el) el.classList.add('setup-hidden');
     return;
   }
-  if (typeof currentTab !== 'undefined' && currentTab !== 'sistema') {
+  const lc = typeof getInstalacionLifecycle === 'function' ? getInstalacionLifecycle() : null;
+  if (lc && lc.operativaDiaria) {
+    if (el) el.classList.add('setup-hidden');
+    return;
+  }
+  const tabOk =
+    typeof currentTab !== 'undefined' &&
+    (currentTab === 'sistema' || currentTab === 'sala' || currentTab === 'inicio');
+  if (!tabOk) {
     if (el) el.classList.add('setup-hidden');
     return;
   }
   ensurePostSetupChecklistRail();
-  hcMountPostSetupChecklistRailInTabSistema();
+  hcMountPostSetupChecklistRailInActiveTab();
   const rail = document.getElementById('hcPostSetupChecklistRail');
   if (!rail) return;
   rail.classList.remove('setup-hidden');
+
+  const fase = lc ? lc.fase : 'montaje_pendiente';
+  const track = document.getElementById('hcPostSetupRailTrack');
+  if (track) {
+    const chips = track.querySelectorAll('.hc-post-setup-rail-chip');
+    chips.forEach((chip) => {
+      const step = chip.getAttribute('data-step');
+      chip.classList.remove('hc-post-setup-rail-chip--done', 'hc-post-setup-rail-chip--active', 'hc-post-setup-rail-chip--next');
+      const order = ['config', 'montaje', 'cultivo', 'deposito'];
+      const idx = order.indexOf(step);
+      const paso = lc && lc.pasos ? lc.pasos[idx] : null;
+      if (paso && paso.done) chip.classList.add('hc-post-setup-rail-chip--done');
+      else if (paso && paso.current) chip.classList.add('hc-post-setup-rail-chip--active');
+      else chip.classList.add('hc-post-setup-rail-chip--next');
+    });
+  }
+
+  const titleEl = document.getElementById('hcPostSetupRailTitle');
+  const textEl = document.getElementById('hcPostSetupRailText');
   const st = document.getElementById('hcPostSetupRailStatus');
-  const bloqueado =
-    typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
-    torreBloqueaChecklistPorFaltaDatosCultivo();
-  const sinVariedad =
-    typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
-  const bloqueadoUi = !!bloqueado || sinVariedad;
+  const btn = document.getElementById('hcPostSetupBtnChecklist');
+
+  let title = 'Montaje de sala';
+  let text =
+    'En <strong>Sala</strong>, revisa el equipamiento y completa el checklist de <strong>montaje</strong> hasta verificar la puesta en marcha.';
+  let btnLabel = 'Ir a montaje';
+  let statusTxt = '';
+  let btnDisabled = false;
+
+  if (fase === 'cultivo_pendiente') {
+    title = 'Cultivo en el esquema';
+    text =
+      'En <strong>Cultivo e instalación</strong>, asigna <strong>variedad</strong> y <strong>fecha de trasplante al hidro</strong> en cada cesta con planta.';
+    btnLabel = 'Asignar cultivos';
+    const sinVariedad =
+      typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
+    const bloqueado =
+      typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
+      torreBloqueaChecklistPorFaltaDatosCultivo();
+    if (sinVariedad) {
+      statusTxt = 'Elige cultivo arriba y tócalo en cada cesta del esquema.';
+    } else if (bloqueado) {
+      statusTxt = 'Revisa fechas u origen en las cestas con cultivo.';
+    }
+  } else if (fase === 'deposito_pendiente') {
+    title = 'Checklist del depósito (nutrientes)';
+    text =
+      'Montaje y cultivo listos. Abre el <strong>checklist del depósito</strong> para el primer llenado con dosis guiadas.';
+    btnLabel = 'Checklist depósito';
+    const bloqueado =
+      typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
+      torreBloqueaChecklistPorFaltaDatosCultivo();
+    const sinVariedad =
+      typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
+    btnDisabled = !!(bloqueado || sinVariedad);
+    if (btnDisabled) {
+      statusTxt = sinVariedad
+        ? 'Falta al menos un cultivo en el esquema.'
+        : 'Completa fechas de trasplante antes del checklist.';
+    }
+  } else if (fase === 'montaje_pendiente') {
+    const cfg = state.configTorre || {};
+    const checks = cfg.puestaMarchaChecks || {};
+    if (checks.completedAt) {
+      statusTxt = '';
+    } else if (typeof hcBuildPuestaMarchaItems === 'function') {
+      try {
+        const items = hcBuildPuestaMarchaItems(cfg);
+        const done = items.filter((it) => checks[it.id]).length;
+        statusTxt = done > 0 ? 'Montaje: ' + done + '/' + items.length + ' puntos marcados.' : '';
+      } catch (_) {}
+    }
+  }
+
+  if (titleEl) titleEl.textContent = title;
+  if (textEl) textEl.innerHTML = text;
   if (st) {
-    if (bloqueadoUi) {
-      const sinNinguna = sinVariedad;
-      st.textContent = sinNinguna
-        ? 'Elige cultivo arriba y tócalo en cada cesta del esquema (o selecciona varias y «Aplicar a selección»). Luego «Finalizar asignación».'
-        : 'Revisa las cestas con cultivo: falta fecha u origen si usas EC automático. Cuando esté listo, «Finalizar asignación» o «Continuar al checklist».';
+    if (statusTxt) {
+      st.textContent = statusTxt;
       st.classList.remove('setup-hidden');
     } else {
       st.textContent = '';
       st.classList.add('setup-hidden');
     }
   }
-  const btn = document.getElementById('hcPostSetupBtnChecklist');
   if (btn) {
-    btn.disabled = !!bloqueadoUi;
-    btn.setAttribute('aria-disabled', bloqueadoUi ? 'true' : 'false');
+    btn.textContent = btnLabel;
+    btn.disabled = !!btnDisabled;
+    btn.setAttribute('aria-disabled', btnDisabled ? 'true' : 'false');
   }
 }
 
@@ -679,10 +764,14 @@ function hcNotificarCambioCultivoSistema() {
     } catch (_) {}
     const transicion = listo && !prevListo;
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (transicion && typeof showToast === 'function') {
-      showToast(
-        'Cultivos listos: pulsa «Finalizar asignación» o «Continuar al checklist» cuando quieras mezclar el depósito.'
-      );
+      const lc = typeof getInstalacionLifecycle === 'function' ? getInstalacionLifecycle() : null;
+      if (lc && lc.fase === 'deposito_pendiente') {
+        showToast('Cultivos listos: abre el checklist del depósito cuando quieras mezclar nutrientes.');
+      } else {
+        showToast('Cultivos listos en el esquema. Sigue con el checklist del depósito cuando toque.');
+      }
     }
   } catch (_) {}
 }
@@ -751,16 +840,40 @@ function hcPostSetupChecklistMasTarde() {
     delete window._hcChecklistGuidedFlow;
   } catch (_) {}
   try {
+    state.hcInstalacionGuidadaDismissed = true;
     delete state.hcPostSetupChecklistPendiente;
     if (typeof saveState === 'function') saveState();
   } catch (_) {}
   actualizarPostSetupChecklistRail();
+  if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
   if (typeof showToast === 'function') {
-    showToast('Cuando quieras: Inicio → recarga o Historial → checklist');
+    showToast('Instalación en Inicio: sigue el progreso cuando quieras.');
   }
 }
 
+function hcAccionInstalacionGuidadaDesdeRail() {
+  const lc = typeof getInstalacionLifecycle === 'function' ? getInstalacionLifecycle() : null;
+  const fase = lc ? lc.fase : 'montaje_pendiente';
+  if (fase === 'montaje_pendiente') {
+    if (typeof hcIrMontajeSala === 'function') hcIrMontajeSala();
+    return;
+  }
+  if (fase === 'cultivo_pendiente') {
+    if (typeof hcIrCultivoMatriz === 'function') hcIrCultivoMatriz(true);
+    return;
+  }
+  if (fase === 'deposito_pendiente') {
+    hcAccionChecklistPostSetupDesdeSistema();
+    return;
+  }
+  if (typeof hcIrMontajeSala === 'function') hcIrMontajeSala();
+}
+
 function hcAccionChecklistPostSetupDesdeSistema() {
+  if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({ desdePostSetupRail: true })) {
+    actualizarPostSetupChecklistRail();
+    return;
+  }
   if (typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada()) {
     if (typeof showToast === 'function') {
       showToast('Indica al menos un cultivo en el esquema antes del checklist.', true);
@@ -798,6 +911,10 @@ try {
 } catch (_) {}
 
 function iniciarFlujoSistemaAntesChecklistPostSetup() {
+  if (typeof iniciarFlujoInstalacionPostSetup === 'function') {
+    iniciarFlujoInstalacionPostSetup();
+    return;
+  }
   try {
     if (typeof goTab === 'function') goTab('sistema');
   } catch (_) {}

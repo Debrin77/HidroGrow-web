@@ -1,0 +1,451 @@
+/**
+ * Estado de instalación: configurar → montaje → cultivo → primer llenado → operativa diaria.
+ * Gates UX y hub en Inicio.
+ */
+(function (global) {
+  'use strict';
+
+  var PASOS = [
+    { id: 'config', label: 'Configurar', chip: '1 · Instalación' },
+    { id: 'montaje', label: 'Montaje de sala', chip: '2 · Montaje' },
+    { id: 'cultivo', label: 'Cultivo en matriz', chip: '3 · Cultivo' },
+    { id: 'deposito', label: 'Primer llenado', chip: '4 · Depósito' },
+  ];
+
+  function cfgActiva() {
+    return (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  }
+
+  function instalacionEstaConfigurada(cfg) {
+    if (!cfg || typeof cfg !== 'object') return false;
+    if (cfg.checklistInstalacionConfirmada === true) return true;
+    if (
+      typeof checklistInstalacionCompletaParaRecarga === 'function' &&
+      checklistInstalacionCompletaParaRecarga()
+    ) {
+      return true;
+    }
+    return !!(cfg.nutriente && cfg.tipoInstalacion);
+  }
+
+  function montajeEstaVerificado(cfg) {
+    return !!(cfg && cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
+  }
+
+  function cultivoEstaAsignado() {
+    if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) {
+      return false;
+    }
+    if (
+      typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
+      torreBloqueaChecklistPorFaltaDatosCultivo()
+    ) {
+      return false;
+    }
+    return true;
+  }
+
+  function depositoPrimerLlenadoOk(cfg, st) {
+    cfg = cfg || cfgActiva();
+    st = st || (typeof state !== 'undefined' ? state : {});
+    if (cfg && cfg.instalacionPrimerLlenadoAt) return true;
+    if (st && st.ultimaRecarga) return true;
+    if (st && Array.isArray(st.recargasLocal) && st.recargasLocal.length > 0) return true;
+    if (st && Array.isArray(st.registro) && st.registro.some(function (r) { return r && r.tipo === 'recarga'; })) {
+      return true;
+    }
+    return false;
+  }
+
+  function instalacionGuidadaActiva() {
+    if (typeof state === 'undefined' || !state) return false;
+    if (state.hcInstalacionGuidadaDismissed) return false;
+    if (state.hcPostSetupChecklistPendiente) return true;
+    if (state.hcInstalacionGuidadaActiva) return true;
+    var lc = getInstalacionLifecycle();
+    return lc.fase !== 'operativa' && lc.fase !== 'sin_config' && !lc.legacyOperativa;
+  }
+
+  function getInstalacionLifecycle(cfgOpt, stateOpt) {
+    var cfg = cfgOpt || cfgActiva();
+    var st = stateOpt || (typeof state !== 'undefined' ? state : {});
+    var legacy = depositoPrimerLlenadoOk(cfg, st);
+    var pasos = PASOS.map(function (p) {
+      return { id: p.id, label: p.label, chip: p.chip, done: false, current: false, blocked: false };
+    });
+    var fase = 'sin_config';
+    var pasoIdx = 0;
+
+    if (!instalacionEstaConfigurada(cfg)) {
+      fase = 'sin_config';
+      pasos[0].current = true;
+    } else if (legacy) {
+      fase = 'operativa';
+      pasos.forEach(function (p) { p.done = true; });
+      pasoIdx = 4;
+    } else {
+      pasos[0].done = true;
+      if (!montajeEstaVerificado(cfg)) {
+        fase = 'montaje_pendiente';
+        pasoIdx = 1;
+        pasos[1].current = true;
+        pasos[2].blocked = true;
+        pasos[3].blocked = true;
+      } else {
+        pasos[1].done = true;
+        if (!cultivoEstaAsignado()) {
+          fase = 'cultivo_pendiente';
+          pasoIdx = 2;
+          pasos[2].current = true;
+          pasos[3].blocked = true;
+        } else {
+          pasos[2].done = true;
+          if (!depositoPrimerLlenadoOk(cfg, st)) {
+            fase = 'deposito_pendiente';
+            pasoIdx = 3;
+            pasos[3].current = true;
+          } else {
+            fase = 'operativa';
+            pasos[3].done = true;
+            pasoIdx = 4;
+          }
+        }
+      }
+    }
+
+    var doneCount = pasos.filter(function (p) { return p.done; }).length;
+    var porcentaje = legacy ? 100 : Math.round((doneCount / 4) * 100);
+
+    return {
+      fase: fase,
+      pasos: pasos,
+      pasoActual: pasoIdx,
+      porcentaje: porcentaje,
+      operativaDiaria: fase === 'operativa' || legacy,
+      legacyOperativa: legacy,
+      bloqueaChecklistDeposito: !legacy && fase !== 'operativa' && fase !== 'deposito_pendiente'
+        ? true
+        : !legacy && fase === 'deposito_pendiente' && !montajeEstaVerificado(cfg),
+      esPrimeraInstalacion: !legacy,
+      siguientePaso: getSiguientePaso(fase),
+    };
+  }
+
+  function getSiguientePaso(fase) {
+    switch (fase) {
+      case 'sin_config':
+        return { label: 'Configurar instalación', action: 'abrirSetup' };
+      case 'montaje_pendiente':
+        return { label: 'Montaje de sala', action: 'irMontaje' };
+      case 'cultivo_pendiente':
+        return { label: 'Asignar cultivos en el esquema', action: 'irCultivo' };
+      case 'deposito_pendiente':
+        return { label: 'Checklist del depósito (nutrientes)', action: 'abrirChecklist' };
+      default:
+        return { label: 'Rutina del día — Medir', action: 'irMedir' };
+    }
+  }
+
+  function esc(t) {
+    return String(t || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function mensajeBloqueoChecklistDeposito(lc) {
+    lc = lc || getInstalacionLifecycle();
+    if (!lc.esPrimeraInstalacion || lc.operativaDiaria) return null;
+    var cfg = cfgActiva();
+    if (!montajeEstaVerificado(cfg)) {
+      return {
+        titulo: 'Primero: montaje de sala',
+        texto:
+          'Verifica el <strong>montaje de sala</strong> (equipamiento instalado y puesta en marcha) ' +
+          'antes del <strong>checklist del depósito</strong> (nutrientes).',
+        cta: 'Ir a montaje de sala',
+        action: 'irMontaje',
+      };
+    }
+    if (!cultivoEstaAsignado()) {
+      var sinVar =
+        typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
+      return {
+        titulo: sinVar ? 'Checklist: primero define el cultivo' : 'Checklist: fechas de trasplante',
+        texto: sinVar
+          ? 'Indica <strong>variedad</strong> en cada cesta con planta antes del primer llenado del depósito.'
+          : 'Completa la <strong>fecha de trasplante al hidro</strong> en las cestas con cultivo.',
+        cta: 'Ir a Cultivo e instalación',
+        action: 'irCultivo',
+      };
+    }
+    return null;
+  }
+
+  function mostrarOverlayBloqueoDeposito(msg, opts) {
+    opts = opts || {};
+    if (!msg) return;
+    var prev = document.getElementById('hcInstLifecycleBloqueoOverlay');
+    if (prev) prev.remove();
+    var o = document.createElement('div');
+    o.id = 'hcInstLifecycleBloqueoOverlay';
+    o.className = 'checklist-pregunta-overlay';
+    o.setAttribute('role', 'dialog');
+    o.setAttribute('aria-modal', 'true');
+    o.setAttribute('aria-label', msg.titulo);
+    var foot = opts.desdePostSetupRail
+      ? '<p class="checklist-bloqueo-foot">Cierra este aviso y sigue el orden del panel de instalación.</p>'
+      : '';
+    o.innerHTML =
+      '<div class="checklist-pregunta-sheet">' +
+      '<div class="checklist-pregunta-handle"></div>' +
+      '<div class="checklist-pregunta-head">' +
+      '<div class="checklist-pregunta-emoji">📋</div>' +
+      '<div><div class="checklist-pregunta-title">' + esc(msg.titulo) + '</div></div></div>' +
+      '<p class="checklist-pregunta-nota-pasos">' + msg.texto + '</p>' + foot +
+      '<div class="checklist-bloqueo-actions">' +
+      '<button type="button" id="hcInstBloqueoCta" class="checklist-pregunta-btn-main">' + esc(msg.cta) + '</button>' +
+      '</div>' +
+      '<button type="button" id="hcInstBloqueoCerrar" class="checklist-pregunta-btn-later">Cerrar</button>' +
+      '</div>';
+    document.body.appendChild(o);
+    if (typeof a11yDialogOpened === 'function') a11yDialogOpened(o);
+    var cerrar = function () {
+      try { if (typeof a11yDialogClosed === 'function') a11yDialogClosed(o); } catch (_) {}
+      o.remove();
+    };
+    document.getElementById('hcInstBloqueoCerrar').addEventListener('click', cerrar);
+    document.getElementById('hcInstBloqueoCta').addEventListener('click', function () {
+      cerrar();
+      hcEjecutarAccionInstalacion(msg.action);
+    });
+  }
+
+  function hcGateChecklistDeposito(opts) {
+    opts = opts || {};
+    var lc = getInstalacionLifecycle();
+    if (!lc.esPrimeraInstalacion || lc.operativaDiaria) return true;
+    var msg = mensajeBloqueoChecklistDeposito(lc);
+    if (!msg) return true;
+    if (opts.desdePostSetupRail && msg.action === 'irCultivo' && typeof mostrarChecklistBloqueadoCultivoSistema === 'function') {
+      mostrarChecklistBloqueadoCultivoSistema({ desdeWizard: true, desdePostSetupRail: true });
+      return false;
+    }
+    mostrarOverlayBloqueoDeposito(msg, opts);
+    return false;
+  }
+
+  function hcIrMontajeSala() {
+    try {
+      if (typeof goTabSala === 'function') goTabSala('agua');
+      else if (typeof goTab === 'function') goTab('sala');
+    } catch (_) {}
+    setTimeout(function () {
+      var det = document.getElementById('sistemaMontajeChecksDetails');
+      if (det) det.open = true;
+      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+      if (det && typeof det.scrollIntoView === 'function') {
+        det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 180);
+  }
+
+  function hcIrCultivoMatriz(desdePostSetup) {
+    try {
+      if (typeof goTab === 'function') goTab('sistema');
+    } catch (_) {}
+    setTimeout(function () {
+      try {
+        if (typeof setTorreInteraccionModo === 'function') {
+          setTorreInteraccionModo('asignar', { skipTutorial: true, desdePostSetup: !!desdePostSetup });
+        }
+      } catch (_) {}
+      try {
+        if (typeof hcPreseleccionarVariedadAssignPostSetup === 'function') hcPreseleccionarVariedadAssignPostSetup();
+      } catch (_) {}
+      try {
+        if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+      } catch (_) {}
+      var torreWrap = document.querySelector('#tab-sistema .torre-container');
+      if (torreWrap && typeof torreWrap.scrollIntoView === 'function') {
+        torreWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 120);
+  }
+
+  function hcIrRutinaDia() {
+    if (typeof hcIrRutinaDiaOperativa === 'function') {
+      hcIrRutinaDiaOperativa();
+      return;
+    }
+    try {
+      if (typeof goTab === 'function') goTab('mediciones');
+    } catch (_) {}
+  }
+
+  function hcEjecutarAccionInstalacion(action) {
+    switch (action) {
+      case 'abrirSetup':
+        if (typeof abrirSetup === 'function') abrirSetup();
+        break;
+      case 'irMontaje':
+        hcIrMontajeSala();
+        break;
+      case 'irCultivo':
+        hcIrCultivoMatriz(true);
+        break;
+      case 'abrirChecklist':
+        if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) return;
+        if (typeof abrirChecklist === 'function') abrirChecklist(false, { saltarPreguntaRuta: false });
+        break;
+      case 'irMedir':
+        hcIrRutinaDia();
+        break;
+      default:
+        break;
+    }
+  }
+
+  function marcarDepositoPrimerLlenadoOk() {
+    if (typeof state === 'undefined' || !state) return;
+    if (!state.configTorre) state.configTorre = {};
+    if (!state.configTorre.instalacionPrimerLlenadoAt) {
+      state.configTorre.instalacionPrimerLlenadoAt = new Date().toISOString();
+    }
+    try {
+      delete state.hcPostSetupChecklistPendiente;
+      delete state.hcInstalacionGuidadaActiva;
+    } catch (_) {}
+    try {
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
+    refreshInstalacionLifecycleUi();
+    try {
+      if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    } catch (_) {}
+    try {
+      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    } catch (_) {}
+    try {
+      if (typeof avisarPrimeraMedicionOperativa === 'function') avisarPrimeraMedicionOperativa();
+    } catch (_) {}
+  }
+
+  function activarInstalacionGuidadaPostSetup() {
+    if (typeof state === 'undefined' || !state) return;
+    try {
+      state.hcInstalacionGuidadaActiva = true;
+      state.hcPostSetupChecklistPendiente = true;
+      delete state.hcInstalacionGuidadaDismissed;
+    } catch (_) {}
+  }
+
+  function renderLifecycleTrack(pasos) {
+    return pasos
+      .map(function (p) {
+        var cls = 'dash-inst-lifecycle-step';
+        if (p.done) cls += ' dash-inst-lifecycle-step--done';
+        else if (p.current) cls += ' dash-inst-lifecycle-step--current';
+        else if (p.blocked) cls += ' dash-inst-lifecycle-step--blocked';
+        return '<span class="' + cls + '" title="' + esc(p.label) + '">' + esc(p.chip.split(' · ')[1] || p.label) + '</span>';
+      })
+      .join('');
+  }
+
+  function refreshInstalacionLifecycleUi() {
+    var lc = getInstalacionLifecycle();
+    var box = document.getElementById('dashInstalacionLifecycle');
+    var rutina = document.getElementById('dashRutinaDia');
+    var pctEl = document.getElementById('dashInstLifecyclePct');
+    var trackEl = document.getElementById('dashInstLifecycleTrack');
+    var nextEl = document.getElementById('dashInstLifecycleNext');
+    var ctaEl = document.getElementById('dashInstLifecycleCta');
+
+    if (box) {
+      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config';
+      box.classList.toggle('setup-hidden', !showInst);
+      if (showInst) {
+        if (pctEl) pctEl.textContent = lc.porcentaje + '%';
+        if (trackEl) trackEl.innerHTML = renderLifecycleTrack(lc.pasos);
+        if (nextEl) {
+          nextEl.innerHTML =
+            'Siguiente: <strong>' + esc(lc.siguientePaso.label) + '</strong>';
+        }
+        if (ctaEl) {
+          ctaEl.textContent = lc.siguientePaso.label;
+          ctaEl.onclick = function () { hcEjecutarAccionInstalacion(lc.siguientePaso.action); };
+        }
+      }
+    }
+
+    if (rutina) {
+      var showRut = lc.operativaDiaria;
+      rutina.classList.toggle('setup-hidden', !showRut);
+      if (showRut) {
+        var badge = document.getElementById('dashRutinaTareasBadge');
+        var sub = document.getElementById('dashRutinaSub');
+        try {
+          if (typeof getEstadoControlSistema === 'function') {
+            var est = getEstadoControlSistema();
+            if (est && est.resumen && badge) {
+              var tot = est.resumen.diarioTotal + est.resumen.semanalTotal;
+              var ok = est.resumen.diarioOk + est.resumen.semanalOk;
+              badge.textContent = ok + '/' + tot;
+              badge.classList.toggle('medir-tareas-badge--ok', tot > 0 && ok >= tot);
+              badge.classList.toggle('medir-tareas-badge--pend', tot > 0 && ok < tot);
+              if (sub) {
+                sub.textContent = tot > 0 && ok >= tot
+                  ? 'Tareas completadas. Los valores en Medir alimentan calendario, historial y meteo.'
+                  : 'Marca tareas en Medir, registra EC/pH (manual o IoT) y revisa el historial.';
+              }
+            }
+          }
+        } catch (_) {}
+      }
+    }
+
+    try {
+      if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    } catch (_) {}
+    try {
+      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    } catch (_) {}
+  }
+
+  function iniciarFlujoInstalacionPostSetup() {
+    activarInstalacionGuidadaPostSetup();
+    try {
+      if (typeof showToast === 'function') {
+        showToast('Siguiente paso: montaje de sala (equipamiento y puesta en marcha).', false, { durationMs: 5200 });
+      }
+    } catch (_) {}
+    hcIrMontajeSala();
+    setTimeout(function () {
+      refreshInstalacionLifecycleUi();
+      try {
+        if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+      } catch (_) {}
+    }, 200);
+  }
+
+  global.getInstalacionLifecycle = getInstalacionLifecycle;
+  global.instalacionGuidadaActiva = instalacionGuidadaActiva;
+  global.hcGateChecklistDeposito = hcGateChecklistDeposito;
+  global.hcIrMontajeSala = hcIrMontajeSala;
+  global.hcIrCultivoMatriz = hcIrCultivoMatriz;
+  global.hcIrRutinaDia = hcIrRutinaDia;
+  global.hcEjecutarAccionInstalacion = hcEjecutarAccionInstalacion;
+  global.marcarDepositoPrimerLlenadoOk = marcarDepositoPrimerLlenadoOk;
+  global.activarInstalacionGuidadaPostSetup = activarInstalacionGuidadaPostSetup;
+  global.refreshInstalacionLifecycleUi = refreshInstalacionLifecycleUi;
+  global.iniciarFlujoInstalacionPostSetup = iniciarFlujoInstalacionPostSetup;
+  global.depositoPrimerLlenadoOk = depositoPrimerLlenadoOk;
+
+  /** Montaje editable hasta completar primer llenado del depósito (mezcla hidropónica). */
+  function montajePuedeEditarse(cfgOpt, stateOpt) {
+    return !depositoPrimerLlenadoOk(cfgOpt, stateOpt);
+  }
+
+  global.montajePuedeEditarse = montajePuedeEditarse;
+})(typeof window !== 'undefined' ? window : globalThis);

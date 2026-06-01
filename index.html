@@ -269,6 +269,26 @@
         </span>
       </button>
       <div id="hcMultiCoachInicio" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
+
+      <section id="dashInstalacionLifecycle" class="dash-instalacion-lifecycle setup-hidden" aria-label="Progreso de instalación">
+        <div class="dash-inst-lifecycle-head">
+          <span class="dash-inst-lifecycle-title">Instalación</span>
+          <span class="dash-inst-lifecycle-pct" id="dashInstLifecyclePct">0%</span>
+        </div>
+        <div class="dash-inst-lifecycle-track" id="dashInstLifecycleTrack" aria-hidden="true"></div>
+        <p class="dash-inst-lifecycle-next" id="dashInstLifecycleNext"></p>
+        <button type="button" class="btn btn-primary btn-sm dash-inst-lifecycle-cta" id="dashInstLifecycleCta">Continuar</button>
+      </section>
+
+      <section id="dashRutinaDia" class="dash-rutina-dia setup-hidden" aria-label="Rutina del día">
+        <div class="dash-rutina-head">
+          <span class="dash-rutina-title">Rutina del día</span>
+          <span id="dashRutinaTareasBadge" class="medir-tareas-badge medir-tareas-badge--pend" aria-live="polite">0/0</span>
+        </div>
+        <p class="dash-rutina-sub" id="dashRutinaSub">Marca tareas, mide EC/pH y revisa el registro.</p>
+        <button type="button" class="btn btn-primary btn-sm" onclick="hcIrRutinaDiaOperativa()">Ir a Medir</button>
+      </section>
+
       <div class="dash-operativa-row" role="group" aria-label="Estado operativo de la instalación activa">
         <div>
           <div class="dash-operativa-title">Estado del sistema</div>
@@ -618,6 +638,28 @@
         </div>
         <span class="medir-torre-banner-action">Cambiar ›</span>
       </button>
+      <section id="medirPreOperativaGate" class="medir-pre-operativa-gate setup-hidden" role="region" aria-label="Instalación pendiente">
+        <p class="medir-pre-op-title">Seguimiento diario aún no disponible</p>
+        <p class="medir-pre-op-lead">Completa montaje, cultivo y primer llenado del depósito. Después registrarás aquí EC, pH y ambiente para calendario, historial y meteo.</p>
+        <p id="medirPreOperativaNext" class="medir-pre-op-next"></p>
+        <button type="button" class="btn btn-primary btn-sm" id="medirPreOperativaCta">Continuar instalación</button>
+      </section>
+      <section id="medirOperativaHub" class="medir-operativa-hub setup-hidden" role="region" aria-label="Seguimiento diario operativo">
+        <div class="medir-op-hub-head">
+          <span class="medir-op-hub-title">Seguimiento diario</span>
+          <span id="medirOpHubTareasBadge" class="medir-tareas-badge medir-tareas-badge--pend" aria-live="polite">0/0</span>
+        </div>
+        <p id="medirOpHubSub" class="medir-op-hub-sub"></p>
+        <div id="medirOpHubRangos" class="medir-op-hub-rangos" aria-label="Rangos objetivo del sistema"></div>
+        <p class="medir-op-hub-iot">Entrada: <span id="medirOpHubIot">Manual</span></p>
+        <div class="medir-op-hub-actions">
+          <button type="button" class="btn btn-primary btn-sm" onclick="scrollToMedirEntrada()">Registrar valores</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="goTabSala('iot')">Sensores IoT</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="goTab('calendario')">Calendario</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="goTab('historial')">Historial</button>
+          <button type="button" class="btn btn-ghost btn-sm" onclick="goTab('meteo')">Meteo</button>
+        </div>
+      </section>
       <div id="medirPuestaMarchaCard" class="medir-pm-card" role="region" aria-label="Checklist de montaje">
         <div class="medir-pm-card-inner">
           <div class="medir-pm-card-text">
@@ -2520,8 +2562,8 @@
 
       <h1 class="section-title section-title--with-ico"><svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg><span><span class="accent">Consejos</span></span></h1>
       <div class="consejos-intro-card">
-        <p class="consejos-tab-intro">Orientaciones según tu instalación, agua y lo que registras. Los ejemplos de clima o calendario son orientativos si tu zona difiere.</p>
-        <p class="consejos-tab-intro-meta">Elige <strong>Principiante</strong> o <strong>Avanzado</strong> y luego el tema. Textos largos se pueden ampliar en cada tarjeta. <button type="button" class="btn btn-ghost btn-sm consejos-intro-ayuda-btn" onclick="goTab('ayuda')">Ayuda — recorrido y FAQ</button></p>
+        <p class="consejos-tab-intro">Orientaciones según tu instalación, flujo de puesta en marcha y rutina diaria. Los ejemplos de clima son orientativos si tu zona difiere.</p>
+        <p class="consejos-tab-intro-meta">Empieza por <strong>Instalación</strong> y <strong>Equipamiento</strong> (Top 10 ES). Luego el tema que necesites. <button type="button" class="btn btn-ghost btn-sm consejos-intro-ayuda-btn" onclick="goTab('ayuda')">Ayuda — esquema y FAQ</button></p>
       </div>
       <div id="hcPlantasInstalacionConsejos" class="hc-plantas-instalacion hc-plantas-instalacion--consejos" role="region" aria-live="polite" aria-label="Plantas en la instalación activa"></div>
 
@@ -2543,8 +2585,9 @@
       <div class="ayuda-page">
         <h1 class="section-title section-title--with-ico"><svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-help"/></svg><span><span class="accent">Ayuda</span></span></h1>
         <p class="ayuda-intro">
-          <strong>Recorrido recomendado</strong> y <strong>preguntas frecuentes</strong>. Si la app te parece cargada de opciones, aquí tienes el orden habitual; no hace falta usar todo el primer día.
+          <strong>Esquema del flujo</strong>, recorrido paso a paso y <strong>FAQ</strong>. HidroGrow separa lo que haces <em>una vez</em> (configurar y poner en marcha) de la <em>rutina diaria</em> (medir y seguir).
         </p>
+        <div id="ayudaEstadoInstalacion" class="ayuda-estado-instal setup-hidden" role="status" aria-live="polite"></div>
         <div class="info-banner" style="margin-top:0;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
           <span>¿Probando en móvil? Puedes reabrir la guía de bienvenida.</span>
           <button type="button" class="btn btn-secondary btn-sm" onclick="resetBienvenidaParaPruebas()">
@@ -2552,19 +2595,51 @@
           </button>
         </div>
         <nav class="ayuda-toc" aria-label="En esta página">
+          <a href="#ayuda-esquema">Esquema</a>
           <a href="#ayuda-recorrido">Recorrido</a>
           <a href="#ayuda-faq">FAQ</a>
         </nav>
 
+        <section id="ayuda-esquema" class="ayuda-section ayuda-flow-section">
+          <h2>Esquema del flujo</h2>
+          <div class="ayuda-flow-diagram" role="img" aria-label="Flujo: configurar, montaje, cultivo, primer llenado, rutina diaria">
+            <div class="ayuda-flow-col ayuda-flow-col--once">
+              <p class="ayuda-flow-col-title">Una vez (instalación)</p>
+              <ol class="ayuda-flow-steps">
+                <li><span class="ayuda-flow-n">1</span> Configurar <small>asistente · hidro + equipamiento Top 10</small></li>
+                <li><span class="ayuda-flow-n">2</span> Montaje sala <small>checklist · editable hasta depósito</small></li>
+                <li><span class="ayuda-flow-n">3</span> Cultivo en matriz <small>variedad + fecha trasplante</small></li>
+                <li><span class="ayuda-flow-n">4</span> Primer llenado <small>checklist nutrientes depósito</small></li>
+              </ol>
+            </div>
+            <div class="ayuda-flow-arrow" aria-hidden="true">→</div>
+            <div class="ayuda-flow-col ayuda-flow-col--daily">
+              <p class="ayuda-flow-col-title">Cada día (operativa)</p>
+              <ol class="ayuda-flow-steps">
+                <li><span class="ayuda-flow-n">5</span> Tareas para hoy <small>Medir · checklist</small></li>
+                <li><span class="ayuda-flow-n">6</span> Registrar valores <small>EC · pH · T° · vol · manual o IoT</small></li>
+                <li><span class="ayuda-flow-n">7</span> Seguimiento <small>Historial · Calendario · Meteo</small></li>
+              </ol>
+            </div>
+          </div>
+          <p class="ayuda-flow-note">Pestañas clave: <strong>Inicio</strong> (progreso %), <strong>Sala</strong> (equipamiento y montaje), <strong>Cultivo e instalación</strong> (matriz), <strong>Medir</strong> (rutina diaria), <strong>Historial</strong>, <strong>Calendario</strong>, <strong>Meteo</strong>, <strong>Consejos</strong>.</p>
+        </section>
+
         <section id="ayuda-recorrido" class="ayuda-section">
           <h2>Recorrido recomendado</h2>
+          <h3 class="ayuda-h3">Primera vez</h3>
           <ol class="ayuda-ol">
-            <li><strong>Inicio</strong>: comprueba instalación activa, nutriente y última medición.</li>
-            <li><strong>Asistente</strong> (icono engranaje o guía del primer día): tipo de sistema, depósito, agua y nutriente si aún no lo configuraste.</li>
-            <li><strong>Cultivo e instalación</strong>: en cada cesta con planta, variedad y <strong>fecha de trasplante al hidro</strong> (necesario para EC/pH por etapa en modo automático).</li>
-            <li><strong>Medir</strong>: <strong>Asistente de mediciones</strong> para guardar con contexto; <strong>Herramientas Pro</strong> para conversor EC, dosis orientativa, pH y guía LED (ver FAQ).</li>
-            <li><strong>Historial → Checklist</strong>: recarga o primer llenado; las dosis usan volumen, nutriente y (en automático) la etapa del cultivo.</li>
-            <li><strong>Riego, Calendario, Meteo, Consejos</strong>: refuerzan la rutina cuando ya tienes mediciones reales.</li>
+            <li><strong>Asistente</strong> (engranaje): tipo DWC/RDWC, volumen depósito, nutriente, agua y <strong>equipamiento</strong> — el catálogo ofrece ~10 modelos top por tipo (carpa, LED, extractor, medidor, bombas de aire/agua…).</li>
+            <li><strong>Sala → Montaje de sala</strong>: checklist con guías por paso; confirma funcionamiento. Puedes revisarlo hasta completar el primer llenado.</li>
+            <li><strong>Cultivo e instalación</strong>: variedad y <strong>fecha de trasplante al hidro</strong> en cada hueco con planta (necesario para EC/pH por etapa).</li>
+            <li><strong>Checklist del depósito</strong> (primer llenado): mezcla guiada; al terminar la instalación pasa a <strong>operativa</strong>.</li>
+          </ol>
+          <h3 class="ayuda-h3">Cada día (ya operativa)</h3>
+          <ol class="ayuda-ol">
+            <li><strong>Inicio</strong>: rutina del día y acceso rápido a Medir.</li>
+            <li><strong>Medir</strong>: EC, pH, temperatura agua, volumen — manual, entrada rápida o sensores IoT. Opcional: ambiente (HR, VPD, PPFD, CO₂).</li>
+            <li><strong>Tareas para hoy</strong>: marca checklist; las mediciones completan EC/pH automáticamente.</li>
+            <li><strong>Calendario / Historial / Meteo</strong>: tendencias, registro y avisos si cultivas en exterior.</li>
           </ol>
         </section>
 
@@ -2572,8 +2647,24 @@
           <h2>Preguntas frecuentes</h2>
 
           <details>
+            <summary>¿Cuál es el orden correcto de instalación?</summary>
+            <div class="ayuda-faq-a">1) Configurar (asistente) → 2) Montaje sala → 3) Cultivo en matriz → 4) Primer llenado del depósito → 5) Rutina diaria en Medir. La app muestra el progreso en <strong>Inicio</strong> y bloquea el seguimiento diario hasta completar el primer llenado.</div>
+          </details>
+          <details>
+            <summary>¿Puedo modificar el montaje después de verificarlo?</summary>
+            <div class="ayuda-faq-a">Sí, hasta completar el <strong>primer llenado del depósito</strong>. Después el checklist de montaje queda en solo lectura (cambios físicos implican vaciado/recarga). También puedes reabrir el configurador de equipamiento en esa ventana.</div>
+          </details>
+          <details>
+            <summary>¿Cuándo registro EC y pH cada día?</summary>
+            <div class="ayuda-faq-a">Cuando la instalación está <strong>operativa</strong>, en <strong>Medir</strong>: manualmente, con entrada rápida (ej. «EC 1350 · pH 6.0») o con gateway IoT. Los valores alimentan rangos, tareas, calendario e historial. Referencia habitual: 1–2 mediciones/día en flor; más en plántula nueva.</div>
+          </details>
+          <details>
+            <summary>¿Cómo elijo buen equipamiento?</summary>
+            <div class="ayuda-faq-a">En el asistente (Espacio y equipamiento) cada tipo muestra hasta <strong>10 modelos top en España</strong> (carpa, LED, extractor, clima, medidor, bombas…). Si no está tu modelo, elige «Manual / otro» e introduce W, m³/h o L/min de la ficha técnica. Ver también <strong>Consejos → Equipamiento</strong>.</div>
+          </details>
+          <details>
             <summary>¿Qué pestaña uso primero?</summary>
-            <div class="ayuda-faq-a">Empieza por <strong>Inicio</strong> y, si aún no configuraste el hidro, abre el <strong>asistente</strong> (engranaje o guía del primer día). Después <strong>Cultivo e instalación</strong> (plantas y fechas) y <strong>Medir</strong> para tener datos reales del agua.</div>
+            <div class="ayuda-faq-a">Empieza por <strong>Inicio</strong> y el <strong>asistente</strong> si aún no configuraste. Sigue el orden montaje → cultivo → depósito. Cuando veas <strong>Rutina del día</strong>, usa <strong>Medir</strong> a diario.</div>
           </details>
           <details>
             <summary>¿Qué es EC y por qué aparece en µS/cm?</summary>
@@ -2605,7 +2696,7 @@
           </details>
           <details>
             <summary>No me deja abrir el checklist</summary>
-            <div class="ayuda-faq-a">Con <strong>EC/pH automáticos</strong> hace falta tener <strong>variedad</strong> en las cestas que uses y <strong>fecha válida</strong> en todas ellas; si falta algo, la app te envía a <strong>Cultivo e instalación</strong> y te lo explica. Con modo <strong>manual</strong> no aplica ese bloqueo. Tras un cuestionario mínimo de instalación sin plantas, el checklist puede abrirse una vez sin ese requisito.</div>
+            <div class="ayuda-faq-a">Con <strong>EC/pH automáticos</strong> hace falta montaje verificado, cultivo con <strong>variedad</strong> y <strong>fecha válida</strong>, en ese orden. Si falta montaje, la app te envía a Sala. Con modo <strong>manual</strong> no aplica el bloqueo por etapas de cultivo.</div>
           </details>
           <details>
             <summary>¿EC manual o automático?</summary>
@@ -4058,7 +4149,7 @@
     <div id="puestaMarchaBody" class="hc-pm-body"></div>
     <div class="hc-pm-foot">
       <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePuestaMarchaChecklist()">Cerrar</button>
-      <button type="button" class="btn btn-primary btn-sm" onclick="hcFinishPuestaMarcha()">Marcar como verificada</button>
+      <button type="button" class="btn btn-primary btn-sm" id="hcPmBtnFinish" onclick="hcFinishPuestaMarcha()">Marcar como verificada</button>
     </div>
   </div>
 </div>
@@ -4722,7 +4813,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip-fix"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-consejos"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-origen"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -4734,11 +4825,13 @@
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save-toast"></script>
+  <script src="js/hc-medir-operativa.js?v=2026-05-31-consejos"></script>
+  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-operativa"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-operativa"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-tareas-hoy"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-sala-equip"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -4771,7 +4864,7 @@
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-setup-save-fix"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-lifecycle"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -4782,27 +4875,27 @@
   <script src="js/hc-sala-layout.js?v=2026-05-31-sala-plano"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-wiz-amb"></script>
-  <script src="js/hc-monitor-sistema.js?v=2026-05-31-tareas-hoy"></script>
+  <script src="js/hc-monitor-sistema.js?v=2026-05-31-operativa"></script>
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
-  <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
+  <script src="js/hc-setup-checklist.js?v=2026-05-31-lifecycle"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-hist-full"></script>
-  <script src="js/hc-consejos-extras.js?v=2026-05-31"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-05-31-montaje-ui"></script>
+  <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-05-31-consejos"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
-  <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-plantas-id"></script>
+  <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-operativa"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=1"></script>
-  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-setup-save-toast"></script>
+  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-operativa"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-  <script src="js/hc-puesta-marcha.js?v=2026-05-31-pm-guias"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-montaje-edit"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

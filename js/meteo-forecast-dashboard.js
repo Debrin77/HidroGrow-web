@@ -75,6 +75,13 @@ function updateDashboard() {
     if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
   } catch (_) {}
 
+  try {
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+  } catch (_) {}
+  try {
+    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+  } catch (_) {}
+
 }
 
 function getRecentMedicionesForWeekly(limit) {

@@ -3,6 +3,16 @@
  * Último bloque de la app; carga tras meteo-alarm-app.js. Siguiente: app-hc-setup-onboarding.js.
  */
 async function guardarMedicion() {
+  if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
+    showToast(
+      'Completa montaje, cultivo y primer llenado antes del seguimiento diario en Medir.',
+      true
+    );
+    try {
+      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    } catch (_) {}
+    return;
+  }
   if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
     showToast(typeof getMensajeStandbyContinuar === 'function'
       ? getMensajeStandbyContinuar()
@@ -126,7 +136,12 @@ async function guardarMedicion() {
     showCorreccion(id, '');
   });
   try { cargarUltimaMedicion(); } catch (_) {}
-  try { if (typeof refreshMonitorLive === 'function') refreshMonitorLive(); } catch (_) {}
+  try {
+    if (typeof refreshMonitorLive === 'function') refreshMonitorLive();
+  } catch (_) {}
+  try {
+    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+  } catch (_) {}
 
   updateDashboard();
   updateRecargaBar();

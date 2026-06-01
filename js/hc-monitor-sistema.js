@@ -530,7 +530,23 @@
     var r = estado.resumen;
     var barPct = r.diarioTotal ? r.pctDiario : 0;
     var barCls = barPct >= 100 ? ' hc-monitor-bar-fill--ok' : barPct >= 50 ? ' hc-monitor-bar-fill--mid' : '';
+    var avisoInst = '';
+    try {
+      if (typeof getInstalacionLifecycle === 'function') {
+        var lc = getInstalacionLifecycle();
+        if (lc && !lc.operativaDiaria && lc.fase !== 'sin_config') {
+          avisoInst =
+            '<div class="hc-monitor-inst-aviso" role="status">' +
+            '<strong>Instalación al ' + lc.porcentaje + '%.</strong> ' +
+            'Completa primero: <em>' + (lc.siguientePaso && lc.siguientePaso.label ? lc.siguientePaso.label : 'pasos pendientes') + '</em>. ' +
+            '<button type="button" class="btn btn-primary btn-sm hc-monitor-inst-cta" onclick="hcEjecutarAccionInstalacion(\'' +
+            (lc.siguientePaso && lc.siguientePaso.action ? lc.siguientePaso.action : 'irMontaje') +
+            '\')">Continuar</button></div>';
+        }
+      }
+    } catch (_) {}
     panel.innerHTML =
+      avisoInst +
       '<div class="hc-monitor-head">' +
       '<div class="hc-monitor-progress">' +
       '<div class="hc-monitor-bar"><div class="hc-monitor-bar-fill' + barCls + '" style="width:' + barPct + '%"></div></div>' +
@@ -546,7 +562,7 @@
       '<span class="hc-monitor-fase-badge">' +
       tituloFase(estado) +
       '</span></div>' +
-      '<p class="hc-monitor-tareas-hint">Marca cada tarea al completarla. Las mediciones en Medir también marcan automáticamente EC, pH, etc. Todo queda en <strong>Registro</strong>.</p>' +
+      '<p class="hc-monitor-tareas-hint">Marca cada tarea al completarla. Las mediciones en Medir también marcan automáticamente EC, pH, etc. Todo queda en <strong>Registro</strong>, <strong>Calendario</strong> y avisos <strong>Meteo</strong>.</p>' +
       '<div class="hc-monitor-cols">' +
       '<div><h4 class="hc-monitor-sub">Cada día</h4>' +
       renderChecklistHtml(estado.diario, 'diario') +
@@ -584,6 +600,12 @@
     badge.classList.toggle('medir-tareas-badge--ok', total > 0 && ok >= total);
     badge.classList.toggle('medir-tareas-badge--mid', total > 0 && ok > 0 && ok < total);
     badge.classList.toggle('medir-tareas-badge--pend', total > 0 && ok === 0);
+    try {
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    } catch (_) {}
+    try {
+      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    } catch (_) {}
   }
 
   window.getEstadoControlSistema = getEstadoControlSistema;

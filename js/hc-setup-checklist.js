@@ -2060,6 +2060,9 @@ function getCLPasos() {
 function getCLTotal() { return getCLPasos().length; }
 
 function intentarAbrirChecklistDesdeInicio(esPrimeraVez) {
+  if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) {
+    return false;
+  }
   if (
     typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
     torreBloqueaChecklistPorFaltaDatosCultivo()
@@ -2163,6 +2166,13 @@ function abrirChecklist(esPrimeraVez = false, opts) {
     return;
   }
   const omitirRequisitoCultivo = !!(opts && opts.omitirRequisitoCultivo);
+  if (
+    !omitirRequisitoCultivo &&
+    typeof hcGateChecklistDeposito === 'function' &&
+    !hcGateChecklistDeposito({ desdePostSetupRail: !!(opts && opts.desdePostSetupRail) })
+  ) {
+    return;
+  }
   if (
     !omitirRequisitoCultivo &&
     typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
@@ -3129,7 +3139,11 @@ async function finalizarChecklist() {
     a11yDialogClosed(co);
   }
   updateDashboard();
-  showToast('✅ Recarga registrada correctamente');
+  const esPrimerLlenado = typeof clRutaChecklist !== 'undefined' && clRutaChecklist === 'primer_llenado';
+  if (esPrimerLlenado && typeof marcarDepositoPrimerLlenadoOk === 'function') {
+    marcarDepositoPrimerLlenadoOk();
+  }
+  showToast(esPrimerLlenado ? '✅ Primer llenado registrado — instalación operativa' : '✅ Recarga registrada correctamente');
 
   if (!clEsPrimeraVez) {
     try {

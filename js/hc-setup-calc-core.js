@@ -2312,6 +2312,7 @@ function guardarSetupYContinuarCore() {
 
   try {
     state.hcPostSetupChecklistPendiente = true;
+    if (typeof activarInstalacionGuidadaPostSetup === 'function') activarInstalacionGuidadaPostSetup();
   } catch (_) {}
   try {
     window._hcPostSetupPrevListo = false;
@@ -2378,8 +2379,10 @@ function guardarSetupYContinuarCore() {
   try {
     if (typeof hcMaybeOfferPuestaMarcha === 'function') hcMaybeOfferPuestaMarcha();
   } catch (_) {}
-  // Tras configurar: pestaña Cultivo e instalación para cultivos; el checklist se ofrece cuando el usuario confirme.
-  if (typeof iniciarFlujoSistemaAntesChecklistPostSetup === 'function') {
+  // Tras configurar: montaje de sala → cultivo → checklist depósito (orden estricto).
+  if (typeof iniciarFlujoInstalacionPostSetup === 'function') {
+    iniciarFlujoInstalacionPostSetup();
+  } else if (typeof iniciarFlujoSistemaAntesChecklistPostSetup === 'function') {
     iniciarFlujoSistemaAntesChecklistPostSetup();
   } else if (typeof preguntarIniciarChecklist === 'function') {
     preguntarIniciarChecklist();
@@ -2465,7 +2468,7 @@ function preguntarIniciarChecklist() {
     ? '<div class="checklist-pregunta-guided-strip" aria-hidden="true">' +
       '<span class="checklist-pregunta-guided-logo">HIDRO</span><span class="checklist-pregunta-guided-logo-alt">Cultivo</span>' +
       '<span class="checklist-pregunta-guided-sep">·</span>' +
-      '<span class="checklist-pregunta-guided-step">Paso 3 de 3 · Depósito</span>' +
+      '<span class="checklist-pregunta-guided-step">Paso 4 de 4 · Depósito</span>' +
       '</div>'
     : '';
 

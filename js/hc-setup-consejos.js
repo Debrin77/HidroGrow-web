@@ -4,6 +4,26 @@
 // ══════════════════════════════════════════════════
 
 const CONSEJOS_DATA = {
+  instalacion: {
+    nombre: '🛠️ Instalación', color: '#0f766e', bg: 'rgba(15,118,110,0.1)',
+    consejos: [],
+    soloFlujoDoc: true,
+  },
+  equipamiento: {
+    nombre: '🔧 Equipamiento', color: '#7c3aed', bg: 'rgba(124,58,237,0.08)',
+    consejos: [
+      { icono:'🏪', titulo:'Top 10 por tipo — growshops España',
+        texto:'Carpa, LED, extractor, humidificador, deshumidificador, medidor EC/pH, <strong>bomba de aire</strong> y <strong>bomba de recirculación</strong>: en el configurador verás hasta <strong>10 modelos valorados</strong> por categoría. La app copia W, m³/h, L/min y dimensiones a tu instalación.',
+        alerta:{ tipo:'ok', txt:'✅ Marcas habituales: Secret Jardin, Mars Hydro, RVK, Bluelab, Hailea, Sicce, Eheim… Consulta la tabla desplegable en esta pestaña.' } },
+      { icono:'🫧', titulo:'Oxigenación DWC/RDWC',
+        texto:'Expertos recomiendan <strong>aire 24 h</strong> en solución. Dimensiona L/min del oxigenador según litros del depósito y número de piedras/difusores. En montaje verifica burbujeo uniforme en cada cubo.',
+        alerta:{ tipo:'warn', txt:'⚠️ Raíces marrones con olor: sube oxígeno, baja T° agua (<22 °C) y revisa limpieza del depósito.' } },
+      { icono:'📊', titulo:'Medidor y calibración',
+        texto:'Pen combo EC+pH (Bluelab, HM Digital, Adwa…) es el estándar en hidro casero. Calibra con buffers 4,0 / 7,0 (pH) y solución EC conocida cada <strong>14–30 días</strong>; la app lo recuerda en tareas semanales.',
+        alerta:{ tipo:'info', txt:'ℹ️ Sin medidor fiable, EC/pH automáticos por etapa pierden sentido — prioriza un buen combo pen.' } },
+    ],
+    soloEquipDoc: true,
+  },
   cultivo: {
     nombre: '🌿 Cultivo', color: '#15803d', bg: 'rgba(22,163,74,0.1)',
     consejos: [
@@ -244,8 +264,8 @@ function renderDiagnostico() {
   }).join('');
 }
 
-let consejoCatActiva = 'cultivo';
-const CONSEJOS_CAT_ORDEN_UI = ['cultivo', 'variedades', 'problemas', 'agua', 'clima', 'iot', 'ecph', 'dwc', 'rdwc'];
+let consejoCatActiva = 'instalacion';
+const CONSEJOS_CAT_ORDEN_UI = ['instalacion', 'equipamiento', 'cultivo', 'variedades', 'problemas', 'agua', 'clima', 'iot', 'ecph', 'dwc', 'rdwc'];
 
 function getConsejosModoUi(cfg) {
   const c = cfg || state.configTorre || {};
@@ -913,6 +933,7 @@ function renderConsejos() {
   let catEntries = ordenadas.concat(resto);
   if (modoUi !== 'avanzado') {
     catEntries = catEntries.filter(([key]) => {
+      if (key === 'instalacion' || key === 'equipamiento') return true;
       if (key === 'ecph') return false;
       if (key === 'dwc') return tipoInst === 'dwc';
       if (key === 'rdwc') return tipoInst === 'rdwc';
@@ -950,6 +971,9 @@ function renderConsejos() {
   lista.setAttribute('aria-labelledby', 'catBtn-' + consejoCatActiva);
 
   renderConsejosLista();
+  try {
+    if (typeof refreshAyudaInstalacionUi === 'function') refreshAyudaInstalacionUi();
+  } catch (_) {}
   try {
     if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
   } catch (_) {}
@@ -2454,6 +2478,22 @@ function renderConsejosLista() {
 
   if (cat.soloTabla) {
     lista.innerHTML = buildHtmlTablaEcPh() + buildHtmlTablaPreparacionFabricante18L() + buildHtmlTablaConsejosPersonal();
+    plegarTodosDesplegablesConsejosLista(lista);
+    return;
+  }
+
+  if (consejoCatActiva === 'instalacion') {
+    lista.innerHTML =
+      (typeof buildConsejoFlujoInstalacion === 'function' ? buildConsejoFlujoInstalacion() : '') +
+      (typeof buildConsejoRutinaDiaria === 'function' ? buildConsejoRutinaDiaria() : '');
+    plegarTodosDesplegablesConsejosLista(lista);
+    return;
+  }
+
+  if (consejoCatActiva === 'equipamiento') {
+    lista.innerHTML =
+      (typeof buildConsejoEquipamientoTop10 === 'function' ? buildConsejoEquipamientoTop10() : '') +
+      cat.consejos.map(function (c) { return htmlConsejoCard(cat, c); }).join('');
     plegarTodosDesplegablesConsejosLista(lista);
     return;
   }
