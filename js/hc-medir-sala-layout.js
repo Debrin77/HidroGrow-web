@@ -1,6 +1,6 @@
 /**
  * Medir (registro) vs Sala (config) + sub-pestañas Sala + desplegables.
- * Equipamiento / esquejes / semillero → Cultivo e instalación (#sistemaCultivoExtras).
+ * Equipamiento y montaje → Sala (#salaCultivoEquipMount). Esquejes/semillero → Cultivo (#sistemaCultivoExtras).
  */
 (function () {
   var SALA_SUB_ORDER = ['agua', 'iot', 'recarga'];
@@ -9,6 +9,7 @@
     agua: [
       'panelLocalidadMeteo',
       'configPanel',
+      'salaCultivoEquipMount',
       'panelGrowRoomSala',
       'panelConfigInteriorGrow',
       'panelMedirCalentadorConsigna',
@@ -36,9 +37,11 @@
     head.setAttribute('aria-expanded', 'false');
     head.setAttribute('aria-controls', 'medirGuiaDiaBody');
     head.innerHTML =
-      '<span class="config-section-collapse-title">' +
+      '<span class="config-section-collapse-title medir-tareas-head">' +
+      '<span class="medir-tareas-badge medir-tareas-badge--pend" id="medirTareasHoyBadge" aria-live="polite">0/0</span>' +
+      '<span class="medir-tareas-head-text">' +
       '<svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg> ' +
-      'Guía del día (protocolo y control)</span>' +
+      'Tareas para hoy</span></span>' +
       '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span>';
 
     var body = document.createElement('div');
@@ -51,6 +54,7 @@
       body.hidden = !open;
       head.classList.toggle('is-collapsed', !open);
       head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (open && typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
     });
 
     monitor.parentNode.insertBefore(wrap, monitor);
@@ -58,6 +62,23 @@
     wrap.appendChild(body);
     body.appendChild(monitor);
     body.appendChild(protocol);
+    try {
+      if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+      if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
+      var estado =
+        typeof getEstadoControlSistema === 'function' ? getEstadoControlSistema() : null;
+      if (estado && estado.resumen) {
+        var pend =
+          estado.resumen.diarioTotal +
+          estado.resumen.semanalTotal -
+          (estado.resumen.diarioOk + estado.resumen.semanalOk);
+        if (pend > 0) {
+          body.hidden = false;
+          head.classList.remove('is-collapsed');
+          head.setAttribute('aria-expanded', 'true');
+        }
+      }
+    } catch (_) {}
   }
 
   function ensureAmbienteSaveFooter(card) {
@@ -276,23 +297,7 @@
     } catch (_) {}
   }
 
-  function refreshSalaTab() {
-    if (typeof initConfigUI === 'function') initConfigUI();
-    if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
-    if (typeof actualizarVisibilidadPanelInteriorGrow === 'function') actualizarVisibilidadPanelInteriorGrow();
-    if (typeof cargarInteriorGrowUI === 'function') cargarInteriorGrowUI();
-    if (typeof actualizarVisibilidadPanelCalentadorConsigna === 'function') actualizarVisibilidadPanelCalentadorConsigna();
-    if (typeof renderIotPanel === 'function') renderIotPanel();
-    if (typeof updateRecargaBar === 'function') updateRecargaBar();
-    if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
-  }
-
-  function refreshSistemaCultivoExtras() {
-    if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
-    else if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
-    if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
-    if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
-    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+  function bindSalaEquipCollapsibles() {
     var det = document.getElementById('sistemaEquipDetails');
     if (det && !det.dataset.hcEquipBound) {
       det.dataset.hcEquipBound = '1';
@@ -303,14 +308,47 @@
       });
     }
     if (det && typeof getCamposEquipamientoFaltantes === 'function') {
-      var falt = getCamposEquipamientoFaltantes();
+      var cfgEq = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+      var falt = getCamposEquipamientoFaltantes(cfgEq);
       if (falt.length && !det.open) det.open = true;
     }
     var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
+    if (montajeDet && !montajeDet.dataset.hcMontajeBound) {
+      montajeDet.dataset.hcMontajeBound = '1';
+      montajeDet.addEventListener('toggle', function () {
+        if (montajeDet.open && typeof hcRefreshPuestaMarchaUi === 'function') {
+          hcRefreshPuestaMarchaUi();
+        }
+      });
+    }
     var cfgPm = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     if (montajeDet && cfgPm.puestaMarchaChecks && !cfgPm.puestaMarchaChecks.completedAt && !montajeDet.open) {
       montajeDet.open = true;
     }
+  }
+
+  function refreshSalaEquipMontaje() {
+    if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
+    else if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+    bindSalaEquipCollapsibles();
+  }
+
+  function refreshSalaTab() {
+    if (typeof initConfigUI === 'function') initConfigUI();
+    if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
+    if (typeof actualizarVisibilidadPanelInteriorGrow === 'function') actualizarVisibilidadPanelInteriorGrow();
+    if (typeof cargarInteriorGrowUI === 'function') cargarInteriorGrowUI();
+    if (typeof actualizarVisibilidadPanelCalentadorConsigna === 'function') actualizarVisibilidadPanelCalentadorConsigna();
+    if (typeof renderIotPanel === 'function') renderIotPanel();
+    if (typeof updateRecargaBar === 'function') updateRecargaBar();
+    if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
+    refreshSalaEquipMontaje();
+  }
+
+  function refreshSistemaCultivoExtras() {
+    if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
+    if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
   }
 
   function initMedirSalaLayout() {
@@ -320,6 +358,7 @@
     wrapAmbienteCollapsible();
     mountAmbienteInMedirFlow();
     salaSubTab(salaSubActive);
+    refreshSalaEquipMontaje();
     refreshSistemaCultivoExtras();
   }
 
@@ -337,6 +376,7 @@
   };
   window.hcRefreshSalaTab = refreshSalaTab;
   window.hcRefreshSistemaCultivoExtras = refreshSistemaCultivoExtras;
+  window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
 
   document.addEventListener('DOMContentLoaded', initMedirSalaLayout);

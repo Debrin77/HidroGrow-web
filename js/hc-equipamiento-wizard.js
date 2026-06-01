@@ -482,35 +482,44 @@
     const cats = resolveEquipCategorias();
     const falt = getCamposEquipamientoFaltantes(cfg);
     let html =
-      '<p class="medir-equip-lead">Resumen del equipamiento guardado en esta instalación (desde el asistente o al reconfigurar). Para cambiar marca/modelo, abre el asistente de configuración.</p>';
+      '<div class="medir-equip-readonly-banner" role="note">' +
+      '<span class="medir-equip-readonly-badge">Solo lectura</span>' +
+      '<span>Catálogo elegido en el <strong>configurador</strong> (asistente). Aquí solo ves el resumen; el montaje paso a paso está en el <strong>checklist</strong> de arriba.</span>' +
+      '</div>';
     const resumenBreve = getEquipamientoResumenHtml(cfg);
     if (!resumenBreve) {
       html +=
-        '<p class="medir-equip-empty">Sin equipamiento registrado aún. Complétalo en el <strong>asistente</strong> (paso Espacio y equipamiento) o indica medidas de sala en la pestaña <strong>Sala</strong>.</p>';
+        '<p class="medir-equip-empty">Sin equipamiento registrado. Configúralo en el asistente → paso <strong>Espacio y equipamiento</strong>. Las medidas de carpa/LED de abajo son editables; marca y modelo no.</p>';
     }
     if (falt.length) {
       html +=
-        '<p class="medir-equip-warn">Completa en el asistente: ' +
+        '<p class="medir-equip-warn">Falta en configurador: ' +
         falt.map(function (f) {
           return f.label;
         }).join(', ') +
         '</p>';
     }
-    html += '<ul class="medir-equip-list">';
+    const chips = [];
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
       const cur = inst[key];
-      html +=
-        '<li><strong>' +
-        cat.icon +
-        ' ' +
-        cat.label +
-        ':</strong> ' +
-        (cur ? cur.marca + ' ' + cur.modelo : '<span class="medir-equip-muted">sin registrar</span>') +
-        (cur && cur.nota ? ' <span class="medir-equip-muted">— ' + cur.nota + '</span>' : '') +
-        '</li>';
+      if (cur && cur.marca) {
+        chips.push(
+          '<span class="medir-equip-chip medir-equip-chip--ok">' +
+            cat.icon +
+            ' ' +
+            cat.label +
+            ': <strong>' +
+            cur.marca +
+            ' ' +
+            cur.modelo +
+            '</strong></span>'
+        );
+      }
     });
-    html += '</ul>';
+    if (chips.length) {
+      html += '<div class="medir-equip-chips">' + chips.join('') + '</div>';
+    }
     const cal = getInfoCalibracionMedidor(cfg);
     if (cal) {
       const fmt = function (d) {
@@ -530,7 +539,9 @@
       html += ' <button type="button" class="btn btn-secondary btn-sm" onclick="registrarCalibracionMedidor()">Registrar hoy</button>';
       html += '</div>';
     }
-    html += '<p class="medir-equip-foot">Los fabricantes publican W reales, m³/h, cobertura y calibración en ficha técnica — la app usa esos datos cuando eliges modelo del catálogo.</p>';
+    html +=
+      '<p class="medir-equip-foot">Para cambiar LED, extractor o medidor del catálogo, abre el configurador de la instalación. ' +
+      '<button type="button" class="medir-equip-config-link" onclick="typeof abrirSetup===\'function\'&&abrirSetup()">Abrir configurador</button></p>';
     panel.innerHTML = html;
     if (typeof renderSalaLayoutPanel === 'function') renderSalaLayoutPanel();
     if (typeof renderIotPanel === 'function') renderIotPanel();

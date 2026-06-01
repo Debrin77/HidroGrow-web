@@ -1509,7 +1509,7 @@ html.hc-theme-dark .medir-ambiente-details {
   display: contents;
 }
 
-/* Cultivo e instalación — equipamiento bajo el esquema */
+/* Sala — equipamiento y montaje (sub-pestaña Agua) */
 .sistema-cultivo-extras {
   margin-top: 1rem;
   display: flex;
@@ -1570,18 +1570,27 @@ html.hc-theme-dark .sistema-equip-details {
 html.hc-theme-dark .sistema-equip-card {
   border-top-color: rgba(148, 163, 184, 0.12);
 }
+#tab-sala .medir-equip-panel,
+#tab-sala .medir-equip-lead,
+#tab-sala .medir-equip-list,
+#tab-sala .medir-equip-foot,
 #tab-sistema .medir-equip-panel,
 #tab-sistema .medir-equip-lead,
 #tab-sistema .medir-equip-list,
 #tab-sistema .medir-equip-foot {
   color: var(--text, #1e293b);
 }
+html.hc-theme-dark #tab-sala .medir-equip-panel,
+html.hc-theme-dark #tab-sala .medir-equip-lead,
+html.hc-theme-dark #tab-sala .medir-equip-list,
+html.hc-theme-dark #tab-sala .medir-equip-foot,
 html.hc-theme-dark #tab-sistema .medir-equip-panel,
 html.hc-theme-dark #tab-sistema .medir-equip-lead,
 html.hc-theme-dark #tab-sistema .medir-equip-list,
 html.hc-theme-dark #tab-sistema .medir-equip-foot {
   color: #e2e8f0;
 }
+#tab-sala .medir-equip-muted,
 #tab-sistema .medir-equip-muted {
   color: var(--muted, #64748b);
 }

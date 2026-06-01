@@ -1,152 +1,289 @@
 /**
- * HidroGrow — plano orientativo de sala (slots de equipamiento en zona de cultivo).
+ * HidroGrow — resumen visual de equipamiento de sala (solo lectura, datos del configurador).
  */
 (function (global) {
   'use strict';
 
-  var SLOTS = [
-    { id: 'led', cat: 'led', label: 'LED', x: 50, y: 12, icon: '💡' },
-    { id: 'extractor', cat: 'extractor', label: 'Extractor', x: 88, y: 18, icon: '💨' },
-    { id: 'intraccion', cat: 'intraccion', label: 'Entrada aire', x: 12, y: 72, icon: '🌬️' },
-    { id: 'humidificador', cat: 'humidificador', label: 'Humidificador', x: 12, y: 42, icon: '💧' },
-    { id: 'deshumidificador', cat: 'deshumidificador', label: 'Deshumid.', x: 88, y: 42, icon: '🌫️' },
-    { id: 'circulacion', cat: 'circulacion', label: 'Clip fan', x: 50, y: 58, icon: '🌀' },
-    { id: 'sonda_ambiente', cat: 'sonda_ambiente', label: 'Higrometro', x: 72, y: 68, icon: '📡' },
-    { id: 'sonda_ec', cat: 'medidor', label: 'Medidor EC/pH', x: 28, y: 78, icon: '📊' },
-    { id: 'co2', cat: 'co2', label: 'CO₂ (opc.)', x: 50, y: 78, icon: '🫧' },
+  var ZONAS = [
+    {
+      id: 'luz',
+      title: 'Iluminación',
+      icon: '💡',
+      cats: ['led'],
+    },
+    {
+      id: 'clima',
+      title: 'Climatización',
+      icon: '💨',
+      cats: ['extractor', 'humidificador', 'deshumidificador'],
+    },
+    {
+      id: 'hidro',
+      title: 'Sistema hidro',
+      icon: '🫧',
+      cats: [],
+      hydro: true,
+    },
+    {
+      id: 'medicion',
+      title: 'Medición',
+      icon: '📊',
+      cats: ['medidor'],
+    },
   ];
 
-  function ensureSalaLayout(cfg) {
-    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
-    if (!cfg.salaLayout || typeof cfg.salaLayout !== 'object') cfg.salaLayout = {};
-    return cfg.salaLayout;
+  var HIDRO_LABELS = {
+    difusor: { icon: '🫧', label: 'Aireador / difusor' },
+    bomba: { icon: '⚙️', label: 'Bomba recirculación' },
+    calentador: { icon: '🌡️', label: 'Calentador depósito' },
+    timer: { icon: '⏱️', label: 'Temporizador' },
+    medidorEC: { icon: '📈', label: 'Sonda EC/pH' },
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
-  function getEquipForSlot(slot) {
-    var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    var inst = cfg.equipamientoInstalado || {};
-    if (slot.cat === 'intraccion' || slot.cat === 'circulacion' || slot.cat === 'co2' || slot.cat === 'sonda_ambiente') {
-      var manual = ensureSalaLayout(cfg)[slot.id];
-      return manual ? { label: manual } : null;
+  function getCfg() {
+    return (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  }
+
+  function getCats() {
+    return typeof getEquipCategorias === 'function'
+      ? getEquipCategorias()
+      : typeof EQUIP_CATEGORIAS !== 'undefined'
+        ? EQUIP_CATEGORIAS
+        : {};
+  }
+
+  function formatEntry(entry, catKey) {
+    if (!entry || (!entry.marca && !entry.modelo)) return null;
+    var cats = getCats();
+    var cat = cats[catKey] || {};
+    var nom = (String(entry.marca || '') + ' ' + String(entry.modelo || '')).trim();
+    var chips = [];
+    var sp = entry.specs || {};
+    if (catKey === 'armario' && sp.anchoM && sp.largoM) {
+      chips.push(sp.anchoM + '×' + sp.largoM + ' m');
     }
-    var e = inst[slot.cat];
-    if (!e) return null;
-    return { label: e.marca + ' ' + e.modelo, entry: e };
+    if (catKey === 'led' && sp.watts) chips.push(sp.watts + ' W');
+    if (catKey === 'extractor' && sp.m3h) chips.push(sp.m3h + ' m³/h');
+    if (catKey === 'medidor' && sp.calibracionDias) chips.push('cal. ' + sp.calibracionDias + ' d');
+    return {
+      icon: cat.icon || '•',
+      label: cat.label || catKey,
+      nombre: nom,
+      chips: chips,
+      nota: entry.nota || '',
+    };
   }
 
-  function renderSalaLayoutSvg() {
-    var w = 320;
-    var h = 200;
-    var body =
-      '<rect x="8" y="8" width="' +
-      (w - 16) +
-      '" height="' +
-      (h - 16) +
-      '" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>' +
-      '<rect x="24" y="88" width="' +
-      (w - 48) +
-      '" height="36" rx="6" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" stroke-dasharray="4 3"/>' +
-      '<text x="' +
-      (w / 2) +
-      '" y="108" text-anchor="middle" font-size="9" fill="#047857" font-weight="700">Copa / dosel</text>' +
-      '<rect x="40" y="128" width="' +
-      (w - 80) +
-      '" height="28" rx="5" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.2"/>' +
-      '<text x="' +
-      (w / 2) +
-      '" y="146" text-anchor="middle" font-size="8" fill="#0369a1">Sistema hidro (DWC/RDWC)</text>';
+  function getHydroItems(cfg) {
+    var eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+    return Object.keys(HIDRO_LABELS)
+      .filter(function (k) {
+        return eq.indexOf(k) >= 0;
+      })
+      .map(function (k) {
+        var h = HIDRO_LABELS[k];
+        return { icon: h.icon, label: h.label, nombre: 'En depósito / línea', chips: [] };
+      });
+  }
 
-    SLOTS.forEach(function (slot) {
-      var eq = getEquipForSlot(slot);
-      var cx = (slot.x / 100) * w;
-      var cy = (slot.y / 100) * h;
-      var filled = !!eq;
+  function renderPlanoSvg(cfg, inst) {
+    var w = 340;
+    var h = 220;
+    var ancho = Number(cfg.growRoomAnchoM || (inst.armario && inst.armario.specs && inst.armario.specs.anchoM));
+    var largo = Number(cfg.growRoomLargoM || (inst.armario && inst.armario.specs && inst.armario.specs.largoM));
+    var dim =
+      Number.isFinite(ancho) && Number.isFinite(largo) && ancho > 0 && largo > 0
+        ? ancho.toFixed(1) + ' × ' + largo.toFixed(1) + ' m'
+        : 'Medidas en Sala o configurador';
+
+    var body =
+      '<rect x="12" y="12" width="' +
+      (w - 24) +
+      '" height="' +
+      (h - 24) +
+      '" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2"/>' +
+      '<text x="' +
+      (w / 2) +
+      '" y="32" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">SALA · ' +
+      esc(dim) +
+      '</text>';
+
+    var rx = 40;
+    var ry = 48;
+    var rw = w - 80;
+    var rh = h - 100;
+    body +=
+      '<rect x="' +
+      rx +
+      '" y="' +
+      ry +
+      '" width="' +
+      rw +
+      '" height="' +
+      rh +
+      '" rx="8" fill="#1e293b" stroke="#475569" stroke-width="1.5" stroke-dasharray="6 4"/>';
+
+    if (inst.led) {
       body +=
-        '<g class="hc-sala-slot' +
-        (filled ? ' hc-sala-slot--filled' : '') +
-        '" data-slot="' +
-        slot.id +
-        '">' +
+        '<rect x="' +
+        (rx + 20) +
+        '" y="' +
+        (ry + 8) +
+        '" width="' +
+        (rw - 40) +
+        '" height="22" rx="4" fill="#fef08a" opacity="0.85"/>' +
+        '<text x="' +
+        (w / 2) +
+        '" y="' +
+        (ry + 23) +
+        '" text-anchor="middle" font-size="9" fill="#713f12" font-weight="700">💡 LED</text>';
+    }
+    if (inst.extractor) {
+      body +=
         '<circle cx="' +
-        cx +
+        (rx + rw - 18) +
         '" cy="' +
-        cy +
-        '" r="14" fill="' +
-        (filled ? '#dcfce7' : '#f1f5f9') +
-        '" stroke="' +
-        (filled ? '#16a34a' : '#cbd5e1') +
-        '" stroke-width="1.5"/>' +
-        '<text x="' +
-        cx +
+        (ry + 18) +
+        '" r="12" fill="#bae6fd"/><text x="' +
+        (rx + rw - 18) +
         '" y="' +
-        (cy + 4) +
-        '" text-anchor="middle" font-size="12">' +
-        slot.icon +
-        '</text>' +
-        '<text x="' +
-        cx +
+        (ry + 22) +
+        '" text-anchor="middle" font-size="10">💨</text>';
+    }
+    body +=
+      '<rect x="' +
+      (rx + rw * 0.25) +
+      '" y="' +
+      (ry + rh - 36) +
+      '" width="' +
+      rw * 0.5 +
+      '" height="28" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1.2"/>' +
+      '<text x="' +
+      (w / 2) +
+      '" y="' +
+      (ry + rh - 18) +
+      '" text-anchor="middle" font-size="9" fill="#a7f3d0" font-weight="600">🫧 DWC / RDWC</text>';
+
+    if (inst.medidor) {
+      body +=
+        '<rect x="' +
+        (rx + 8) +
         '" y="' +
-        (cy + 26) +
-        '" text-anchor="middle" font-size="7" fill="#475569" font-weight="600">' +
-        slot.label +
-        '</text>' +
-        '</g>';
-    });
+        (ry + rh - 32) +
+        '" width="36" height="20" rx="4" fill="#ede9fe"/>' +
+        '<text x="' +
+        (rx + 26) +
+        '" y="' +
+        (ry + rh - 18) +
+        '" text-anchor="middle" font-size="9">📊</text>';
+    }
 
     return (
-      '<svg class="hc-sala-layout-svg" viewBox="0 0 ' +
+      '<svg class="hc-sala-plano-svg" viewBox="0 0 ' +
       w +
       ' ' +
       h +
-      '" width="100%" role="img" aria-label="Plano orientativo de sala de cultivo">' +
+      '" width="100%" role="img" aria-label="Plano orientativo de sala">' +
       body +
       '</svg>'
     );
   }
 
-  function renderSalaLayoutLegend() {
-    return SLOTS.map(function (slot) {
-      var eq = getEquipForSlot(slot);
-      var txt = eq ? eq.label : '— sin asignar —';
-      return (
-        '<div class="hc-sala-legend-row' +
-        (eq ? ' hc-sala-legend-row--ok' : '') +
-        '">' +
-        '<span class="hc-sala-legend-ico" aria-hidden="true">' +
-        slot.icon +
-        '</span>' +
-        '<span class="hc-sala-legend-label">' +
-        slot.label +
-        '</span>' +
-        '<span class="hc-sala-legend-val">' +
-        txt +
-        '</span></div>'
-      );
-    }).join('');
+  function renderZonaCard(zona, items) {
+    var filled = items.length > 0;
+    return (
+      '<div class="hc-sala-zona' +
+      (filled ? ' hc-sala-zona--filled' : ' hc-sala-zona--empty') +
+      '">' +
+      '<div class="hc-sala-zona-head">' +
+      '<span class="hc-sala-zona-icon" aria-hidden="true">' +
+      zona.icon +
+      '</span>' +
+      '<span class="hc-sala-zona-title">' +
+      esc(zona.title) +
+      '</span>' +
+      '<span class="hc-sala-zona-count">' +
+      (filled ? items.length : '—') +
+      '</span></div>' +
+      (filled
+        ? '<ul class="hc-sala-zona-list">' +
+          items
+            .map(function (it) {
+              return (
+                '<li class="hc-sala-zona-item">' +
+                '<span class="hc-sala-zona-item-ico">' +
+                it.icon +
+                '</span>' +
+                '<div class="hc-sala-zona-item-body">' +
+                '<span class="hc-sala-zona-item-nom">' +
+                esc(it.nombre) +
+                '</span>' +
+                (it.chips.length
+                  ? '<span class="hc-sala-zona-item-chips">' +
+                    it.chips.map(function (c) {
+                      return '<span class="hc-sala-spec">' + esc(c) + '</span>';
+                    }).join('') +
+                    '</span>'
+                  : '') +
+                '</div></li>'
+              );
+            })
+            .join('') +
+          '</ul>'
+        : '<p class="hc-sala-zona-empty">No configurado en el asistente</p>') +
+      '</div>'
+    );
   }
 
   function renderSalaLayoutPanel() {
     var host = document.getElementById('salaLayoutPanel');
     if (!host) return;
+    var cfg = getCfg();
+    var interior =
+      String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
+      'exterior';
+    if (!interior) {
+      host.innerHTML =
+        '<p class="hc-sala-layout-hint">Vista de sala solo para cultivo en <strong>interior</strong>.</p>';
+      return;
+    }
+    var inst = cfg.equipamientoInstalado || {};
+    var zonasHtml = ZONAS.map(function (zona) {
+      var items = [];
+      zona.cats.forEach(function (ck) {
+        var f = formatEntry(inst[ck], ck);
+        if (f) items.push(f);
+      });
+      if (zona.hydro) items = items.concat(getHydroItems(cfg));
+      return renderZonaCard(zona, items);
+    }).join('');
+
+    var armario = formatEntry(inst.armario, 'armario');
+    var armarioHtml = armario
+      ? '<div class="hc-sala-armario-chip">🏠 <strong>' +
+        esc(armario.nombre) +
+        '</strong>' +
+        (armario.chips.length ? ' · ' + armario.chips.map(function (c) { return esc(c); }).join(' ') : '') +
+        '</div>'
+      : '';
+
     host.innerHTML =
-      '<p class="hc-sala-layout-hint">Plano orientativo (vista lateral). El catálogo de equipamiento rellena LED, extractor, humidificador… Los slots vacíos son recordatorio de montaje.</p>' +
-      renderSalaLayoutSvg() +
-      '<div class="hc-sala-legend">' +
-      renderSalaLayoutLegend() +
+      '<p class="hc-sala-layout-hint">Vista de solo lectura según el <strong>configurador</strong>. Para cambiar modelos, abre el asistente — no se edita aquí.</p>' +
+      armarioHtml +
+      '<div class="hc-sala-plano-wrap">' +
+      renderPlanoSvg(cfg, inst) +
+      '</div>' +
+      '<div class="hc-sala-zonas-grid">' +
+      zonasHtml +
       '</div>';
   }
 
-  function toggleSalaSlotManual(slotId, label) {
-    var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
-    if (!cfg) return;
-    var lay = ensureSalaLayout(cfg);
-    if (label) lay[slotId] = label;
-    else delete lay[slotId];
-    if (typeof saveState === 'function') saveState();
-    renderSalaLayoutPanel();
-  }
-
   global.renderSalaLayoutPanel = renderSalaLayoutPanel;
-  global.HC_SALA_SLOTS = SLOTS;
-  global.toggleSalaSlotManual = toggleSalaSlotManual;
 })(typeof window !== 'undefined' ? window : globalThis);

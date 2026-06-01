@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-setup-save-toast">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-tareas-hoy">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
@@ -659,7 +659,7 @@
       </div>
 
       <div class="card medir-monitor-card" id="medirMonitorCard">
-        <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-chart"/></svg> Control del sistema hoy</div>
+        <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-chart"/></svg> Checklist del día</div>
         <div id="medirMonitorPanel" class="medir-monitor-panel"></div>
       </div>
 
@@ -1454,11 +1454,42 @@
       </h1>
       <div id="tabContextHintSala" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          Configura <strong>ubicación, agua de base, sensores IoT y recargas</strong>. El <strong>equipamiento</strong> y el esquema de cultivo están en <strong>Cultivo e instalación</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
+          Configura <strong>ubicación, agua, equipamiento de sala</strong> (LED, extractor, medidor…), IoT y recargas. El <strong>esquema DWC/RDWC y las plantas</strong> están en <strong>Cultivo e instalación</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sala')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
-      <p class="medir-sala-intro">Ubicación, agua de base, dimensiones de carpa/LED, referencia de ambiente para riego, IoT y recargas — configuración que no cambia en cada medición (DWC/RDWC, sin torre ni NFT).</p>
+      <p class="medir-sala-intro">Ubicación, agua de base, equipamiento de sala, dimensiones de carpa/LED, referencia de ambiente para riego, IoT y recargas — configuración que no cambia en cada medición (DWC/RDWC, sin torre ni NFT).</p>
+      <div id="salaCultivoEquipMount" class="sala-cultivo-equip-mount" aria-label="Equipamiento y montaje de sala">
+        <details class="sistema-montaje-details config-section-collapsible sala-montaje-details" id="sistemaMontajeChecksDetails">
+          <summary class="config-section-collapse-head sistema-montaje-summary">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title">
+                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
+                Checklist de montaje
+              </span>
+              <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody"></div>
+        </details>
+        <details class="sistema-equip-details sala-equip-details" id="sistemaEquipDetails">
+          <summary class="sistema-equip-summary">
+            <span class="sistema-equip-summary-main">
+              <span class="sistema-equip-summary-title">
+                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
+                Equipamiento de instalación (LED, extractor, medidor…)
+              </span>
+              <span class="sistema-equip-resumen" id="sistemaEquipResumen"></span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="card medir-equip-card sistema-equip-card" id="medirEquipamientoCard">
+            <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
+            <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
+          </div>
+        </details>
+      </div>
       <div id="tabSalaMount" class="tab-sala-mount"></div>
     </div>
     <!-- FIN TAB SALA -->
@@ -1471,7 +1502,7 @@
       </h1>
       <div id="tabContextHintSistema" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Cultivo e instalación</strong>: esquema DWC/RDWC, equipamiento, genética y fecha en cada maceta/módulo. <strong>Sala</strong> = ubicación, agua, carpa/LED y referencia de ambiente. <strong>Medir</strong> = registro diario del depósito y ambiente del día.
+          <strong>Cultivo e instalación</strong>: esquema DWC/RDWC, genética y fecha en cada maceta/módulo. <strong>Sala</strong> = ubicación, agua, equipamiento (LED, extractor…) y montaje. <strong>Medir</strong> = registro diario del depósito y ambiente del día.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sistema')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1948,38 +1979,7 @@
         </div>
       </div>
 
-      <section id="sistemaCultivoExtras" class="sistema-cultivo-extras" aria-label="Equipamiento y perfiles de cultivo">
-        <details class="sistema-montaje-details config-section-collapsible" id="sistemaMontajeChecksDetails">
-          <summary class="config-section-collapse-head sistema-montaje-summary">
-            <span class="config-section-collapse-title-wrap">
-              <span class="config-section-collapse-title">
-                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
-                Checklist de montaje
-              </span>
-              <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
-            </span>
-            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
-          </summary>
-          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody"></div>
-        </details>
-
-        <details class="sistema-equip-details" id="sistemaEquipDetails">
-          <summary class="sistema-equip-summary">
-            <span class="sistema-equip-summary-main">
-              <span class="sistema-equip-summary-title">
-                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
-                Equipamiento de instalación (LED, extractor, medidor…)
-              </span>
-              <span class="sistema-equip-resumen" id="sistemaEquipResumen"></span>
-            </span>
-            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
-          </summary>
-          <div class="card medir-equip-card sistema-equip-card" id="medirEquipamientoCard">
-            <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
-            <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
-          </div>
-        </details>
-
+      <section id="sistemaCultivoExtras" class="sistema-cultivo-extras" aria-label="Perfiles de cultivo">
         <div class="card medir-esquejes-card setup-hidden" id="medirEsquejesCard">
           <div class="card-title">✂️ Esquejes y planta madre</div>
           <div id="medirEsquejesPanel" class="medir-esquejes-panel"></div>
@@ -4032,6 +4032,22 @@
   </div>
 </div>
 
+<!-- Modal: mini-guía de montaje (un paso del checklist) -->
+<div class="modal-overlay ctp-modal-overlay" id="modalPmGuia"
+  onclick="hcClosePmGuia(event)"
+  role="dialog" aria-modal="true" aria-labelledby="pmGuiaTitle">
+  <div class="modal hc-pm-guia-modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div id="pmGuiaHero" class="hc-pm-guia-hero"></div>
+    <div class="modal-title hc-pm-guia-title" id="pmGuiaTitle">Guía de montaje</div>
+    <div id="pmGuiaBody" class="hc-pm-guia-body"></div>
+    <div class="hc-pm-guia-foot">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePmGuia()">Cerrar</button>
+      <button type="button" class="btn btn-primary btn-sm" id="pmGuiaMarkBtn" onclick="hcPmGuiaMarkDone()">Marcar paso hecho</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: checklist puesta en marcha (montaje, accesorios, IoT opcional) -->
 <div class="modal-overlay ctp-modal-overlay" id="modalPuestaMarcha"
   onclick="hcClosePuestaMarchaChecklist(event)"
@@ -4721,8 +4737,8 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save-toast"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-montaje-ui"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-scroll"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-tareas-hoy"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-sala-equip"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -4744,7 +4760,7 @@
 <script src="js/torre-render-main.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-crash-fix"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-pm-guias"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-crash-fix"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
@@ -4763,10 +4779,10 @@
   <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast2"></script>
   <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-hint"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
-  <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
+  <script src="js/hc-sala-layout.js?v=2026-05-31-sala-plano"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-wiz-amb"></script>
-  <script src="js/hc-monitor-sistema.js?v=2026-05-31-cal-ctx"></script>
+  <script src="js/hc-monitor-sistema.js?v=2026-05-31-tareas-hoy"></script>
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
@@ -4786,7 +4802,7 @@
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-?v=2026-05-31-montaje-ui"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-pm-guias"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

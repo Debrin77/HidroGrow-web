@@ -127,14 +127,42 @@
     return cfg.monitorSemanal;
   }
 
+  function getDateKey(d) {
+    d = d || hoyLocal0();
+    return (
+      d.getFullYear() +
+      '-' +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(d.getDate()).padStart(2, '0')
+    );
+  }
+
+  function ensureTareasHoyDay(cfg, dateKey) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    if (!cfg.tareasHoyPorDia || typeof cfg.tareasHoyPorDia !== 'object') cfg.tareasHoyPorDia = {};
+    var key = dateKey || getDateKey();
+    if (!cfg.tareasHoyPorDia[key] || typeof cfg.tareasHoyPorDia[key] !== 'object') {
+      cfg.tareasHoyPorDia[key] = { done: {}, unchecked: {} };
+    }
+    if (!cfg.tareasHoyPorDia[key].done) cfg.tareasHoyPorDia[key].done = {};
+    if (!cfg.tareasHoyPorDia[key].unchecked) cfg.tareasHoyPorDia[key].unchecked = {};
+    return cfg.tareasHoyPorDia[key];
+  }
+
   function semanalMarcadoEstaSemana(id, cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     var ms = ensureMonitorState(cfg);
     return ms[id] === getWeekKey();
   }
 
-  function itemRegistradoHoy(item, campos) {
-    if (item.virtual) return semanalMarcadoEstaSemana(item.id);
+  function itemRegistradoHoy(item, campos, dayState, cfg) {
+    var tid = item.id || item.field;
+    if (dayState) {
+      if (dayState.unchecked && dayState.unchecked[tid]) return false;
+      if (dayState.done && dayState.done[tid]) return true;
+    }
+    if (item.virtual) return semanalMarcadoEstaSemana(item.id, cfg);
     if (item.extraField === 'vpd') {
       return campoTieneValor(campos.vpd) ||
         (campoTieneValor(campos.humSala) && campoTieneValor(campos.tempAire));
@@ -192,6 +220,7 @@
     var recEcPh = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
     var campos = getCamposRegistradosEnDia(fechaRef);
     var interior = String(cfg.ubicacion || cfg.premiumSetup?.entorno || 'interior').toLowerCase() !== 'exterior';
+    var dayState = ensureTareasHoyDay(cfg, getDateKey(fechaRef || hoyLocal0()));
 
   function evalItemValor(item, campos) {
     if (!item.field || !campos[item.field]) return null;
@@ -203,7 +232,7 @@
 
   function mapItems(list, freq, campos) {
       return (list || []).filter(function (it) { return !it.hidden; }).map(function (it) {
-        var ok = itemRegistradoHoy(it, campos);
+        var ok = itemRegistradoHoy(it, campos, dayState, cfg);
         var evalRes = it.field && !it.virtual ? evalItemValor(it, campos) : null;
         var evalEstado = evalRes ? evalRes.estado : null;
         if (evalEstado === 'bad' || evalEstado === 'warn') ok = false;
@@ -321,18 +350,79 @@
     }
   }
 
+  function escAttr(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  }
+
+  function logTareaEnRegistro(label, freq, fase) {
+    if (typeof addRegistro !== 'function') return;
+    addRegistro(
+      'tareas_dia',
+      {
+        icono: '✅',
+        tareaLabel: label,
+        tareaFreq: freq,
+        faseCultivo: fase || '',
+      },
+      true
+    );
+  }
+
+  function toggleTareaHoyFromBtn(btn) {
+    if (!btn || !btn.dataset) return;
+    toggleTareaHoy(btn.dataset.tareaId, btn.dataset.tareaLabel || '', btn.dataset.tareaFreq || 'diario');
+  }
+
+  function toggleTareaHoy(id, label, freq) {
+    if (!id) return;
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    if (!cfg) return;
+    var day = ensureTareasHoyDay(cfg);
+    var estado = getEstadoControlSistema();
+    var item = (freq === 'semanal' ? estado.semanal : estado.diario).find(function (x) {
+      return x.id === id;
+    });
+    var willCheck = !(item && item.ok);
+    if (willCheck) {
+      day.done[id] = new Date().toISOString();
+      delete day.unchecked[id];
+      if (freq === 'semanal') ensureMonitorState(cfg)[id] = getWeekKey();
+      logTareaEnRegistro(label || id, freq, estado.fase);
+      if (typeof showToast === 'function') showToast('✓ Tarea registrada: ' + (label || id));
+    } else {
+      delete day.done[id];
+      day.unchecked[id] = true;
+      if (freq === 'semanal') delete ensureMonitorState(cfg)[id];
+      if (typeof showToast === 'function') showToast('Tarea desmarcada');
+    }
+    if (typeof saveState === 'function') saveState();
+    if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    renderMonitorSistemaPanel();
+    if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+    if (typeof renderCalendario === 'function') renderCalendario();
+    if (typeof renderRegistro === 'function') renderRegistro();
+  }
+
   function renderChecklistHtml(items, freq) {
     if (!items.length) return '<p class="hc-monitor-empty">Sin ítems para esta fase.</p>';
     return (
       '<ul class="hc-monitor-list" role="list">' +
       items.map(function (it) {
         var cls = 'hc-monitor-item' + (it.ok ? ' hc-monitor-item--ok' : ' hc-monitor-item--pend');
-        var btn = it.virtual
-          ? '<button type="button" class="hc-monitor-check' + (it.ok ? ' hc-monitor-check--ok' : '') +
-            '" onclick="toggleMonitorSemanal(\'' + it.id + '\')" aria-pressed="' + (it.ok ? 'true' : 'false') + '">' +
-            (it.ok ? '✓' : '○') + '</button>'
-          : '<span class="hc-monitor-check' + (it.ok ? ' hc-monitor-check--ok' : '') + '" aria-hidden="true">' +
-            (it.ok ? '✓' : '○') + '</span>';
+        var btn =
+          '<button type="button" class="hc-monitor-check' +
+          (it.ok ? ' hc-monitor-check--ok' : '') +
+          '" data-tarea-id="' +
+          escAttr(it.id) +
+          '" data-tarea-label="' +
+          escAttr(it.label) +
+          '" data-tarea-freq="' +
+          escAttr(freq) +
+          '" onclick="toggleTareaHoyFromBtn(this)" aria-pressed="' +
+          (it.ok ? 'true' : 'false') +
+          '" title="Marcar tarea">' +
+          (it.ok ? '✓' : '○') +
+          '</button>';
         var jump = it.scroll && !it.virtual
           ? ' <button type="button" class="hc-monitor-jump" onclick="scrollToMonitorCampo(\'' + it.scroll + '\')">Ir →</button>'
           : '';
@@ -444,11 +534,26 @@
       '<div class="hc-monitor-head">' +
       '<div class="hc-monitor-progress">' +
       '<div class="hc-monitor-bar"><div class="hc-monitor-bar-fill' + barCls + '" style="width:' + barPct + '%"></div></div>' +
-      '<span class="hc-monitor-pct">' + r.diarioOk + '/' + r.diarioTotal + ' hoy · ' + r.semanalOk + '/' + r.semanalTotal + ' sem.</span></div>' +
-      '<span class="hc-monitor-fase-badge">' + tituloFase(estado) + '</span></div>' +
+      '<span class="hc-monitor-pct">' +
+      r.diarioOk +
+      '/' +
+      r.diarioTotal +
+      ' diarias · ' +
+      r.semanalOk +
+      '/' +
+      r.semanalTotal +
+      ' semanales</span></div>' +
+      '<span class="hc-monitor-fase-badge">' +
+      tituloFase(estado) +
+      '</span></div>' +
+      '<p class="hc-monitor-tareas-hint">Marca cada tarea al completarla. Las mediciones en Medir también marcan automáticamente EC, pH, etc. Todo queda en <strong>Registro</strong>.</p>' +
       '<div class="hc-monitor-cols">' +
-      '<div><h4 class="hc-monitor-sub">Cada día</h4>' + renderChecklistHtml(estado.diario, 'diario') + '</div>' +
-      '<div><h4 class="hc-monitor-sub">Esta semana</h4>' + renderChecklistHtml(estado.semanal, 'semanal') + '</div></div>' +
+      '<div><h4 class="hc-monitor-sub">Cada día</h4>' +
+      renderChecklistHtml(estado.diario, 'diario') +
+      '</div>' +
+      '<div><h4 class="hc-monitor-sub">Esta semana</h4>' +
+      renderChecklistHtml(estado.semanal, 'semanal') +
+      '</div></div>' +
       '<details class="hc-monitor-trends-wrap"><summary>Tendencias (14 últimas mediciones)</summary>' +
       renderTendenciasHtml() + '</details>' +
       '<p class="hc-monitor-foot"><button type="button" class="btn btn-ghost btn-sm" onclick="goTab(\'historial\')">Ver registro completo →</button></p>';
@@ -465,6 +570,20 @@
 
   function refreshMonitorLive() {
     if (document.getElementById('medirMonitorPanel')) renderMonitorSistemaPanel();
+    if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+  }
+
+  function refreshMedirTareasHoyBadge() {
+    var badge = document.getElementById('medirTareasHoyBadge');
+    if (!badge) return;
+    var estado = getEstadoControlSistema();
+    var r = estado.resumen;
+    var total = r.diarioTotal + r.semanalTotal;
+    var ok = r.diarioOk + r.semanalOk;
+    badge.textContent = ok + '/' + total;
+    badge.classList.toggle('medir-tareas-badge--ok', total > 0 && ok >= total);
+    badge.classList.toggle('medir-tareas-badge--mid', total > 0 && ok > 0 && ok < total);
+    badge.classList.toggle('medir-tareas-badge--pend', total > 0 && ok === 0);
   }
 
   window.getEstadoControlSistema = getEstadoControlSistema;
@@ -475,6 +594,9 @@
   window.refreshMonitorLive = refreshMonitorLive;
   window.scrollToMonitorCampo = scrollToMonitorCampo;
   window.toggleMonitorSemanal = toggleMonitorSemanal;
+  window.toggleTareaHoy = toggleTareaHoy;
+  window.toggleTareaHoyFromBtn = toggleTareaHoyFromBtn;
+  window.refreshMedirTareasHoyBadge = refreshMedirTareasHoyBadge;
   window.markMonitorSemanalHecho = markMonitorSemanalHecho;
   window.getTendenciasMediciones = getTendenciasMediciones;
 })();

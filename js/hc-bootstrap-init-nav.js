@@ -407,6 +407,9 @@ function goTab(tab) {
   } catch (_) {}
   if (tab === 'mediciones') {
     cargarUltimaMedicion();
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+    if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+    if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
   }
   if (tab === 'sala') {
     if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();

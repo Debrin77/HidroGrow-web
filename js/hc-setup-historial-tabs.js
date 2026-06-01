@@ -459,6 +459,7 @@ function renderRegistro() {
     foto_sistema: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'🏗' },
     reposicion: { bg:'#ecfeff', border:'#06b6d4', color:'#0e7490',  icon:'💧' },
     apunte: { bg:'#f5f3ff', border:'#7c3aed', color:'#5b21b6', icon:'📝' },
+    tareas_dia: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'✅' },
   };
 
   // Agrupar por fecha
@@ -546,6 +547,13 @@ function renderRegistro() {
         } else {
           detalle = (Ltxt || '') + (e.notas || 'Reposición registrada');
         }
+      } else if (e.tipo === 'tareas_dia') {
+        detalle =
+          '✅ <strong>' +
+          escRegistroHtml(e.tareaLabel || 'Tarea') +
+          '</strong>' +
+          (e.tareaFreq === 'semanal' ? ' · esta semana' : ' · hoy') +
+          (e.faseCultivo ? ' · fase ' + escRegistroHtml(e.faseCultivo) : '');
       } else if (e.tipo === 'apunte') {
         const bloques = [];
         const esSugerencia = e.apunteTipo === 'sugerencia_correccion';
@@ -614,7 +622,9 @@ function renderRegistro() {
                       ? 'Recarga completa'
                       : e.tipo === 'apunte'
                         ? 'Apunte'
-                        : (String(e.tipo || 'medicion').charAt(0).toUpperCase() + String(e.tipo || 'medicion').slice(1))) +
+                        : e.tipo === 'tareas_dia'
+                          ? 'Tarea del día'
+                          : (String(e.tipo || 'medicion').charAt(0).toUpperCase() + String(e.tipo || 'medicion').slice(1))) +
             '</span>' +
             (sis && sis.nombre ?
               '<span class="registro-entry-torre-chip">' +
