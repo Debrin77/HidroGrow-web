@@ -251,12 +251,15 @@
     const hint = el('setupPremiumEquipFaltantes');
     if (!hint) return;
     const falt = getCamposEquipamientoFaltantes();
+    hint.classList.remove('setup-box-warn', 'setup-box-info', 'setup-hidden');
     if (!falt.length) {
+      hint.classList.add('setup-box-info');
       hint.innerHTML = '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado para monitorización.</span>';
       return;
     }
     const p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     const int = !p || p.entorno !== 'exterior';
+    hint.classList.add('setup-box-warn');
     hint.innerHTML = 'Faltan datos de: <strong>' + falt.map(function (f) { return f.label; }).join(', ') + '</strong>. ' +
       (int
         ? 'Selecciona marca/modelo en el catálogo y revisa las medidas de sala más abajo.'
@@ -571,7 +574,6 @@
 
   window.getWizardEquipCfg = getWizardEquipCfg;
   window.syncSalaMedidasDesdeEquipamientoInstalado = syncSalaMedidasDesdeEquipamientoInstalado;
-  window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
   window.seleccionarEquipamientoPremium = seleccionarEquipamientoPremium;
   window.renderEquipamientoPremiumUI = renderEquipamientoPremiumUI;
   window.renderMedirEquipamientoPanel = renderMedirEquipamientoPanel;

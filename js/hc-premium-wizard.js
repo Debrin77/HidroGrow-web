@@ -575,4 +575,5 @@
   window.validarPremiumSetupPaso = validarPremiumSetupPaso;
   window.validarPlantasVsSalaPremium = validarPlantasVsSalaPremium;
   window.ensurePremiumSetup = ensurePremiumSetup;
+  window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
 })();
