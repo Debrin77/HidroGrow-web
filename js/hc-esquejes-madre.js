@@ -67,6 +67,20 @@
     { id: 'traslado_np', titulo: 'Net pot → cubo productivo', desc: 'EC 400–600 µS; nivel alto la 1ª semana; luego gap 2–3 cm aire.' },
   ];
 
+  /** Domo día a día (10 d) — alineado con Grodan / growshops: HR progresiva y dryback. */
+  const DOMO_DIA_PASOS = [
+    { id: 'd1', dia: 1, titulo: 'Día 1 · Corte + domo cerrado', desc: 'Gel enraizante · rockwool pH 5,5 · domo 100 % · HR ~80 % · sin luz directa fuerte.' },
+    { id: 'd2', dia: 2, titulo: 'Día 2 · Vigilar turgor', desc: 'Domo cerrado · ventilar 30 s 1× · nebulizar domo si hojas se arrugan (sin encharcar cubo).' },
+    { id: 'd3', dia: 3, titulo: 'Día 3 · Primera ventilación', desc: 'Abrir grieta pequeña o levantar domo 2×/día · HR ~75 % · revisar que no haya podredumbre en corte.' },
+    { id: 'd4', dia: 4, titulo: 'Día 4 · Sin raíz aún = normal', desc: 'Ventilar 2× · comprobar humedad del cubo (húmedo, no goteando) · tijera y bandeja limpias.' },
+    { id: 'd5', dia: 5, titulo: 'Día 5 · Bajar HR poco a poco', desc: 'Domo abierto ~1 h/día si no hay marchitamiento · HR objetivo ~70 % · opcional nebulizar con agua pH 5,5.' },
+    { id: 'd6', dia: 6, titulo: 'Día 6 · Probar sin domo', desc: 'Medio día sin domo si turgencia OK · si se arrugan, volver a domo · 18/6 luz suave.' },
+    { id: 'd7', dia: 7, titulo: 'Día 7 · Primeras raíces', desc: 'Buscar puntas blancas 1–2 cm · si hay raíz: EC muy baja 300–400 µS si riegas · no tirar del tallo.' },
+    { id: 'd8', dia: 8, titulo: 'Día 8 · Domo casi fuera', desc: 'HR ~65 % · domo solo de noche o si estrés · ventilar bandeja · sativas pueden tardar +3 d.' },
+    { id: 'd9', dia: 9, titulo: 'Día 9 · Raíces 3–5 cm', desc: 'Preparar net pot · EC 400–600 µS en cubo productivo · desinfectar tijera si trasplantas.' },
+    { id: 'd10', dia: 10, titulo: 'Día 10 · Traslado a hidro', desc: 'Net pot en cubo DWC/RDWC · nivel alto tocando cubo 1ª semana · registrar fecha en ficha de la planta.' },
+  ];
+
   const MANTENER_MADRE = [
     { id: 'm18_6', titulo: '18/6 permanente', desc: 'Nunca 12/12 en madre: florecería y dejaría de servir para clones.' },
     { id: 'mcorte', titulo: 'Esquejes cada 10–14 d', desc: 'Máx. ~30 % del follaje por sesión para no debilitarla.' },
@@ -102,6 +116,7 @@
         prepMadre: {},
         corte: {},
         enraizar: {},
+        domoDias: {},
         mantener: {},
         ultimaSesionEsquejes: '',
         proximaSesionEsquejes: '',
@@ -283,7 +298,7 @@
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
     if (!cfg) return;
     const ep = ensureEsquejesState(cfg);
-    const map = { prep: 'prepMadre', corte: 'corte', enraizar: 'enraizar', mantener: 'mantener' };
+    const map = { prep: 'prepMadre', corte: 'corte', enraizar: 'enraizar', domo: 'domoDias', mantener: 'mantener' };
     const key = map[grupo] || grupo;
     if (!ep[key]) ep[key] = {};
     ep[key][id] = !ep[key][id];
@@ -291,6 +306,15 @@
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     renderEsquejesSetupUI();
     renderMedirEsquejesPanel();
+  }
+
+  function getDomoDiaSugerido(ep) {
+    ep = ep || ensureEsquejesState();
+    const ultima = parseFechaEs(ep.ultimaSesionEsquejes);
+    if (!ultima) return null;
+    const dias = Math.round((hoyLocal0() - ultima) / 86400000) + 1;
+    if (dias < 1 || dias > DOMO_DIA_PASOS.length) return null;
+    return dias;
   }
 
   function renderEsquejesSetupUI() {
@@ -301,9 +325,10 @@
     const secPrep = el('setupPremiumEsquejesPrep');
     const secCorte = el('setupPremiumEsquejesCorte');
     const secEnra = el('setupPremiumEsquejesEnraizar');
+    const secDomo = el('setupPremiumEsquejesDomo');
     const secMadre = el('setupPremiumEsquejesMadre');
     const show = origen === 'clon' || origen === 'madre';
-    [secPrep, secCorte, secEnra, secMadre].forEach(function (s) {
+    [secPrep, secCorte, secEnra, secDomo, secMadre].forEach(function (s) {
       if (s) s.classList.toggle('setup-hidden', !show);
     });
     if (hint) {
@@ -320,6 +345,17 @@
     renderPasoGrid(el('setupPremiumEsquejesPrepGrid'), PREP_MADRE_PASOS, 'prep', ep.prepMadre);
     renderPasoGrid(el('setupPremiumEsquejesCorteGrid'), CORTE_PASOS, 'corte', ep.corte);
     renderPasoGrid(el('setupPremiumEsquejesEnraizarGrid'), ENRAIZAR_PASOS, 'enraizar', ep.enraizar);
+    if (secDomo) {
+      secDomo.classList.toggle('setup-hidden', !show);
+      const domoHint = el('setupPremiumEsquejesDomoHint');
+      const diaSug = getDomoDiaSugerido(ep);
+      if (domoHint) {
+        domoHint.textContent = diaSug
+          ? 'Sugerido hoy: día ' + diaSug + ' del domo (desde última sesión registrada en Medir).'
+          : 'Marca cada día tras cortar esquejes; ventila el domo de forma progresiva (Grodan / growshops).';
+      }
+      renderPasoGrid(el('setupPremiumEsquejesDomoGrid'), DOMO_DIA_PASOS, 'domo', ep.domoDias);
+    }
     if (secMadre) secMadre.classList.toggle('setup-hidden', origen !== 'madre');
     if (origen === 'madre') {
       renderPasoGrid(el('setupPremiumEsquejesMadreGrid'), MANTENER_MADRE, 'mantener', ep.mantener);
@@ -361,6 +397,7 @@
     ep.proximaSesionEsquejes = prox.toLocaleDateString('es-ES');
     ep.corte = {};
     ep.enraizar = {};
+    ep.domoDias = {};
     ep.prepMadre = {};
     if (typeof saveState === 'function') saveState();
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
@@ -412,8 +449,30 @@
     } else if (rec && rec.diasHastaSesion != null && rec.diasHastaSesion <= PREP_DIAS_ANTES && rec.diasHastaSesion >= 0) {
       alerta = '<p class="medir-esquejes-alerta medir-esquejes-alerta--prep">🌿 Prep madre: baja EC y poda · sesión en <strong>' + rec.diasHastaSesion + ' d</strong></p>';
     } else if (rec && rec.diasDesdeSesion != null && rec.diasDesdeSesion <= ENRAIZAR_DIAS) {
-      alerta = '<p class="medir-esquejes-alerta medir-esquejes-alerta--enra">💧 Día ' + (rec.diasDesdeSesion + 1) + ' post-corte · vigila domo y EC baja</p>';
+      const diaDomo = Math.min(DOMO_DIA_PASOS.length, rec.diasDesdeSesion + 1);
+      const pasoDomo = DOMO_DIA_PASOS[diaDomo - 1];
+      alerta = '<p class="medir-esquejes-alerta medir-esquejes-alerta--enra">💧 Día ' + (rec.diasDesdeSesion + 1) + ' post-corte · ' +
+        (pasoDomo ? pasoDomo.titulo : 'vigila domo y EC baja') + '</p>';
     }
+
+    const domoDone = countDone(ep.domoDias);
+    const diaSug = getDomoDiaSugerido(ep);
+    const domoHtml =
+      '<details class="medir-esquejes-dome-details"' + (rec && rec.diasDesdeSesion != null && rec.diasDesdeSesion <= 10 ? ' open' : '') + '>' +
+      '<summary>Domo día a día (' + domoDone + '/' + DOMO_DIA_PASOS.length + ')' +
+      (diaSug ? ' · sugerido: día ' + diaSug : '') + '</summary>' +
+      '<div class="medir-esquejes-dome-grid">' +
+      DOMO_DIA_PASOS.map(function (p) {
+        const ok = !!(ep.domoDias && ep.domoDias[p.id]);
+        const sug = diaSug === p.dia;
+        return (
+          '<button type="button" class="equip-card equip-card-pad-12 medir-dome-paso' + (ok ? ' selected' : '') + (sug ? ' medir-dome-paso--hoy' : '') +
+          '" onclick="toggleEsquejePaso(\'domo\',\'' + p.id + '\')" aria-pressed="' + (ok ? 'true' : 'false') + '">' +
+          '<div class="setup-option-title-md">' + p.titulo + (sug ? ' ← hoy' : '') + '</div>' +
+          '<div class="setup-option-desc-sm">' + p.desc + '</div></button>'
+        );
+      }).join('') +
+      '</div></details>';
 
     panel.innerHTML =
       alerta +
@@ -434,6 +493,7 @@
       '<span>Prep: <strong>' + countDone(ep.prepMadre) + '/' + PREP_MADRE_PASOS.length + '</strong></span> · ' +
       '<span>Corte: <strong>' + countDone(ep.corte) + '/' + CORTE_PASOS.length + '</strong></span> · ' +
       '<span>Enraizar: <strong>' + countDone(ep.enraizar) + '/' + ENRAIZAR_PASOS.length + '</strong></span>' +
+      ' · Domo: <strong>' + domoDone + '/' + DOMO_DIA_PASOS.length + '</strong>' +
       (madre ? ' · Mantener: <strong>' + countDone(ep.mantener) + '/' + MANTENER_MADRE.length + '</strong>' : '') +
       '</div>' +
       (madre
@@ -448,13 +508,18 @@
       '<div class="medir-esquejes-actions">' +
       '<button type="button" class="btn btn-secondary btn-sm" onclick="registrarSesionEsquejes()">Registrar sesión hoy</button>' +
       '</div>' +
+      domoHtml +
       '<details class="medir-esquejes-details"><summary>Ver pasos completos</summary>' +
       '<p class="medir-esquejes-foot">Valores orientativos para hidro DWC/RDWC. Cada genética y semillero (pack, web del breeder) puede pedir EC, tiempos o HR distintos — prioriza su ficha oficial.</p>' +
       '<h4>Preparar madre (7–10 d antes)</h4><ul>' + PREP_MADRE_PASOS.map(function (p) { return '<li>' + p.titulo + ': ' + p.desc + '</li>'; }).join('') + '</ul>' +
       '<h4>Día del corte</h4><ul>' + CORTE_PASOS.map(function (p) { return '<li>' + p.titulo + ': ' + p.desc + '</li>'; }).join('') + '</ul>' +
       '<h4>Enraizamiento → DWC</h4><ul>' + ENRAIZAR_PASOS.map(function (p) { return '<li>' + p.titulo + ': ' + p.desc + '</li>'; }).join('') + '</ul>' +
+      '<h4>Domo — 10 días</h4><ul>' + DOMO_DIA_PASOS.map(function (p) { return '<li>' + p.titulo + ': ' + p.desc + '</li>'; }).join('') + '</ul>' +
       (madre ? '<h4>Mantener madre</h4><ul>' + MANTENER_MADRE.map(function (p) { return '<li>' + p.titulo + ': ' + p.desc + '</li>'; }).join('') + '</ul>' : '') +
       '</details>';
+    try {
+      if (typeof renderMedirGeneticaBreederPanel === 'function') renderMedirGeneticaBreederPanel();
+    } catch (_) {}
   }
 
   function generarEventosEsquejesDia(fechaDia, hoyRef) {
@@ -472,13 +537,15 @@
     const ultima = parseFechaEs(ep.ultimaSesionEsquejes);
     if (ultima) {
       const diasDesde = Math.round((d - ultima) / 86400000);
-      if (diasDesde >= 0 && diasDesde <= ENRAIZAR_DIAS) {
+      if (diasDesde >= 0 && diasDesde <= DOMO_DIA_PASOS.length) {
+        const paso = DOMO_DIA_PASOS[Math.min(DOMO_DIA_PASOS.length - 1, diasDesde)];
         eventos.push({
           tipo: 'esqueje',
           icono: '💧',
-          titulo: 'Enraizamiento de clones (día ' + (diasDesde + 1) + ')',
-          desc: 'Domo HR 70–80 % · EC ' + ESQUEJES_EC_PH.enraizamiento.ec.min + '–' + ESQUEJES_EC_PH.enraizamiento.ec.max + ' µS · pH ' +
-            ESQUEJES_EC_PH.enraizamiento.ph.min + '–' + ESQUEJES_EC_PH.enraizamiento.ph.max,
+          titulo: paso ? paso.titulo : 'Enraizamiento clones (día ' + (diasDesde + 1) + ')',
+          desc: paso
+            ? paso.desc
+            : 'Domo HR 70–80 % · EC ' + ESQUEJES_EC_PH.enraizamiento.ec.min + '–' + ESQUEJES_EC_PH.enraizamiento.ec.max + ' µS',
         });
       }
     }
@@ -584,10 +651,11 @@
         titulo: '🌿 Prep madre · ' + nombre,
         cuerpo: 'Faltan 7 d para esquejes: baja EC a 800–1000 µS y poda para brotes uniformes.',
       });
-    } else if (rec && rec.diasDesdeSesion != null && rec.diasDesdeSesion === 5) {
+    } else if (rec && rec.diasDesdeSesion != null && rec.diasDesdeSesion >= 0 && rec.diasDesdeSesion < DOMO_DIA_PASOS.length) {
+      const paso = DOMO_DIA_PASOS[rec.diasDesdeSesion];
       avisos.push({
-        titulo: '💧 Clones día 6 · ' + nombre,
-        cuerpo: 'Revisa raíces en domo. EC objetivo 300–600 µS. Ventila domo 2×/día.',
+        titulo: '💧 Domo día ' + (rec.diasDesdeSesion + 1) + ' · ' + nombre,
+        cuerpo: paso ? paso.desc : 'Ventila domo y vigila EC baja en clones.',
       });
     }
     return avisos;
@@ -621,4 +689,6 @@
   window.generarEventosEsquejesDia = generarEventosEsquejesDia;
   window.marcarEsquejesCalendarioGrid = marcarEsquejesCalendarioGrid;
   window.evaluarAvisosEsquejesNotif = evaluarAvisosEsquejesNotif;
+  window.getDomoDiaSugerido = getDomoDiaSugerido;
+  window.DOMO_DIA_PASOS = DOMO_DIA_PASOS;
 })();

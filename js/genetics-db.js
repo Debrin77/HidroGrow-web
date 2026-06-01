@@ -1,7 +1,7 @@
 /**
  * HidroGrow — catálogo de genéticas (58 variedades; alias CULTIVOS_DB en cultivos-db.js).
  * Campos compatibles con el motor: id, nombre, abrev, grupo, emoji, ec/ph, dias, sistemaIdeal, nota, fructificacion.
- * Extra: tipoFloracion (foto|auto), diasVeg, diasFlor.
+ * Extra: tipoFloracion (foto|auto), diasVeg, diasFlor, breederId, strainPackUrl (vía hc-genetics-breeder.js).
  */
 const GENETICS_DB = [
   { id: 'northern_lights_auto', nombre: 'Northern Lights Auto', abrev: 'NL', grupo: 'auto', emoji: '🌿',

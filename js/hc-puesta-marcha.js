@@ -968,6 +968,20 @@
     ) {
       return;
     }
+    var tipo = String(cfg.tipoInstalacion || 'dwc').toLowerCase();
+    var eqArr = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+    var esKratky = typeof esDwcKratky === 'function' && esDwcKratky(cfg);
+    var sinDifusor = eqArr.indexOf('difusor') < 0;
+    if ((tipo === 'dwc' || tipo === 'rdwc') && !esKratky && sinDifusor) {
+      if (
+        !confirm(
+          'No tienes marcado aireador/difusor en el equipamiento.\n\n' +
+            'En DWC/RDWC el oxígeno 24 h es crítico para evitar Pythium. ¿Confirmar montaje igualmente?'
+        )
+      ) {
+        return;
+      }
+    }
     checks.completedAt = new Date().toISOString();
     saveChecks(checks);
     closePuestaMarchaChecklist();

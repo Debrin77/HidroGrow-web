@@ -34,6 +34,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Guía digital y soporte en español.',
     },
     nota: 'Referencia española en cannabis medicinal y clásicos feminizados.',
+    webUrl: 'https://www.dinafem.org/es/',
+    searchUrl: 'https://www.dinafem.org/es/buscar?q=',
   },
   {
     id: 'sweet_seeds',
@@ -53,6 +55,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Tabla germinación en web por variedad.',
     },
     nota: 'Autos y fotos resinosas; muy presentes en tiendas ES.',
+    webUrl: 'https://www.sweetseeds.com/es/',
+    searchUrl: 'https://www.sweetseeds.com/es/search?q=',
   },
   {
     id: 'royal_queen',
@@ -72,6 +76,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Grow diaries y guías por genética en royalqueenseeds.es',
     },
     nota: 'Marca más vendida en Europa; buena relación precio/variedad.',
+    webUrl: 'https://www.royalqueenseeds.es/',
+    searchUrl: 'https://www.royalqueenseeds.es/search?q=',
   },
   {
     id: 'sensi_seeds',
@@ -91,6 +97,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Fichas técnicas detalladas por strain.',
     },
     nota: 'Histórica; genéticas landrace e híbridos probados.',
+    webUrl: 'https://sensiseeds.com/es/',
+    searchUrl: 'https://sensiseeds.com/es/search?query=',
   },
   {
     id: 'dutch_passion',
@@ -110,6 +118,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Blog técnico y tiempos por variedad.',
     },
     nota: 'Autos de referencia; seeds desde 1987.',
+    webUrl: 'https://www.dutch-passion.com/es/',
+    searchUrl: 'https://www.dutch-passion.com/es/search?q=',
   },
   {
     id: 'fast_buds',
@@ -129,6 +139,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Fast Buds app y grow guide online.',
     },
     nota: 'Especialistas autoflorecientes; muy populares en SOG auto.',
+    webUrl: 'https://2fast4buds.com/es',
+    searchUrl: 'https://2fast4buds.com/es/search?q=',
   },
   {
     id: 'barneys_farm',
@@ -148,6 +160,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Descripción larga por variedad en web.',
     },
     nota: 'Premios internacionales; genéticas potentes.',
+    webUrl: 'https://www.barneysfarm.com/',
+    searchUrl: 'https://www.barneysfarm.com/search?q=',
   },
   {
     id: 'pyramid_seeds',
@@ -167,6 +181,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Ficha en español por producto.',
     },
     nota: 'Marca española accesible; catálogo amplio.',
+    webUrl: 'https://www.pyramidseeds.com/es/',
+    searchUrl: 'https://www.pyramidseeds.com/es/search?q=',
   },
   {
     id: 'ripper_seeds',
@@ -186,6 +202,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Blog Ripper Seeds con tips de cultivo.',
     },
     nota: 'Breeder español premium; genéticas resinosas.',
+    webUrl: 'https://www.ripperseeds.com/es/',
+    searchUrl: 'https://www.ripperseeds.com/es/buscar?q=',
   },
   {
     id: 'philosopher_seeds',
@@ -205,6 +223,8 @@ const SEMILLEROS_DB = [
       soportePack: 'Filosofía de cultivo en web; tiempos por strain.',
     },
     nota: 'Semillero boutique español; variedades seleccionadas.',
+    webUrl: 'https://philosopherseeds.com/es/',
+    searchUrl: 'https://philosopherseeds.com/es/buscar?q=',
   },
 ];
 

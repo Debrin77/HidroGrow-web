@@ -75,6 +75,33 @@
     return !!getLc().operativaDiaria;
   }
 
+  var TABS_POST_OPERATIVA = ['riego', 'meteo'];
+
+  function refreshTabsOperativaUi() {
+    var operativa = medicionesOperativasPermitidas();
+    TABS_POST_OPERATIVA.forEach(function (t) {
+      var btn = document.getElementById('btn-' + t);
+      if (btn) btn.classList.toggle('setup-hidden', !operativa);
+    });
+    var tabActiva =
+      typeof currentTab !== 'undefined' && currentTab ? currentTab : null;
+    if (!tabActiva) {
+      TABS_POST_OPERATIVA.some(function (t) {
+        var panel = document.getElementById('tab-' + t);
+        if (panel && panel.classList.contains('active')) {
+          tabActiva = t;
+          return true;
+        }
+        return false;
+      });
+    }
+    if (!operativa && tabActiva && TABS_POST_OPERATIVA.indexOf(tabActiva) >= 0) {
+      try {
+        if (typeof goTab === 'function') goTab('inicio');
+      } catch (_) {}
+    }
+  }
+
   function refreshMedirOperativaUi() {
     var lc = getLc();
     var operativa = !!lc.operativaDiaria;
@@ -169,6 +196,7 @@
     try {
       if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
     } catch (_) {}
+    refreshTabsOperativaUi();
   }
 
   function avisarPrimeraMedicionOperativa() {
@@ -197,6 +225,7 @@
   }
 
   global.refreshMedirOperativaUi = refreshMedirOperativaUi;
+  global.refreshTabsOperativaUi = refreshTabsOperativaUi;
   global.medicionesOperativasPermitidas = medicionesOperativasPermitidas;
   global.scrollToMedirEntrada = scrollToMedirEntrada;
   global.avisarPrimeraMedicionOperativa = avisarPrimeraMedicionOperativa;

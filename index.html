@@ -2031,6 +2031,10 @@
           <div class="card-title">🏪 Perfil de semillero</div>
           <div id="medirSemilleroPanel" class="medir-sem-panel"></div>
         </div>
+        <div class="card medir-gen-breeder-card setup-hidden" id="medirGeneticaBreederCard">
+          <div class="card-title">🧬 Genética y pack del semillero</div>
+          <div id="medirGeneticaBreederPanel" class="medir-gen-breeder-panel"></div>
+        </div>
       </section>
 
       <!-- Resumen N·C / variedad / días / estado / EC (desplegable) -->
@@ -2944,7 +2948,7 @@
         </svg>
       </div>
       <h2 id="hcTabBarCoachTitle" class="hc-tab-bar-coach-title">Navega por abajo</h2>
-      <p class="hc-tab-bar-coach-text">La barra fija agrupa <strong>Inicio</strong>, <strong>Medir</strong>, <strong>Cultivo e instalación</strong>, <strong>Riego</strong>, clima, historial y más. Si no ves todos los iconos, <strong>desliza horizontalmente</strong>.</p>
+      <p class="hc-tab-bar-coach-text">La barra fija agrupa <strong>Inicio</strong>, <strong>Medir</strong>, <strong>Cultivo e instalación</strong>, calendario, historial y más. <strong>Riego</strong> y <strong>Meteo avanzado</strong> aparecen tras el primer llenado del depósito. Si no ves todos los iconos, <strong>desliza horizontalmente</strong>.</p>
       <button type="button" class="btn btn-primary hc-tab-bar-coach-btn" onclick="dismissTabBarCoach()">Entendido</button>
     </div>
   </div>
@@ -3310,6 +3314,11 @@
       <div id="setupPremiumEsquejesEnraizar" class="setup-hidden">
         <div class="setup-block-title">3 · Enraizar → net pot → cubo</div>
         <div id="setupPremiumEsquejesEnraizarGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
+      </div>
+      <div id="setupPremiumEsquejesDomo" class="setup-hidden">
+        <div class="setup-block-title">3b · Domo — día a día (10 d)</div>
+        <p id="setupPremiumEsquejesDomoHint" class="setup-field-hint setup-mb-8"></p>
+        <div id="setupPremiumEsquejesDomoGrid" class="setup-grid-2 setup-grid-gap-8 setup-mb-12"></div>
       </div>
       <div id="setupPremiumEsquejesMadre" class="setup-hidden">
         <div class="setup-block-title">4 · Mantener madre en producción</div>
@@ -4808,7 +4817,8 @@
 
   <script src="js/backup-capacitor.js"></script>
   <script src="js/hc-ui-icons.js?v=1"></script>
-  <script src="js/genetics-db.js?v=2026-05-31-hidrogrow"></script>
+  <script src="js/genetics-db.js?v=2026-05-31-breeder"></script>
+  <script src="js/hc-genetics-breeder.js?v=2026-05-31-breeder"></script>
   <script src="js/hc-visual-flow.js?v=2026-05-31-visual"></script>
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
@@ -4825,13 +4835,13 @@
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
-  <script src="js/hc-medir-operativa.js?v=2026-05-31-consejos"></script>
+  <script src="js/hc-medir-operativa.js?v=2026-05-31-tabs-operativa"></script>
   <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-operativa"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-operativa"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-tareas-hoy"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-consejos"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-tabs-operativa"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -4854,7 +4864,7 @@
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-pm-guias"></script>
-  <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
+  <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-crash-fix"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>

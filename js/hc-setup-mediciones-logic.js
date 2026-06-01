@@ -649,7 +649,8 @@ function evalPH(ph, vol) {
 
 function evalTemp(temp) {
   if (isNaN(temp)) { setStatus('statusTemp','empty','',''); setCard('cardTemp',''); showCorreccion('correccionTemp',''); return; }
-  const esKratky = typeof esDwcKratky === 'function' && esDwcKratky(state.configTorre || {});
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  const esKratky = typeof esDwcKratky === 'function' && esDwcKratky(cfg);
 
   if (esKratky) {
     if (temp >= 17 && temp <= 21) {
@@ -680,36 +681,43 @@ function evalTemp(temp) {
     return;
   }
 
-  if (temp >= 18 && temp <= 22) {
-    setStatus('statusTemp','ok','✅',`Temperatura correcta — oxígeno disuelto óptimo`);
+  const fase = typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : 'vegetativo';
+  const ambRangos =
+    typeof getRangosFaseAmbiente === 'function' ? getRangosFaseAmbiente(fase) : null;
+  const r = ambRangos && ambRangos.tempAgua
+    ? ambRangos.tempAgua
+    : { min: 18, max: 22, warnLow: 16, warnHigh: 24 };
+
+  if (temp >= r.min && temp <= r.max) {
+    setStatus('statusTemp','ok','✅',`Temperatura correcta (${r.min}–${r.max} °C · fase ${fase})`);
     setCard('cardTemp','ok');
     showCorreccion('correccionTemp','');
-  } else if (temp < 18) {
-    const nivel = temp < 14 ? 'bad' : 'warn';
-    setStatus('statusTemp', nivel, temp < 14 ? '🔴' : '🟡',
-      temp < 14 ? `Temperatura crítica — crecimiento muy lento` : `Temperatura baja — verificar calentador`);
-    setCard('cardTemp', temp < 14 ? 'alert' : 'warn');
-    showCorreccion('correccionTemp', `
-      <div class="correccion-title">🔥 Acción requerida</div>
+  } else if (temp < r.warnLow || temp > r.warnHigh) {
+    const nivel = temp < r.warnLow ? (temp < r.warnLow - 2 ? 'bad' : 'warn') : (temp > r.warnHigh + 4 ? 'bad' : 'warn');
+    const esAlta = temp > r.max;
+    setStatus('statusTemp', nivel, nivel === 'bad' ? '🔴' : '🟡',
+      esAlta
+        ? (temp > r.warnHigh + 4 ? 'Temperatura crítica — riesgo Pythium y bajo oxígeno' : 'Temperatura alta — riesgo de estrés radicular')
+        : (temp < r.warnLow - 2 ? 'Temperatura crítica — crecimiento muy lento' : 'Temperatura baja — verificar calentador'));
+    setCard('cardTemp', nivel === 'bad' ? 'alert' : 'warn');
+    showCorreccion('correccionTemp', esAlta
+      ? `<div class="correccion-title">❄️ Acción requerida</div>
       <div class="correccion-muted--body-temp">
-        Verificar que el calentador está encendido y funcionando correctamente.<br>
-        Temperatura objetivo: <strong>20°C</strong><br>
-        Por debajo de 14°C el crecimiento se detiene casi por completo.
-      </div>
-    `);
+        Enfriar depósito (sombra, hielo, bajar temp. sala). Objetivo fase <strong>${fase}</strong>: ${r.min}–${r.max} °C.<br>
+        Por encima de ${r.warnHigh} °C: riesgo de Pythium y reducción de oxígeno disuelto.
+      </div>`
+      : `<div class="correccion-title">🔥 Acción requerida</div>
+      <div class="correccion-muted--body-temp">
+        Verificar calentador. Objetivo fase <strong>${fase}</strong>: ${r.min}–${r.max} °C.<br>
+        Por debajo de ${r.warnLow} °C el crecimiento se ralentiza mucho.
+      </div>`);
   } else {
-    const nivel = temp > 28 ? 'bad' : 'warn';
-    setStatus('statusTemp', nivel, temp > 28 ? '🔴' : '🟡',
-      temp > 28 ? `Temperatura crítica — riesgo patógenos y bajo oxígeno` : `Temperatura alta — riesgo de estrés radicular`);
-    setCard('cardTemp', temp > 28 ? 'alert' : 'warn');
-    showCorreccion('correccionTemp', `
-      <div class="correccion-title">❄️ Acción requerida</div>
-      <div class="correccion-muted--body-temp">
-        Bajar termostato del calentador.<br>
-        En verano: cubrir el depósito con material aislante o añadir hielo.<br>
-        Por encima de 28°C: riesgo de Pythium y reducción de oxígeno disuelto.
-      </div>
-    `);
+    setStatus('statusTemp','warn','🟡',
+      temp > r.max ? 'Temperatura ligeramente alta — vigilar oxígeno disuelto' : 'Temperatura ligeramente baja — vigilar calentador');
+    setCard('cardTemp','warn');
+    showCorreccion('correccionTemp',
+      `<div class="correccion-muted--body-temp">Margen fase <strong>${fase}</strong>: ${r.min}–${r.max} °C (aviso desde ${r.warnLow}/${r.warnHigh} °C).</div>`
+    );
   }
 }
 
@@ -888,6 +896,8 @@ function cargarUltimaMedicion() {
   if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
   if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
+  if (typeof renderMedirGeneticaBreederPanel === 'function') renderMedirGeneticaBreederPanel();
+  if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
   if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   if (!state.ultimaMedicion) {
     if (card) card.classList.remove('ultima-medicion-card--visible');

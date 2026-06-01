@@ -174,8 +174,23 @@
     };
   }
 
+  function ensureEquipDisclaimer(host) {
+    if (!host || !host.id) return;
+    var id = host.id + '_disclaimer';
+    var d = document.getElementById(id);
+    if (!d) {
+      d = document.createElement('p');
+      d.id = id;
+      d.className = 'setup-field-hint equip-catalog-disclaimer';
+      d.textContent =
+        'Catálogo orientativo — verifica disponibilidad, precio y ficha técnica en tu growshop antes de comprar.';
+      if (host.parentNode) host.parentNode.insertBefore(d, host);
+    }
+  }
+
   function renderEquipCatalogInto(host, idPrefix) {
     if (!host) return;
+    ensureEquipDisclaimer(host);
     const cats = resolveEquipCategorias();
     const keys = Object.keys(cats);
     const cfg = getWizardEquipCfg();

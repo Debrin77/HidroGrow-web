@@ -384,6 +384,20 @@ function scrollTabBarToActive(btn) {
 }
 
 function goTab(tab) {
+  if (
+    (tab === 'riego' || tab === 'meteo') &&
+    typeof medicionesOperativasPermitidas === 'function' &&
+    !medicionesOperativasPermitidas()
+  ) {
+    if (typeof showToast === 'function') {
+      showToast(
+        'Riego y Meteo avanzado se activan tras el primer llenado del depósito (instalación operativa).',
+        false,
+        { durationMs: 5200 }
+      );
+    }
+    tab = 'inicio';
+  }
   // Guardar estado torre antes de navegar
   guardarEstadoTorreActual();
   saveState();
@@ -421,6 +435,9 @@ function goTab(tab) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio') updateDashboard();
+  try {
+    if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
+  } catch (_) {}
   if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
   if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
   if (tab === 'sistema') {

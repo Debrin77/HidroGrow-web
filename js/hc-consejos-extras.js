@@ -230,7 +230,7 @@
     return (
       '<div class="consejo-equip-wrap">' +
       '<div class="consejo-titulo consejo-titulo--mb6">Equipamiento — Top 10 por tipo (España)</div>' +
-      '<p class="consejo-equip-lead">Referencia orientativa de modelos habituales en growshops españoles. Elige en el <strong>configurador</strong> (asistente → Espacio y equipamiento); la app rellena W, m³/h, L/min…</p>' +
+      '<p class="consejo-equip-lead">Referencia orientativa de modelos habituales en growshops españoles — <strong>verifica en tu tienda</strong> antes de comprar. Elige en el <strong>configurador</strong> (asistente → Espacio y equipamiento); la app rellena W, m³/h, L/min…</p>' +
       blocks +
       '<div class="consejo-equip-actions">' +
       '<button type="button" class="btn btn-sm btn-primary" onclick="typeof abrirSetup===\'function\'&&abrirSetup()">Abrir configurador</button> ' +

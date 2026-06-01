@@ -1278,6 +1278,13 @@ function torreTablaLineaSemilleroGerminacionHtml(cultivo) {
   );
 }
 
+function torreTablaLineaBreederHtml(cultivo) {
+  if (!cultivo || typeof geneticsBreederHtml !== 'function') return '';
+  var html = geneticsBreederHtml(cultivo);
+  if (!html) return '';
+  return '<div class="torre-prog-ec-fase torre-prog-ec-fase--breeder">' + html.replace(/^<div class="hc-gen-breeder-line"[^>]*>/, '').replace(/<\/div>$/, '') + '</div>';
+}
+
 // ── Tabla resumen de variedades debajo del SVG ───────────────────────────────
 function renderTablaVariedades() {
   const el = document.getElementById('tablaVariedades');
@@ -1367,6 +1374,7 @@ function renderTablaVariedades() {
           : '';
     const cultRow  = getCultivoDB(p.variedad);
     const semilleroLine = torreTablaLineaSemilleroGerminacionHtml(cultRow);
+    const breederLine = torreTablaLineaBreederHtml(cultRow);
     const origTxt =
       typeof etiquetaOrigenPlantaBreve === 'function' ? etiquetaOrigenPlantaBreve(p.origenPlanta) : '';
 
@@ -1393,6 +1401,7 @@ function renderTablaVariedades() {
         ecText +
         faseEcLine +
         semilleroLine +
+        breederLine +
         '</span>' +
       '</div>';
   });

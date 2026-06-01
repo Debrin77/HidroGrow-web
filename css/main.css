@@ -17660,6 +17660,20 @@ button.toggle-switch:focus-visible {
 .medir-esquejes-fecha-lbl { font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px; }
 .medir-esquejes-fecha-inp { max-width: 140px; margin-bottom: 8px; }
 .medir-esquejes-foot { font-size: 11px; color: #6b7280; margin: 0 0 8px; font-style: italic; }
+.medir-esquejes-dome-details { margin: 10px 0; font-size: 12px; }
+.medir-esquejes-dome-details summary { cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+.medir-esquejes-dome-grid { display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; }
+.medir-dome-paso--hoy { outline: 2px solid #7c3aed; outline-offset: 1px; }
+.hc-gen-breeder-line { font-size: 11px; margin-top: 4px; line-height: 1.4; }
+.hc-gen-breeder-link { color: #0d9488; font-weight: 600; text-decoration: underline; }
+.hc-gen-breeder-hint { color: #6b7280; font-weight: 400; }
+.medir-gen-breeder-card { margin-bottom: 12px; }
+.medir-gen-breeder-lead { font-size: 12px; color: #6b7280; margin: 0 0 10px; }
+.medir-gen-breeder-item { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+.medir-gen-breeder-item:last-child { border-bottom: none; }
+.medir-gen-breeder-nota { font-size: 11px; color: #6b7280; margin: 4px 0 0; }
+.torre-prog-ec-fase--breeder { font-size: 10px; margin-top: 3px; }
+.torre-prog-breeder-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #0d9488; }
 .equip-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; min-height: 2rem; }
 .equip-catalog-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 10px; background: #fafafa; }
 .setup-overlay .equip-catalog-card {

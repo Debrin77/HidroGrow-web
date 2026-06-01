@@ -349,6 +349,8 @@
   function refreshSistemaCultivoExtras() {
     if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
     if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
+    if (typeof renderMedirGeneticaBreederPanel === 'function') renderMedirGeneticaBreederPanel();
+    if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
   }
 
   function initMedirSalaLayout() {
