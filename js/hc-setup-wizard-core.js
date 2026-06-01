@@ -792,6 +792,31 @@ function rdwcSetupFormularioCompleto() {
   );
 }
 
+/** Rellena campos RDWC vacíos con defaults razonables antes de guardar. */
+function hcCompletarRdwcSetupDefaultsAntesGuardar() {
+  const defs =
+    typeof hcFreshRdwcSetupDefaults === 'function' ? hcFreshRdwcSetupDefaults() : {};
+  try {
+    if (typeof syncSetupRdwcFieldsDesdeConfig === 'function') {
+      syncSetupRdwcFieldsDesdeConfig(defs);
+    }
+  } catch (_) {}
+  const setIfEmpty = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const raw = String(el.value == null ? '' : el.value).trim();
+    if (raw) return;
+    el.value = String(val);
+  };
+  setIfEmpty('setupRdwcSites', defs.rdwcSites || 4);
+  setIfEmpty('setupRdwcRows', defs.rdwcRows || 1);
+  setIfEmpty('setupRdwcBucketVolL', defs.rdwcBucketVolL || 20);
+  setIfEmpty('setupRdwcControlVolL', defs.rdwcControlVolL || 40);
+  setIfEmpty('setupRdwcControlTrabajoL', defs.volMezclaLitros || defs.rdwcControlVolL || 40);
+  setIfEmpty('setupRdwcNetPotMm', defs.rdwcNetPotMm || 125);
+  setIfEmpty('setupRdwcNetPotHeightMm', 100);
+}
+
 /** Vacía el paso RDWC del asistente (sin defaults en inputs). */
 function hcResetRdwcSetupFormZero() {
   setupRdwcDraft = hcFreshRdwcSetupBare();
@@ -2467,6 +2492,12 @@ const SETUP_PAGE_IDS = [
 ];
 
 function abrirSetup() {
+  if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
+    if (typeof abrirSetupNuevaTorre === 'function') {
+      abrirSetupNuevaTorre();
+      return;
+    }
+  }
   // Reconfigurar instalación existente (no crear ranura nueva) salvo que se abra «Nuevo sistema»
   try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();

@@ -182,6 +182,9 @@ function scheduleTabBarCoach(delayMs) {
 /** Primera instalación: aún no hay config guardada (solo plantilla), sin historial de mezcla/medición ni plantas en esquema. */
 function hcEsPrimeraVezAsistenteInstalacion() {
   try {
+    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+      return false;
+    }
     const cfg = state.configTorre;
     const plantilla = !!(cfg && cfg.hcPlantillaAutogenerada);
     const hayConfig = !!(cfg && !plantilla);

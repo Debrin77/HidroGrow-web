@@ -216,6 +216,11 @@ function showToast(msg, error, opts) {
   }
   t.classList.toggle('hc-toast--prominent', !!opts.prominent || opts.zIndex != null);
   t.style.removeProperty('top');
+  const setupOpen = !!document.getElementById('setupOverlay')?.classList.contains('open');
+  if (setupOpen && opts.zIndex == null) {
+    opts.zIndex = 10550;
+    if (isError) opts.prominent = true;
+  }
   if (opts.zIndex != null) t.style.zIndex = String(opts.zIndex);
   else t.style.removeProperty('z-index');
   t.textContent = msg;
@@ -241,11 +246,16 @@ function hcNotifyInstalacionGuardada(opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
   const nombre = String(opts.nombre || '').trim();
   const msg = nombre
-    ? '✅ «' + nombre + '» guardada. Asigna cultivos en el esquema (modo «Asignar cultivo»).'
-    : '✅ Instalación guardada. Continúa en Cultivo e instalación.';
-  const delayMs = Number.isFinite(opts.delayMs) ? opts.delayMs : 220;
+    ? '✅ «' + nombre + '» guardada. Revisa el checklist de montaje en Sala (se abre ahora).'
+    : '✅ Instalación guardada. Revisa el checklist de montaje en Sala (se abre ahora).';
+  const delayMs = Number.isFinite(opts.delayMs) ? opts.delayMs : 280;
   setTimeout(function () {
-    showToast(msg, false, { durationMs: 5600, zIndex: 10400, prominent: true });
+    showToast(msg, false, { durationMs: 8200, zIndex: 10400, prominent: true });
   }, delayMs);
+  try {
+    if (typeof hcMostrarBannerSalaPostSetup === 'function') {
+      hcMostrarBannerSalaPostSetup(nombre);
+    }
+  } catch (_) {}
 }
 

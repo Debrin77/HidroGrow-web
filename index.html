@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-tareas-hoy">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-montaje-sala">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
@@ -249,10 +249,10 @@
         <span id="dashFecha">—</span>
       </div>
 
-      <p class="dash-instalacion-label" id="dashInstalacionLabel">Instalación seleccionada</p>
+      <p class="dash-instalacion-label setup-hidden" id="dashInstalacionLabel">Instalación seleccionada</p>
 
       <!-- 2. Instalación / sistema activo -->
-      <button type="button" id="dashTorreBanner" class="dash-torre-banner"
+      <button type="button" id="dashTorreBanner" class="dash-torre-banner setup-hidden"
         onclick="abrirSelectorTorres()"
         aria-describedby="dashInstalacionLabel"
         aria-label="Cambiar instalación activa">
@@ -268,6 +268,11 @@
           Cambiar ›
         </span>
       </button>
+      <section id="dashSinInstalacionCta" class="dash-sin-instalacion" aria-label="Configurar tu primera instalación">
+        <p class="dash-sin-instalacion-lead">Aún no has configurado ningún sistema de cultivo.</p>
+        <p class="dash-sin-instalacion-hint">El asistente te guía paso a paso: tipo de instalación, depósito, nutriente y equipamiento.</p>
+        <button type="button" class="btn btn-primary dash-sin-instalacion-btn" onclick="hcAbrirPrimeraInstalacion()">Configurar instalación</button>
+      </section>
       <div id="hcMultiCoachInicio" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
 
       <section id="dashInstalacionLifecycle" class="dash-instalacion-lifecycle setup-hidden" aria-label="Progreso de instalación">
@@ -289,7 +294,7 @@
         <button type="button" class="btn btn-primary btn-sm" onclick="hcIrRutinaDiaOperativa()">Ir a Medir</button>
       </section>
 
-      <div class="dash-operativa-row" role="group" aria-label="Estado operativo de la instalación activa">
+      <div class="dash-operativa-row setup-hidden" role="group" aria-label="Estado operativo de la instalación activa">
         <div>
           <div class="dash-operativa-title">Estado del sistema</div>
           <div class="dash-operativa-sub" id="medirEstadoOperativaTag">Operativa</div>
@@ -1513,7 +1518,9 @@
             </span>
             <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
           </summary>
-          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody"></div>
+          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody">
+            <p class="hc-pm-inline-lead hc-pm-inline-placeholder">El checklist se carga al guardar una instalación o al abrir esta sección.</p>
+          </div>
         </details>
         <details class="sistema-equip-details sala-equip-details" id="sistemaEquipDetails">
           <summary class="sistema-equip-summary">
@@ -4836,12 +4843,12 @@
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-medir-operativa.js?v=2026-05-31-tabs-operativa"></script>
-  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-operativa"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-operativa"></script>
+  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-montaje-sala"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-tareas-hoy"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-tabs-operativa"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -4860,21 +4867,21 @@
 
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
   <script src="js/torre-render-build.js?v=2026-05-31-dwc-filas"></script>
-<script src="js/torre-render-main.js?v=2026-05-31-ui-plantas-pm"></script>
+<script src="js/torre-render-main.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-pm-guias"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-crash-fix"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-skip-equip"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-dwc-filas"></script>
-  <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-setup-save-fix"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-rdwc-defaults"></script>
+  <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-guardar-toast"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-lifecycle"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-montaje-sala"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -4895,17 +4902,17 @@
   <script src="js/hc-setup-consejos.js?v=2026-05-31-secado-curado"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
-  <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-operativa"></script>
+  <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=1"></script>
-  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-operativa"></script>
+  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-montaje-sala"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-montaje-ui"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-  <script src="js/hc-puesta-marcha.js?v=2026-05-31-montaje-edit"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-montaje-sala"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

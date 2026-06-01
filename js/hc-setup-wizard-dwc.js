@@ -1398,6 +1398,48 @@ function dwcSetupFormularioCompleto() {
   return true;
 }
 
+/** Rellena medidas mínimas orientativas si el paso DWC quedó vacío (banner «sin cálculos obligatorios»). */
+function hcCompletarDwcSetupDefaultsAntesGuardar() {
+  const setIfEmpty = (id, val) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const raw = String(el.value == null ? '' : el.value).trim();
+    if (raw) return;
+    el.value = String(val);
+  };
+  const filas = parseInt(document.getElementById('sliderNiveles')?.value || '0', 10);
+  const cols = parseInt(document.getElementById('sliderCestas')?.value || '0', 10);
+  if (!Number.isFinite(filas) || filas < 1) {
+    const sn = document.getElementById('sliderNiveles');
+    if (sn) sn.value = '1';
+    const vn = document.getElementById('valNiveles');
+    if (vn) vn.textContent = '1';
+  }
+  if (!Number.isFinite(cols) || cols < 1) {
+    const sc = document.getElementById('sliderCestas');
+    if (sc) sc.value = '1';
+    const vc = document.getElementById('valCestas');
+    if (vc) vc.textContent = '1';
+  }
+  const draft =
+    typeof buildDwcDraftCfgFromSetupWizardInputs === 'function'
+      ? buildDwcDraftCfgFromSetupWizardInputs()
+      : null;
+  if (draft && dwcSetupTieneMedidasCuboEnCfg(draft)) {
+    setIfEmpty('setupDwcPotRimMm', 76);
+    setIfEmpty('setupDwcPotHmm', 100);
+    return;
+  }
+  const formaEl = document.getElementById('setupDwcDepositoForma');
+  if (formaEl && !String(formaEl.value || '').trim()) formaEl.value = 'cilindrico';
+  setIfEmpty('setupDwcDiametroCm', 30);
+  setIfEmpty('setupDwcLargoCm', 30);
+  setIfEmpty('setupDwcAnchoCm', 30);
+  setIfEmpty('setupDwcProfCm', 25);
+  setIfEmpty('setupDwcPotRimMm', 76);
+  setIfEmpty('setupDwcPotHmm', 100);
+}
+
 /** Vacía el paso DWC del asistente (sin defaults numéricos en UI). */
 function hcResetDwcSetupFormZero() {
   const clear = id => {

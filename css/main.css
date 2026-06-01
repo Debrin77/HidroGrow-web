@@ -19,8 +19,8 @@
   --orange:     #c2410c;
   --blue:       #1d4ed8;
   --white:      #0f172a;
-  /* Texto secundario sobre fondos claros — ~AA 4.5:1 vs #f4f6f8 / #fff */
-  --muted:      #475569;
+  /* Texto secundario sobre fondos claros — WCAG AA ~4.5:1 vs #f4f6f8 / #fff */
+  --muted:      #334155;
   --font-sans:  'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Syne', var(--font-sans);
   --font-mono:    'Inconsolata', ui-monospace, monospace;
@@ -3930,7 +3930,7 @@ html.hc-theme-dark .medir-wizard-modal textarea#wizNotas.medir-wizard-notes:focu
   color: var(--green);
   line-height: 1;
 }
-.stat-label { font-size: 9px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-label { font-size: 10px; color: #334155; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* ══ INFO BANNER ══ */
 .info-banner {
@@ -4223,13 +4223,18 @@ button.aviso-cestas-ir:active {
   margin-top: 10px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: rgba(15, 23, 42, 0.25);
-  color: var(--white);
+  border: 1px solid #94a3b8;
+  background: #e2e8f0;
+  color: #0f172a;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   font-family: var(--font-sans);
+}
+html.hc-theme-dark .tab-context-hint-close {
+  border-color: #64748b;
+  background: #334155;
+  color: #f1f5f9;
 }
 
 /* ══ Bienvenida primera vez ══ */
@@ -5188,6 +5193,46 @@ h1.dash-greeting {
   background: #dcfce7;
   border-radius: 8px;
   padding: 3px 8px;
+}
+.dash-sin-instalacion {
+  margin: 0 0 var(--dash-section-gap);
+  padding: 16px 14px;
+  border-radius: 14px;
+  border: 1.5px dashed rgba(22, 163, 74, 0.45);
+  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+.dash-sin-instalacion-lead {
+  margin: 0 0 6px;
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: #14532d;
+  line-height: 1.35;
+}
+.dash-sin-instalacion-hint {
+  margin: 0 0 14px;
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  color: #334155;
+}
+.dash-sin-instalacion-btn {
+  width: 100%;
+}
+.torre-activa-nombre-text--vacío {
+  color: #334155;
+  font-weight: 600;
+}
+html.hc-theme-dark .dash-sin-instalacion {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: rgba(34, 197, 94, 0.1);
+}
+html.hc-theme-dark .dash-sin-instalacion-lead {
+  color: #bbf7d0;
+}
+html.hc-theme-dark .dash-sin-instalacion-hint {
+  color: #cbd5e1;
+}
+html.hc-theme-dark .torre-activa-nombre-text--vacío {
+  color: #cbd5e1;
 }
 .dash-sistema-info[role="button"] {
   display: flex;
@@ -15084,7 +15129,7 @@ button.toggle-switch:focus-visible {
 }
 .setup-field-hint {
   font-size: 11px;
-  color: #64748b;
+  color: #334155;
   margin: 0;
   line-height: 1.45;
 }
@@ -15109,13 +15154,13 @@ button.toggle-switch:focus-visible {
   margin: 6px 0 0;
   font-size: 11px;
   line-height: 1.45;
-  color: #64748b;
+  color: #334155;
 }
 .torre-sistema-inline-hint {
   margin: 0 0 10px;
   font-size: 11px;
   line-height: 1.45;
-  color: #64748b;
+  color: #334155;
 }
 .setup-dwc-wrap {
   margin-top: 12px;
@@ -18244,7 +18289,7 @@ html.hc-theme-dark {
   --bg3: #1a222d;
   --border: rgba(241, 245, 249, 0.07);
   --white: #e7edf5;
-  --muted: #9fb1c8;
+  --muted: #b8c5d6;
   --green-pale: rgba(34, 197, 94, 0.14);
   --card-shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 20px rgba(0, 0, 0, 0.28);
   --card-shadow-press: 0 1px 2px rgba(0, 0, 0, 0.4);
@@ -18757,7 +18802,10 @@ button.hc-monitor-check { cursor: pointer; }
   font-size: var(--text-sm);
   line-height: 1.45;
   margin: 0 0 8px;
-  color: var(--muted);
+  color: #334155;
+}
+html.hc-theme-dark .hc-pm-inline-lead {
+  color: #cbd5e1;
 }
 .hc-pm-list--inline {
   margin: 0 0 10px;
@@ -18766,7 +18814,21 @@ button.hc-monitor-check { cursor: pointer; }
   border: none;
   padding: 4px 0;
   font-size: var(--text-sm);
-  color: var(--text);
+  color: var(--white);
+}
+.hc-sala-post-setup-banner {
+  margin: 0 0 14px;
+  border-color: rgba(22, 163, 74, 0.35);
+  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 100%);
+  color: #14532d;
+}
+html.hc-theme-dark .hc-sala-post-setup-banner {
+  border-color: rgba(74, 222, 128, 0.3);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+html.hc-theme-dark .hc-sala-post-setup-banner strong {
+  color: #dcfce7;
 }
 .hc-pm-item--inline.hc-pm-item--done {
   color: #86efac;

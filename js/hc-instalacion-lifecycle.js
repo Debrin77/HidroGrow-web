@@ -18,6 +18,7 @@
 
   function instalacionEstaConfigurada(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
+    if (cfg.hcPlantillaAutogenerada) return false;
     if (cfg.checklistInstalacionConfirmada === true) return true;
     if (
       typeof checklistInstalacionCompletaParaRecarga === 'function' &&
@@ -237,17 +238,21 @@
 
   function hcIrMontajeSala() {
     try {
-      if (typeof goTabSala === 'function') goTabSala('agua');
-      else if (typeof goTab === 'function') goTab('sala');
+      if (typeof goTab === 'function') goTab('sala');
+      if (typeof salaSubTab === 'function') salaSubTab('agua');
+      else if (typeof goTabSala === 'function') goTabSala('agua');
     } catch (_) {}
     setTimeout(function () {
+      try {
+        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
+        else if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+      } catch (_) {}
       var det = document.getElementById('sistemaMontajeChecksDetails');
       if (det) det.open = true;
-      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       if (det && typeof det.scrollIntoView === 'function') {
         det.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 180);
+    }, 220);
   }
 
   function hcIrCultivoMatriz(desdePostSetup) {
@@ -413,20 +418,49 @@
     } catch (_) {}
   }
 
+  function hcMostrarBannerSalaPostSetup(nombre) {
+    var nom = String(nombre || '').trim();
+    var titulo = nom ? '«' + nom + '» guardada' : 'Instalación guardada';
+    var tab = document.getElementById('tab-sala');
+    if (!tab) return;
+    var prev = document.getElementById('hcSalaPostSetupBanner');
+    if (prev) prev.remove();
+    var ban = document.createElement('div');
+    ban.id = 'hcSalaPostSetupBanner';
+    ban.className = 'setup-field-hint setup-field-hint--banner hc-sala-post-setup-banner';
+    ban.setAttribute('role', 'status');
+    ban.innerHTML =
+      '<strong>✅ ' +
+      esc(titulo) +
+      '</strong> Completa el checklist de montaje abajo (carpa, LED, aireador, fugas…). ' +
+      'Pulsa <strong>Abrir checklist de montaje</strong> para marcar cada punto.';
+    var intro = tab.querySelector('.medir-sala-intro');
+    if (intro) intro.insertAdjacentElement('afterend', ban);
+    else tab.insertBefore(ban, tab.firstChild);
+  }
+
   function iniciarFlujoInstalacionPostSetup() {
     activarInstalacionGuidadaPostSetup();
-    try {
-      if (typeof showToast === 'function') {
-        showToast('Siguiente paso: montaje de sala (equipamiento y puesta en marcha).', false, { durationMs: 5200 });
-      }
-    } catch (_) {}
-    hcIrMontajeSala();
     setTimeout(function () {
-      refreshInstalacionLifecycleUi();
       try {
-        if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
+        else if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       } catch (_) {}
-    }, 200);
+      hcIrMontajeSala();
+      setTimeout(function () {
+        try {
+          if (typeof salaSubTab === 'function') salaSubTab('agua');
+          if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+          var det = document.getElementById('sistemaMontajeChecksDetails');
+          if (det) det.open = true;
+          if (typeof hcOpenPuestaMarchaChecklist === 'function') hcOpenPuestaMarchaChecklist();
+        } catch (_) {}
+        refreshInstalacionLifecycleUi();
+        try {
+          if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+        } catch (_) {}
+      }, 420);
+    }, 300);
   }
 
   global.getInstalacionLifecycle = getInstalacionLifecycle;
@@ -440,6 +474,7 @@
   global.activarInstalacionGuidadaPostSetup = activarInstalacionGuidadaPostSetup;
   global.refreshInstalacionLifecycleUi = refreshInstalacionLifecycleUi;
   global.iniciarFlujoInstalacionPostSetup = iniciarFlujoInstalacionPostSetup;
+  global.hcMostrarBannerSalaPostSetup = hcMostrarBannerSalaPostSetup;
   global.depositoPrimerLlenadoOk = depositoPrimerLlenadoOk;
 
   /** Montaje editable hasta completar primer llenado del depósito (mezcla hidropónica). */

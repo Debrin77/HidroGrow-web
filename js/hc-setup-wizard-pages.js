@@ -1661,6 +1661,13 @@ function renderSetupPage() {
   } catch (_) {}
 }
 
+function hcScrollSetupWizardAlFalloGuardado() {
+  try {
+    const sc = document.querySelector('.setup-content');
+    if (sc) sc.scrollTop = 0;
+  } catch (_) {}
+}
+
 function setupNext() {
   if (setupPagina === 0) {
     iniciarConfiguracionTorre();
@@ -1705,13 +1712,17 @@ function setupNext() {
       }
     } catch (_) {}
     const ok = guardarSetupYContinuar();
-    if (ok !== true && typeof showToast === 'function') {
-      showToast(
-        ok === false
-          ? 'No se pudo guardar. Revisa los pasos anteriores del asistente.'
-          : 'No se completó el guardado. Revisa los datos e inténtalo de nuevo.',
-        true
-      );
+    if (ok !== true) {
+      if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
+      if (typeof showToast === 'function') {
+        showToast(
+          ok === false
+            ? 'No se pudo guardar. Revisa los pasos marcados arriba (geometría, sala o depósito).'
+            : 'No se completó el guardado. Revisa los datos e inténtalo de nuevo.',
+          true,
+          { zIndex: 10550, prominent: true, durationMs: 6200 }
+        );
+      }
     }
   }
 }

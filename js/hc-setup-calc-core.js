@@ -1563,13 +1563,15 @@ function guardarSetupYContinuarCore() {
   } catch (_) {}
   if (setupEsNuevaTorre) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
-    if (inpNom) setupNombreNuevaTorre = (inpNom.value || '').trim().slice(0, 40);
+    const fromInp = inpNom ? (inpNom.value || '').trim().slice(0, 40) : '';
+    if (fromInp) setupNombreNuevaTorre = fromInp;
     if (!setupNombreNuevaTorre) {
       showToast('Escribe un nombre para esta instalación (paso de dimensiones)', true);
-      setupPagina = SETUP_PAGE_GEOMETRY;
-      renderSetupPage();
-      document.getElementById('setupNombreInstalacionInput')?.focus();
-      return false;
+    setupPagina = SETUP_PAGE_GEOMETRY;
+    renderSetupPage();
+    if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
+    document.getElementById('setupNombreInstalacionInput')?.focus();
+    return false;
     }
     if (setupTipoInstalacion !== 'torre' && setupTipoInstalacion !== 'nft' && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'srf') {
       showToast('Elige Torre, NFT, DWC, RDWC o SRF en el primer paso del asistente', true);
@@ -1614,6 +1616,11 @@ function guardarSetupYContinuarCore() {
   let vol       = parseInt(document.getElementById('sliderVol')?.value     || 20, 10);
   const nftPend = isNft ? parseInt(document.getElementById('sliderNftPendiente')?.value || 2, 10) : null;
   if (isDwc) {
+    try {
+      if (typeof hcCompletarDwcSetupDefaultsAntesGuardar === 'function') {
+        hcCompletarDwcSetupDefaultsAntesGuardar();
+      }
+    } catch (_) {}
     if (typeof dwcSetupFormularioCompleto === 'function' && !dwcSetupFormularioCompleto()) {
       showToast(
         'Completa medidas del cubo, cesta (Ø y altura) y rejilla (filas × macetas) en el bloque DWC.',
@@ -1629,6 +1636,11 @@ function guardarSetupYContinuarCore() {
     }
   }
   if (isRdwc) {
+    try {
+      if (typeof hcCompletarRdwcSetupDefaultsAntesGuardar === 'function') {
+        hcCompletarRdwcSetupDefaultsAntesGuardar();
+      }
+    } catch (_) {}
     if (typeof rdwcSetupFormularioCompleto === 'function' && !rdwcSetupFormularioCompleto()) {
       showToast(
         'Completa sitios, filas, litros de cubo y depósito de control, y medidas de cesta en el bloque RDWC.',
@@ -1723,6 +1735,9 @@ function guardarSetupYContinuarCore() {
   }
 
   initTorres();
+  if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
+    setupEsNuevaTorre = true;
+  }
   const idxSlotGuardar = state.torreActiva || 0;
   /** Reconfiguración: respaldar la ranura activa antes de sobrescribir state.configTorre. En instalación nueva no guardar (el borrador del asistente no debe pisar otra torre). */
   if (!setupEsNuevaTorre) {
@@ -1828,6 +1843,7 @@ function guardarSetupYContinuarCore() {
   ) {
     setupPagina = SETUP_PAGE_PREMIUM_3;
     renderSetupPage();
+    if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
     if (typeof showToast === 'function') {
       showToast('Revisa ancho y largo de la sala o elige carpa/armario en el catálogo.', true);
     }
@@ -2326,6 +2342,13 @@ function guardarSetupYContinuarCore() {
     showToast('No se pudo guardar la instalación. Revisa los datos e inténtalo de nuevo.', true);
     return false;
   }
+  try {
+    if (state.configTorre && !state.configTorre.puestaMarchaChecks) {
+      state.configTorre.puestaMarchaChecks = {};
+    }
+    if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    if (typeof saveState === 'function') saveState();
+  } catch (_) {}
   aplicarConfigTorre();
   actualizarHeaderTorre();
   actualizarBadgesNutriente();
@@ -2335,6 +2358,9 @@ function guardarSetupYContinuarCore() {
   renderTorre();
   updateTorreStats();
   updateDashboard();
+  try {
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+  } catch (_) {}
   try {
     if (typeof hcShowPendingSalasReminder === 'function') hcShowPendingSalasReminder();
   } catch (_) {}

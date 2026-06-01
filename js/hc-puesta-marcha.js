@@ -302,6 +302,17 @@
   };
 
   function getCfg() {
+    if (typeof state !== 'undefined' && state && state.configTorre && typeof state.configTorre === 'object') {
+      if (Object.keys(state.configTorre).length > 1 || state.configTorre.checklistInstalacionConfirmada) {
+        return state.configTorre;
+      }
+    }
+    try {
+      if (typeof getTorreActiva === 'function') {
+        var t = getTorreActiva();
+        if (t && t.config && typeof t.config === 'object') return t.config;
+      }
+    } catch (_) {}
     return (typeof state !== 'undefined' && state && state.configTorre) || {};
   }
 
@@ -748,6 +759,11 @@
     var prog = countProgress(checks, cfg, items);
     var verificada = !!checks.completedAt;
     var html = buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items);
+    if (!html || !String(html).trim()) {
+      html =
+        '<p class="hc-pm-inline-lead">Configura una instalación con el asistente para ver el checklist de montaje.</p>' +
+        '<p class="hc-pm-inline-actions"><button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupNuevaTorre===\'function\'?abrirSetupNuevaTorre():abrirSetup()">Configurar instalación</button></p>';
+    }
     ['sistemaMontajeChecksBody', 'hcMontajeInicioBody'].forEach(function (id) {
       var host = document.getElementById(id);
       if (host) host.innerHTML = html;
@@ -998,6 +1014,11 @@
   }
 
   function maybeOfferAfterSetup() {
+    try {
+      if (window._hcSetupWizardCompletadoTs && Date.now() - window._hcSetupWizardCompletadoTs < 12000) {
+        return;
+      }
+    } catch (_) {}
     var cfg = getCfg();
     var checks = getChecks(cfg);
     if (checks.completedAt) return;

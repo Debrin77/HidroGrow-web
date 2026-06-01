@@ -54,10 +54,12 @@ function resetApp() {
     if (typeof initTorres === 'function') initTorres();
   } catch (_) {}
   try {
-    if (typeof reconciliarSlotTorreActivaAntesDeCargar === 'function') reconciliarSlotTorreActivaAntesDeCargar();
-  } catch (_) {}
-  try {
-    if (typeof cargarEstadoTorre === 'function') cargarEstadoTorre(state.torreActiva || 0);
+    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+      if (typeof reconciliarSlotTorreActivaAntesDeCargar === 'function') reconciliarSlotTorreActivaAntesDeCargar();
+      if (typeof cargarEstadoTorre === 'function') cargarEstadoTorre(state.torreActiva || 0);
+    } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+      hcPrepararEstadoSinInstalacionEnMemoria();
+    }
   } catch (_) {}
 
   // Actualizar UI
@@ -108,8 +110,12 @@ function initApp() {
   }
   // Multi-instalación antes del primer render (state.torres, nombre en UI, esquema)
   initTorres();
-  reconciliarSlotTorreActivaAntesDeCargar();
-  cargarEstadoTorre(state.torreActiva || 0);
+  if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+    reconciliarSlotTorreActivaAntesDeCargar();
+    cargarEstadoTorre(state.torreActiva || 0);
+  } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+    hcPrepararEstadoSinInstalacionEnMemoria();
+  }
   applyBootCollapsedUI();
   try {
     renderTorre();

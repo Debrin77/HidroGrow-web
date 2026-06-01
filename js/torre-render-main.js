@@ -842,11 +842,11 @@ function getEmoji(estado) {
 function updateTorreStats() {
   try { initTorres(); } catch (_) {}
 
-  // Actualizar depósito y nutriente dinámicamente
   const cfg = state.configTorre || {};
   const nut = getNutrienteTorre();
-  const rawNombre = (state.torres?.[state.torreActiva || 0]?.nombre || '').trim();
-  const torreNombre = rawNombre || 'Instalación';
+  const hayInst = typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+  const rawNombre = hayInst ? (state.torres?.[state.torreActiva || 0]?.nombre || '').trim() : '';
+  const torreNombre = rawNombre || (hayInst ? 'Instalación' : '');
   const volMax = getVolumenDepositoMaxLitros(cfg);
   const volMez = getVolumenMezclaLitros(cfg);
   const esNftCfg = cfg.tipoInstalacion === 'nft';

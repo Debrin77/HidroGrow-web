@@ -76,6 +76,10 @@ function updateDashboard() {
   } catch (_) {}
 
   try {
+    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
+  } catch (_) {}
+
+  try {
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
   } catch (_) {}
   try {

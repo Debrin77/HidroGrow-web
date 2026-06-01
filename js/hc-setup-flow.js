@@ -50,7 +50,17 @@
     if (setupFlowCanSkipUbicacion()) {
       skip.add(typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 12);
     }
+    if (setupFlowCanSkipEquip()) {
+      skip.add(typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 9);
+    }
     return skip;
+  }
+
+  /** Catálogo marca/modelo ya en paso premium «Espacio y equipamiento» — no repetir en paso hidro. */
+  function setupFlowCanSkipEquip() {
+    if (typeof setupEsNuevaTorre === 'undefined' || !setupEsNuevaTorre) return false;
+    if (typeof ensurePremiumSetup !== 'function') return false;
+    return !!ensurePremiumSetup();
   }
 
   function getSetupVisiblePages() {
@@ -239,6 +249,7 @@
   global.syncSetupDataFromPremium = syncSetupDataFromPremium;
   global.inferSustratoFromOrigen = inferSustratoFromOrigen;
   global.setupFlowCanSkipUbicacion = setupFlowCanSkipUbicacion;
+  global.setupFlowCanSkipEquip = setupFlowCanSkipEquip;
   global.setupFlowAdvancePage = setupFlowAdvancePage;
   global.getSetupVisiblePages = getSetupVisiblePages;
   global.getSetupDisplayStepInfo = getSetupDisplayStepInfo;

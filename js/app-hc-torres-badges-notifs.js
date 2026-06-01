@@ -210,42 +210,146 @@ function emojiSistemaUiPorTorre(t) {
   return (t && t.emoji) || '🌿';
 }
 
-// Inicializar sistema de torres si no existe
+function hcTorreTienePlantasAsignadas(torreMat) {
+  if (!Array.isArray(torreMat)) return false;
+  return torreMat.some(
+    (nivel) =>
+      Array.isArray(nivel) && nivel.some((c) => c && String(c.variedad || '').trim())
+  );
+}
+
+/** Ranura creada solo por migración/plantilla sin datos reales del usuario. */
+function hcEsSlotInstalacionFantasma(t) {
+  if (!t || typeof t !== 'object') return true;
+  const cfg = t.config;
+  if (cfg && cfg.checklistInstalacionConfirmada === true) return false;
+  if (cfg && cfg.nutriente && !cfg.hcPlantillaAutogenerada) return false;
+  const hasMed = Array.isArray(t.mediciones) && t.mediciones.length > 0;
+  const hasRec = !!(t.ultimaRecarga);
+  const hasReg =
+    Array.isArray(t.registro) && t.registro.some((r) => r && (r.tipo === 'recarga' || r.tipo === 'medicion'));
+  if (hasMed || hasRec || hasReg) return false;
+  if (hcTorreTienePlantasAsignadas(t.torre)) return false;
+  if (cfg && cfg.hcPlantillaAutogenerada) return true;
+  const nom = String(t.nombre || '').trim();
+  if ((nom === 'Mi instalación' || nom === 'Instalación') && (!cfg || !cfg.nutriente)) return true;
+  return false;
+}
+
+function hcLegacyMereceMigrarASlot(cfg, st) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.hcPlantillaAutogenerada && !cfg.checklistInstalacionConfirmada) {
+    if (cfg.nutriente) return true;
+    if (st && Array.isArray(st.mediciones) && st.mediciones.length > 0) return true;
+    if (st && st.ultimaRecarga) return true;
+    if (st && hcTorreTienePlantasAsignadas(st.torre)) return true;
+    return false;
+  }
+  if (cfg.checklistInstalacionConfirmada === true) return true;
+  if (cfg.nutriente) return true;
+  return false;
+}
+
+function hcMigrarLegacyTorresSiProcede() {
+  if (!Array.isArray(state.torres)) state.torres = [];
+  if (state.torres.length > 0) {
+    const antes = state.torres.length;
+    state.torres = state.torres.filter((t) => !hcEsSlotInstalacionFantasma(t));
+    if (state.torres.length !== antes) {
+      if (!state.torres.length) state.torreActiva = 0;
+      else if ((state.torreActiva || 0) >= state.torres.length) {
+        state.torreActiva = 0;
+      }
+      saveState();
+    }
+    return;
+  }
+  if (!hcLegacyMereceMigrarASlot(state.configTorre, state)) return;
+  const cfg = state.configTorre;
+  const nomLegacy =
+    (cfg && String(cfg.nombreInstalacion || cfg.nombreTorre || '').trim()) ||
+    '';
+  state.torres = [
+    {
+      id: Date.now(),
+      nombre: nomLegacy || 'Mi instalación',
+      emoji: emojiMigracionPorTipoInstalacion(cfg),
+      config: hcClonePlainData(cfg, null),
+      torre: hcClonePlainData(state.torre, []),
+      modoActual: modoActual || 'vegetativo',
+      mediciones: hcClonePlainData(state.mediciones, []),
+      registro: hcClonePlainData(state.registro, []),
+      ultimaMedicion: state.ultimaMedicion ? { ...state.ultimaMedicion } : null,
+      ultimaRecarga: state.ultimaRecarga ?? null,
+      recargaSnoozeHasta: state.recargaSnoozeHasta ?? null,
+      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
+      fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
+    },
+  ];
+  state.torreActiva = 0;
+  saveState();
+}
+
+function hcTieneInstalacionesUsuario() {
+  return Array.isArray(state.torres) && state.torres.length > 0;
+}
+
+/** Estado en memoria cuando aún no hay ninguna instalación guardada en `state.torres`. */
+function hcPrepararEstadoSinInstalacionEnMemoria() {
+  state.torreActiva = 0;
+  state.torre = [];
+  const nNiv = typeof NUM_NIVELES !== 'undefined' ? NUM_NIVELES : 5;
+  const nCes = typeof NUM_CESTAS !== 'undefined' ? NUM_CESTAS : 5;
+  for (let n = 0; n < nNiv; n++) {
+    state.torre.push([]);
+    for (let c = 0; c < nCes; c++) {
+      state.torre[n].push({
+        variedad: '',
+        fecha: '',
+        notas: '',
+        origenPlanta: '',
+        fotos: [],
+        fotoKeys: [],
+      });
+    }
+  }
+  state.mediciones = [];
+  state.registro = [];
+  state.ultimaMedicion = null;
+  state.ultimaRecarga = null;
+  state.recargaSnoozeHasta = null;
+  state.configTorre = null;
+}
+
+function hcAbrirPrimeraInstalacion() {
+  if (typeof abrirSetupNuevaTorre === 'function') {
+    abrirSetupNuevaTorre();
+    return;
+  }
+  if (typeof abrirSetup === 'function') abrirSetup();
+}
+
+function hcRefreshDashSinInstalacionUi() {
+  const hay = hcTieneInstalacionesUsuario();
+  const banner = document.getElementById('dashTorreBanner');
+  const label = document.getElementById('dashInstalacionLabel');
+  const cta = document.getElementById('dashSinInstalacionCta');
+  const opRow = document.querySelector('.dash-operativa-row');
+  const lifecycle = document.getElementById('dashInstalacionLifecycle');
+  const rutina = document.getElementById('dashRutinaDia');
+  if (banner) banner.classList.toggle('setup-hidden', !hay);
+  if (label) label.classList.toggle('setup-hidden', !hay);
+  if (cta) cta.classList.toggle('setup-hidden', hay);
+  if (opRow) opRow.classList.toggle('setup-hidden', !hay);
+  if (lifecycle && !hay) lifecycle.classList.add('setup-hidden');
+  if (rutina && !hay) rutina.classList.add('setup-hidden');
+}
+
+// Inicializar sistema de torres (sin crear «Mi instalación» por defecto)
 function initTorres() {
-  if (!state.torres) {
-    // Migrar configuración actual como primera instalación
-    state.torres = [{
-      id: 1,
-      nombre: 'Mi instalación',
-      emoji: emojiMigracionPorTipoInstalacion(state.configTorre),
-      config: hcClonePlainData(state.configTorre, null),
-      torre: hcClonePlainData(state.torre, []),
-      modoActual: modoActual || 'vegetativo',
-      mediciones: hcClonePlainData(state.mediciones, []),
-      registro: hcClonePlainData(state.registro, []),
-      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
-      fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
-    }];
-    state.torreActiva = 0; // índice en el array
-    saveState();
-  }
-  // Guardarraíl: `torres: []` en localStorage rompía el arranque (getTorreActiva → undefined → .nombre).
-  if (!Array.isArray(state.torres) || state.torres.length === 0) {
-    state.torres = [{
-      id: 1,
-      nombre: 'Mi instalación',
-      emoji: emojiMigracionPorTipoInstalacion(state.configTorre),
-      config: hcClonePlainData(state.configTorre, null),
-      torre: hcClonePlainData(state.torre, []),
-      modoActual: modoActual || 'vegetativo',
-      mediciones: hcClonePlainData(state.mediciones, []),
-      registro: hcClonePlainData(state.registro, []),
-      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
-      fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
-    }];
-    state.torreActiva = 0;
-    saveState();
-  }
+  if (!Array.isArray(state.torres)) state.torres = [];
+  hcMigrarLegacyTorresSiProcede();
+  if (!Array.isArray(state.torres)) state.torres = [];
   let idSeq = Date.now();
   let idsReparados = false;
   let emojisMigrados = false;
@@ -273,19 +377,9 @@ function initTorres() {
 
 function getTorreActiva() {
   initTorres();
+  if (!hcTieneInstalacionesUsuario()) return null;
   const idx = state.torreActiva || 0;
-  const t = state.torres[idx] || state.torres[0];
-  if (t) return t;
-  return {
-    id: 1,
-    nombre: 'Instalación',
-    emoji: '🌿',
-    config: state.configTorre || null,
-    torre: state.torre || [],
-    mediciones: [],
-    registro: [],
-    fotosSistemaCompleto: { fotoKeys: [], fotos: [] },
-  };
+  return state.torres[idx] || state.torres[0] || null;
 }
 
 /**
@@ -610,17 +704,25 @@ function actualizarHeaderTorre() {
   const t = getTorreActiva();
   const btn = document.getElementById('torreActivaNombre');
   if (btn) {
-    const nom = t && typeof t.nombre === 'string' ? t.nombre.trim() : '';
-    if (typeof hcSistemaIconMarkup === 'function') {
+    if (!t) {
       btn.innerHTML =
-        hcSistemaIconMarkup(tipoInstalacionNormalizado(t && t.config), 'hc-ico--inline-torre') +
-        ' <span class="torre-activa-nombre-text">' +
-        (nom || 'Instalación') +
-        '</span>';
+        '<span class="torre-activa-nombre-text torre-activa-nombre-text--vacío">Sin instalación</span>';
     } else {
-      btn.textContent = emojiSistemaUiPorTorre(t) + ' ' + (nom || 'Instalación');
+      const nom = typeof t.nombre === 'string' ? t.nombre.trim() : '';
+      if (typeof hcSistemaIconMarkup === 'function') {
+        btn.innerHTML =
+          hcSistemaIconMarkup(tipoInstalacionNormalizado(t.config), 'hc-ico--inline-torre') +
+          ' <span class="torre-activa-nombre-text">' +
+          (nom || 'Instalación') +
+          '</span>';
+      } else {
+        btn.textContent = emojiSistemaUiPorTorre(t) + ' ' + (nom || 'Instalación');
+      }
     }
   }
+  try {
+    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
+  } catch (_) {}
   // Mostrar/ocultar botón añadir según límite
   const btnCrear = document.getElementById('btnCrearTorre');
   if (btnCrear) {
@@ -821,6 +923,10 @@ function renderTorreInstalacionPicker() {
 }
 
 function abrirSelectorTorres() {
+  if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
+    hcAbrirPrimeraInstalacion();
+    return;
+  }
   initTorres();
   renderListaTorres();
   const mt = document.getElementById('modalTorres');
@@ -1084,6 +1190,17 @@ function actualizarBadgesNutriente() {
   const dashTorreNombre = document.getElementById('dashTorreNombre');
   const dashTorreInfo   = document.getElementById('dashTorreInfo');
   const torre = getTorreActiva();
+  const medirTorreEmoji  = document.getElementById('medirTorreEmoji');
+  const medirTorreNombre = document.getElementById('medirTorreNombre');
+  try {
+    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
+  } catch (_) {}
+  if (!torre) {
+    if (dashTorreNombre) dashTorreNombre.textContent = '';
+    if (dashTorreInfo) dashTorreInfo.textContent = '';
+    if (medirTorreNombre) medirTorreNombre.textContent = 'Sin instalación';
+    return;
+  }
   if (dashTorreEmoji) {
     if (typeof hcPintarSistemaIconoEnElemento === 'function') {
       hcPintarSistemaIconoEnElemento(dashTorreEmoji, torre, 'hc-ico--dash-torre');
@@ -1129,8 +1246,6 @@ function actualizarBadgesNutriente() {
   }
 
   // Pestaña Medir — banner torre
-  const medirTorreEmoji  = document.getElementById('medirTorreEmoji');
-  const medirTorreNombre = document.getElementById('medirTorreNombre');
   if (medirTorreEmoji) {
     if (typeof hcPintarSistemaIconoEnElemento === 'function') {
       hcPintarSistemaIconoEnElemento(medirTorreEmoji, torre, 'hc-ico--dash-torre');
@@ -1138,7 +1253,7 @@ function actualizarBadgesNutriente() {
       medirTorreEmoji.textContent = emojiSistemaUiPorTorre(torre);
     }
   }
-  if (medirTorreNombre) medirTorreNombre.textContent  = (torre.nombre || '').trim() || 'Instalación';
+  if (medirTorreNombre) medirTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
   actualizarEstadoOperativaUI();
 
   try { refreshUbicacionInstalacionUI(); } catch (_) {}
