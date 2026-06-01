@@ -2302,8 +2302,15 @@ function labelsUbicacionInstalacion(tipoInstal) {
   const t = (tipoInstal === 'nft' || tipoInstal === 'dwc' || tipoInstal === 'rdwc' || tipoInstal === 'srf' || tipoInstal === 'torre') ? tipoInstal : 'torre';
   return {
     lblPlaza: t === 'nft' ? 'hueco' : t === 'dwc' ? 'maceta' : t === 'rdwc' ? 'cubo' : t === 'srf' ? 'planta' : 'cesta',
-    lblNivel: t === 'nft' ? 'Canal' : t === 'rdwc' || t === 'srf' ? 'Fila' : 'Nivel',
+    lblNivel: t === 'nft' ? 'Canal' : t === 'dwc' || t === 'rdwc' || t === 'srf' ? 'Fila' : 'Nivel',
   };
+}
+
+/** Título modal cesta: «Fila 2 — Maceta 3» según tipo de instalación. */
+function tituloModalUbicacionCesta(tipoInstal, nivel0, cesta0) {
+  const { lblPlaza, lblNivel } = labelsUbicacionInstalacion(tipoInstal);
+  const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+  return cap(lblNivel) + ' ' + (nivel0 + 1) + ' — ' + cap(lblPlaza) + ' ' + (cesta0 + 1);
 }
 
 /** Texto tipo «Canal 2, hueco 3» desde valores 1-based guardados en registro / diario. */

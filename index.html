@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-layout-fix">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-ui-plantas-pm">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
@@ -407,7 +407,18 @@
             </div>
           </div>
         </button>
-        <div id="hcPlantasInstalacionInicioCultivo" class="hc-plantas-instalacion hc-plantas-instalacion--dash setup-hidden" role="region" aria-live="polite" aria-label="Detalle de plantas en cultivo"></div>
+        <details class="hc-plantas-instalacion-details hc-plantas-instalacion-details--dash config-section-collapsible" id="hcPlantasInstalacionInicioDetails">
+          <summary class="config-section-collapse-head hc-plantas-instalacion-summary">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title hc-plantas-instalacion-summary-title">🌿 Plantas en esta instalación</span>
+              <span class="hc-plantas-instalacion-summary-sub" id="hcPlantasInstalacionInicioSub">—</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="config-section-collapse-body">
+            <div id="hcPlantasInstalacionInicioCultivo" class="hc-plantas-instalacion hc-plantas-instalacion--dash" role="region" aria-live="polite" aria-label="Detalle de plantas en cultivo"></div>
+          </div>
+        </details>
       </section>
 
       <!-- Recarga depósito (resumen + acceso rápido) -->
@@ -495,7 +506,7 @@
           </p>
           <div class="dash-post-setup-actions">
             <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn" onclick="goTab('sistema')">Ir a Cultivo e instalación</button>
-            <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button>
+            <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button>
             <button type="button" class="btn btn-primary btn-sm dash-post-setup-btn" onclick="intentarAbrirChecklistDesdeInicio(false)">Checklist depósito</button>
           </div>
         </div>
@@ -597,6 +608,15 @@
         </div>
         <span class="medir-torre-banner-action">Cambiar ›</span>
       </button>
+      <div id="medirPuestaMarchaCard" class="medir-pm-card" role="region" aria-label="Checklist de montaje">
+        <div class="medir-pm-card-inner">
+          <div class="medir-pm-card-text">
+            <span class="medir-pm-card-kicker">Montaje de la instalación activa</span>
+            <span class="medir-pm-card-status" id="medirPuestaMarchaStatus">Revisa montaje, aireación y accesorios una vez por instalación.</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" id="medirPuestaMarchaBtn" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button>
+        </div>
+      </div>
       <div id="hcMultiCoachMedir" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
 
       <div class="config-section medir-localidad-top" id="panelLocalidadMeteo">
@@ -1476,7 +1496,7 @@
           onclick="irMedirMunicipioClima()">
           Ir a Sala — municipio (clima)
         </button>
-        <button type="button" class="torre-btn-puesta-marcha btn btn-secondary btn-sm"
+        <button type="button" class="torre-btn-puesta-marcha hc-btn-puesta-marcha btn btn-secondary btn-sm"
           onclick="hcOpenPuestaMarchaChecklist()">
           Verificar puesta en marcha
         </button>
@@ -1484,7 +1504,18 @@
 
       <!-- Avisos (cestas sin fecha, compatibilidad); nutriente solo en Inicio -->
       <section class="torre-tab-resumen-superior" aria-label="Avisos de esta instalación">
-        <div id="hcPlantasInstalacionSistema" class="hc-plantas-instalacion" role="region" aria-live="polite" aria-label="Plantas en esta instalación"></div>
+        <details class="hc-plantas-instalacion-details config-section-collapsible" id="hcPlantasInstalacionSistemaDetails" open>
+          <summary class="config-section-collapse-head hc-plantas-instalacion-summary">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title hc-plantas-instalacion-summary-title">🌿 Plantas en esta instalación</span>
+              <span class="hc-plantas-instalacion-summary-sub" id="hcPlantasInstalacionSistemaSub">—</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="config-section-collapse-body">
+            <div id="hcPlantasInstalacionSistema" class="hc-plantas-instalacion" role="region" aria-live="polite" aria-label="Plantas en esta instalación"></div>
+          </div>
+        </details>
         <div id="avisoCestasSinFechaTorre" class="aviso-cestas-sin-fecha setup-hidden" role="status"></div>
         <div id="compatAlert" class="info-banner setup-hidden compat-alert-banner">
           <span class="compat-alert-mark" aria-hidden="true">!</span>
@@ -1735,9 +1766,9 @@
           <div id="torreDiagramLegend" class="torre-diagram-legend" aria-hidden="true">
             <span class="k-dep">Depósito</span>
             <span class="torre-legend-sep">·</span>
-            <span class="k-niv">Niveles</span>
+            <span class="k-niv">Filas</span>
             <span class="torre-legend-sep">·</span>
-            <span class="k-ces">Cestas</span>
+            <span class="k-ces">Macetas</span>
             <span class="k-hint"> · tocar</span>
           </div>
           <div class="torre-diagram-tools">
@@ -1846,7 +1877,7 @@
           aria-label="Esquema de la instalación. Torre vertical: girar con flechas o deslizar; NFT y DWC: tocar huecos o macetas.">
           <div class="torre-loading-placeholder">Cargando esquema…</div>
         </div>
-        <div id="torreListaVista" class="torre-lista-wrap setup-hidden" aria-label="Lista de cestas por nivel"></div>
+        <div id="torreListaVista" class="torre-lista-wrap setup-hidden" aria-label="Lista de macetas por fila"></div>
         <div id="torreSistemaResumenWrap" class="torre-sistema-resumen-wrap" role="region" aria-label="Resumen de la configuración de la instalación" hidden></div>
         <div id="torreQuickTip" class="torre-quick-tip setup-hidden" aria-live="polite"></div>
         <div id="torreSwipeHint" class="torre-swipe-hint">Flechas o deslizar para girar la torre</div>
@@ -1908,10 +1939,29 @@
       </div>
 
       <section id="sistemaCultivoExtras" class="sistema-cultivo-extras" aria-label="Equipamiento y perfiles de cultivo">
+        <details class="sistema-montaje-details config-section-collapsible" id="sistemaMontajeChecksDetails">
+          <summary class="config-section-collapse-head sistema-montaje-summary">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title">
+                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
+                Checklist de montaje
+              </span>
+              <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody"></div>
+        </details>
+
         <details class="sistema-equip-details" id="sistemaEquipDetails">
           <summary class="sistema-equip-summary">
-            <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
-            Equipamiento de instalación (LED, extractor, medidor…)
+            <span class="sistema-equip-summary-main">
+              <span class="sistema-equip-summary-title">
+                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
+                Equipamiento de instalación (LED, extractor, medidor…)
+              </span>
+              <span class="sistema-equip-resumen" id="sistemaEquipResumen"></span>
+            </span>
             <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
           </summary>
           <div class="card medir-equip-card sistema-equip-card" id="medirEquipamientoCard">
@@ -4520,7 +4570,7 @@
       </div>
     </div>
 
-    <button class="btn btn-primary" onclick="saveCesta()"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-check"/></svg> Guardar</button>
+    <button type="button" class="btn btn-primary" onclick="event.stopPropagation(); saveCesta();"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-check"/></svg> Guardar</button>
     <button type="button" class="btn hc-btn-cosechar" onclick="cosecharCesta()">
       <svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-scissors"/></svg> Cosechar y registrar
     </button>
@@ -4654,7 +4704,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-sala-layout"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-scroll"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
@@ -4673,41 +4723,41 @@
 
 
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
-  <script src="js/torre-render-build.js?v=2026-05-31-dwc-labels"></script>
-<script src="js/torre-render-main.js?v=2026-05-31-compat-fix"></script>
+  <script src="js/torre-render-build.js?v=2026-05-31-dwc-filas"></script>
+<script src="js/torre-render-main.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-top10"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-top10"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-consejos-save"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-setup-save"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-dwc-filas"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-28-srf-litros-ui"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
   <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-recursion-fix"></script>
 
 
 
   <script src="js/hc-setup-calc-core.js?v=2026-05-31-origen"></script>
-  <script src="js/hc-setup-rotacion.js?v=2"></script>
+  <script src="js/hc-setup-rotacion.js?v=2026-05-31-torre-only"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
-  <script src="js/hc-setup-diario-fotos.js?v=1"></script>
+  <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
-  <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast"></script>
+  <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast2"></script>
   <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-hint"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
   <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-monitor-sistema.js?v=2026-05-31-cal-ctx"></script>
-  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-medir-ranges"></script>
+  <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-05-28-nft-dosis-vs-fisico"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-hist-full"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-05-31-plantas-id"></script>
-  <script src="js/calendario-logic.js?v=2026-05-31-cal-ctx"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-05-31-ui-plantas-pm"></script>
+  <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-plantas-id"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
@@ -4716,10 +4766,10 @@
   <script src="js/app-hc-medicion-toast.js?v=6"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-medir-ranges"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-  <script src="js/hc-puesta-marcha.js?v=2026-05-31"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

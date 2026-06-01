@@ -10881,14 +10881,33 @@ html.hc-theme-dark .consejo-text-toggle {
   line-height: 1.45;
 }
 .hc-plantas-instalacion {
-  margin: 10px 0 14px;
+  margin: 0;
   padding: 10px 12px;
   border-radius: 10px;
-  background: rgba(22, 163, 74, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+.hc-plantas-instalacion-details {
+  margin: 10px 0 0;
+}
+.hc-plantas-instalacion-details--dash {
+  margin: 10px 0 0;
+}
+.hc-plantas-instalacion-summary {
+  cursor: pointer;
+}
+.hc-plantas-instalacion-summary-title {
+  color: var(--white);
+}
+.hc-plantas-instalacion-summary-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
 }
 .hc-plantas-instalacion--dash {
-  margin: 10px 0 0;
+  margin: 0;
 }
 .hc-plantas-instalacion--consejos {
   margin: 0 0 12px;
@@ -10898,14 +10917,14 @@ html.hc-theme-dark .consejo-text-toggle {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #86efac;
+  color: #cbd5e1;
   margin-bottom: 6px;
 }
 .hc-plantas-instalacion-inst {
   margin: 0 0 6px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--white);
+  color: #e2e8f0;
   line-height: 1.35;
 }
 .hc-plantas-instalacion-lead {
@@ -17286,6 +17305,7 @@ button.toggle-switch:focus-visible {
 .medir-equip-panel { font-size: 13px; color: #374151; }
 .medir-equip-lead { font-size: 12px; color: #6b7280; margin: 0 0 10px; }
 .medir-equip-warn { font-size: 12px; color: #92400e; background: #fef3c7; padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; }
+.medir-equip-empty { font-size: 12px; color: var(--muted); background: rgba(15, 23, 42, 0.25); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px; line-height: 1.45; }
 .medir-equip-list { margin: 0 0 10px; padding-left: 1.1rem; font-size: 12px; }
 .medir-equip-muted { color: #9ca3af; }
 .medir-equip-foot { font-size: 11px; color: #6b7280; font-style: italic; margin: 0; }
@@ -18191,3 +18211,105 @@ html.hc-theme-dark .torre-nft-p-note strong {
 .hc-pm-opt { font-size: var(--text-xs); color: var(--muted); font-weight: 600; }
 .hc-pm-foot { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 .torre-btn-puesta-marcha { width: 100%; margin-top: 10px; }
+.hc-btn-puesta-marcha--ok {
+  border-color: rgba(34, 197, 94, 0.55);
+  color: #86efac;
+}
+.sistema-montaje-details,
+.sistema-equip-details {
+  margin: 12px 0 0;
+}
+.sistema-montaje-details {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--hc-radius-md, 12px);
+  background: rgba(15, 23, 42, 0.2);
+  overflow: hidden;
+}
+.sistema-montaje-summary {
+  cursor: pointer;
+}
+.sistema-montaje-resumen,
+.sistema-equip-resumen {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.sistema-equip-summary-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.sistema-equip-summary-title {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.sistema-montaje-body {
+  padding: 8px 0 4px;
+}
+.hc-pm-inline-lead {
+  font-size: var(--text-sm);
+  line-height: 1.45;
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+.hc-pm-list--inline {
+  margin: 0 0 10px;
+}
+.hc-pm-item--inline {
+  border: none;
+  padding: 4px 0;
+  font-size: var(--text-sm);
+  color: var(--text);
+}
+.hc-pm-item--inline.hc-pm-item--done {
+  color: #86efac;
+}
+.hc-pm-inline-mark {
+  display: inline-block;
+  width: 1.1em;
+  text-align: center;
+}
+.hc-pm-inline-actions {
+  margin: 0;
+}
+.medir-pm-card {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.35);
+}
+.medir-pm-card--ok {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(22, 163, 74, 0.08);
+}
+.medir-pm-card-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.medir-pm-card-kicker {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.medir-pm-card-status {
+  display: block;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #e2e8f0;
+  margin-top: 2px;
+}
+.medir-pm-card--ok .medir-pm-card-status {
+  color: #86efac;
+}

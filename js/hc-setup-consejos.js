@@ -1473,7 +1473,6 @@ function buildHtmlPlantasInstalacionResumen(opts) {
   if (!plantas.length) {
     return (
       '<div class="hc-plantas-instalacion-inner">' +
-      '<div class="hc-plantas-instalacion-kicker">🌿 Plantas en esta instalación</div>' +
       (nombreInst
         ? '<p class="hc-plantas-instalacion-inst"><strong>' + esc(nombreInst) + '</strong> · ' + esc(sysBreve) + '</p>'
         : '<p class="hc-plantas-instalacion-inst">' + esc(sysBreve) + '</p>') +
@@ -1512,7 +1511,6 @@ function buildHtmlPlantasInstalacionResumen(opts) {
 
   return (
     '<div class="hc-plantas-instalacion-inner">' +
-    '<div class="hc-plantas-instalacion-kicker">🌿 Plantas en esta instalación</div>' +
     (nombreInst
       ? '<p class="hc-plantas-instalacion-inst"><strong>' + esc(nombreInst) + '</strong> · ' + esc(sysBreve) + '</p>'
       : '<p class="hc-plantas-instalacion-inst">' + esc(sysBreve) + '</p>') +
@@ -1558,13 +1556,28 @@ function buildHtmlPlantasInstalacionSnippet() {
 }
 
 function refreshPlantasInstalacionResumen() {
+  const plantas =
+    typeof hcCollectPlantasInstalacionActiva === 'function'
+      ? hcCollectPlantasInstalacionActiva()
+      : [];
+  const subTxt =
+    plantas.length === 0
+      ? 'Sin variedad asignada'
+      : plantas.length + ' planta' + (plantas.length === 1 ? '' : 's') + ' identificada' + (plantas.length === 1 ? '' : 's');
+  ['hcPlantasInstalacionInicioSub', 'hcPlantasInstalacionSistemaSub'].forEach(id => {
+    const sub = document.getElementById(id);
+    if (sub) sub.textContent = subTxt;
+  });
   const html = buildHtmlPlantasInstalacionResumen({ linkSistema: true });
   const ids = ['hcPlantasInstalacionInicioCultivo', 'hcPlantasInstalacionSistema', 'hcPlantasInstalacionConsejos'];
   ids.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.innerHTML = html;
-    el.classList.toggle('setup-hidden', false);
+  });
+  ['hcPlantasInstalacionInicioDetails', 'hcPlantasInstalacionSistemaDetails'].forEach(id => {
+    const det = document.getElementById(id);
+    if (det) det.classList.remove('setup-hidden');
   });
 }
 

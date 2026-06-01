@@ -188,23 +188,38 @@ function saveCesta() {
     fotos: Array.isArray(prev.fotos) ? prev.fotos : [],
     fotoKeys: Array.isArray(prev.fotoKeys) ? prev.fotoKeys : [],
   };
-  saveState();
-  renderTorre();
-  updateTorreStats();
-  closeModal();
-  try {
-    if (typeof hcNotificarCambioCultivoSistema === 'function') hcNotificarCambioCultivoSistema();
-  } catch (_) {}
-  const nom = cultivoNombreLista(getCultivoDB(state.torre[nivel][cesta].variedad), state.torre[nivel][cesta].variedad);
-  const tInst = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(state.configTorre || {}) : 'dwc';
+  const nom = cultivoNombreLista(
+    getCultivoDB(state.torre[nivel][cesta].variedad),
+    state.torre[nivel][cesta].variedad
+  );
+  const tInst =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(state.configTorre || {})
+      : 'dwc';
   const ubi =
     tInst === 'rdwc'
       ? ' · módulo ' + (nivel + 1) + '-' + (cesta + 1)
       : tInst === 'dwc'
         ? ' · maceta ' + (nivel + 1) + '-' + (cesta + 1)
         : ' · ' + (nivel + 1) + '-' + (cesta + 1);
-  if (typeof showToast === 'function') {
-    showToast('✅ Cultivo guardado: ' + (nom || '—') + ubi);
+  const msg = '✅ Cultivo guardado: ' + (nom || '—') + ubi;
+
+  saveState();
+
+  try {
+    closeModal(undefined, { skipRender: true });
+    renderTorre();
+    updateTorreStats();
+    try {
+      if (typeof hcNotificarCambioCultivoSistema === 'function') hcNotificarCambioCultivoSistema();
+    } catch (_) {}
+  } catch (err) {
+    console.error('saveCesta', err);
+    try {
+      closeModal(undefined, { skipRender: true });
+    } catch (_) {}
+  } finally {
+    if (typeof showToast === 'function') showToast(msg);
   }
 }
 

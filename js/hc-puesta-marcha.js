@@ -139,6 +139,72 @@
       '</ul>';
   }
 
+  function renderPuestaMarchaInlinePreview() {
+    var host = document.getElementById('sistemaMontajeChecksBody');
+    if (!host) return;
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var checks = getChecks(cfg);
+    var prog = countProgress(checks, cfg);
+    var verificada = !!checks.completedAt;
+    host.innerHTML =
+      '<p class="hc-pm-inline-lead">Revisa el montaje <strong>una vez</strong> por instalación (DWC/RDWC, aire, LED, medidor…). No sustituye al checklist de recarga de nutrientes.</p>' +
+      '<p class="hc-pm-prog">' +
+      (verificada ? '✓ Puesta en marcha verificada · ' : '') +
+      prog.done +
+      '/' +
+      prog.total +
+      ' puntos esenciales</p>' +
+      '<ul class="hc-pm-list hc-pm-list--inline">' +
+      ITEMS.map(function (it) {
+        if (it.optional) return '';
+        var auto = isAutoDone(it, cfg);
+        var checked = auto || !!checks[it.id];
+        return (
+          '<li class="hc-pm-item hc-pm-item--inline' +
+          (checked ? ' hc-pm-item--done' : '') +
+          '">' +
+          '<span class="hc-pm-inline-mark" aria-hidden="true">' +
+          (checked ? '✓' : '○') +
+          '</span> ' +
+          it.label +
+          '</li>'
+        );
+      }).join('') +
+      '</ul>' +
+      '<p class="hc-pm-inline-actions">' +
+      '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
+      (verificada ? '✓ Puesta en marcha verificada' : 'Abrir checklist de montaje') +
+      '</button></p>';
+  }
+
+  function refreshPuestaMarchaUi() {
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var checks = getChecks(cfg);
+    var prog = countProgress(checks, cfg);
+    var verificada = !!checks.completedAt;
+    var btnTxt = verificada ? '✓ Puesta en marcha verificada' : 'Verificar puesta en marcha';
+    document.querySelectorAll('.hc-btn-puesta-marcha').forEach(function (btn) {
+      btn.textContent = btnTxt;
+      btn.classList.toggle('hc-btn-puesta-marcha--ok', verificada);
+      btn.setAttribute('aria-pressed', verificada ? 'true' : 'false');
+    });
+    var status = document.getElementById('medirPuestaMarchaStatus');
+    if (status) {
+      status.textContent = verificada
+        ? 'Puesta en marcha verificada para esta instalación (' + prog.total + '/' + prog.total + ' puntos).'
+        : prog.done + '/' + prog.total + ' puntos esenciales · revisa montaje, aireación y accesorios.';
+    }
+    var card = document.getElementById('medirPuestaMarchaCard');
+    if (card) card.classList.toggle('medir-pm-card--ok', verificada);
+    var resumen = document.getElementById('sistemaMontajeChecksResumen');
+    if (resumen) {
+      resumen.textContent = verificada
+        ? '✓ Verificada'
+        : prog.done + '/' + prog.total + ' esenciales';
+    }
+    renderPuestaMarchaInlinePreview();
+  }
+
   function openPuestaMarchaChecklist() {
     var modal = document.getElementById('modalPuestaMarcha');
     if (!modal) return;
@@ -159,6 +225,7 @@
     if (checked) checks[id + 'At'] = new Date().toISOString();
     saveChecks(checks);
     renderPuestaMarchaBody();
+    refreshPuestaMarchaUi();
   }
 
   function finishPuestaMarcha() {
@@ -174,6 +241,7 @@
     checks.completedAt = new Date().toISOString();
     saveChecks(checks);
     closePuestaMarchaChecklist();
+    refreshPuestaMarchaUi();
     if (typeof showToast === 'function') showToast('✓ Puesta en marcha verificada para esta instalación.');
   }
 
@@ -193,4 +261,5 @@
   global.hcPuestaMarchaToggle = toggleItem;
   global.hcFinishPuestaMarcha = finishPuestaMarcha;
   global.hcMaybeOfferPuestaMarcha = maybeOfferAfterSetup;
+  global.hcRefreshPuestaMarchaUi = refreshPuestaMarchaUi;
 })(typeof window !== 'undefined' ? window : globalThis);

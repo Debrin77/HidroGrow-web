@@ -291,6 +291,7 @@
     if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
     if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
     if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     var det = document.getElementById('sistemaEquipDetails');
     if (det && !det.dataset.hcEquipBound) {
       det.dataset.hcEquipBound = '1';
@@ -303,6 +304,11 @@
     if (det && typeof getCamposEquipamientoFaltantes === 'function') {
       var falt = getCamposEquipamientoFaltantes();
       if (falt.length && !det.open) det.open = true;
+    }
+    var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
+    var cfgPm = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    if (montajeDet && cfgPm.puestaMarchaChecks && !cfgPm.puestaMarchaChecks.completedAt && !montajeDet.open) {
+      montajeDet.open = true;
     }
   }
 

@@ -260,6 +260,12 @@ async function renderDiarioSelector() {
 
   const cfg = state.configTorre || {};
   const sisAct = infoSistemaEntrada(getTorreActiva() || {});
+  const tipoDiario =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'torre';
+  const fmtUbiDiario = (n0, c0) =>
+    typeof formatoUbicacionEnRegistro === 'function'
+      ? formatoUbicacionEnRegistro(tipoDiario, n0 + 1, c0 + 1).replace(', ', ' · ')
+      : 'Nivel ' + (n0 + 1) + ' · Cesta ' + (c0 + 1);
   const numNiveles = cfg.numNiveles || NUM_NIVELES;
   const numCestas  = cfg.numCestas  || NUM_CESTAS;
   const plantas = [];
@@ -303,7 +309,7 @@ async function renderDiarioSelector() {
         '<div class="diario-item-title">' + nomDiarioSel + '</div>' +
         '<div class="diario-item-meta">' + (sisAct.emoji || '🌿') + ' ' + sisAct.nombre + '</div>' +
         '<div class="diario-item-meta">' +
-          'Nivel ' + (p.n+1) + ' · Cesta ' + (p.c+1) +
+          fmtUbiDiario(p.n, p.c) +
           (p.diasDesde !== null ? ' · <strong class="diario-item-dia">Día ' + p.diasDesde + '</strong>' : '') +
         '</div>' +
         '<div class="diario-item-meta">' +
@@ -375,6 +381,14 @@ async function renderDiarioPlanta(nivel, cesta) {
     : null;
   const cultivo = getCultivoDB(variedad);
   const tituloDiario = escHtmlUi(cultivoNombreLista(cultivo, variedad));
+  const tipoDiarioPlanta =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(state.configTorre)
+      : state.configTorre?.tipoInstalacion || 'torre';
+  const ubiDiarioPlanta =
+    typeof formatoUbicacionEnRegistro === 'function'
+      ? formatoUbicacionEnRegistro(tipoDiarioPlanta, nivel + 1, cesta + 1).replace(', ', ' · ')
+      : 'Nivel ' + (nivel + 1) + ' · Cesta ' + (cesta + 1);
 
   // Ocultar selector, mostrar diario
   if (sel) sel.style.display = 'none';
@@ -388,7 +402,7 @@ async function renderDiarioPlanta(nivel, cesta) {
       '<div class="diario-det-title">' +
         tituloDiario + '</div>' +
       '<div class="diario-det-sub">' +
-        'Nivel ' + (nivel+1) + ' · Cesta ' + (cesta+1) +
+        ubiDiarioPlanta +
         (diasDesde !== null ? ' · <strong class="diario-item-dia">Día ' + diasDesde + ' de cultivo</strong>' : '') +
       '</div>' +
     '</div>' +
@@ -719,7 +733,14 @@ function poblarSelectVariedades() {
 function openModal(nivel, cesta) {
   editingCesta = { nivel, cesta };
   const data = state.torre[nivel][cesta];
-  document.getElementById('modalTitle').textContent = `Nivel ${nivel + 1} — Cesta ${cesta + 1}`;
+  const tipoModal =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(state.configTorre)
+      : state.configTorre?.tipoInstalacion || 'torre';
+  document.getElementById('modalTitle').textContent =
+    typeof tituloModalUbicacionCesta === 'function'
+      ? tituloModalUbicacionCesta(tipoModal, nivel, cesta)
+      : `Nivel ${nivel + 1} — Cesta ${cesta + 1}`;
   document.getElementById('editVariedad').value = data.variedad || '';
   poblarSelectVariedades();
   document.getElementById('editFecha').value = data.fecha || '';
@@ -739,14 +760,15 @@ function openModal(nivel, cesta) {
   setTimeout(renderFotosCesta, 50);
 }
 
-function closeModal(e) {
+function closeModal(e, opts) {
   const mo = document.getElementById('modalOverlay');
+  if (!mo) return;
   if (!e || e.target === mo) {
     mo.classList.remove('open');
     editingCesta = null;
     torreDiagramHuecoFocus = null;
-    a11yDialogClosed(mo);
-    if (typeof renderTorre === 'function') renderTorre();
+    if (typeof a11yDialogClosed === 'function') a11yDialogClosed(mo);
+    if (!(opts && opts.skipRender) && typeof renderTorre === 'function') renderTorre();
   }
 }
 

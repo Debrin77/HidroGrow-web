@@ -111,7 +111,11 @@ function renderCalendarioContexto() {
   }
 
   const checks = ctx.cfg && ctx.cfg.puestaMarchaChecks;
-  if (checks && !checks.completedAt) {
+  if (checks && checks.completedAt) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--pm cal-context-chip--ok">✓ Puesta en marcha verificada para esta instalación.</span>'
+    );
+  } else if (checks) {
     parts.push(
       '<span class="cal-context-chip cal-context-chip--pm">Montaje sin verificar. ' +
         '<button type="button" class="btn-link cal-context-link" onclick="hcOpenPuestaMarchaChecklist()">Verificar puesta en marcha</button></span>'

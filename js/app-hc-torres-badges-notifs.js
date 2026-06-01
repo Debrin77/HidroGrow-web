@@ -1095,6 +1095,26 @@ function actualizarBadgesNutriente() {
   if (dashTorreInfo) {
     const niv = cfg.numNiveles || 5;
     const ces = cfg.numCestas  || 5;
+    const tipoDash =
+      typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'torre';
+    let geomTxt;
+    if (tipoDash === 'dwc') {
+      const esMc =
+        typeof dwcGetOxigenacionDiseno === 'function' && dwcGetOxigenacionDiseno(cfg) === 'cubos_independientes';
+      if (esMc) {
+        const nCubos =
+          typeof dwcGetNumCubosIndependientes === 'function' ? dwcGetNumCubosIndependientes(cfg) : niv * ces;
+        geomTxt = nCubos + ' cubo' + (nCubos === 1 ? '' : 's');
+      } else {
+        geomTxt = niv + ' filas · ' + ces + ' macetas';
+      }
+    } else if (tipoDash === 'rdwc') {
+      geomTxt = (cfg.rdwcRows || 1) + ' filas · ' + (cfg.rdwcSites || 4) + ' módulos';
+    } else if (tipoDash === 'nft') {
+      geomTxt = niv + ' canales · ' + ces + ' huecos';
+    } else {
+      geomTxt = niv + ' niveles · ' + ces + ' cestas';
+    }
     const vMax = getVolumenDepositoMaxLitros(cfg);
     const vMez = getVolumenMezclaLitros(cfg);
     const volTxt =
@@ -1105,7 +1125,7 @@ function actualizarBadgesNutriente() {
         : 'L depósito por indicar';
     const nutTxt = nut ? nut.nombre : 'nutriente por elegir';
     const estadoTxt = sistemaEstaOperativa(cfg) ? 'operativa' : 'stand-by';
-    dashTorreInfo.textContent = niv + ' niveles · ' + ces + ' cestas · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
+    dashTorreInfo.textContent = geomTxt + ' · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
   }
 
   // Pestaña Medir — banner torre
@@ -1128,6 +1148,10 @@ function actualizarBadgesNutriente() {
   } catch (_) {}
 
   refreshConsejosSiVisible();
+
+  try {
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+  } catch (_) {}
 }
 
 function cambiarNutriente() {

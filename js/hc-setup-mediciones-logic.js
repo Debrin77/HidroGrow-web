@@ -888,6 +888,7 @@ function cargarUltimaMedicion() {
   if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
   if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
+  if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   if (!state.ultimaMedicion) {
     if (card) card.classList.remove('ultima-medicion-card--visible');
     if (typeof cargarAmbienteDesdeUltimaMedicion === 'function') cargarAmbienteDesdeUltimaMedicion();

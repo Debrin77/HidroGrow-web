@@ -228,7 +228,15 @@ function mostrarBarraSeleccionCesta(n, c) {
   const dat = state.torre?.[n]?.[c];
   const vLista = dat?.variedad ? cultivoNombreLista(getCultivoDB(dat.variedad), dat.variedad) : 'Cesta vacía';
   const vEsc = escHtmlUi(vLista);
-  bar.innerHTML = '<span class="torre-focus-title">Nivel ' + (n + 1) + ' · Cesta ' + (c + 1) + '</span>' +
+  const tipoFocus =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(state.configTorre)
+      : state.configTorre?.tipoInstalacion || 'torre';
+  const ubiFocus =
+    typeof formatoUbicacionEnRegistro === 'function'
+      ? formatoUbicacionEnRegistro(tipoFocus, n + 1, c + 1).replace(', ', ' · ')
+      : 'Nivel ' + (n + 1) + ' · Cesta ' + (c + 1);
+  bar.innerHTML = '<span class="torre-focus-title">' + ubiFocus + '</span>' +
     '<span class="torre-focus-meta"> · ' + vEsc + '</span>';
   bar.style.display = 'block';
   if (_torreFocusBarTimer) clearTimeout(_torreFocusBarTimer);
@@ -2235,6 +2243,13 @@ function actualizarChromePanelEsquemaPorTipo() {
   }
   const animLbl = document.getElementById('torreAnimSuavesLabel');
   if (animLbl) animLbl.style.display = '';
+  const listaVista = document.getElementById('torreListaVista');
+  if (listaVista) {
+    if (esNft) listaVista.setAttribute('aria-label', 'Lista de huecos por canal');
+    else if (esDwc) listaVista.setAttribute('aria-label', 'Lista de macetas por fila');
+    else if (esRdwc) listaVista.setAttribute('aria-label', 'Lista de módulos por fila');
+    else listaVista.setAttribute('aria-label', 'Lista de cestas por nivel');
+  }
 }
 
 function disposeNftThreeIfAny(wrap) {

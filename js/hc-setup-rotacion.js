@@ -15,6 +15,16 @@ function calcularRotacion() {
   const card = document.getElementById('rotacionCard');
   if (!card) return;
 
+  const tipo =
+    typeof tipoInstalacionNormalizado === 'function'
+      ? tipoInstalacionNormalizado(state.configTorre)
+      : state.configTorre?.tipoInstalacion;
+  if (tipo !== 'torre') {
+    card.style.display = 'none';
+    card.innerHTML = '';
+    return;
+  }
+
   const nivelesActivos = getNivelesActivos();
 
   // Solo mostrar en modo lechuga o mixto (3 niveles escalonados)

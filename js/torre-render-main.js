@@ -38,7 +38,7 @@ function renderTorre() {
     }
     if (!wrap.innerHTML || !String(wrap.innerHTML).trim()) {
       wrap.innerHTML =
-        '<p class="torre-svg-fallback" role="status">Esquema DWC vacío: revisa niveles/cestas o cubos en Cultivo e instalación.</p>';
+        '<p class="torre-svg-fallback" role="status">Esquema DWC vacío: revisa filas/macetas o cubos en Cultivo e instalación.</p>';
     }
     const dwcMcAria =
       typeof dwcGetOxigenacionDiseno === 'function' &&
@@ -114,6 +114,16 @@ function renderTorre() {
   } catch (_) {}
   try {
     if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+  } catch (ePlantas) {
+    try {
+      console.error('refreshPlantasInstalacionResumen', ePlantas);
+    } catch (_) {}
+  }
+  try {
+    if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
+  } catch (_) {}
+  try {
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   } catch (_) {}
 }
 

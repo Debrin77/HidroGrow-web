@@ -213,6 +213,18 @@
       if (!e || !e.marca) return;
       lines.push(e.marca + ' ' + e.modelo);
     });
+    if (!lines.length) {
+      const ancho = Number(cfg.growRoomAnchoM || cfg.premiumSetup?.anchoM);
+      const largo = Number(cfg.growRoomLargoM || cfg.premiumSetup?.largoM);
+      const ledW = Number(cfg.growRoomLedW || cfg.premiumSetup?.ledW);
+      const ext = Number(cfg.growRoomExtractorM3h || cfg.premiumSetup?.extractorM3h);
+      if (Number.isFinite(ancho) && Number.isFinite(largo) && ancho > 0 && largo > 0) {
+        lines.push(Math.round(ancho * 100) / 100 + '×' + Math.round(largo * 100) / 100 + ' m sala');
+      }
+      if (Number.isFinite(ledW) && ledW > 0) lines.push(ledW + ' W LED');
+      if (Number.isFinite(ext) && ext > 0) lines.push(ext + ' m³/h extractor');
+      if (inst.medidor && inst.medidor.marca) lines.push(inst.medidor.marca + ' medidor');
+    }
     return lines.length ? lines.join(' · ') : '';
   }
 
@@ -362,6 +374,11 @@
     const falt = getCamposEquipamientoFaltantes(cfg);
     let html =
       '<p class="medir-equip-lead">Resumen del equipamiento guardado en esta instalación (desde el asistente o al reconfigurar). Para cambiar marca/modelo, abre el asistente de configuración.</p>';
+    const resumenBreve = getEquipamientoResumenHtml(cfg);
+    if (!resumenBreve) {
+      html +=
+        '<p class="medir-equip-empty">Sin equipamiento registrado aún. Complétalo en el <strong>asistente</strong> (paso Espacio y equipamiento) o indica medidas de sala en la pestaña <strong>Sala</strong>.</p>';
+    }
     if (falt.length) {
       html +=
         '<p class="medir-equip-warn">Completa en el asistente: ' +
@@ -408,6 +425,29 @@
     panel.innerHTML = html;
     if (typeof renderSalaLayoutPanel === 'function') renderSalaLayoutPanel();
     if (typeof renderIotPanel === 'function') renderIotPanel();
+    if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen(cfg);
+  }
+
+  function refreshSistemaEquipResumen(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const span = el('sistemaEquipResumen');
+    if (!span) return;
+    const interior =
+      String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
+      'exterior';
+    if (!interior) {
+      span.textContent = 'Exterior — no aplica';
+      return;
+    }
+    const res = getEquipamientoResumenHtml(cfg);
+    const falt = getCamposEquipamientoFaltantes(cfg);
+    if (res) {
+      span.textContent = res;
+    } else if (falt.length) {
+      span.textContent = 'Sin registrar · falta ' + falt.map(function (f) { return f.label; }).join(', ');
+    } else {
+      span.textContent = 'Sin registrar';
+    }
   }
 
   function persistEquipamientoToConfig(cfg) {
@@ -432,6 +472,7 @@
   window.cargarEquipamientoDesdeConfig = cargarEquipamientoDesdeConfig;
   window.getCamposEquipamientoFaltantes = getCamposEquipamientoFaltantes;
   window.getEquipamientoResumenHtml = getEquipamientoResumenHtml;
+  window.refreshSistemaEquipResumen = refreshSistemaEquipResumen;
   window.getCorreccionEquipamientoSugerido = getCorreccionEquipamientoSugerido;
   window.getInfoCalibracionMedidor = getInfoCalibracionMedidor;
   window.registrarCalibracionMedidor = registrarCalibracionMedidor;
