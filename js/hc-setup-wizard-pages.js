@@ -1705,8 +1705,13 @@ function setupNext() {
       }
     } catch (_) {}
     const ok = guardarSetupYContinuar();
-    if (ok === false && typeof showToast === 'function') {
-      showToast('No se pudo guardar. Revisa los pasos anteriores del asistente.', true);
+    if (ok !== true && typeof showToast === 'function') {
+      showToast(
+        ok === false
+          ? 'No se pudo guardar. Revisa los pasos anteriores del asistente.'
+          : 'No se completó el guardado. Revisa los datos e inténtalo de nuevo.',
+        true
+      );
     }
   }
 }

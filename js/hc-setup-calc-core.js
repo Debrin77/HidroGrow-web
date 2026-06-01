@@ -1569,13 +1569,13 @@ function guardarSetupYContinuarCore() {
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       document.getElementById('setupNombreInstalacionInput')?.focus();
-      return;
+      return false;
     }
     if (setupTipoInstalacion !== 'torre' && setupTipoInstalacion !== 'nft' && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'srf') {
       showToast('Elige Torre, NFT, DWC, RDWC o SRF en el primer paso del asistente', true);
       setupPagina = 0;
       renderSetupPage();
-      return;
+      return false;
     }
   }
 
@@ -1591,7 +1591,7 @@ function guardarSetupYContinuarCore() {
       showToast('Indica tubos y huecos por tubo en el bloque NFT.', true);
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      return false;
     }
     const nftMont = readNftMontajeFromSetupUi();
     if ((nftMont.disposicion === 'pared' || nftMont.disposicion === 'escalera') && nftMont.alturaBombeoCm <= 0) {
@@ -1599,7 +1599,7 @@ function guardarSetupYContinuarCore() {
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
       document.getElementById('nftAlturaBombeoCm')?.focus();
-      return;
+      return false;
     }
     nftNvSlider = parseInt(document.getElementById('sliderNftCanales')?.value || 4, 10);
     cestas = parseInt(document.getElementById('sliderNftHuecos')?.value || 8, 10);
@@ -1621,7 +1621,7 @@ function guardarSetupYContinuarCore() {
       );
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      return false;
     }
     const dwcCapG = getDwcCapacidadLitrosFromSetupInputs();
     if (dwcCapG != null && dwcCapG > 0) {
@@ -1636,7 +1636,7 @@ function guardarSetupYContinuarCore() {
       );
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      return false;
     }
     const cR = typeof applySetupRdwcDesdeFormulario === 'function'
       ? (applySetupRdwcDesdeFormulario() || {})
@@ -1650,7 +1650,7 @@ function guardarSetupYContinuarCore() {
       showToast('Indica niveles, cestas por nivel y litros del depósito en la torre.', true);
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      return false;
     }
   }
   if (isSrf) {
@@ -1661,7 +1661,7 @@ function guardarSetupYContinuarCore() {
       );
       setupPagina = SETUP_PAGE_GEOMETRY;
       renderSetupPage();
-      return;
+      return false;
     }
     const cS =
       typeof buildSrfConfigFromForm === 'function'
@@ -1724,8 +1724,10 @@ function guardarSetupYContinuarCore() {
 
   initTorres();
   const idxSlotGuardar = state.torreActiva || 0;
-  /** Guardar la instalación activa tal como está en memoria antes de que el asistente la sobrescriba. */
-  guardarEstadoTorreActual();
+  /** Reconfiguración: respaldar la ranura activa antes de sobrescribir state.configTorre. En instalación nueva no guardar (el borrador del asistente no debe pisar otra torre). */
+  if (!setupEsNuevaTorre) {
+    guardarEstadoTorreActual();
+  }
 
   const cfgSlotAntesGuardar = state.torres[idxSlotGuardar]?.config;
   const tipoEnSlotAntes = tipoInstalacionNormalizado(cfgSlotAntesGuardar);
@@ -1741,7 +1743,7 @@ function guardarSetupYContinuarCore() {
           '). Elimina una con la papelera en la lista de instalaciones o ajusta el tipo en otra ranura libre.',
         true
       );
-      return;
+      return false;
     }
     const etiquetas = { torre: 'torre vertical', nft: 'NFT', dwc: 'DWC', rdwc: 'RDWC', srf: 'SRF' };
     const nomAnt = etiquetas[tipoEnSlotAntes] || tipoEnSlotAntes;
@@ -1758,7 +1760,7 @@ function guardarSetupYContinuarCore() {
           ' seguirá en la lista (selector de instalación arriba).\n\n¿Continuar?'
       )
     ) {
-      return;
+      return false;
     }
     crearNuevaPorCambioTipo = true;
     const pref = tipoNuevoPrevio === 'dwc' ? 'DWC' : tipoNuevoPrevio === 'nft' ? 'NFT' : tipoNuevoPrevio === 'rdwc' ? 'RDWC' : tipoNuevoPrevio === 'srf' ? 'SRF' : 'Torre';
@@ -1806,10 +1808,20 @@ function guardarSetupYContinuarCore() {
     setupData.ubicacion ||
     setupUbicacion ||
     (premEntorno === 'exterior' ? 'exterior' : premEntorno === 'interior' ? 'interior' : 'interior');
+  const cfgSalaParaGuardar = (function () {
+    const base = cfgPrevWizard && typeof cfgPrevWizard === 'object' ? cfgPrevWizard : {};
+    const w =
+      typeof getWizardEquipCfg === 'function' ? getWizardEquipCfg() : {};
+    const p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+    const out = Object.assign({}, base, w);
+    if (p.anchoM != null) out.growRoomAnchoM = p.anchoM;
+    if (p.largoM != null) out.growRoomLargoM = p.largoM;
+    return out;
+  })();
   if (
     ubicEffGuardar === 'interior' &&
     !(typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
-      window.salaTieneMedidasDesdeEquipamiento(cfgPrevWizard)) &&
+      window.salaTieneMedidasDesdeEquipamiento(cfgSalaParaGuardar)) &&
     typeof validarPremiumSetupPaso === 'function' &&
     typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' &&
     !validarPremiumSetupPaso(SETUP_PAGE_PREMIUM_3)
@@ -1871,18 +1883,18 @@ function guardarSetupYContinuarCore() {
     torreObjetivoCultivo:
       ((state.configTorre && state.configTorre.torreObjetivoCultivo) || 'final'),
   };
+  if (preservedEquipInstalado && Object.keys(preservedEquipInstalado).length) {
+    state.configTorre.equipamientoInstalado = preservedEquipInstalado;
+  }
+  if (preservedCalibracionMedidor) {
+    state.configTorre.ultimaCalibracionMedidor = preservedCalibracionMedidor;
+  }
+  if (preservedSalaLayout) {
+    state.configTorre.salaLayout = preservedSalaLayout;
+  }
   try {
     if (typeof persistPremiumSetupToConfig === 'function') {
       persistPremiumSetupToConfig(state.configTorre);
-    }
-    if (preservedEquipInstalado && Object.keys(preservedEquipInstalado).length) {
-      state.configTorre.equipamientoInstalado = preservedEquipInstalado;
-    }
-    if (preservedCalibracionMedidor) {
-      state.configTorre.ultimaCalibracionMedidor = preservedCalibracionMedidor;
-    }
-    if (preservedSalaLayout) {
-      state.configTorre.salaLayout = preservedSalaLayout;
     }
     if (typeof persistEquipamientoToConfig === 'function') {
       persistEquipamientoToConfig(state.configTorre);
@@ -1892,7 +1904,7 @@ function guardarSetupYContinuarCore() {
     showToast('Error al guardar equipamiento o sala. Revisa el paso «Espacio y equipamiento».', true);
     setupPagina = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
     renderSetupPage();
-    return;
+    return false;
   }
   try {
     delete state.configTorre.hcPlantillaAutogenerada;
@@ -2266,7 +2278,7 @@ function guardarSetupYContinuarCore() {
               : isSrf
                 ? '🟩'
                 : EMOJIS[nTorres % EMOJIS.length],
-      config: { ...state.configTorre },
+      config: JSON.parse(JSON.stringify(state.configTorre)),
       torre: JSON.parse(JSON.stringify(state.torre)),
       modoActual: 'vegetativo',
       mediciones: [],
@@ -2345,6 +2357,24 @@ function guardarSetupYContinuarCore() {
       if (so) so.classList.remove('open');
     }
   } catch (_) {}
+  const nombreGuardado =
+    (state.torres && state.torres[state.torreActiva != null ? state.torreActiva : 0] &&
+      String(state.torres[state.torreActiva != null ? state.torreActiva : 0].nombre || '').trim()) ||
+    (typeof setupNombreNuevaTorre !== 'undefined' ? String(setupNombreNuevaTorre || '').trim() : '') ||
+    '';
+  if (typeof hcNotifyInstalacionGuardada === 'function') {
+    hcNotifyInstalacionGuardada({ nombre: nombreGuardado });
+  } else if (typeof showToast === 'function') {
+    setTimeout(function () {
+      showToast(
+        nombreGuardado
+          ? '✅ «' + nombreGuardado + '» guardada'
+          : '✅ Instalación guardada',
+        false,
+        { durationMs: 5600, zIndex: 10400, prominent: true }
+      );
+    }, 220);
+  }
   try {
     if (typeof hcMaybeOfferPuestaMarcha === 'function') hcMaybeOfferPuestaMarcha();
   } catch (_) {}
@@ -2355,7 +2385,7 @@ function guardarSetupYContinuarCore() {
     preguntarIniciarChecklist();
   } else if (typeof goTab === 'function') {
     goTab('sistema');
-    if (typeof showToast === 'function') {
+    if (typeof showToast === 'function' && typeof hcNotifyInstalacionGuardada !== 'function') {
       showToast('Instalación guardada. Continúa en Cultivo e instalación.');
     }
   }

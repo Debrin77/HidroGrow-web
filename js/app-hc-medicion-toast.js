@@ -180,7 +180,13 @@ async function guardarMedicion() {
 }
 
 
-function showToast(msg, error=false) {
+function showToast(msg, error, opts) {
+  if (error != null && typeof error === 'object' && !opts) {
+    opts = error;
+    error = false;
+  }
+  const isError = error === true;
+  opts = opts && typeof opts === 'object' ? opts : {};
   let t = document.getElementById('toast');
   if (!t) {
     t = document.createElement('div');
@@ -193,21 +199,38 @@ function showToast(msg, error=false) {
   } else if (!t.classList.contains('hc-toast')) {
     t.classList.add('hc-toast');
   }
+  t.classList.toggle('hc-toast--prominent', !!opts.prominent || opts.zIndex != null);
   t.style.removeProperty('top');
+  if (opts.zIndex != null) t.style.zIndex = String(opts.zIndex);
+  else t.style.removeProperty('z-index');
   t.textContent = msg;
-  t.setAttribute('aria-live', error ? 'assertive' : 'polite');
-  t.style.background = error ? 'var(--red)' : 'var(--green)';
-  t.style.color = error ? 'white' : 'var(--bg)';
+  t.setAttribute('aria-live', isError ? 'assertive' : 'polite');
+  t.style.background = isError ? 'var(--red)' : 'var(--green)';
+  t.style.color = isError ? 'white' : 'var(--bg)';
   t.style.opacity = '0';
   t.style.transform = 'translateX(-50%) translateY(14px)';
   void t.offsetWidth;
   t.style.opacity = '1';
   t.style.transform = 'translateX(-50%) translateY(0)';
   if (t._toastHideId) clearTimeout(t._toastHideId);
+  const durationMs = Number.isFinite(opts.durationMs) ? opts.durationMs : 3500;
   t._toastHideId = setTimeout(() => {
     t.style.opacity = '0';
     t.style.transform = 'translateX(-50%) translateY(14px)';
     t._toastHideId = 0;
-  }, 3500);
+  }, durationMs);
+}
+
+/** Tras «Guardar y empezar»: toast visible encima del asistente recién cerrado. */
+function hcNotifyInstalacionGuardada(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const nombre = String(opts.nombre || '').trim();
+  const msg = nombre
+    ? '✅ «' + nombre + '» guardada. Asigna cultivos en el esquema (modo «Asignar cultivo»).'
+    : '✅ Instalación guardada. Continúa en Cultivo e instalación.';
+  const delayMs = Number.isFinite(opts.delayMs) ? opts.delayMs : 220;
+  setTimeout(function () {
+    showToast(msg, false, { durationMs: 5600, zIndex: 10400, prominent: true });
+  }, delayMs);
 }
 

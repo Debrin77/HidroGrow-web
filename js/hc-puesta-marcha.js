@@ -274,7 +274,7 @@
       if (typeof showToast === 'function') {
         showToast('💡 Revisa montaje y accesorios: «Verificar puesta en marcha» en Cultivo e instalación.', false);
       }
-    }, 2500);
+    }, 6200);
   }
 
   global.hcOpenPuestaMarchaChecklist = openPuestaMarchaChecklist;

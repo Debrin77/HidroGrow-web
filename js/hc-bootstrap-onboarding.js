@@ -828,10 +828,5 @@ function iniciarFlujoSistemaAntesChecklistPostSetup() {
       assignPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   }, 120);
-  if (typeof showToast === 'function') {
-    showToast(
-      'Asigna el cultivo en cada cesta o hueco del esquema (modo «Asignar cultivo»). Al terminar, pulsa «Finalizar asignación» para abrir el checklist o posponerlo.'
-    );
-  }
 }
 
