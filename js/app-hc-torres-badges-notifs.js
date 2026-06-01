@@ -1152,6 +1152,9 @@ function actualizarBadgesNutriente() {
   try {
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   } catch (_) {}
+  try {
+    if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+  } catch (_) {}
 }
 
 function cambiarNutriente() {

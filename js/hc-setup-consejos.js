@@ -1555,6 +1555,16 @@ function buildHtmlPlantasInstalacionSnippet() {
   );
 }
 
+function hcConsejosCultivoVisibles(consejos) {
+  const lista = Array.isArray(consejos) ? consejos : [];
+  return lista.filter(c => {
+    const t = String(c && c.titulo ? c.titulo : '');
+    if (/rotaci[oó]n escalonada.*torre/i.test(t)) return false;
+    if (/objetivo de cosecha en torre/i.test(t)) return false;
+    return true;
+  });
+}
+
 function refreshPlantasInstalacionResumen() {
   const plantas =
     typeof hcCollectPlantasInstalacionActiva === 'function'
@@ -1579,6 +1589,10 @@ function refreshPlantasInstalacionResumen() {
     const det = document.getElementById(id);
     if (det) det.classList.remove('setup-hidden');
   });
+  try {
+    if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+  } catch (_) {}
 }
 
 function buildConsejoPlantasInstalacionActiva() {
@@ -2469,7 +2483,7 @@ function renderConsejosLista() {
       (typeof buildConsejoPlantasInstalacionActiva === 'function'
         ? buildConsejoPlantasInstalacionActiva()
         : '') +
-      cat.consejos.map(c => htmlConsejoCard(cat, c)).join('') +
+      hcConsejosCultivoVisibles(cat.consejos).map(c => htmlConsejoCard(cat, c)).join('') +
       (typeof buildConsejosCestasPorSistemaTabla === 'function' ? buildConsejosCestasPorSistemaTabla() : '') +
       buildConsejoCambioNutrientePorFase() +
       buildConsejoObjetivoTorreCultivo() +

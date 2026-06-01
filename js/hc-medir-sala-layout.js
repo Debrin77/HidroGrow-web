@@ -289,6 +289,7 @@
 
   function refreshSistemaCultivoExtras() {
     if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
+    else if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
     if (typeof renderMedirEsquejesPanel === 'function') renderMedirEsquejesPanel();
     if (typeof renderMedirSemilleroPanel === 'function') renderMedirSemilleroPanel();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();

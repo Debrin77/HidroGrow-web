@@ -139,14 +139,8 @@
       '</ul>';
   }
 
-  function renderPuestaMarchaInlinePreview() {
-    var host = document.getElementById('sistemaMontajeChecksBody');
-    if (!host) return;
-    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
-    var checks = getChecks(cfg);
-    var prog = countProgress(checks, cfg);
-    var verificada = !!checks.completedAt;
-    host.innerHTML =
+  function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada) {
+    return (
       '<p class="hc-pm-inline-lead">Revisa el montaje <strong>una vez</strong> por instalación (DWC/RDWC, aire, LED, medidor…). No sustituye al checklist de recarga de nutrientes.</p>' +
       '<p class="hc-pm-prog">' +
       (verificada ? '✓ Puesta en marcha verificada · ' : '') +
@@ -174,7 +168,20 @@
       '<p class="hc-pm-inline-actions">' +
       '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
       (verificada ? '✓ Puesta en marcha verificada' : 'Abrir checklist de montaje') +
-      '</button></p>';
+      '</button></p>'
+    );
+  }
+
+  function renderPuestaMarchaInlinePreview() {
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var checks = getChecks(cfg);
+    var prog = countProgress(checks, cfg);
+    var verificada = !!checks.completedAt;
+    var html = buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada);
+    ['sistemaMontajeChecksBody', 'hcMontajeInicioBody'].forEach(function (id) {
+      var host = document.getElementById(id);
+      if (host) host.innerHTML = html;
+    });
   }
 
   function refreshPuestaMarchaUi() {
@@ -194,6 +201,10 @@
         ? 'Puesta en marcha verificada para esta instalación (' + prog.total + '/' + prog.total + ' puntos).'
         : prog.done + '/' + prog.total + ' puntos esenciales · revisa montaje, aireación y accesorios.';
     }
+    var kicker = document.getElementById('medirPuestaMarchaKicker');
+    if (kicker) {
+      kicker.textContent = verificada ? '✓ Puesta en marcha verificada' : 'Montaje de la instalación activa';
+    }
     var card = document.getElementById('medirPuestaMarchaCard');
     if (card) card.classList.toggle('medir-pm-card--ok', verificada);
     var resumen = document.getElementById('sistemaMontajeChecksResumen');
@@ -201,6 +212,16 @@
       resumen.textContent = verificada
         ? '✓ Verificada'
         : prog.done + '/' + prog.total + ' esenciales';
+    }
+    var inicioSub = document.getElementById('hcMontajeInicioSub');
+    if (inicioSub) {
+      inicioSub.textContent = verificada
+        ? '✓ Verificada · ' + prog.total + '/' + prog.total
+        : prog.done + '/' + prog.total + ' esenciales';
+    }
+    var modalTitle = document.getElementById('puestaMarchaTitle');
+    if (modalTitle) {
+      modalTitle.textContent = verificada ? '✓ Puesta en marcha verificada' : 'Puesta en marcha';
     }
     renderPuestaMarchaInlinePreview();
   }

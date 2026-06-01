@@ -1521,8 +1521,12 @@ function renderSetupPage() {
     }, 0);
   }
   if (setupPagina === SETUP_PAGE_EQUIP) {
+    refreshSetupEquipamientoCardsDesdeSet();
     cargarSetupSensoresHwUI();
     refreshSetupCalentadorConsignaVis();
+    if (typeof renderEquipamientoPremiumUI === 'function') {
+      setTimeout(renderEquipamientoPremiumUI, 0);
+    }
   }
   if (setupPagina === SETUP_PAGE_AGUA) {
     setTimeout(function () {

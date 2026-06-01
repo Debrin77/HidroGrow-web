@@ -139,16 +139,16 @@
     };
   }
 
-  function renderEquipamientoPremiumUI() {
-    const host = el('setupPremiumEquipGrid');
+  function renderEquipCatalogInto(host, idPrefix) {
     if (!host) return;
     const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
     const cfg = getWizardEquipCfg();
     const inst = ensureEquipInstalado(cfg);
+    const prefix = idPrefix || 'setupPremiumEquip_';
     host.innerHTML = Object.keys(cats).map(function (key) {
       const cat = cats[key];
       const cur = inst[key];
-      const selId = 'setupPremiumEquip_' + key;
+      const selId = prefix + key;
       const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
       const iconHtml = typeof hcVisualIconSvg === 'function' ? hcVisualIconSvg(visKey, 'hc-visual-ico--sm') : (cat.icon || '');
       return (
@@ -161,8 +161,13 @@
       );
     }).join('');
     Object.keys(cats).forEach(function (key) {
-      renderEquipSelect(key, 'setupPremiumEquip_' + key, 'seleccionarEquipamientoPremium');
+      renderEquipSelect(key, prefix + key, 'seleccionarEquipamientoPremium');
     });
+  }
+
+  function renderEquipamientoPremiumUI() {
+    renderEquipCatalogInto(el('setupPremiumEquipGrid'), 'setupPremiumEquip_');
+    renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
     renderEquipFaltantesHint();
   }
 
@@ -174,8 +179,12 @@
       hint.innerHTML = '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado para monitorización.</span>';
       return;
     }
+    const p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
+    const int = !p || p.entorno !== 'exterior';
     hint.innerHTML = 'Faltan datos de: <strong>' + falt.map(function (f) { return f.label; }).join(', ') + '</strong>. ' +
-      'Selecciona marca/modelo en el catálogo y revisa las medidas de sala más abajo.';
+      (int
+        ? 'Selecciona marca/modelo en el catálogo y revisa las medidas de sala más abajo.'
+        : 'Selecciona marca/modelo en el catálogo (medidor y clima son prioritarios en exterior).');
   }
 
   function getCamposEquipamientoFaltantes(cfg) {
@@ -204,6 +213,23 @@
     return falt;
   }
 
+  function getEquipBasicoResumenTexto(cfg) {
+    cfg = cfg || {};
+    var eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+    var labels = {
+      difusor: 'Aireador',
+      calentador: 'Calentador',
+      bomba: 'Bomba recirc.',
+      medidorEC: 'Medidor EC/pH',
+      timer: 'Timer',
+      toldo: 'Toldo / sombra',
+    };
+    var parts = eq.map(function (id) {
+      return labels[id] || id;
+    });
+    return parts.length ? parts.join(', ') : '';
+  }
+
   function getEquipamientoResumenHtml(cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const inst = ensureEquipInstalado(cfg);
@@ -224,6 +250,10 @@
       if (Number.isFinite(ledW) && ledW > 0) lines.push(ledW + ' W LED');
       if (Number.isFinite(ext) && ext > 0) lines.push(ext + ' m³/h extractor');
       if (inst.medidor && inst.medidor.marca) lines.push(inst.medidor.marca + ' medidor');
+    }
+    if (!lines.length) {
+      var basico = getEquipBasicoResumenTexto(cfg);
+      if (basico) lines.push(basico);
     }
     return lines.length ? lines.join(' · ') : '';
   }
@@ -446,7 +476,8 @@
     } else if (falt.length) {
       span.textContent = 'Sin registrar · falta ' + falt.map(function (f) { return f.label; }).join(', ');
     } else {
-      span.textContent = 'Sin registrar';
+      var basico = getEquipBasicoResumenTexto(cfg);
+      span.textContent = basico ? 'Básico: ' + basico : 'Sin registrar — abre el asistente o indica medidas en Sala';
     }
   }
 

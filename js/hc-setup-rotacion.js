@@ -13,17 +13,18 @@ function etiquetaLimpiezaTrasRotacion() {
 
 function calcularRotacion() {
   const card = document.getElementById('rotacionCard');
-  if (!card) return;
-
+  if (card) {
+    card.style.display = 'none';
+    card.innerHTML = '';
+    card.classList.add('setup-hidden');
+    card.setAttribute('aria-hidden', 'true');
+  }
+  /* HidroGrow solo DWC/RDWC: rotación por niveles de torre vertical no aplica. */
   const tipo =
     typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(state.configTorre)
       : state.configTorre?.tipoInstalacion;
-  if (tipo !== 'torre') {
-    card.style.display = 'none';
-    card.innerHTML = '';
-    return;
-  }
+  if (tipo !== 'torre') return;
 
   const nivelesActivos = getNivelesActivos();
 

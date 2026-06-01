@@ -10889,15 +10889,39 @@ html.hc-theme-dark .consejo-text-toggle {
 }
 .hc-plantas-instalacion-details {
   margin: 10px 0 0;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.hc-plantas-instalacion-details > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.hc-plantas-instalacion-details > summary::-webkit-details-marker {
+  display: none;
+}
+.hc-plantas-instalacion-details[open] > summary .config-section-collapse-chevron {
+  transform: rotate(180deg);
 }
 .hc-plantas-instalacion-details--dash {
   margin: 10px 0 0;
+}
+.hc-plantas-instalacion-details--dash .config-section-collapse-body {
+  border-top: 1px solid var(--border);
+}
+.hc-montaje-inicio-details {
+  margin-top: 10px;
 }
 .hc-plantas-instalacion-summary {
   cursor: pointer;
 }
 .hc-plantas-instalacion-summary-title {
-  color: var(--white);
+  color: #e2e8f0;
+}
+#tab-inicio .hc-plantas-instalacion-details .config-section-collapse-title,
+#tab-sistema .hc-plantas-instalacion-details .config-section-collapse-title {
+  color: #e2e8f0;
 }
 .hc-plantas-instalacion-summary-sub {
   display: block;
@@ -18287,6 +18311,10 @@ html.hc-theme-dark .torre-nft-p-note strong {
 .medir-pm-card--ok {
   border-color: rgba(34, 197, 94, 0.4);
   background: rgba(22, 163, 74, 0.08);
+}
+.medir-pm-card--ok .medir-pm-card-kicker {
+  color: #86efac;
+  font-weight: 800;
 }
 .medir-pm-card-inner {
   display: flex;
