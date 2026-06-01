@@ -120,48 +120,124 @@
     } catch (_) {}
   }
 
+  function resolveEquipCategorias() {
+    try {
+      if (typeof window !== 'undefined') {
+        if (typeof window.getEquipCategorias === 'function') {
+          const c = window.getEquipCategorias();
+          if (c && typeof c === 'object') return c;
+        }
+        if (window.EQUIP_CATEGORIAS && typeof window.EQUIP_CATEGORIAS === 'object') {
+          return window.EQUIP_CATEGORIAS;
+        }
+      }
+    } catch (_) {}
+    return {};
+  }
+
   function renderEquipSelect(catId, selectId, onchangeName) {
     const sel = el(selectId);
     if (!sel) return;
     const cfg = getWizardEquipCfg();
     const cur = (ensureEquipInstalado(cfg)[catId] || {}).id || '';
-    const limit = typeof EQUIP_TOP_ES_LIMIT !== 'undefined' ? EQUIP_TOP_ES_LIMIT : 10;
-    const list = typeof getEquipTopPorCategoria === 'function'
-      ? getEquipTopPorCategoria(catId, limit, cur)
-      : (typeof getEquipamientoByCategoria === 'function' ? getEquipamientoByCategoria(catId) : []);
-    sel.innerHTML = '<option value="">— Manual / otro modelo —</option>' +
-      list.map(function (e) {
-        return '<option value="' + e.id + '"' + (e.id === cur ? ' selected' : '') + '>' +
-          e.marca + ' · ' + e.modelo + '</option>';
-      }).join('');
+    const limit =
+      typeof window !== 'undefined' && window.EQUIP_TOP_ES_LIMIT != null
+        ? window.EQUIP_TOP_ES_LIMIT
+        : 10;
+    const topFn =
+      typeof window !== 'undefined' && typeof window.getEquipTopPorCategoria === 'function'
+        ? window.getEquipTopPorCategoria
+        : null;
+    const byCatFn =
+      typeof window !== 'undefined' && typeof window.getEquipamientoByCategoria === 'function'
+        ? window.getEquipamientoByCategoria
+        : null;
+    const list = topFn
+      ? topFn(catId, limit, cur)
+      : byCatFn
+        ? byCatFn(catId)
+        : [];
+    sel.replaceChildren();
+    const opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.textContent = '— Manual / otro modelo —';
+    sel.appendChild(opt0);
+    list.forEach(function (e) {
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = e.marca + ' · ' + e.modelo;
+      if (e.id === cur) opt.selected = true;
+      sel.appendChild(opt);
+    });
     sel.onchange = function () {
-      window[onchangeName](catId, sel.value);
+      if (typeof window[onchangeName] === 'function') window[onchangeName](catId, sel.value);
     };
   }
 
   function renderEquipCatalogInto(host, idPrefix) {
     if (!host) return;
-    const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
+    const cats = resolveEquipCategorias();
+    const keys = Object.keys(cats);
     const cfg = getWizardEquipCfg();
     const inst = ensureEquipInstalado(cfg);
     const prefix = idPrefix || 'setupPremiumEquip_';
-    host.innerHTML = Object.keys(cats).map(function (key) {
+    if (typeof host.replaceChildren === 'function') host.replaceChildren();
+    else host.innerHTML = '';
+    if (!keys.length) {
+      const err = document.createElement('p');
+      err.className = 'setup-box-warn';
+      err.setAttribute('role', 'alert');
+      err.textContent =
+        'No se pudo cargar el catálogo de equipamiento. Recarga la página con Ctrl+F5.';
+      host.appendChild(err);
+      return;
+    }
+    keys.forEach(function (key) {
       const cat = cats[key];
+      if (!cat) return;
       const cur = inst[key];
       const selId = prefix + key;
       const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
-      const iconHtml = typeof hcVisualIconSvg === 'function' ? hcVisualIconSvg(visKey, 'hc-visual-ico--sm') : (cat.icon || '');
-      return (
-        '<div class="equip-catalog-card">' +
-        '<div class="equip-catalog-head">' + iconHtml + ' ' + cat.label +
-        (cat.indispensable ? ' <span class="equip-catalog-req">indispensable</span>' : '') + '</div>' +
-        '<select id="' + selId + '" class="setup-input-city equip-catalog-select"></select>' +
-        (cur ? '<p class="equip-catalog-ok">✓ ' + cur.marca + ' ' + cur.modelo + '</p>' : '') +
-        '<p class="equip-catalog-hint">' + cat.hint + '</p></div>'
-      );
-    }).join('');
-    Object.keys(cats).forEach(function (key) {
-      renderEquipSelect(key, prefix + key, 'seleccionarEquipamientoPremium');
+      const card = document.createElement('div');
+      card.className = 'equip-catalog-card';
+      const head = document.createElement('div');
+      head.className = 'equip-catalog-head';
+      if (typeof window.hcVisualIconSvg === 'function') {
+        try {
+          head.insertAdjacentHTML('afterbegin', window.hcVisualIconSvg(visKey, 'hc-visual-ico--sm'));
+        } catch (_) {
+          head.appendChild(document.createTextNode(cat.icon || '•'));
+        }
+      } else {
+        head.appendChild(document.createTextNode(cat.icon || '•'));
+      }
+      head.appendChild(document.createTextNode(' ' + (cat.label || key)));
+      if (cat.indispensable) {
+        head.appendChild(document.createTextNode(' '));
+        const req = document.createElement('span');
+        req.className = 'equip-catalog-req';
+        req.textContent = 'indispensable';
+        head.appendChild(req);
+      }
+      card.appendChild(head);
+      const sel = document.createElement('select');
+      sel.id = selId;
+      sel.className = 'setup-input-city equip-catalog-select';
+      card.appendChild(sel);
+      if (cur && cur.marca) {
+        const ok = document.createElement('p');
+        ok.className = 'equip-catalog-ok';
+        ok.textContent = '✓ ' + cur.marca + ' ' + (cur.modelo || '');
+        card.appendChild(ok);
+      }
+      if (cat.hint) {
+        const hintP = document.createElement('p');
+        hintP.className = 'equip-catalog-hint';
+        hintP.textContent = cat.hint;
+        card.appendChild(hintP);
+      }
+      host.appendChild(card);
+      renderEquipSelect(key, selId, 'seleccionarEquipamientoPremium');
     });
   }
 
@@ -190,7 +266,7 @@
   function getCamposEquipamientoFaltantes(cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const inst = ensureEquipInstalado(cfg);
-    const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
+    const cats = resolveEquipCategorias();
     const falt = [];
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
@@ -400,7 +476,7 @@
       return;
     }
     const inst = ensureEquipInstalado(cfg);
-    const cats = typeof getEquipCategorias === 'function' ? getEquipCategorias() : {};
+    const cats = resolveEquipCategorias();
     const falt = getCamposEquipamientoFaltantes(cfg);
     let html =
       '<p class="medir-equip-lead">Resumen del equipamiento guardado en esta instalación (desde el asistente o al reconfigurar). Para cambiar marca/modelo, abre el asistente de configuración.</p>';

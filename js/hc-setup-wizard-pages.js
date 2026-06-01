@@ -1518,6 +1518,12 @@ function renderSetupPage() {
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     setTimeout(function () {
       if (typeof cargarPremiumSetupUI === 'function') cargarPremiumSetupUI(setupPagina);
+      if (
+        setupPagina === SETUP_PAGE_PREMIUM_3 &&
+        typeof renderEquipamientoPremiumUI === 'function'
+      ) {
+        renderEquipamientoPremiumUI();
+      }
     }, 0);
   }
   if (setupPagina === SETUP_PAGE_EQUIP) {

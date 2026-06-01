@@ -17317,8 +17317,16 @@ button.toggle-switch:focus-visible {
 .medir-esquejes-fecha-lbl { font-size: 11px; color: #6b7280; display: block; margin-bottom: 4px; }
 .medir-esquejes-fecha-inp { max-width: 140px; margin-bottom: 8px; }
 .medir-esquejes-foot { font-size: 11px; color: #6b7280; margin: 0 0 8px; font-style: italic; }
-.equip-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.equip-catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; min-height: 2rem; }
 .equip-catalog-card { border: 1px solid var(--border, #e5e7eb); border-radius: 10px; padding: 10px; background: #fafafa; }
+.setup-overlay .equip-catalog-card {
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+.setup-overlay .equip-catalog-head { color: #111827; }
+.setup-overlay .equip-catalog-hint { color: #64748b; }
+.setup-overlay .equip-catalog-select { min-height: 44px; }
 .equip-catalog-head { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
 .equip-catalog-req { font-size: 10px; color: #b45309; font-weight: 700; text-transform: uppercase; }
 .equip-catalog-select { width: 100%; margin-bottom: 4px; }

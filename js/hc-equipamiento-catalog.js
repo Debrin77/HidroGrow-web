@@ -44,7 +44,7 @@ const EQUIP_CATEGORIAS = {
     icon: '💧',
     indispensable: false,
     campos: [{ key: 'capacidadLh', label: 'Capacidad (L/h)', type: 'number' }],
-    hint: 'Recomendado en esquejes/veg si HR <55%. La app lo sugerirá en correcciones VPD.',
+    hint: 'Recomendado en esquejes/veg si HR por debajo de 55%. La app lo sugerirá en correcciones VPD.',
   },
   deshumidificador: {
     id: 'deshumidificador',
