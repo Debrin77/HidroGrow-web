@@ -11,7 +11,7 @@
     3: { l1: 'Carpa, LED y extractor; catálogo opcional.' },
     4: { l1: 'Fase y horas de luz → objetivos EC/VPD.' },
     5: { l1: 'SOG o SCROG; variedades en paso Cultivos.' },
-    6: { l1: '6 fases en orden hasta el cubo hidro.' },
+    6: { l1: 'Semilla: camino de 6 fases (seguimiento en Inicio).' },
     7: { l1: 'Resumen; siguiente: geometría del sistema.' },
     8: { l1: 'Filas, cubos y depósito; diagrama en vivo.' },
     9: { l1: 'Circuito hidro, sala (filtro, circulación, timer LED), herramientas o toldo en exterior.' },

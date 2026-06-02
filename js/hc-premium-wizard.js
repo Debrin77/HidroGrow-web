@@ -2,45 +2,6 @@
  * HidroGrow — asistente premium 7 bloques (setup pasos 1–7).
  */
 (function () {
-  const GERMINACION_HIDRO_PASOS = [
-    {
-      id: 'semilla',
-      paso: 1,
-      titulo: 'Germinador (papel o domo)',
-      desc: 'Semilla húmeda a 22–26 °C, a oscuras o en domo. Todavía no va al cubo hidro.',
-    },
-    {
-      id: 'taproot',
-      paso: 2,
-      titulo: 'Radícula 5–10 mm',
-      desc: 'La raíz blanca asoma: momento de pasarla al cubo de lana. No toques la punta.',
-    },
-    {
-      id: 'rockwool',
-      paso: 3,
-      titulo: 'Cubo lana de roca 4×4 cm',
-      desc: 'Remoja pH 5.5 e inserta la semilla en el hueco central del cubo.',
-    },
-    {
-      id: 'domo',
-      paso: 4,
-      titulo: 'Domo húmedo + luz suave 18/6',
-      desc: 'Plántula bajo domo (HR 70–80 %). Ventila 2×/día; luz tenue, no intensa.',
-    },
-    {
-      id: 'netpot',
-      paso: 5,
-      titulo: 'Net pot + arcilla expandida',
-      desc: 'Cuando la raíz sale del cubo, pasa a maceta de malla antes del depósito.',
-    },
-    {
-      id: 'dwc',
-      paso: 6,
-      titulo: 'Traslado al cubo DWC/RDWC',
-      desc: 'Solo plántula enraizada en net pot. Nunca siembra directa en el depósito · EC 400–600 µS.',
-    },
-  ];
-
   function el(id) {
     return document.getElementById(id);
   }
@@ -143,9 +104,10 @@
     },
     semilla: {
       recoPaso6:
-        'Con <strong>semilla</strong> puedes elegir SOG/SCROG y foto/auto en el paso anterior. ' +
-        'El <strong>semillero</strong> ayuda con rangos de germinación (opcional).',
-      recoPaso5: '',
+        'Con <strong>semilla</strong>, el camino de 6 fases va en <strong>Inicio</strong>. ' +
+        'Abajo puedes indicar la <strong>marca de semillas</strong> (opcional): no sustituye domo, cubos ni pH del germinador.',
+      recoPaso5:
+        'SOG/SCROG y foto/auto quedan aquí. La <strong>marca de semillas</strong> (Dinafem, RQS…) va en el siguiente paso, solo si compras semilla — no confundir con el equipamiento del propagador.',
     },
     madre: {
       geneticaPref: 'foto',
@@ -473,26 +435,13 @@
       sec.innerHTML =
         '<div class="setup-box-info">Cubo dedicado en DWC/RDWC · <strong>18/6</strong> permanente. ' +
         'Tras 5–6 sem en veg estable, toma esquejes cada 10–14 d sin volver a sembrar.</div>';
+    } else if (typeof hcGerminacionRenderSetupPreview === 'function') {
+      hcGerminacionRenderSetupPreview();
+      if (typeof hcGerminacionActivarDesdeSetup === 'function') hcGerminacionActivarDesdeSetup();
     } else {
-      const done = p.germinacionChecklist || {};
       sec.innerHTML =
         '<div class="setup-germ-intro setup-box-info setup-mb-12" role="note">' +
-        '<strong>Camino semilla → cubo:</strong> marca cada fase cuando la completes. ' +
-        'Son <strong>6 pasos en orden</strong>, no opciones alternativas.</div>' +
-        '<div class="setup-germ-timeline" role="list" aria-label="Pasos de germinación semilla a cubo hidro">' +
-        GERMINACION_HIDRO_PASOS.map(function (paso) {
-          const ok = !!done[paso.id];
-          return (
-            '<button type="button" role="listitem" class="setup-germ-step equip-card' + (ok ? ' selected' : '') +
-            '" onclick="togglePremiumGermPaso(\'' + paso.id + '\')" aria-pressed="' + (ok ? 'true' : 'false') + '">' +
-            '<span class="setup-germ-step-num" aria-hidden="true">' + paso.paso + '</span>' +
-            '<span class="setup-germ-step-body">' +
-            '<span class="setup-option-title-md">' + paso.titulo + '</span>' +
-            '<span class="setup-option-desc-sm">' + paso.desc + '</span>' +
-            '</span></button>'
-          );
-        }).join('') +
-        '</div>';
+        'Con <strong>semilla</strong>, el seguimiento de las 6 fases va en <strong>Inicio</strong> cuando termines el asistente.</div>';
     }
     if (typeof renderEsquejesSetupUI === 'function') renderEsquejesSetupUI();
     if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(orig);
@@ -595,11 +544,12 @@
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
 
-    if (pagina === SETUP_PAGE_PREMIUM_5 && typeof renderSemillerosGrid === 'function') {
-      renderSemillerosGrid();
-      renderSemilleroPerfilPanel();
+    if (pagina === SETUP_PAGE_PREMIUM_6) {
+      refreshPremiumGerminacionUI();
+      if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
+      if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
+      if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
     }
-    if (pagina === SETUP_PAGE_PREMIUM_6) refreshPremiumGerminacionUI();
     if (pagina === SETUP_PAGE_PREMIUM_3) {
       if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
         syncSalaMedidasDesdeEquipamientoInstalado();
@@ -642,6 +592,7 @@
     if (typeof persistEsquejesToConfig === 'function') persistEsquejesToConfig(cfg);
     if (typeof persistEquipamientoToConfig === 'function') persistEquipamientoToConfig(cfg);
     if (typeof persistSemilleroToConfig === 'function') persistSemilleroToConfig(cfg);
+    if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
     if (typeof inferLuzFromPremium === 'function') cfg.luz = inferLuzFromPremium(p);

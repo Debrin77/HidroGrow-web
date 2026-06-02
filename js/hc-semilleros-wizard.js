@@ -9,8 +9,9 @@
   function ensureSemilleroState(cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     if (!cfg.semillero || typeof cfg.semillero !== 'object') {
-      cfg.semillero = { id: '', marca: '', perfil: {}, perfilCustom: {}, aceptadoTalCual: false };
+      cfg.semillero = { id: '', marca: '', perfil: {}, perfilCustom: {}, aceptadoTalCual: false, omitido: false };
     }
+    if (cfg.semillero.omitido == null) cfg.semillero.omitido = false;
     return cfg.semillero;
   }
 
@@ -62,9 +63,73 @@
       const grid = el('setupPremiumSemillerosGrid');
       if (grid) grid.innerHTML = '';
       renderSemilleroPerfilPanel();
-    } else {
-      renderSemillerosGrid();
+      return;
     }
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const s = ensureSemilleroState(cfg);
+    const omitido = !!s.omitido && !s.id;
+    const lead = el('setupPremiumSemilleroLead');
+    if (lead) {
+      lead.textContent = omitido
+        ? 'Has saltado la marca. Puedes elegir una más abajo si cambias de idea.'
+        : 'Top 10 en España · elige marca → revisa perfil → «Usar tal cual» o ajusta. No es obligatorio.';
+    }
+    const gridWrap = el('setupPremiumSemillerosGrid');
+    const skipBtn = el('setupPremiumSemilleroSkipBtn');
+    const explain = el('setupPremiumSemilleroExplain');
+    if (gridWrap) gridWrap.classList.toggle('setup-hidden', omitido);
+    if (skipBtn) {
+      if (omitido) {
+        skipBtn.classList.remove('setup-hidden');
+        skipBtn.textContent = 'Elegir marca de semillas';
+        skipBtn.onclick = function () {
+          reactivarSemilleroPremium();
+        };
+      } else {
+        skipBtn.textContent = 'Saltar — no quiero elegir marca';
+        skipBtn.onclick = function () {
+          omitirSemilleroPremium();
+        };
+      }
+    }
+    if (explain && omitido) {
+      explain.classList.add('setup-hidden');
+    } else if (explain) {
+      explain.classList.remove('setup-hidden');
+    }
+    if (omitido) {
+      renderSemilleroPerfilPanel();
+      return;
+    }
+    renderSemillerosGrid();
+  }
+
+  function reactivarSemilleroPremium() {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    if (!cfg) return;
+    ensureSemilleroState(cfg).omitido = false;
+    try {
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
+    refreshPremiumSemilleroVis();
+  }
+
+  function omitirSemilleroPremium() {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    if (!cfg) return;
+    const s = ensureSemilleroState(cfg);
+    s.omitido = true;
+    s.id = '';
+    s.marca = '';
+    s.perfil = {};
+    s.perfilCustom = {};
+    s.aceptadoTalCual = false;
+    try {
+      if (typeof saveState === 'function') saveState();
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    } catch (_) {}
+    refreshPremiumSemilleroVis();
+    if (typeof showToast === 'function') showToast('Marca de semillas omitida · el germinador se configura en Inicio', false);
   }
 
   function renderSemillerosGrid() {
@@ -149,6 +214,7 @@
     const s = ensureSemilleroState(cfg);
     const cat = typeof getSemilleroById === 'function' ? getSemilleroById(id) : null;
     if (!cat) return;
+    s.omitido = false;
     s.id = cat.id;
     s.marca = cat.nombre;
     s.perfilCustom = {};
@@ -288,6 +354,7 @@
   window.renderSemillerosGrid = renderSemillerosGrid;
   window.renderSemilleroPerfilPanel = renderSemilleroPerfilPanel;
   window.refreshPremiumSemilleroVis = refreshPremiumSemilleroVis;
+  window.omitirSemilleroPremium = omitirSemilleroPremium;
   window.limpiarSemilleroPremium = limpiarSemilleroPremium;
   window.renderMedirSemilleroPanel = renderMedirSemilleroPanel;
   window.persistSemilleroToConfig = persistSemilleroToConfig;

@@ -87,6 +87,10 @@ function updateDashboard() {
   } catch (_) {}
 
   try {
+    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+  } catch (_) {}
+
+  try {
     if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
   } catch (_) {}
 

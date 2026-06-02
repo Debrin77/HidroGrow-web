@@ -133,6 +133,11 @@
   }
 
   function getSiguientePaso(fase) {
+    try {
+      if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva()) {
+        return { label: 'Seguimiento de germinación', action: 'irGerminacion' };
+      }
+    } catch (_) {}
     switch (fase) {
       case 'sin_config':
         return { label: 'Configurar instalación', action: 'abrirSetup' };
@@ -306,6 +311,17 @@
       case 'irMedir':
         hcIrRutinaDia();
         break;
+      case 'irGerminacion':
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          try {
+            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        }, 200);
+        break;
       default:
         break;
     }
@@ -361,6 +377,11 @@
   function refreshInstalacionLifecycleUi() {
     var lc = getInstalacionLifecycle();
     var box = document.getElementById('dashInstalacionLifecycle');
+    var germAct = false;
+    try {
+      germAct = typeof hcGerminacionActiva === 'function' && hcGerminacionActiva();
+    } catch (_) {}
+    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
     var rutina = document.getElementById('dashRutinaDia');
     var pctEl = document.getElementById('dashInstLifecyclePct');
     var trackEl = document.getElementById('dashInstLifecycleTrack');
@@ -368,7 +389,7 @@
     var ctaEl = document.getElementById('dashInstLifecycleCta');
 
     if (box) {
-      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config';
+      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config' && !germAct;
       box.classList.toggle('setup-hidden', !showInst);
       if (showInst) {
         if (pctEl) pctEl.textContent = lc.porcentaje + '%';

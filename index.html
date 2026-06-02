@@ -275,6 +275,8 @@
       </section>
       <div id="hcMultiCoachInicio" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
 
+      <section id="dashGerminacionHub" class="dash-germinacion-hub setup-hidden" aria-label="Seguimiento de germinación"></section>
+
       <section id="dashInstalacionLifecycle" class="dash-instalacion-lifecycle setup-hidden" aria-label="Progreso de instalación">
         <div class="dash-inst-lifecycle-head">
           <span class="dash-inst-lifecycle-title">Instalación</span>
@@ -3343,17 +3345,11 @@
       </div>
       <div id="setupPremiumGeneticaHint" class="setup-box-info"></div>
       <div id="setupPremiumMetodoOrigenHint" class="setup-box-info setup-hidden setup-mt-8" role="note" aria-live="polite"></div>
-      <div id="setupPremiumSemilleroSection">
-        <div class="setup-block-title setup-mt-12">Tu semillero <span class="setup-optional-tag">opcional</span></div>
-        <p class="setup-field-hint setup-mb-8" id="setupPremiumSemilleroLead">Top 10 en España · elige marca → revisa perfil → <strong>Usar tal cual</strong> o ajusta a mano.</p>
-        <div id="setupPremiumSemillerosGrid" class="hc-semilleros-grid setup-mb-12"></div>
-        <div id="setupPremiumSemilleroPerfil" class="hc-sem-perfil-panel setup-hidden setup-mb-12"></div>
-      </div>
     </div>
 
     <div class="setup-page" id="spagePremium6">
       <div class="setup-title">Germinación, clones y madre</div>
-      <div class="setup-subtitle">Origen de planta y <strong>6 fases en orden</strong> hasta el cubo hidro.</div>
+      <div class="setup-subtitle">Origen de planta. Con <strong>semilla</strong>, el camino de 6 fases se sigue en <strong>Inicio</strong> (días reales), no aquí.</div>
       <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
       <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div class="setup-block-title">Origen de plantas</div>
@@ -3375,6 +3371,20 @@
         </button>
       </div>
       <div id="setupPremiumOrigenReco" class="setup-box-info setup-hidden setup-mb-12" role="status" aria-live="polite"></div>
+      <div id="setupPremiumSemilleroSection" class="setup-hidden">
+        <div class="setup-box-info setup-mb-8" id="setupPremiumSemilleroExplain" role="note">
+          <strong>Marca de semillas (tienda / breeder)</strong> — no es el domo ni el propagador.
+          Sirve para rangos orientativos de germinación y EC/pH del depósito si aún no tienes planta.
+          El <strong>equipamiento físico</strong> (domo, cubos, pH…) lo marcas en <strong>Inicio → Germinación</strong> cuando empieces el camino.
+        </div>
+        <div class="setup-block-title">¿De qué tienda compraste? <span class="setup-optional-tag">opcional · puedes saltar</span></div>
+        <p class="setup-field-hint setup-mb-8" id="setupPremiumSemilleroLead">Top 10 en España · elige marca → revisa perfil → <strong>Usar tal cual</strong> o ajusta a mano. No es obligatorio.</p>
+        <div class="setup-mb-8">
+          <button type="button" class="btn btn-ghost btn-sm" id="setupPremiumSemilleroSkipBtn">Saltar — no quiero elegir marca</button>
+        </div>
+        <div id="setupPremiumSemillerosGrid" class="hc-semilleros-grid setup-mb-12"></div>
+        <div id="setupPremiumSemilleroPerfil" class="hc-sem-perfil-panel setup-hidden setup-mb-12"></div>
+      </div>
       <div id="setupPremiumGerminacionPasos" class="setup-mb-8"></div>
       <div id="setupPremiumEsquejesPrep" class="setup-hidden">
         <div class="setup-block-title">1 · Preparar madre (antes del corte)</div>
@@ -5030,6 +5040,7 @@
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-select-fix"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-flow"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
