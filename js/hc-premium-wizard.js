@@ -116,6 +116,7 @@
     }
     refreshPremiumEntornoUI();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+    if (typeof refreshSetupEquipEntornoVis === 'function') refreshSetupEquipEntornoVis();
   }
 
   function seleccionarPremiumOrigen(origen) {
@@ -344,8 +345,8 @@
     const sub = el('setupPremium3Subtitle');
     if (sub) {
       sub.textContent = int
-        ? 'Primero elige marca y modelo de cada elemento; después revisa las medidas de sala/carpa que rellenamos con la ficha técnica.'
-        : 'Elige medidor, humidificador y demás del catálogo. Las medidas de carpa/LED son opcionales en exterior; confirma la ciudad en Ubicación.';
+        ? 'Catálogo agrupado: carpa, LED, filtro carbón, circulación, timer… Luego revisa medidas de sala.'
+        : 'Prioriza medidor, toldo/malla y herramientas. Confirma municipio en Ubicación para meteo.';
     }
     const chk = el('setupPremiumCarpaReflectante');
     if (chk) chk.checked = !!p.carpaReflectante;

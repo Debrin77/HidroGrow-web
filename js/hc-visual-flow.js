@@ -17,6 +17,13 @@
     dwc: { icon: 'hc-i-sys-dwc', emoji: '🫧', label: 'DWC', color: '#0891b2', bg: 'rgba(8,145,178,0.12)' },
     foto: { icon: 'hc-i-sun', emoji: '☀️', label: 'Fotoperíodo', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
     auto: { icon: 'hc-i-clock', emoji: '⏱️', label: 'Autofloreciente', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+    filtro_carbon: { icon: 'hc-i-flask', emoji: '🧫', label: 'Filtro carbón', color: '#78716c', bg: 'rgba(120,113,108,0.12)' },
+    ventilador_circ: { icon: 'hc-i-wind', emoji: '🌀', label: 'Circulación', color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
+    temporizador: { icon: 'hc-i-clock', emoji: '⏱️', label: 'Temporizador LED', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+    toldo_malla: { icon: 'hc-i-umbrella', emoji: '⛱️', label: 'Toldo / malla', color: '#d97706', bg: 'rgba(217,119,6,0.12)' },
+    tijeras: { icon: 'hc-i-scissors', emoji: '✂️', label: 'Tijeras poda', color: '#64748b', bg: 'rgba(100,116,139,0.12)' },
+    lupa: { icon: 'hc-i-search', emoji: '🔍', label: 'Lupa tricomas', color: '#a855f7', bg: 'rgba(168,85,247,0.12)' },
+    co2: { icon: 'hc-i-wind', emoji: '🌬️', label: 'CO₂', color: '#059669', bg: 'rgba(5,150,105,0.12)' },
     sog: { icon: 'hc-i-grid', emoji: '📐', label: 'SOG', color: '#0d9488', bg: 'rgba(13,148,136,0.12)' },
     scrog: { icon: 'hc-i-layers', emoji: '🕸️', label: 'SCROG', color: '#0369a1', bg: 'rgba(3,105,161,0.12)' },
   };

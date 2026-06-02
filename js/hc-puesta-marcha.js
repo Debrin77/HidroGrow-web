@@ -69,6 +69,111 @@
       hint: 'Solución buffer 4,0 / 7,0 (pH) y estándar EC si aplica.',
       cat: 'medidor',
     },
+    filtro_carbon: {
+      id: 'eq_filtro_carbon',
+      label: 'Filtro de carbón instalado',
+      hint: 'En serie con extractor; caudal del filtro ≥ caudal del ventilador.',
+      cat: 'filtro_carbon',
+    },
+    ventilador_circ: {
+      id: 'eq_ventilador_circ',
+      label: 'Ventilador de circulación (clip fan)',
+      hint: 'Aparte del extractor: mueve aire en el dosel y reduce puntos muertos / moho.',
+      cat: 'ventilador_circ',
+    },
+    temporizador: {
+      id: 'eq_temporizador',
+      label: 'Temporizador LED cableado',
+      hint: 'Fotoperiodo 18/6 veg · 12/12 flor. Comprueba hora tras corte de luz.',
+      cat: 'temporizador',
+    },
+    toldo_malla: {
+      id: 'eq_toldo_malla',
+      label: 'Toldo / malla sombreo',
+      hint: 'Protege del sol fuerte y reduce estrés térmico en verano.',
+      cat: 'toldo_malla',
+    },
+    tijeras: {
+      id: 'eq_tijeras',
+      label: 'Tijeras de poda listas',
+      hint: 'Limpias y afiladas; alcohol 70 % entre cortes.',
+      cat: 'tijeras',
+    },
+    lupa: {
+      id: 'eq_lupa',
+      label: 'Lupa tricomas (30×–60×)',
+      hint: 'Para confirmar cosecha: lechoso → ámbar según efecto buscado.',
+      cat: 'lupa',
+    },
+  };
+
+  var MONTAJE_EXTERIOR = {
+    exterior_ubic: {
+      id: 'ext_ubic',
+      label: 'Municipio y clima confirmados',
+      hint: 'Ciudad guardada para meteo, lluvia y alertas de frío.',
+    },
+    ext_deposito: {
+      id: 'ext_deposito',
+      label: 'Depósito protegido de lluvia y sol',
+      hint: 'Cubre depósito, bomba y electrónica; evita calentamiento >28 °C en nutriente.',
+    },
+    ext_drenaje: {
+      id: 'ext_drenaje',
+      label: 'Base nivelada y drenaje',
+      hint: 'Sin charcos bajo cubos; desagüe si hay rebalse de RDWC.',
+    },
+    ext_viento: {
+      id: 'ext_viento',
+      label: 'Anclaje ante viento',
+      hint: 'Toldo, malla y tuberías fijados; plantas altas con tutor si hace falta.',
+    },
+    ext_sombra: {
+      id: 'ext_sombra',
+      label: 'Toldo / malla sombreo',
+      hint: '50–70 % si >6 h de sol directo en verano.',
+      eq: 'toldo',
+      cat: 'toldo_malla',
+    },
+  };
+
+  var MONTAJE_TOGGLES = {
+    filtroCarbon: {
+      id: 'tog_filtro_carbon',
+      label: 'Filtro de carbón montado',
+      hint: 'Manguera sellada al extractor; carbón nuevo o <12 meses de uso.',
+      cat: 'filtro_carbon',
+    },
+    circulacion: {
+      id: 'tog_ventilador_circ',
+      label: 'Ventilación interior / clip fan',
+      hint: 'Apunta al dosel; no soplar directo a cogollos húmedos en floración.',
+      cat: 'ventilador_circ',
+    },
+    timer: {
+      id: 'tog_temporizador',
+      label: 'Temporizador LED programado',
+      hint: '18/6 veg · 12/12 flor según fase actual.',
+      cat: 'temporizador',
+    },
+    tijeras: {
+      id: 'tog_tijeras',
+      label: 'Tijeras de poda',
+      hint: 'Desinfectadas; reserva solo para cultivo.',
+      cat: 'tijeras',
+    },
+    lupa: {
+      id: 'tog_lupa',
+      label: 'Lupa tricomas disponible',
+      hint: '30×–60× para revisar maduración antes de cortar.',
+      cat: 'lupa',
+    },
+    toldo: {
+      id: 'tog_toldo',
+      label: 'Toldo / malla exterior',
+      hint: 'Sombreo y protección UV en horas punta.',
+      cat: 'toldo_malla',
+    },
   };
 
   /** Mini-guías de montaje (contenido fijo + datos del catálogo en runtime). */
@@ -266,6 +371,118 @@
       ],
       verificar: ['Ubicación guardada en configuración', 'Acceso fácil para medir EC/pH'],
     },
+    ext_ubic: { extends: 'exterior_ubic' },
+    ext_deposito: {
+      icon: '🛢️',
+      accent: 'hydro',
+      title: 'Depósito protegido',
+      steps: [
+        'Cubre el depósito de control con lona reflectante o caja aislada.',
+        'Aleja enchufes y regletas del suelo por si hay lluvia.',
+        'En verano: sombrear para mantener nutriente <26 °C.',
+      ],
+      verificar: ['Sin agua de lluvia dentro del depósito', 'Temp. nutriente estable en Medir'],
+    },
+    ext_drenaje: {
+      icon: '💧',
+      accent: 'hydro',
+      title: 'Drenaje y base',
+      steps: [
+        'Nivela cubos y depósito; evita inclinación que vacíe un módulo RDWC.',
+        'Canaliza el rebalse lejos de raíces y enchufes.',
+        'Comprueba tras un riego fuerte simulado (manguera 2 min).',
+      ],
+      verificar: ['Sin charcos permanentes bajo la instalación'],
+    },
+    ext_viento: {
+      icon: '🌬️',
+      accent: 'air',
+      title: 'Protección ante viento',
+      steps: [
+        'Fija toldo/malla con tensor y anclajes al suelo o pared.',
+        'Sujeta mangueras RDWC para que no tiren de racores.',
+        'Plantas altas: tutor discreto si zona ventosa.',
+      ],
+      verificar: ['Toldo no vibra peligrosamente', 'Racores sin tensión excesiva'],
+    },
+    ext_sombra: {
+      icon: '⛱️',
+      accent: 'light',
+      title: 'Toldo / malla sombreo',
+      cat: 'toldo_malla',
+      steps: [
+        'Monta malla 50–70 % sobre la zona de plantas (no solo el depósito).',
+        'Deja ventilación lateral; no encerrar en “invernadero” sin aire.',
+        'Ajusta según estación: más sombra en julio–agosto.',
+      ],
+      verificar: ['Hojas sin quemaduras al mediodía', 'Sigue entrando brisa entre plantas'],
+    },
+    eq_filtro_carbon: {
+      icon: '🧫',
+      accent: 'air',
+      title: 'Filtro de carbón',
+      cat: 'filtro_carbon',
+      steps: [
+        'Coloca filtro en la boca de salida del extractor (o intractor según montaje).',
+        'Abrazaderas bien apretadas; sin fugas de aire en juntas.',
+        'Prefiltro lavable si el modelo lo trae; revisa cada mes en floración.',
+      ],
+      verificar: ['Caudal filtro ≥ caudal extractor', 'Sin olor en salida de aire'],
+    },
+    eq_ventilador_circ: {
+      icon: '🌀',
+      accent: 'air',
+      title: 'Ventilación interior',
+      cat: 'ventilador_circ',
+      steps: [
+        'Clip fan a media altura apuntando al dosel (no directo a cogollos húmedos).',
+        'Oscilación suave si el modelo lo permite.',
+        'En floración densa: combina con deshumidificador si HR >55 %.',
+      ],
+      verificar: ['Hojas se mueven ligeramente', 'HR más uniforme en Medir → ambiente'],
+    },
+    eq_temporizador: {
+      icon: '⏱️',
+      accent: 'light',
+      title: 'Temporizador LED',
+      cat: 'temporizador',
+      steps: [
+        'Programa fotoperiodo de fase: 18/6 veg · 12/12 flor.',
+        'Un canal por panel; no mezclar bomba de aire en el mismo timer si parpadea.',
+        'Tras corte eléctrico: comprueba que la hora del timer es correcta.',
+      ],
+      verificar: ['Encendido/apagado a la hora esperada', 'Sin parpadeos en driver LED'],
+    },
+    eq_tijeras: {
+      icon: '✂️',
+      accent: 'tool',
+      title: 'Tijeras de poda',
+      cat: 'tijeras',
+      steps: [
+        'Reserva un par solo para cultivo (no cocina/jardín).',
+        'Limpia con alcohol 70 % antes de poda y esquejes.',
+        'Afila o sustituye si aplasta el tallo en lugar de cortar.',
+      ],
+      verificar: ['Corte limpio en tallo de prueba', 'Sin restos de óxido en hojas'],
+    },
+    eq_lupa: {
+      icon: '🔍',
+      accent: 'tool',
+      title: 'Lupa tricomas',
+      cat: 'lupa',
+      steps: [
+        'Revisa cogollo de la zona media-superior (más representativo).',
+        '30×: visión general; 60×: detalle ámbar vs lechoso.',
+        'No cortes solo por calendario: confirma con lupa 2–3 días seguidos.',
+      ],
+      verificar: ['Tricomas visibles con nitidez', 'Decisión de cosecha anotada en diario'],
+    },
+    tog_filtro_carbon: { extends: 'eq_filtro_carbon' },
+    tog_ventilador_circ: { extends: 'eq_ventilador_circ' },
+    tog_temporizador: { extends: 'eq_temporizador' },
+    tog_tijeras: { extends: 'eq_tijeras' },
+    tog_lupa: { extends: 'eq_lupa' },
+    tog_toldo: { extends: 'ext_sombra' },
   };
 
   var MONTAJE_HIDRO = {
@@ -289,8 +506,8 @@
     },
     timer: {
       id: 'hyd_timer',
-      label: 'Temporizador / programador',
-      hint: 'Luz y/o bomba en horarios correctos.',
+      label: 'Temporizador LED / programador',
+      hint: 'Fotoperiodo 18/6 veg · 12/12 flor (interior).',
       eq: 'timer',
     },
     medidorEC: {
@@ -513,6 +730,7 @@
     cfg = cfg || getCfg();
     var items = ITEMS_BASE.slice();
     var inst = cfg.equipamientoInstalado && typeof cfg.equipamientoInstalado === 'object' ? cfg.equipamientoInstalado : {};
+    var eqArr = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
     var interior =
       String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
       'exterior';
@@ -551,14 +769,42 @@
         });
       }
     } else {
-      items.push({
-        id: 'exterior_ubic',
-        label: 'Ubicación exterior confirmada',
-        hint: 'Clima del municipio y protección frente a lluvia / viento.',
+      Object.keys(MONTAJE_EXTERIOR).forEach(function (key) {
+        var def = MONTAJE_EXTERIOR[key];
+        if (key === 'ext_sombra') {
+          if (eqArr.indexOf('toldo') < 0 && !(inst.toldo_malla && inst.toldo_malla.marca)) return;
+        }
+        var nom = def.cat && inst[def.cat] ? equipLabel(inst[def.cat], def.cat) : '';
+        items.push({
+          id: def.id,
+          label: def.label + (nom ? ' · ' + nom : ''),
+          hint: def.hint,
+          fromExterior: key,
+        });
       });
     }
 
-    var eqArr = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+    Object.keys(MONTAJE_TOGGLES).forEach(function (key) {
+      if (eqArr.indexOf(key) < 0) return;
+      if (interior && key === 'toldo') return;
+      if (!interior && (key === 'filtroCarbon' || key === 'timer')) return;
+      var def = MONTAJE_TOGGLES[key];
+      if (items.some(function (it) { return it.id === def.id; })) return;
+      var catEntry = def.cat && inst[def.cat] ? inst[def.cat] : null;
+      var nom = catEntry ? equipLabel(catEntry, def.cat) : '';
+      if (catEntry && inst[def.cat] && inst[def.cat].marca && items.some(function (it) {
+        return it.fromEquip === def.cat || it.id === 'eq_' + def.cat;
+      })) {
+        return;
+      }
+      items.push({
+        id: def.id,
+        label: def.label + (nom ? ' · ' + nom : ''),
+        hint: def.hint,
+        fromToggle: key,
+      });
+    });
+
     Object.keys(MONTAJE_HIDRO).forEach(function (key) {
       var def = MONTAJE_HIDRO[key];
       if (eqArr.indexOf(def.eq) < 0) return;

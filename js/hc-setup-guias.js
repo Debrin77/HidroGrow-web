@@ -14,7 +14,7 @@
     6: { l1: '6 fases en orden hasta el cubo hidro.' },
     7: { l1: 'Resumen; siguiente: geometría del sistema.' },
     8: { l1: 'Filas, cubos y depósito; diagrama en vivo.' },
-    9: { l1: 'Aireador, calentador, medidor y CO₂ (opcional) del circuito.' },
+    9: { l1: 'Circuito hidro, sala (filtro, circulación, timer LED), herramientas o toldo en exterior.' },
     10: { l1: 'Agua del depósito y medio en net pot.' },
     11: { l1: 'Nutriente para dosis según litros calculados.' },
     12: { l1: 'Exterior: ciudad para meteo (interior salta).' },
@@ -36,8 +36,13 @@
     calentador: { emoji: '🔥', label: 'Calentador' },
     bomba: { emoji: '⚙️', label: 'Bomba recirc.' },
     medidorEC: { emoji: '📊', label: 'Medidor EC/pH' },
-    timer: { emoji: '⏱️', label: 'Timer' },
+    timer: { emoji: '⏱️', label: 'Temporizador LED' },
     toldo: { emoji: '⛱️', label: 'Toldo / sombra' },
+    co2: { emoji: '🌬️', label: 'CO₂' },
+    filtroCarbon: { emoji: '🧫', label: 'Filtro carbón' },
+    circulacion: { emoji: '🌀', label: 'Circulación' },
+    tijeras: { emoji: '✂️', label: 'Tijeras poda' },
+    lupa: { emoji: '🔍', label: 'Lupa tricomas' },
   };
 
   function esc(t) {

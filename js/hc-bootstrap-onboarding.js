@@ -8,7 +8,7 @@
 const HC_GUIDE_DISMISS_KEY = 'hc_guia_primer_dia_dismiss';
 const HC_ONBOARD_RIEGO_VISIT_KEY = 'hc_onboarding_visit_riego';
 const HC_HINT_CTX = { mediciones: 'hc_hint_ctx_med', sala: 'hc_hint_ctx_sala', sistema: 'hc_hint_ctx_sis', riego: 'hc_hint_ctx_riego' };
-const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_5_cannabis';
+const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_5_montaje';
 const HC_TAB_BAR_COACH_KEY = 'hc_tab_bar_coach_dismiss_v2';
 const HC_WELCOME_THEME_PREVIEW_KEY = 'hc_welcome_theme_preview';
 

@@ -970,7 +970,7 @@ function abrirSetupNuevaTorre() {
   setupPagina = 0;
   setupTipoInstalacion = '';
   setupTipoTorre = 'custom';
-  setupEquipamiento = new Set(['difusor', 'calentador', 'bomba', 'timer', 'medidorEC']);
+  setupEquipamiento = new Set(['difusor']);
   refreshSetupEquipamientoCardsDesdeSet();
   const ccNew = document.getElementById('setupCalentadorConsignaC');
   if (ccNew) ccNew.value = '20';

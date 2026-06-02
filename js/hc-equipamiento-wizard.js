@@ -188,17 +188,89 @@
     }
   }
 
+  function resolveSetupEntorno() {
+    try {
+      if (typeof ensurePremiumSetup === 'function') {
+        const p = ensurePremiumSetup();
+        if (p && p.entorno === 'exterior') return 'exterior';
+      }
+    } catch (_) {}
+    if (typeof setupData !== 'undefined' && setupData && setupData.ubicacion === 'exterior') return 'exterior';
+    if (typeof setupUbicacion !== 'undefined' && setupUbicacion === 'exterior') return 'exterior';
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    if (String(cfg.ubicacion || cfg.premiumSetup?.entorno || '').toLowerCase() === 'exterior') return 'exterior';
+    return 'interior';
+  }
+
+  function renderEquipCatalogCard(host, cat, key, inst, prefix) {
+    const cur = inst[key];
+    const selId = prefix + key;
+    const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
+    const card = document.createElement('div');
+    card.className = 'equip-catalog-card' + (cur && cur.marca ? ' equip-catalog-card--picked' : '');
+    const head = document.createElement('div');
+    head.className = 'equip-catalog-head';
+    if (typeof window.hcVisualIconSvg === 'function') {
+      try {
+        head.insertAdjacentHTML('afterbegin', window.hcVisualIconSvg(visKey, 'hc-visual-ico--sm'));
+      } catch (_) {
+        head.appendChild(document.createTextNode(cat.icon || '•'));
+      }
+    } else {
+      head.appendChild(document.createTextNode(cat.icon || '•'));
+    }
+    head.appendChild(document.createTextNode(' ' + (cat.label || key)));
+    if (cat.indispensable) {
+      head.appendChild(document.createTextNode(' '));
+      const req = document.createElement('span');
+      req.className = 'equip-catalog-req';
+      req.textContent = 'indispensable';
+      head.appendChild(req);
+    } else if (cat.recommended) {
+      head.appendChild(document.createTextNode(' '));
+      const rec = document.createElement('span');
+      rec.className = 'equip-catalog-rec';
+      rec.textContent = 'recomendado';
+      head.appendChild(rec);
+    }
+    card.appendChild(head);
+    const sel = document.createElement('select');
+    sel.id = selId;
+    sel.className = 'setup-input-city equip-catalog-select';
+    sel.setAttribute('aria-label', cat.label || key);
+    card.appendChild(sel);
+    if (cur && cur.marca) {
+      const ok = document.createElement('p');
+      ok.className = 'equip-catalog-ok';
+      ok.textContent = '✓ ' + cur.marca + ' ' + (cur.modelo || '');
+      card.appendChild(ok);
+    }
+    if (cat.hint) {
+      const hintP = document.createElement('p');
+      hintP.className = 'equip-catalog-hint';
+      hintP.textContent = cat.hint;
+      card.appendChild(hintP);
+    }
+    host.appendChild(card);
+    renderEquipSelect(key, selId, 'seleccionarEquipamientoPremium');
+  }
+
   function renderEquipCatalogInto(host, idPrefix) {
     if (!host) return;
     ensureEquipDisclaimer(host);
     const cats = resolveEquipCategorias();
-    const keys = Object.keys(cats);
     const cfg = getWizardEquipCfg();
     const inst = ensureEquipInstalado(cfg);
     const prefix = idPrefix || 'setupPremiumEquip_';
+    const entorno = resolveSetupEntorno();
+    const groupsFn =
+      typeof window !== 'undefined' && typeof window.getEquipCatalogGroups === 'function'
+        ? window.getEquipCatalogGroups
+        : null;
+    const groups = groupsFn ? groupsFn(entorno) : [{ id: 'all', label: 'Equipamiento', icon: '🔧', keys: Object.keys(cats) }];
     if (typeof host.replaceChildren === 'function') host.replaceChildren();
     else host.innerHTML = '';
-    if (!keys.length) {
+    if (!Object.keys(cats).length) {
       const err = document.createElement('p');
       err.className = 'setup-box-warn';
       err.setAttribute('role', 'alert');
@@ -207,52 +279,27 @@
       host.appendChild(err);
       return;
     }
-    keys.forEach(function (key) {
-      const cat = cats[key];
-      if (!cat) return;
-      const cur = inst[key];
-      const selId = prefix + key;
-      const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
-      const card = document.createElement('div');
-      card.className = 'equip-catalog-card';
+    groups.forEach(function (group) {
+      const section = document.createElement('section');
+      section.className = 'equip-catalog-group';
+      section.setAttribute('data-equip-group', group.id || 'all');
       const head = document.createElement('div');
-      head.className = 'equip-catalog-head';
-      if (typeof window.hcVisualIconSvg === 'function') {
-        try {
-          head.insertAdjacentHTML('afterbegin', window.hcVisualIconSvg(visKey, 'hc-visual-ico--sm'));
-        } catch (_) {
-          head.appendChild(document.createTextNode(cat.icon || '•'));
-        }
-      } else {
-        head.appendChild(document.createTextNode(cat.icon || '•'));
+      head.className = 'equip-catalog-group-head';
+      head.innerHTML =
+        '<span class="equip-catalog-group-icon" aria-hidden="true">' + (group.icon || '•') + '</span>' +
+        '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>';
+      section.appendChild(head);
+      const grid = document.createElement('div');
+      grid.className = 'equip-catalog-grid equip-catalog-grid--group';
+      (group.keys || []).forEach(function (key) {
+        const cat = cats[key];
+        if (!cat) return;
+        renderEquipCatalogCard(grid, cat, key, inst, prefix);
+      });
+      if (grid.childNodes.length) {
+        section.appendChild(grid);
+        host.appendChild(section);
       }
-      head.appendChild(document.createTextNode(' ' + (cat.label || key)));
-      if (cat.indispensable) {
-        head.appendChild(document.createTextNode(' '));
-        const req = document.createElement('span');
-        req.className = 'equip-catalog-req';
-        req.textContent = 'indispensable';
-        head.appendChild(req);
-      }
-      card.appendChild(head);
-      const sel = document.createElement('select');
-      sel.id = selId;
-      sel.className = 'setup-input-city equip-catalog-select';
-      card.appendChild(sel);
-      if (cur && cur.marca) {
-        const ok = document.createElement('p');
-        ok.className = 'equip-catalog-ok';
-        ok.textContent = '✓ ' + cur.marca + ' ' + (cur.modelo || '');
-        card.appendChild(ok);
-      }
-      if (cat.hint) {
-        const hintP = document.createElement('p');
-        hintP.className = 'equip-catalog-hint';
-        hintP.textContent = cat.hint;
-        card.appendChild(hintP);
-      }
-      host.appendChild(card);
-      renderEquipSelect(key, selId, 'seleccionarEquipamientoPremium');
     });
   }
 
@@ -284,11 +331,14 @@
   function getCamposEquipamientoFaltantes(cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const inst = ensureEquipInstalado(cfg);
+    const esExt = resolveSetupEntorno() === 'exterior';
     const cats = resolveEquipCategorias();
     const falt = [];
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
       if (!cat.indispensable) return;
+      if (cat.entorno === 'interior' && esExt) return;
+      if (cat.entorno === 'exterior' && !esExt) return;
       const tieneCatalogo = !!(inst[key] && inst[key].id);
       if (key === 'armario') {
         const ok = Number.isFinite(cfg.growRoomAnchoM || cfg.premiumSetup?.anchoM) &&
@@ -315,8 +365,13 @@
       calentador: 'Calentador',
       bomba: 'Bomba recirc.',
       medidorEC: 'Medidor EC/pH',
-      timer: 'Timer',
+      timer: 'Temporizador LED',
       toldo: 'Toldo / sombra',
+      co2: 'CO₂',
+      filtroCarbon: 'Filtro carbón',
+      circulacion: 'Circulación',
+      tijeras: 'Tijeras poda',
+      lupa: 'Lupa tricomas',
     };
     var parts = eq.map(function (id) {
       return labels[id] || id;
@@ -365,6 +420,21 @@
     if (tipo === 'extractor' && inst.extractor) {
       return inst.extractor.marca + ' ' + inst.extractor.modelo +
         (inst.extractor.specs?.m3h ? ' (' + inst.extractor.specs.m3h + ' m³/h)' : '');
+    }
+    if (tipo === 'filtro_carbon' && inst.filtro_carbon) {
+      return inst.filtro_carbon.marca + ' ' + inst.filtro_carbon.modelo +
+        (inst.filtro_carbon.specs?.m3h ? ' (' + inst.filtro_carbon.specs.m3h + ' m³/h)' : '');
+    }
+    if (tipo === 'filtro_carbon') {
+      const eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+      if (eq.indexOf('filtroCarbon') >= 0) return 'Filtro de carbón (marcado en equipamiento)';
+    }
+    if (tipo === 'circulacion' && inst.ventilador_circ) {
+      return inst.ventilador_circ.marca + ' ' + inst.ventilador_circ.modelo;
+    }
+    if (tipo === 'circulacion') {
+      const eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+      if (eq.indexOf('circulacion') >= 0) return 'Ventilador circulación (marcado en equipamiento)';
     }
     if (tipo === 'led' && inst.led) {
       return inst.led.marca + ' ' + inst.led.modelo +

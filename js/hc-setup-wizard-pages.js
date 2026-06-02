@@ -1527,6 +1527,7 @@ function renderSetupPage() {
     }, 0);
   }
   if (setupPagina === SETUP_PAGE_EQUIP) {
+    refreshSetupEquipEntornoVis();
     refreshSetupEquipamientoCardsDesdeSet();
     cargarSetupSensoresHwUI();
     refreshSetupCalentadorConsignaVis();
@@ -2695,23 +2696,12 @@ function toggleEquip(id) {
   if (id === 'difusor' && typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion === 'nft') {
     return;
   }
-  const cardIds = {
-    difusor: 'eqDifusor',
-    calentador: 'eqCalentador',
-    bomba: 'eqBomba',
-    timer: 'eqTimer',
-    medidorEC: 'eqMedidorEC',
-    toldo: 'eqToldo',
-    co2: 'eqCo2',
-  };
-  const card = document.getElementById(cardIds[id] || 'eq' + id.charAt(0).toUpperCase() + id.slice(1));
   if (setupEquipamiento.has(id)) {
     setupEquipamiento.delete(id);
-    card.className = 'equip-card';
   } else {
     setupEquipamiento.add(id);
-    card.className = 'equip-card selected';
   }
+  refreshSetupEquipamientoCardsDesdeSet();
   refreshSetupCalentadorConsignaVis();
   try {
     if (typeof refreshDwcSetupPreview === 'function') refreshDwcSetupPreview();
@@ -2719,16 +2709,8 @@ function toggleEquip(id) {
   } catch (_) {}
 }
 
-function refreshSetupCalentadorConsignaVis() {
-  const wrap = document.getElementById('setupCalentadorConsignaWrap');
-  if (!wrap) return;
-  wrap.classList.toggle('setup-hidden', !setupEquipamiento.has('calentador'));
-}
-
-const SETUP_EQUIP_IDS = ['difusor', 'calentador', 'bomba', 'timer', 'medidorEC', 'toldo', 'co2'];
-
-function refreshSetupEquipamientoCardsDesdeSet() {
-  const cardIds = {
+function getSetupEquipCardIds() {
+  return {
     difusor: 'eqDifusor',
     calentador: 'eqCalentador',
     bomba: 'eqBomba',
@@ -2736,12 +2718,74 @@ function refreshSetupEquipamientoCardsDesdeSet() {
     medidorEC: 'eqMedidorEC',
     toldo: 'eqToldo',
     co2: 'eqCo2',
+    filtroCarbon: 'eqFiltroCarbon',
+    circulacion: ['eqCirculacion', 'eqCirculacionExt'],
+    tijeras: 'eqTijeras',
+    lupa: 'eqLupa',
   };
+}
+
+function refreshSetupEquipEntornoVis() {
+  const esExt =
+    (typeof ensurePremiumSetup === 'function' && ensurePremiumSetup().entorno === 'exterior') ||
+    (typeof setupData !== 'undefined' && setupData.ubicacion === 'exterior') ||
+    (typeof setupUbicacion !== 'undefined' && setupUbicacion === 'exterior');
+  const intSec = document.getElementById('setupEquipSectionInterior');
+  const extSec = document.getElementById('setupEquipSectionExterior');
+  if (intSec) intSec.classList.toggle('setup-hidden', esExt);
+  if (extSec) extSec.classList.toggle('setup-hidden', !esExt);
+  refreshSetupEquipamientoCardsDesdeSet();
+}
+
+function setupEquipQuickPick(preset) {
+  const hydro = ['difusor', 'calentador', 'bomba', 'medidorEC'];
+  const interior = hydro.concat(['timer', 'filtroCarbon', 'circulacion', 'tijeras', 'lupa']);
+  const exterior = hydro.concat(['toldo', 'circulacion', 'tijeras', 'lupa']);
+  let ids = hydro;
+  if (preset === 'interior') ids = interior;
+  else if (preset === 'exterior') ids = exterior;
+  setupEquipamiento = new Set(ids);
+  if (
+    (typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion === 'nft') ||
+    (typeof tipoInstalacionNormalizado === 'function' &&
+      typeof state !== 'undefined' &&
+      state &&
+      state.configTorre &&
+      tipoInstalacionNormalizado(state.configTorre) === 'nft')
+  ) {
+    setupEquipamiento.add('difusor');
+  }
+  refreshSetupEquipamientoCardsDesdeSet();
+  refreshSetupCalentadorConsignaVis();
+  try {
+    if (typeof refreshDwcSetupPreview === 'function') refreshDwcSetupPreview();
+    if (typeof refreshRdwcSetupPreview === 'function') refreshRdwcSetupPreview();
+  } catch (_) {}
+}
+
+const SETUP_EQUIP_IDS = [
+  'difusor', 'calentador', 'bomba', 'timer', 'medidorEC', 'toldo', 'co2',
+  'filtroCarbon', 'circulacion', 'tijeras', 'lupa',
+];
+
+function refreshSetupEquipamientoCardsDesdeSet() {
+  const cardIds = getSetupEquipCardIds();
   for (let j = 0; j < SETUP_EQUIP_IDS.length; j++) {
     const eid = SETUP_EQUIP_IDS[j];
-    const card = document.getElementById(cardIds[eid] || 'eq' + eid.charAt(0).toUpperCase() + eid.slice(1));
-    if (card) card.className = 'equip-card' + (setupEquipamiento.has(eid) ? ' selected' : '');
+    const mapped = cardIds[eid];
+    const ids = Array.isArray(mapped) ? mapped : [mapped || ('eq' + eid.charAt(0).toUpperCase() + eid.slice(1))];
+    const selected = setupEquipamiento.has(eid);
+    for (let k = 0; k < ids.length; k++) {
+      const card = document.getElementById(ids[k]);
+      if (card) card.className = 'equip-card equip-card--pick' + (selected ? ' selected' : '');
+    }
   }
+}
+
+function refreshSetupCalentadorConsignaVis() {
+  const wrap = document.getElementById('setupCalentadorConsignaWrap');
+  if (!wrap) return;
+  wrap.classList.toggle('setup-hidden', !setupEquipamiento.has('calentador'));
 }
 
 function syncSetupEquipamientoDesdeConfig(cfg) {
@@ -2752,8 +2796,9 @@ function syncSetupEquipamientoDesdeConfig(cfg) {
     if (eqSaved.includes(SETUP_EQUIP_IDS[i])) setupEquipamiento.add(SETUP_EQUIP_IDS[i]);
   }
   if (setupEquipamiento.size === 0) {
-    setupEquipamiento = new Set(['difusor', 'calentador', 'bomba']);
+    setupEquipamiento = new Set(['difusor']);
   }
+  if (typeof refreshSetupEquipEntornoVis === 'function') refreshSetupEquipEntornoVis();
   if (
     (typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion === 'nft') ||
     (typeof tipoInstalacionNormalizado === 'function' && tipoInstalacionNormalizado(c) === 'nft')

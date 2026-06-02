@@ -2410,7 +2410,7 @@ function infoSistemaEntrada(e) {
   };
   return fallback;
 }
-let setupEquipamiento = new Set(['difusor', 'calentador', 'bomba']);
+let setupEquipamiento = new Set(['difusor']);
 /** NFT: Ø interior línea de alimentación/distribución desde bomba (no el canal de cultivo 75–110 mm), mm — 16–40 */
 let setupNftTuboMm = null;
 

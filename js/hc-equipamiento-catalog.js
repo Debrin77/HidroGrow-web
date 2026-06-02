@@ -7,6 +7,7 @@ const EQUIP_CATEGORIAS = {
     id: 'armario',
     label: 'Armario / carpa',
     icon: '🏠',
+    entorno: 'interior',
     indispensable: true,
     campos: [
       { key: 'anchoM', label: 'Ancho (m)', type: 'number' },
@@ -19,6 +20,7 @@ const EQUIP_CATEGORIAS = {
     id: 'led',
     label: 'LED / iluminación',
     icon: '💡',
+    entorno: 'interior',
     indispensable: true,
     campos: [
       { key: 'watts', label: 'W consumo real', type: 'number' },
@@ -31,6 +33,7 @@ const EQUIP_CATEGORIAS = {
     id: 'extractor',
     label: 'Extractor / intractor',
     icon: '💨',
+    entorno: 'interior',
     indispensable: true,
     campos: [
       { key: 'm3h', label: 'Caudal (m³/h)', type: 'number' },
@@ -42,6 +45,7 @@ const EQUIP_CATEGORIAS = {
     id: 'humidificador',
     label: 'Humidificador',
     icon: '💧',
+    entorno: 'interior',
     indispensable: false,
     campos: [{ key: 'capacidadLh', label: 'Capacidad (L/h)', type: 'number' }],
     hint: 'Recomendado en esquejes/veg si HR por debajo de 55%. La app lo sugerirá en correcciones VPD.',
@@ -50,6 +54,7 @@ const EQUIP_CATEGORIAS = {
     id: 'deshumidificador',
     label: 'Deshumidificador',
     icon: '🌫️',
+    entorno: 'interior',
     indispensable: false,
     campos: [{ key: 'capacidadLh', label: 'Extracción (L/h)', type: 'number' }],
     hint: 'Crítico en floración densa (HR >50%). Prioridad en cogollos compactos.',
@@ -58,6 +63,7 @@ const EQUIP_CATEGORIAS = {
     id: 'medidor',
     label: 'Medidor EC/pH / combo',
     icon: '📊',
+    entorno: 'both',
     indispensable: true,
     campos: [
       { key: 'tipo', label: 'Tipo', type: 'text' },
@@ -91,9 +97,72 @@ const EQUIP_CATEGORIAS = {
     id: 'co2',
     label: 'CO₂ / enriquecedor',
     icon: '🌬️',
+    entorno: 'interior',
     indispensable: false,
     campos: [{ key: 'tipo', label: 'Sistema', type: 'text' }],
     hint: 'Botella + regulador o generador. Opcional; la app sugiere enriquecer si CO₂ bajo en Medir.',
+  },
+  filtro_carbon: {
+    id: 'filtro_carbon',
+    label: 'Filtro de carbón',
+    icon: '🧫',
+    entorno: 'interior',
+    indispensable: false,
+    recommended: true,
+    campos: [
+      { key: 'm3h', label: 'Caudal máx. (m³/h)', type: 'number' },
+      { key: 'diametroMm', label: 'Diámetro (mm)', type: 'number' },
+      { key: 'longitudCm', label: 'Longitud (cm)', type: 'number' },
+    ],
+    hint: 'Caudal ≥ extractor. Imprescindible contra olores en floración.',
+  },
+  ventilador_circ: {
+    id: 'ventilador_circ',
+    label: 'Ventilador circulación',
+    icon: '🌀',
+    entorno: 'both',
+    indispensable: false,
+    recommended: true,
+    campos: [{ key: 'diametroMm', label: 'Diámetro (mm)', type: 'number' }],
+    hint: 'Clip fan aparte del extractor: mueve aire en el dosel y reduce riesgo de moho.',
+  },
+  temporizador: {
+    id: 'temporizador',
+    label: 'Temporizador LED',
+    icon: '⏱️',
+    entorno: 'interior',
+    indispensable: false,
+    recommended: true,
+    campos: [{ key: 'canales', label: 'Canales', type: 'number' }],
+    hint: 'Fotoperiodo 18/6 veg · 12/12 flor. Un canal por panel LED.',
+  },
+  toldo_malla: {
+    id: 'toldo_malla',
+    label: 'Toldo / malla sombreo',
+    icon: '⛱️',
+    entorno: 'exterior',
+    indispensable: false,
+    recommended: true,
+    campos: [{ key: 'sombreoPct', label: 'Sombreo (%)', type: 'number' }],
+    hint: 'Protege del sol fuerte (>6 h directas en verano) y reduce estrés térmico.',
+  },
+  tijeras: {
+    id: 'tijeras',
+    label: 'Tijeras de poda',
+    icon: '✂️',
+    entorno: 'both',
+    indispensable: false,
+    campos: [{ key: 'tipo', label: 'Tipo', type: 'text' }],
+    hint: 'Poda, defoliación y esquejes. Desinfecta con alcohol 70 % entre cortes.',
+  },
+  lupa: {
+    id: 'lupa',
+    label: 'Lupa tricomas',
+    icon: '🔍',
+    entorno: 'both',
+    indispensable: false,
+    campos: [{ key: 'aumento', label: 'Aumento', type: 'text' }],
+    hint: '30×–60× para confirmar cosecha (lechoso → ámbar).',
   },
 };
 
@@ -273,9 +342,86 @@ const EQUIPAMIENTO_CATALOG = [
     specs: { tipo: 'Botella + regulador' }, nota: 'Dosificación por fotoperiodo · armarios cerrados.' },
   { id: 'gse_co2', categoria: 'co2', marca: 'GSE', modelo: 'CO₂ controller', top_es: true, rank: 3,
     specs: { tipo: 'Regulador + electroválvula' }, nota: 'Marca europea · growshops españoles.' },
+
+  { id: 'rhino_pro4_125', categoria: 'filtro_carbon', marca: 'Rhino', modelo: 'Pro Filter 4" 125', top_es: true, rank: 1,
+    specs: { m3h: 600, diametroMm: 125, longitudCm: 50 }, nota: '125 mm · salas 100×100 · referencia ES.' },
+  { id: 'rhino_pro4_150', categoria: 'filtro_carbon', marca: 'Rhino', modelo: 'Pro Filter 4" 150', top_es: true, rank: 2,
+    specs: { m3h: 780, diametroMm: 150, longitudCm: 50 }, nota: '150 mm · 120×120 con RVK 150.' },
+  { id: 'rhino_pro4_160', categoria: 'filtro_carbon', marca: 'Rhino', modelo: 'Pro Filter 6" 160', top_es: true, rank: 3,
+    specs: { m3h: 900, diametroMm: 160, longitudCm: 60 }, nota: '160 mm · salas 1.2–1.5 m.' },
+  { id: 'pk_pk125', categoria: 'filtro_carbon', marca: 'Prima Klima', modelo: 'PK125-TC', top_es: true, rank: 4,
+    specs: { m3h: 580, diametroMm: 125, longitudCm: 40 }, nota: 'PK125 · muy habitual con RVK 125.' },
+  { id: 'pk_pk150', categoria: 'filtro_carbon', marca: 'Prima Klima', modelo: 'PK150-TC', top_es: true, rank: 5,
+    specs: { m3h: 760, diametroMm: 150, longitudCm: 50 }, nota: 'PK150 · par con extractor 150 mm.' },
+  { id: 'can_filter_38_100', categoria: 'filtro_carbon', marca: 'Can Filter', modelo: '38 100 mm', top_es: true, rank: 6,
+    specs: { m3h: 420, diametroMm: 100, longitudCm: 33 }, nota: '100 mm · armarios compactos.' },
+  { id: 'vents_k125', categoria: 'filtro_carbon', marca: 'Vents', modelo: 'K125', top_es: true, rank: 7,
+    specs: { m3h: 550, diametroMm: 125, longitudCm: 40 }, nota: 'Relación calidad/precio · growshop ES.' },
+  { id: 'carbon_active_150', categoria: 'filtro_carbon', marca: 'Active Carbon', modelo: '150×500', top_es: true, rank: 8,
+    specs: { m3h: 720, diametroMm: 150, longitudCm: 50 }, nota: 'Carbón activado · floración densa.' },
+
+  { id: 'sj_monkey_fan', categoria: 'ventilador_circ', marca: 'Secret Jardin', modelo: 'Monkey Fan 16 cm', top_es: true, rank: 1,
+    specs: { diametroMm: 160 }, nota: 'Clip fan · el más vendido en carpas ES.' },
+  { id: 'ram_clip_15', categoria: 'ventilador_circ', marca: 'RAM', modelo: 'Clip Fan 15 cm', top_es: true, rank: 2,
+    specs: { diametroMm: 150 }, nota: 'Silencioso · dosel y ramas bajas.' },
+  { id: 'pk_clip_20', categoria: 'ventilador_circ', marca: 'Prima Klima', modelo: 'PK Clip Fan 20 cm', top_es: true, rank: 3,
+    specs: { diametroMm: 200 }, nota: '20 cm · circulación en salas 120+.' },
+  { id: 'gse_clip_15', categoria: 'ventilador_circ', marca: 'GSE', modelo: 'Clip Fan 15 cm', top_es: true, rank: 4,
+    specs: { diametroMm: 150 }, nota: 'Oscilación · anti-puntos muertos.' },
+  { id: 'hyperfan_clip', categoria: 'ventilador_circ', marca: 'Hyper Fan', modelo: 'Clip 20 cm', top_es: true, rank: 5,
+    specs: { diametroMm: 200 }, nota: 'EC · bajo consumo en floración larga.' },
+
+  { id: 'gse_timer_2ch', categoria: 'temporizador', marca: 'GSE', modelo: 'Timer 2 canales', top_es: true, rank: 1,
+    specs: { canales: 2 }, nota: 'LED + auxiliar · fotoperiodo digital.' },
+  { id: 'lumatek_timer', categoria: 'temporizador', marca: 'Lumatek', modelo: 'Digital Timer', top_es: true, rank: 2,
+    specs: { canales: 1 }, nota: 'Precisión minuto · LED full spectrum.' },
+  { id: 'grasslin_timer', categoria: 'temporizador', marca: 'Grasslin', modelo: 'Tal 176', top_es: true, rank: 3,
+    specs: { canales: 1 }, nota: 'Mecánico fiable · cuadro eléctrico.' },
+  { id: 'titan_timer', categoria: 'temporizador', marca: 'Titan Controls', modelo: 'Apollo 9', top_es: true, rank: 4,
+    specs: { canales: 2 }, nota: '2 salidas · veg/flor con backup.' },
+
+  { id: 'ghp_malla_70', categoria: 'toldo_malla', marca: 'Garden Highpro', modelo: 'Malla 70 %', top_es: true, rank: 1,
+    specs: { sombreoPct: 70 }, nota: 'Verano mediterráneo · terraza/jardín.' },
+  { id: 'ghp_malla_50', categoria: 'toldo_malla', marca: 'Garden Highpro', modelo: 'Malla 50 %', top_es: true, rank: 2,
+    specs: { sombreoPct: 50 }, nota: 'Primavera/otoño · menos estrés que 70%.' },
+  { id: 'secret_toldo', categoria: 'toldo_malla', marca: 'Secret Jardin', modelo: 'Shade Net', top_es: true, rank: 3,
+    specs: { sombreoPct: 60 }, nota: 'Malla reflectante · exterior hidro.' },
+
+  { id: 'chikamasa_t550', categoria: 'tijeras', marca: 'Chikamasa', modelo: 'T-550', top_es: true, rank: 1,
+    specs: { tipo: 'Curva · acero inox' }, nota: 'Estándar en esquejes y poda fina.' },
+  { id: 'fiskars_micro', categoria: 'tijeras', marca: 'Fiskars', modelo: 'Micro-Tip', top_es: true, rank: 2,
+    specs: { tipo: 'Punta fina' }, nota: 'Defoliación sin dañar cogollos.' },
+  { id: 'bachco_pruning', categoria: 'tijeras', marca: 'Bahco', modelo: 'P121', top_es: true, rank: 3,
+    specs: { tipo: 'Bypass' }, nota: 'Corte limpio · ramas gruesas en SCROG.' },
+
+  { id: 'carson_30x', categoria: 'lupa', marca: 'Carson', modelo: '30× LED', top_es: true, rank: 1,
+    specs: { aumento: '30×' }, nota: 'Lupa LED · tricomas lechosos/ámbar.' },
+  { id: 'active_eye_30x', categoria: 'lupa', marca: 'Active Eye', modelo: '30×', top_es: true, rank: 2,
+    specs: { aumento: '30×' }, nota: 'Clásica growshop · revisión semanal flor.' },
+  { id: 'carson_60x', categoria: 'lupa', marca: 'Carson', modelo: '60× LED', top_es: true, rank: 3,
+    specs: { aumento: '60×' }, nota: 'Detalle fino · confirmar cosecha.' },
+  { id: 'jeweler_40x', categoria: 'lupa', marca: 'Generic', modelo: '40× jeweler', top_es: true, rank: 4,
+    specs: { aumento: '40×' }, nota: 'Intermedio 30–60× · buena relación calidad/precio.' },
 ];
 
 const EQUIP_TOP_ES_LIMIT = 10;
+
+const EQUIP_CATALOG_GROUPS = {
+  interior: [
+    { id: 'sala', label: 'Sala interior', icon: '🏠', keys: ['armario', 'led', 'extractor', 'filtro_carbon', 'ventilador_circ', 'temporizador', 'humidificador', 'deshumidificador', 'co2'] },
+    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc'] },
+    { id: 'tools', label: 'Herramientas cultivo', icon: '✂️', keys: ['tijeras', 'lupa'] },
+  ],
+  exterior: [
+    { id: 'ext', label: 'Exterior', icon: '☀️', keys: ['toldo_malla', 'ventilador_circ'] },
+    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc'] },
+    { id: 'tools', label: 'Herramientas cultivo', icon: '✂️', keys: ['tijeras', 'lupa'] },
+  ],
+};
+
+function getEquipCatalogGroups(entorno) {
+  return entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior : EQUIP_CATALOG_GROUPS.interior;
+}
 
 function getEquipCategorias() {
   return EQUIP_CATEGORIAS;
@@ -308,6 +454,7 @@ function getEquipTopPorCategoria(catId, limit, includeId) {
 window.EQUIP_CATEGORIAS = EQUIP_CATEGORIAS;
 window.EQUIPAMIENTO_CATALOG = EQUIPAMIENTO_CATALOG;
 window.EQUIP_TOP_ES_LIMIT = EQUIP_TOP_ES_LIMIT;
+window.getEquipCatalogGroups = getEquipCatalogGroups;
 window.getEquipCategorias = getEquipCategorias;
 window.getEquipamientoByCategoria = getEquipamientoByCategoria;
 window.getEquipamientoById = getEquipamientoById;

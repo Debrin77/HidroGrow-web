@@ -226,6 +226,7 @@
       const catDetails = document.getElementById('setupEquipCatalogDetails');
       if (catDetails && premiumActive) catDetails.classList.add('setup-hidden');
       else if (catDetails) catDetails.classList.remove('setup-hidden');
+      if (typeof refreshSetupEquipEntornoVis === 'function') refreshSetupEquipEntornoVis();
     }
 
     if (page === typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 12) {

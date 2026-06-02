@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-welcome-cannabis">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-equip-full">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
@@ -2978,7 +2978,7 @@
         onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
     </div>
     <h2 id="welcomeGuideTitle" class="welcome-title">Tu cultivo de cannabis en hidro, en casa y con criterio</h2>
-    <p class="welcome-lead">HidroGrow está pensada para <strong>autocultivo hidropónico de cannabis</strong> en vivienda: configura <strong>DWC</strong> o <strong>RDWC</strong>, registra <strong>EC/pH</strong>, dosifica según <strong>litros reales</strong> y sigue checklists sin perderte entre pantallas.</p>
+    <p class="welcome-lead">HidroGrow está pensada para <strong>autocultivo hidropónico de cannabis</strong> en vivienda: configura <strong>DWC</strong> o <strong>RDWC</strong>, te orienta en el <strong>montaje completo</strong> (sala, equipamiento, checklist), registras <strong>EC/pH</strong>, dosificas según <strong>litros reales</strong> y sigues rutinas sin perderte entre pantallas.</p>
 
     <section class="welcome-block" aria-labelledby="welcomeBondadesTitle">
       <h3 id="welcomeBondadesTitle" class="welcome-block-title">Por qué te conviene</h3>
@@ -2992,9 +2992,9 @@
     <section class="welcome-block" aria-labelledby="welcomeFeaturesTitle">
       <h3 id="welcomeFeaturesTitle" class="welcome-block-title">Qué incluye la app</h3>
       <ul class="welcome-feature-grid" role="list">
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">⚙️</span><span><strong>Sistema en casa</strong> — DWC/RDWC, cubos, aireador, depósito y montaje.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📝</span><span><strong>Medir y registrar</strong> — EC, pH, temperatura, volumen y recargas.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧭</span><span><strong>Asistente guiado</strong> — correcciones con rangos recomendados.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">⚙️</span><span><strong>Montaje guiado</strong> — sala, LED, extractor, filtro, hidro y checklist paso a paso.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📝</span><span><strong>Medir y registrar</strong> — EC, pH, temperatura, volumen, ambiente y recargas.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧭</span><span><strong>Correcciones</strong> — rangos por fase, VPD y sugerencias de equipamiento.</span></li>
         <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📊</span><span><strong>Cultivo</strong> — genética, SOG/SCROG, fechas por cesta y esquema visual.</span></li>
         <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧪</span><span><strong>Nutrientes</strong> — catálogo habitual y checklist de mezcla del depósito.</span></li>
         <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🌤️</span><span><strong>Meteo y riego</strong> — contexto climático de tu municipio.</span></li>
@@ -3003,7 +3003,7 @@
 
     <section class="welcome-setup-callout" aria-label="Configurar primera instalación">
       <h3 class="welcome-block-title">Configura tu instalación</h3>
-      <p class="welcome-setup-txt">El asistente te guía: tipo de sistema, sala (LED, extractor), plantas, geometría del hidro, agua, nutriente y cultivos en cestas. En minutos dejas lista la primera instalación con checklist de montaje.</p>
+      <p class="welcome-setup-txt">El asistente te guía de punta a punta: tipo DWC/RDWC, entorno interior/exterior, equipamiento (catálogo ES), geometría del hidro, agua, nutriente y cultivos. Después, checklists de montaje y primer llenado del depósito.</p>
       <button type="button" class="btn btn-primary welcome-cta-btn welcome-cta-btn--block" onclick="welcomeAbrirSetup()"
         aria-label="Abrir asistente de configuración de instalación hidropónica">
         Configurar mi sistema
@@ -3147,11 +3147,11 @@
 
     <div class="setup-page" id="spagePremium3">
       <div class="setup-title">Espacio y equipamiento</div>
-      <div class="setup-subtitle" id="setupPremium3Subtitle">Marca y modelo de LED, extractor y carpa (catálogo opcional).</div>
+      <div class="setup-subtitle" id="setupPremium3Subtitle">Catálogo por grupos: sala, hidro y herramientas. Elige marca/modelo o deja «Manual».</div>
       <div id="setupPremiumEquipSection">
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
         <p class="setup-field-hint setup-mb-8">Top 10 por categoría (marcas habituales en growshops ES). Cada selección aporta datos de ficha (m², W, m³/h…). Puedes dejar «Manual / otro modelo».</p>
-        <div id="setupPremiumEquipGrid" class="equip-catalog-grid setup-mb-8"></div>
+        <div id="setupPremiumEquipGrid" class="equip-catalog-host setup-mb-8"></div>
         <div id="setupPremiumEquipFaltantes" class="setup-mb-16 setup-hidden" aria-live="polite"></div>
       </div>
 
@@ -3644,51 +3644,137 @@
 
     <div class="setup-page" id="spage2">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg> Equipamiento</div>
-      <div class="setup-subtitle">Aireador, bomba, medidor y CO₂ (opcional) del circuito hidro.</div>
+      <div class="setup-subtitle">Marca lo que tienes: circuito hidro, sala, herramientas y protección exterior.</div>
 
       <details class="setup-equip-catalog-details setup-mb-16" id="setupEquipCatalogDetails" open>
-        <summary class="setup-block-title setup-equip-catalog-summary">Selección marca y modelo (catálogo ES)</summary>
-        <p class="setup-field-hint setup-mb-8">LED, carpa, extractor, medidor… Misma lista que en el paso «Espacio y equipamiento».</p>
-        <div id="setupEquipCatalogGrid" class="equip-catalog-grid setup-mb-8"></div>
+        <summary class="setup-block-title setup-equip-catalog-summary">Catálogo marca y modelo (growshops ES)</summary>
+        <p class="setup-field-hint setup-mb-8">Filtro carbón, clip fan, temporizador LED, tijeras, lupa… Agrupado según interior o exterior.</p>
+        <div id="setupEquipCatalogGrid" class="equip-catalog-host setup-mb-8"></div>
       </details>
 
-      <div class="setup-block-title">Dispositivos del circuito</div>
-      <div class="equip-grid">
-        <button type="button" class="equip-card" id="eqDifusor" onclick="toggleEquip('difusor')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-wind"/></svg></div>
-          <div class="equip-titulo">Difusor de aire</div>
-          <div class="equip-desc">Oxigena el agua del depósito 24h</div>
-        </button>
-        <button type="button" class="equip-card" id="eqCalentador" onclick="toggleEquip('calentador')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg></div>
-          <div class="equip-titulo">Calentador</div>
-          <div class="equip-desc">Mantiene temp. óptima 20°C</div>
-        </button>
-        <button type="button" class="equip-card" id="eqBomba" onclick="toggleEquip('bomba')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg></div>
-          <div class="equip-titulo">Bomba sumergible</div>
-          <div class="equip-desc">Circula el agua por la torre</div>
-        </button>
-        <button type="button" class="equip-card" id="eqTimer" onclick="toggleEquip('timer')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-clock"/></svg></div>
-          <div class="equip-titulo">Temporizador</div>
-          <div class="equip-desc">Programa automática del riego</div>
-        </button>
-        <button type="button" class="equip-card" id="eqMedidorEC" onclick="toggleEquip('medidorEC')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg></div>
-          <div class="equip-titulo">Medidor EC/pH</div>
-          <div class="equip-desc">Pen digital de medición</div>
-        </button>
-        <button type="button" class="equip-card" id="eqToldo" onclick="toggleEquip('toldo')">
-          <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-umbrella"/></svg></div>
-          <div class="equip-titulo">Toldo / malla</div>
-          <div class="equip-desc">Protección solar en verano</div>
-        </button>
-        <button type="button" class="equip-card" id="eqCo2" onclick="toggleEquip('co2')">
-          <div class="equip-icon" aria-hidden="true">🌬️</div>
-          <div class="equip-titulo">Enriquecedor CO₂</div>
-          <div class="equip-desc">Botella + regulador (opcional)</div>
-        </button>
+      <div class="equip-quick-pick setup-mb-12" id="setupEquipQuickPick">
+        <span class="equip-quick-pick-label">Atajos</span>
+        <p class="equip-quick-pick-hint">Marca solo lo que tienes o vas a montar. Los atajos rellenan sugerencias; puedes desmarcar después.</p>
+        <div class="equip-quick-pick-btns">
+          <button type="button" class="equip-quick-btn" onclick="setupEquipQuickPick('interior')">Marcar kit interior</button>
+          <button type="button" class="equip-quick-btn" onclick="setupEquipQuickPick('exterior')">Marcar kit exterior</button>
+          <button type="button" class="equip-quick-btn equip-quick-btn--ghost" onclick="setupEquipQuickPick('minimo')">Solo circuito hidro</button>
+        </div>
+      </div>
+
+      <div class="equip-pick-section" id="setupEquipSectionHydro" data-entorno="both">
+        <div class="equip-pick-section-head">
+          <span class="equip-pick-section-icon" aria-hidden="true">🫧</span>
+          <div class="equip-pick-section-text">
+            <strong>Circuito hidro</strong>
+            <span>DWC / RDWC · depósito y nutriente</span>
+          </div>
+        </div>
+        <div class="equip-grid equip-grid--pick">
+          <button type="button" class="equip-card equip-card--pick" id="eqDifusor" onclick="toggleEquip('difusor')">
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-wind"/></svg></div>
+            <div class="equip-titulo">Difusor de aire</div>
+            <div class="equip-desc">Oxigena el depósito 24 h</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqCalentador" onclick="toggleEquip('calentador')">
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg></div>
+            <div class="equip-titulo">Calentador</div>
+            <div class="equip-desc">Temp. óptima del nutriente (~20 °C)</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqBomba" onclick="toggleEquip('bomba')">
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg></div>
+            <div class="equip-titulo">Bomba sumergible</div>
+            <div class="equip-desc">Recirculación RDWC / retorno</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqMedidorEC" onclick="toggleEquip('medidorEC')">
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg></div>
+            <div class="equip-titulo">Medidor EC/pH</div>
+            <div class="equip-desc">Pen digital · calibración semanal</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="equip-pick-section setup-hidden" id="setupEquipSectionInterior" data-entorno="interior">
+        <div class="equip-pick-section-head">
+          <span class="equip-pick-section-icon" aria-hidden="true">🏠</span>
+          <div class="equip-pick-section-text">
+            <strong>Sala interior</strong>
+            <span>LED · aire · olores · anti-hongos</span>
+          </div>
+        </div>
+        <div class="equip-grid equip-grid--pick">
+          <button type="button" class="equip-card equip-card--pick" id="eqTimer" onclick="toggleEquip('timer')">
+            <span class="equip-pick-badge">Recomendado</span>
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-clock"/></svg></div>
+            <div class="equip-titulo">Temporizador LED</div>
+            <div class="equip-desc">Fotoperiodo 18/6 · 12/12</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqFiltroCarbon" onclick="toggleEquip('filtroCarbon')">
+            <span class="equip-pick-badge">Recomendado</span>
+            <div class="equip-icon" aria-hidden="true">🧫</div>
+            <div class="equip-titulo">Filtro de carbón</div>
+            <div class="equip-desc">Olor en flor · caudal ≥ extractor</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqCirculacion" onclick="toggleEquip('circulacion')">
+            <span class="equip-pick-badge equip-pick-badge--air">Anti-hongos</span>
+            <div class="equip-icon" aria-hidden="true">🌀</div>
+            <div class="equip-titulo">Ventilación interior</div>
+            <div class="equip-desc">Clip fan · mueve aire en el dosel</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqCo2" onclick="toggleEquip('co2')">
+            <div class="equip-icon" aria-hidden="true">🌬️</div>
+            <div class="equip-titulo">Enriquecedor CO₂</div>
+            <div class="equip-desc">Opcional · botella + regulador</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="equip-pick-section setup-hidden" id="setupEquipSectionExterior" data-entorno="exterior">
+        <div class="equip-pick-section-head">
+          <span class="equip-pick-section-icon" aria-hidden="true">☀️</span>
+          <div class="equip-pick-section-text">
+            <strong>Exterior</strong>
+            <span>Sol · lluvia · viento · sombra</span>
+          </div>
+        </div>
+        <div class="equip-grid equip-grid--pick">
+          <button type="button" class="equip-card equip-card--pick" id="eqToldo" onclick="toggleEquip('toldo')">
+            <span class="equip-pick-badge">Recomendado</span>
+            <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-umbrella"/></svg></div>
+            <div class="equip-titulo">Toldo / malla</div>
+            <div class="equip-desc">Sombreo 50–70 % en verano</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqCirculacionExt" onclick="toggleEquip('circulacion')">
+            <span class="equip-pick-badge equip-pick-badge--air">Anti-hongos</span>
+            <div class="equip-icon" aria-hidden="true">🌀</div>
+            <div class="equip-titulo">Ventilación ambiente</div>
+            <div class="equip-desc">Aire entre plantas · reduce moho</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="equip-pick-section" id="setupEquipSectionTools" data-entorno="both">
+        <div class="equip-pick-section-head">
+          <span class="equip-pick-section-icon" aria-hidden="true">✂️</span>
+          <div class="equip-pick-section-text">
+            <strong>Herramientas cultivo</strong>
+            <span>Poda · esquejes · cosecha</span>
+          </div>
+        </div>
+        <div class="equip-grid equip-grid--pick">
+          <button type="button" class="equip-card equip-card--pick" id="eqTijeras" onclick="toggleEquip('tijeras')">
+            <span class="equip-pick-badge">Recomendado</span>
+            <div class="equip-icon" aria-hidden="true">✂️</div>
+            <div class="equip-titulo">Tijeras de poda</div>
+            <div class="equip-desc">Defoliación y esquejes estériles</div>
+          </button>
+          <button type="button" class="equip-card equip-card--pick" id="eqLupa" onclick="toggleEquip('lupa')">
+            <span class="equip-pick-badge">Recomendado</span>
+            <div class="equip-icon" aria-hidden="true">🔍</div>
+            <div class="equip-titulo">Lupa tricomas</div>
+            <div class="equip-desc">30×–60× · confirmar cosecha</div>
+          </button>
+        </div>
       </div>
       <div class="setup-sensores-box setup-hidden" id="setupCalentadorConsignaWrap">
         <div class="setup-sensores-title"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-therm"/></svg> Consigna del calentador (depósito)</div>
@@ -4807,11 +4893,11 @@
   <script src="js/hc-ui-icons.js?v=1"></script>
   <script src="js/genetics-db.js?v=2026-05-31-breeder"></script>
   <script src="js/hc-genetics-breeder.js?v=2026-05-31-breeder"></script>
-  <script src="js/hc-visual-flow.js?v=2026-05-31-visual"></script>
+  <script src="js/hc-visual-flow.js?v=2026-05-31-equip-full"></script>
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-co2-equip"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip-full"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-origen"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -4825,7 +4911,7 @@
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-medir-operativa.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-copy-lite"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-welcome-cannabis"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-montaje"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-copy-lite"></script>
@@ -4851,14 +4937,14 @@
 <script src="js/torre-render-main.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-co2-equip"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-guardar-fix"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-co2-equip"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-co2-equip"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-guardar-fix"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-co2-equip"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-equip-full"></script>
 
 
 
@@ -4893,7 +4979,7 @@
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-  <script src="js/hc-puesta-marcha.js?v=2026-05-31-copy-lite"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-equip-full"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>
