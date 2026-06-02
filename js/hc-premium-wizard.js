@@ -71,6 +71,8 @@
         origenPlanta: 'semilla',
         germinacionChecklist: {},
         metodoCultivo: 'scrog',
+        metodoManual: false,
+        geneticaManual: false,
         consejosModoUi: 'principiante',
       };
     }
@@ -122,7 +124,88 @@
   function seleccionarPremiumOrigen(origen) {
     const o = origen === 'clon' ? 'clon' : origen === 'madre' ? 'madre' : 'semilla';
     ensurePremiumSetup().origenPlanta = o;
+    aplicarRecomendacionPremiumPorOrigen(o);
     refreshPremiumGerminacionUI();
+    refreshPremiumMetodoOrigenHint();
+    if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+  }
+
+  const ORIGEN_RECOMENDACIONES = {
+    clon: {
+      metodoCultivo: 'sog',
+      geneticaPref: 'foto',
+      recoPaso6:
+        'Recomendación aplicada: <strong>SOG + fotoperíodo</strong> (esquejes uniformes, veg corta). ' +
+        'Revísalo en el paso «Genética y método» si quieres otro enfoque.',
+      recoPaso5:
+        'Origen <strong>esqueje/clon</strong>: recomendado <strong>SOG + fotoperíodo</strong>. ' +
+        'Los esquejes suelen ir en SOG; la genética casi siempre es foto.',
+    },
+    semilla: {
+      recoPaso6:
+        'Con <strong>semilla</strong> puedes elegir SOG/SCROG y foto/auto en el paso anterior. ' +
+        'El <strong>semillero</strong> ayuda con rangos de germinación (opcional).',
+      recoPaso5: '',
+    },
+    madre: {
+      geneticaPref: 'foto',
+      recoPaso6:
+        'Planta <strong>madre</strong>: <strong>fotoperíodo 18/6</strong> permanente. ' +
+        'SOG/SCROG aplica a los esquejes que tomes, no a la madre.',
+      recoPaso5:
+        'Origen <strong>madre</strong>: solo <strong>fotoperíodo</strong> en la madre (18/6).',
+    },
+  };
+
+  function aplicarRecomendacionPremiumPorOrigen(origen) {
+    const p = ensurePremiumSetup();
+    const rec = ORIGEN_RECOMENDACIONES[origen] || ORIGEN_RECOMENDACIONES.semilla;
+    let cambios = [];
+    if (rec.metodoCultivo && !p.metodoManual) {
+      p.metodoCultivo = rec.metodoCultivo;
+      cambios.push('SOG');
+      refreshPremiumMetodoUI();
+    }
+    if (rec.geneticaPref && !p.geneticaManual) {
+      p.geneticaPref = rec.geneticaPref;
+      cambios.push('fotoperíodo');
+      el('setupPremiumGenFoto')?.classList.toggle('selected', rec.geneticaPref === 'foto');
+      el('setupPremiumGenAuto')?.classList.toggle('selected', rec.geneticaPref === 'auto');
+      refreshPremiumGeneticaHint();
+    }
+    p.ultimaRecoOrigen = origen;
+    p.ultimaRecoAplicada = cambios.length > 0;
+    refreshPremiumOrigenRecoUI(origen, cambios);
+  }
+
+  function refreshPremiumOrigenRecoUI(origen, cambios) {
+    const box = el('setupPremiumOrigenReco');
+    if (!box) return;
+    const rec = ORIGEN_RECOMENDACIONES[origen || 'semilla'] || {};
+    const txt = rec.recoPaso6 || '';
+    if (!txt) {
+      box.classList.add('setup-hidden');
+      box.innerHTML = '';
+      return;
+    }
+    box.classList.remove('setup-hidden');
+    box.innerHTML = txt;
+  }
+
+  function refreshPremiumMetodoOrigenHint() {
+    const hint = el('setupPremiumMetodoOrigenHint');
+    if (!hint) return;
+    const p = ensurePremiumSetup();
+    const orig = p.origenPlanta || 'semilla';
+    const rec = ORIGEN_RECOMENDACIONES[orig] || {};
+    const txt = rec.recoPaso5 || '';
+    if (!txt) {
+      hint.classList.add('setup-hidden');
+      hint.innerHTML = '';
+      return;
+    }
+    hint.classList.remove('setup-hidden');
+    hint.innerHTML = '<p class="setup-metodo-hint-l1">' + txt + '</p>';
   }
 
   const METODO_HINTS = {
@@ -137,13 +220,17 @@
   };
 
   function seleccionarPremiumMetodo(metodo) {
-    ensurePremiumSetup().metodoCultivo = metodo === 'sog' ? 'sog' : 'scrog';
+    const p = ensurePremiumSetup();
+    p.metodoCultivo = metodo === 'sog' ? 'sog' : 'scrog';
+    p.metodoManual = true;
     refreshPremiumMetodoUI();
     refreshPremiumGeneticaHint();
   }
 
   function seleccionarPremiumGenetica(pref) {
-    ensurePremiumSetup().geneticaPref = pref === 'auto' ? 'auto' : 'foto';
+    const p = ensurePremiumSetup();
+    p.geneticaPref = pref === 'auto' ? 'auto' : 'foto';
+    p.geneticaManual = true;
     el('setupPremiumGenFoto')?.classList.toggle('selected', pref !== 'auto');
     el('setupPremiumGenAuto')?.classList.toggle('selected', pref === 'auto');
     refreshPremiumGeneticaHint();
@@ -321,10 +408,16 @@
     const out = el('setupPremiumGeneticaHint');
     if (!out) return;
     const p = ensurePremiumSetup();
-    const gen =
+    const orig = p.origenPlanta || 'semilla';
+    let gen =
       p.geneticaPref === 'auto'
         ? 'Autoflorecientes: ciclo fijo · evita trasplantes tardíos.'
         : 'Fotoperíodo: controlas veg con 18/6 y flor con 12/12.';
+    if (orig === 'clon') {
+      gen += ' Los esquejes suelen ser de genética <strong>foto</strong>.';
+    } else if (orig === 'madre') {
+      gen += ' La madre debe ser <strong>fotoperíodo</strong> (18/6).';
+    }
     out.innerHTML = '<p>' + gen + '</p>';
   }
 
@@ -497,7 +590,10 @@
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
     if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
     if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
+    if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
     if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
+    refreshPremiumMetodoOrigenHint();
+    refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
 
     if (pagina === SETUP_PAGE_PREMIUM_5 && typeof renderSemillerosGrid === 'function') {
       renderSemillerosGrid();
@@ -593,6 +689,8 @@
   window.seleccionarPremiumObjetivo = seleccionarPremiumObjetivo;
   window.seleccionarPremiumEntorno = seleccionarPremiumEntorno;
   window.seleccionarPremiumOrigen = seleccionarPremiumOrigen;
+  window.aplicarRecomendacionPremiumPorOrigen = aplicarRecomendacionPremiumPorOrigen;
+  window.refreshPremiumMetodoOrigenHint = refreshPremiumMetodoOrigenHint;
   window.seleccionarPremiumMetodo = seleccionarPremiumMetodo;
   window.seleccionarPremiumGenetica = seleccionarPremiumGenetica;
   window.togglePremiumCarpaReflectante = togglePremiumCarpaReflectante;

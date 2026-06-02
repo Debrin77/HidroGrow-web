@@ -23,9 +23,54 @@
       : (s.perfil || {});
   }
 
+  function getPremiumOrigenActivo() {
+    try {
+      if (typeof ensurePremiumSetup === 'function') {
+        return ensurePremiumSetup().origenPlanta || 'semilla';
+      }
+    } catch (_) {}
+    return 'semilla';
+  }
+
+  function origenUsaSemillero(origen) {
+    return String(origen || '').toLowerCase() === 'semilla';
+  }
+
+  function limpiarSemilleroPremium() {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : null;
+    if (!cfg) return;
+    const s = ensureSemilleroState(cfg);
+    if (!s.id && !s.marca) return;
+    s.id = '';
+    s.marca = '';
+    s.perfil = {};
+    s.perfilCustom = {};
+    s.aceptadoTalCual = false;
+    try {
+      if (typeof saveState === 'function') saveState();
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    } catch (_) {}
+  }
+
+  function refreshPremiumSemilleroVis() {
+    const sec = el('setupPremiumSemilleroSection');
+    const orig = getPremiumOrigenActivo();
+    const show = origenUsaSemillero(orig);
+    if (sec) sec.classList.toggle('setup-hidden', !show);
+    if (!show) {
+      limpiarSemilleroPremium();
+      const grid = el('setupPremiumSemillerosGrid');
+      if (grid) grid.innerHTML = '';
+      renderSemilleroPerfilPanel();
+    } else {
+      renderSemillerosGrid();
+    }
+  }
+
   function renderSemillerosGrid() {
     const grid = el('setupPremiumSemillerosGrid');
     if (!grid) return;
+    if (!origenUsaSemillero(getPremiumOrigenActivo())) return;
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     const cur = ensureSemilleroState(cfg).id || '';
     const list = typeof getSemillerosTop10ES === 'function' ? getSemillerosTop10ES() : [];
@@ -242,6 +287,8 @@
   window.restaurarSemilleroCatalogo = restaurarSemilleroCatalogo;
   window.renderSemillerosGrid = renderSemillerosGrid;
   window.renderSemilleroPerfilPanel = renderSemilleroPerfilPanel;
+  window.refreshPremiumSemilleroVis = refreshPremiumSemilleroVis;
+  window.limpiarSemilleroPremium = limpiarSemilleroPremium;
   window.renderMedirSemilleroPanel = renderMedirSemilleroPanel;
   window.persistSemilleroToConfig = persistSemilleroToConfig;
   window.getPerfilSemilleroActivo = getPerfilActivo;
