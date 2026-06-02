@@ -831,7 +831,7 @@ function renderHistRecargas() {
                 ? hcInstalacionChipHtml(sis, r.torreId, 'hist-recarga-sis-chip')
                 : (sis.emoji || '🌿') + ' ' + sis.nombre
             }</div>
-            ${r.nutrienteNombre ? '<div class="hist-recarga-nutriente">🧪 ' + r.nutrienteNombre + '</div>' : ''}
+            ${r.nutrienteNombre ? '<div class="hist-recarga-nutriente">' + (typeof hcMetricLine === 'function' ? hcMetricLine('ph', r.nutrienteNombre) : '🧪 ' + r.nutrienteNombre) + '</div>' : ''}
             ${(r.cambioNutriente === 'sí' || (r.nutrientePrevioNombre && r.nutrienteNombre))
               ? ('<div class="hist-recarga-nutriente">🔁 Cambio nutriente: ' +
                 (r.nutrientePrevioNombre || 'anterior') + ' → ' + (r.nutrienteNombre || 'nuevo') +

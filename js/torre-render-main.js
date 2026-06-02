@@ -637,8 +637,8 @@ function renderCompatGrid() {
         '<div class="compat-grupo-head">' +
           '<span class="compat-grupo-name">' +
             '<span class="compat-grupo-emoji" aria-hidden="true">' +
-            (typeof hcGrupoCultivoIconMarkup === 'function'
-              ? hcGrupoCultivoIconMarkup(key).replace('setup-grupo-icon', 'compat-grupo-ico-wrap')
+            (typeof hcIcon === 'function' && typeof HC_GRUPO_SYM !== 'undefined'
+              ? hcIcon(HC_GRUPO_SYM[key] || 'hc-i-sprout', 'hc-ico--grupo')
               : GRUPO_EMOJI_REP[key] || '🌱') +
             '</span>' +
             g.nombre + '</span>' +
@@ -853,20 +853,34 @@ function actualizarAvisoCestasSinFecha() {
   if (inicio) {
     inicio.style.display = 'block';
     inicio.innerHTML =
-      '⚠️ Hay ' + nStr + ' ' + pl + ' con cultivo pero <strong>sin fecha</strong>. No se usan en el riego ni en la media de días (solo cuentan cestas con fecha válida). ' +
+      (typeof hcTextWithLeadingIcons === 'function'
+        ? hcTextWithLeadingIcons('⚠️ Hay ', 'warn')
+        : '⚠️ Hay ') +
+      nStr +
+      ' ' +
+      pl +
+      ' con cultivo pero <strong>sin fecha</strong>. No se usan en el riego ni en la media de días (solo cuentan cestas con fecha válida). ' +
       '<button type="button" class="aviso-cestas-ir" onclick="goTab(\'sistema\')">Ir a Cultivo e instalación</button>';
   }
   if (torre) {
     torre.style.display = 'block';
-    torre.innerHTML =
+    const avisoTorre =
       count === 1
         ? '⚠️ Una cesta tiene cultivo <strong>sin fecha</strong>. Abre su ficha y marca trasplante o siembra.'
         : '⚠️ ' + nStr + ' cestas tienen cultivo <strong>sin fecha</strong>. Abre cada ficha y completa la fecha.';
+    torre.innerHTML =
+      typeof hcTextWithLeadingIcons === 'function' ? hcTextWithLeadingIcons(avisoTorre, 'warn') : avisoTorre;
   }
   if (riego) {
     riego.style.display = 'block';
     riego.innerHTML =
-      '⚠️ Con ' + nStr + ' ' + pl + ' sin fecha, <strong>no entran</strong> en plantas/Kc del riego ni en la media de días del inicio (solo las fechas válidas). ' +
+      (typeof hcTextWithLeadingIcons === 'function'
+        ? hcTextWithLeadingIcons('⚠️ Con ', 'warn')
+        : '⚠️ Con ') +
+      nStr +
+      ' ' +
+      pl +
+      ' sin fecha, <strong>no entran</strong> en plantas/Kc del riego ni en la media de días del inicio (solo las fechas válidas). ' +
       '<button type="button" class="aviso-cestas-ir" onclick="goTab(\'sistema\')">Completar en Cultivo e instalación</button>';
   }
 }
@@ -883,6 +897,7 @@ function getEstado(variedad, dias) {
 }
 
 function getEmoji(estado) {
+  if (typeof hcEtapaCultivoIconMarkup === 'function') return hcEtapaCultivoIconMarkup(estado);
   const map = { plantula: '🌱', crecimiento: '🌿', madurez: '🥬', cosecha: '✂️' };
   return map[estado] || '🌱';
 }

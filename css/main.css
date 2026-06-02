@@ -11326,7 +11326,69 @@ html.hc-theme-dark .checklist-dark-sheet--setup-flow .checklist-dark-btn--link {
   margin-right: 3px;
 }
 .hist-btn-delete .hc-ico--btn,
-.registro-entry-delete .hc-ico--btn {
+.registro-entry-delete .hc-ico--btn,
+.torre-list-btn-icon .hc-ico--btn,
+.torre-list-btn-del .hc-ico--btn {
+  width: 1.1em;
+  height: 1.1em;
+}
+.hc-ico--inline,
+.hc-metric-line .hc-ico--inline {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.12em;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.hc-metric-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  vertical-align: baseline;
+}
+.consejo-alerta-inner,
+.hc-toast-inner {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.consejo-alerta-inner .hc-ico--status,
+.consejo-alerta-inner .hc-ico--inline,
+.hc-toast-inner .hc-ico--status,
+.hc-toast-inner .hc-ico--inline {
+  width: 1.05em;
+  height: 1.05em;
+  margin-top: 0.1em;
+  flex-shrink: 0;
+}
+.hc-ico--chevron {
+  width: 0.85em;
+  height: 0.85em;
+  transition: transform 0.2s ease;
+}
+.hc-ico--chevron-up {
+  transform: rotate(180deg);
+}
+.registro-foto-thumb--placeholder .hc-ico--thumb-ph {
+  width: 1.75rem;
+  height: 1.75rem;
+  opacity: 0.85;
+}
+.compat-grupo-emoji .hc-ico--grupo,
+.compat-tag-soft .hc-ico--inline,
+.compat-pair-icon .hc-ico--status {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.1em;
+  margin-right: 3px;
+}
+.compat-bloque-title .hc-ico--inline,
+.compat-dist-title .hc-ico--inline,
+.compat-nut-title .hc-metric-line {
+  vertical-align: middle;
+}
+.spc-check .hc-ico--status {
   width: 1.1em;
   height: 1.1em;
 }
