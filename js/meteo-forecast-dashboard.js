@@ -86,6 +86,10 @@ function updateDashboard() {
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
   } catch (_) {}
 
+  try {
+    if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
+  } catch (_) {}
+
 }
 
 function getRecentMedicionesForWeekly(limit) {

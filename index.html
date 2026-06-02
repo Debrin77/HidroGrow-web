@@ -294,6 +294,102 @@
         <button type="button" class="btn btn-primary btn-sm" onclick="hcIrRutinaDiaOperativa()">Ir a Medir</button>
       </section>
 
+      <section id="dashOperativaHub" class="dash-operativa-hub setup-hidden" aria-label="Operativa diaria">
+        <section id="dashQueAnadir" class="dash-que-anadir setup-hidden" aria-live="polite">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">Qué añadir ahora</span>
+            <span class="dash-operativa-block-tag">Depósito</span>
+          </div>
+          <div id="dashQueAnadirBody" class="dash-que-anadir-body"></div>
+          <button type="button" class="btn btn-secondary btn-sm dash-que-anadir-btn" onclick="goTab('mediciones')">Medición completa</button>
+        </section>
+
+        <section id="dashQuickMedir" class="dash-quick-medir" aria-labelledby="dashQuickMedirTitle">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title" id="dashQuickMedirTitle">Medición rápida</span>
+          </div>
+          <p class="dash-quick-lead">Guarda <strong>depósito</strong> (EC, pH…) para calcular dosis. La <strong>sala</strong> es opcional — despliega si quieres HR, CO₂, etc.</p>
+          <div class="dash-quick-grid" role="group" aria-label="Parámetros del depósito">
+            <label class="dash-quick-field">
+              <span class="dash-quick-label">EC <span class="dash-quick-unit">µS/cm</span></span>
+              <input type="number" class="param-input dash-quick-input" id="dashQuickEC" inputmode="numeric" placeholder="1350" autocomplete="off">
+            </label>
+            <label class="dash-quick-field">
+              <span class="dash-quick-label">pH</span>
+              <input type="number" class="param-input dash-quick-input" id="dashQuickPH" inputmode="decimal" step="0.1" min="0" max="14" placeholder="5.9" autocomplete="off">
+            </label>
+            <label class="dash-quick-field">
+              <span class="dash-quick-label">T° agua <span class="dash-quick-unit">°C</span></span>
+              <input type="number" class="param-input dash-quick-input" id="dashQuickTemp" inputmode="decimal" step="0.1" placeholder="20" autocomplete="off">
+            </label>
+            <label class="dash-quick-field">
+              <span class="dash-quick-label">Volumen <span class="dash-quick-unit">L</span></span>
+              <input type="number" class="param-input dash-quick-input" id="dashQuickVol" inputmode="decimal" step="0.1" placeholder="40" autocomplete="off">
+            </label>
+          </div>
+          <details class="dash-quick-sala-details" id="dashQuickSalaDetails">
+            <summary class="dash-quick-sala-sum">Sala de cultivo (opcional)</summary>
+            <p class="dash-quick-sala-hint">Si no rellenas estos campos, la medición guarda solo depósito. VPD se calcula solo si indicas T° aire y humedad.</p>
+            <div class="dash-quick-grid dash-quick-grid--sala" role="group" aria-label="Parámetros de sala">
+              <label class="dash-quick-field">
+                <span class="dash-quick-label">T° aire <span class="dash-quick-unit">°C</span></span>
+                <input type="number" class="param-input dash-quick-input" id="dashQuickTempAire" inputmode="decimal" step="0.1" placeholder="24" autocomplete="off">
+              </label>
+              <label class="dash-quick-field">
+                <span class="dash-quick-label">Humedad <span class="dash-quick-unit">%</span></span>
+                <input type="number" class="param-input dash-quick-input" id="dashQuickHumSala" inputmode="numeric" step="1" min="0" max="100" placeholder="58" autocomplete="off">
+              </label>
+              <label class="dash-quick-field">
+                <span class="dash-quick-label">CO₂ <span class="dash-quick-unit">ppm</span></span>
+                <input type="number" class="param-input dash-quick-input" id="dashQuickCO2" inputmode="numeric" step="10" min="300" max="5000" placeholder="850" autocomplete="off">
+              </label>
+              <label class="dash-quick-field">
+                <span class="dash-quick-label">PPFD <span class="dash-quick-unit">µmol</span></span>
+                <input type="number" class="param-input dash-quick-input" id="dashQuickPPFD" inputmode="numeric" step="10" placeholder="600" autocomplete="off">
+              </label>
+            </div>
+            <label class="dash-quick-field dash-quick-field--full">
+              <span class="dash-quick-label">Notas</span>
+              <input type="text" class="param-input dash-quick-input" id="dashQuickNotas" placeholder="Opcional" autocomplete="off">
+            </label>
+          </details>
+          <p id="dashQuickParseHint" class="dash-quick-parse-hint" aria-live="polite"></p>
+          <div class="dash-quick-actions">
+            <button type="button" class="btn btn-primary" id="dashQuickGuardarBtn" onclick="hcGuardarMedicionRapida()">Guardar medición</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="goTab('mediciones')">Medir con todo el detalle</button>
+          </div>
+        </section>
+
+        <section id="dashResumenSemanal" class="dash-resumen-semanal setup-hidden" aria-label="Resumen de la semana">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">Esta semana</span>
+          </div>
+          <div id="dashResumenSemanalBody" class="dash-resumen-semanal-body"></div>
+        </section>
+
+        <section id="dashRecargaRef" class="dash-recarga-ref setup-hidden" aria-label="Referencia de última recarga">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">Última recarga de referencia</span>
+          </div>
+          <p id="dashRecargaRefBody" class="dash-recarga-ref-body"></p>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="goTab('mediciones'); try{ if(typeof abrirChecklist==='function') abrirChecklist('recarga'); }catch(_){}">Repetir recarga</button>
+        </section>
+
+        <section id="dashQrAcceso" class="dash-qr-acceso setup-hidden" aria-label="Acceso rápido QR">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">QR de acceso</span>
+          </div>
+          <p class="dash-qr-lead">Escanea en la sala para abrir esta instalación en el móvil (misma app / URL).</p>
+          <div class="dash-qr-row">
+            <img id="dashQrImg" class="dash-qr-img" width="160" height="160" alt="" hidden>
+            <div class="dash-qr-meta">
+              <code id="dashQrUrl" class="dash-qr-url"></code>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="hcCopiarEnlaceQr()">Copiar enlace</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
       <div class="dash-operativa-row setup-hidden" role="group" aria-label="Estado operativo de la instalación activa">
         <div>
           <div class="dash-operativa-title">Estado del sistema</div>
@@ -4940,6 +5036,7 @@
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/app-hc-medicion-toast.js?v=2026-06-02-icons-full"></script>
+  <script src="js/hc-dash-operativa.js?v=2026-05-31-operativa"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-06-02-dwc-rdwc-only"></script>

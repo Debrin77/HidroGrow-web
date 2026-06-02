@@ -3013,6 +3013,10 @@ async function finalizarChecklist() {
   state.recargasLocal.unshift(recargaData);
   if (state.recargasLocal.length > 20) state.recargasLocal = state.recargasLocal.slice(0,20);
 
+  try {
+    if (typeof hcGuardarRecargaReferencia === 'function') hcGuardarRecargaReferencia(recargaData);
+  } catch (_) {}
+
   // Guardar en registro general
   addRegistro('recarga', {
     ecFinal: String(ecFinalNum), phFinal, tempAgua, volFinal,

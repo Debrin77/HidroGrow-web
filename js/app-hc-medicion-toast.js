@@ -2,40 +2,90 @@
  * Medición rápida (guardarMedicion) y showToast global.
  * Último bloque de la app; carga tras meteo-alarm-app.js. Siguiente: app-hc-setup-onboarding.js.
  */
-async function guardarMedicion() {
-  if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
-    showToast(
-      'Completa montaje, cultivo y primer llenado antes del seguimiento diario en Medir.',
-      true
-    );
-    try {
-      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-    } catch (_) {}
-    return;
+async function guardarMedicion(payloadOverride) {
+  const fromPayload = payloadOverride && typeof payloadOverride === 'object';
+  if (!fromPayload) {
+    if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
+      showToast(
+        'Completa montaje, cultivo y primer llenado antes del seguimiento diario en Medir.',
+        true
+      );
+      try {
+        if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+      } catch (_) {}
+      return;
+    }
+    if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+      showToast(typeof getMensajeStandbyContinuar === 'function'
+        ? getMensajeStandbyContinuar()
+        : '⏸ Instalación en stand-by / descanso. Reactiva modo operativa para continuar.', true);
+      return;
+    }
+  } else {
+    if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
+      showToast(
+        'Completa montaje, cultivo y primer llenado antes del seguimiento diario.',
+        true
+      );
+      return;
+    }
+    if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+      showToast(typeof getMensajeStandbyContinuar === 'function'
+        ? getMensajeStandbyContinuar()
+        : '⏸ Instalación en stand-by. Reactiva modo operativa.', true);
+      return;
+    }
   }
-  if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
-    showToast(typeof getMensajeStandbyContinuar === 'function'
-      ? getMensajeStandbyContinuar()
-      : '⏸ Instalación en stand-by / descanso. Reactiva modo operativa para continuar.', true);
-    return;
+
+  const ec = fromPayload && payloadOverride.ec != null
+    ? String(payloadOverride.ec).trim()
+    : document.getElementById('inputEC').value.trim();
+  const ph = fromPayload && payloadOverride.ph != null
+    ? String(payloadOverride.ph).trim()
+    : document.getElementById('inputPH').value.trim();
+  const temp = fromPayload && payloadOverride.temp != null
+    ? String(payloadOverride.temp).trim()
+    : document.getElementById('inputTemp').value.trim();
+  const vol = fromPayload && payloadOverride.vol != null
+    ? String(payloadOverride.vol).trim()
+    : document.getElementById('inputVol').value.trim();
+  const humS = '';
+  const notas = fromPayload && payloadOverride.notas != null
+    ? String(payloadOverride.notas).trim()
+    : (document.getElementById('inputNotas')?.value.trim() || '');
+
+  let ambPayload;
+  if (fromPayload && (payloadOverride.tempAire !== undefined || payloadOverride.humSala !== undefined)) {
+    ambPayload = {
+      tempAire: payloadOverride.tempAire !== '' && payloadOverride.tempAire != null && Number.isFinite(Number(payloadOverride.tempAire))
+        ? Number(payloadOverride.tempAire) : '',
+      humSala: payloadOverride.humSala !== '' && payloadOverride.humSala != null && Number.isFinite(Number(payloadOverride.humSala))
+        ? Number(payloadOverride.humSala) : '',
+      vpd: payloadOverride.vpd !== '' && payloadOverride.vpd != null && Number.isFinite(Number(payloadOverride.vpd))
+        ? Number(payloadOverride.vpd) : '',
+      ppfd: payloadOverride.ppfd !== '' && payloadOverride.ppfd != null && Number.isFinite(Number(payloadOverride.ppfd))
+        ? Number(payloadOverride.ppfd) : '',
+      lux: payloadOverride.lux !== '' && payloadOverride.lux != null && Number.isFinite(Number(payloadOverride.lux))
+        ? Number(payloadOverride.lux) : '',
+      tempExt: payloadOverride.tempExt !== '' && payloadOverride.tempExt != null && Number.isFinite(Number(payloadOverride.tempExt))
+        ? Number(payloadOverride.tempExt) : '',
+      co2: payloadOverride.co2 !== '' && payloadOverride.co2 != null && Number.isFinite(Number(payloadOverride.co2))
+        ? Number(payloadOverride.co2) : '',
+      fase: payloadOverride.fase || (typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : ''),
+    };
+  } else {
+    const amb = typeof collectAmbienteMedicion === 'function' ? collectAmbienteMedicion() : {};
+    ambPayload = {
+      tempAire: Number.isFinite(amb.tempAire) ? amb.tempAire : '',
+      humSala: Number.isFinite(amb.humSala) ? amb.humSala : '',
+      vpd: Number.isFinite(amb.vpd) ? amb.vpd : '',
+      ppfd: Number.isFinite(amb.ppfd) ? amb.ppfd : '',
+      lux: Number.isFinite(amb.lux) ? amb.lux : '',
+      tempExt: Number.isFinite(amb.tempExt) ? amb.tempExt : '',
+      co2: Number.isFinite(amb.co2) ? amb.co2 : '',
+      fase: amb.fase || '',
+    };
   }
-  const ec    = document.getElementById('inputEC').value.trim();
-  const ph    = document.getElementById('inputPH').value.trim();
-  const temp  = document.getElementById('inputTemp').value.trim();
-  const vol   = document.getElementById('inputVol').value.trim();
-  const humS  = '';
-  const notas = document.getElementById('inputNotas')?.value.trim() || '';
-  const amb   = typeof collectAmbienteMedicion === 'function' ? collectAmbienteMedicion() : {};
-  const ambPayload = {
-    tempAire: Number.isFinite(amb.tempAire) ? amb.tempAire : '',
-    humSala: Number.isFinite(amb.humSala) ? amb.humSala : '',
-    vpd: Number.isFinite(amb.vpd) ? amb.vpd : '',
-    ppfd: Number.isFinite(amb.ppfd) ? amb.ppfd : '',
-    lux: Number.isFinite(amb.lux) ? amb.lux : '',
-    tempExt: Number.isFinite(amb.tempExt) ? amb.tempExt : '',
-    co2: Number.isFinite(amb.co2) ? amb.co2 : '',
-    fase: amb.fase || '',
-  };
 
   if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
     showToast('⚠️ Introduce al menos un valor (depósito o ambiente)', true);
@@ -116,6 +166,8 @@ async function guardarMedicion() {
   }
 
   // ── 2. ACTUALIZAR UI ──────────────────────────────────────────────────────
+  const skipClear = fromPayload && payloadOverride.skipClearInputs === true;
+  if (!skipClear) {
   // Limpiar campos
   ['inputEC','inputPH','inputTemp','inputVol','inputNotas'].forEach(id => {
     const el = document.getElementById(id);
@@ -135,6 +187,7 @@ async function guardarMedicion() {
   ['correccionEC','correccionPH','correccionTemp','correccionVol'].forEach(id => {
     showCorreccion(id, '');
   });
+  }
   try { cargarUltimaMedicion(); } catch (_) {}
   try {
     if (typeof refreshMonitorLive === 'function') refreshMonitorLive();
@@ -156,6 +209,10 @@ async function guardarMedicion() {
     }
   } catch (_) {}
   showToast('✅ Medición guardada · EC:' + (ec||'—') + ' pH:' + (ph||'—'));
+
+  try {
+    if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
+  } catch (_) {}
 
   // Alertas unificadas (motor único)
   var evalPayload = {

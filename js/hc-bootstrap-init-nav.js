@@ -136,6 +136,11 @@ function initApp() {
   if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   setTimeout(programarRecordatorios, 2000);
   setTimeout(() => { void refrescarAvisosMeteoalarmEnSegundoPlano(); }, 4500);
+  setTimeout(() => {
+    try {
+      if (typeof hcProcesarDeepLinkHash === 'function') hcProcesarDeepLinkHash();
+    } catch (_) {}
+  }, 600);
   // Badges DESPUÉS de cargar config y torre
   setTimeout(actualizarBadgesNutriente, 100);
 
