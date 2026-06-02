@@ -1,5 +1,5 @@
 /**
- * Inicio operativo: medición rápida, «qué añadir ahora», resumen semanal, recarga ref, QR.
+ * Inicio operativo: estado reciente, medición rápida, «qué añadir ahora», resumen semanal, recarga ref.
  * Tras app-hc-medicion-toast.js.
  */
 (function () {
@@ -55,18 +55,36 @@
     return '';
   }
 
-  function prefillQuickMedir() {
-    const volEl = document.getElementById('dashQuickVol');
-    if (!volEl || String(volEl.value || '').trim()) return;
-    const sug = volDepositoSugerido();
-    if (sug !== '') volEl.placeholder = String(sug);
+  const salaFieldIds = ['dashQuickTempAire', 'dashQuickHumSala', 'dashQuickCO2', 'dashQuickPPFD'];
+  const salaTouched = Object.create(null);
+
+  function markSalaTouched(id) {
+    if (id) salaTouched[id] = true;
+    const el = document.getElementById(id);
+    if (el) delete el.dataset.hcInherited;
+  }
+
+  function resetSalaTouchedState() {
+    salaFieldIds.forEach(function (id) {
+      delete salaTouched[id];
+      const el = document.getElementById(id);
+      if (el) delete el.dataset.hcInherited;
+    });
+  }
+
+  function readSalaFieldForSave(id) {
+    const el = document.getElementById(id);
+    if (!el) return NaN;
+    const raw = strVal(el.value);
+    if (!raw) return NaN;
+    if (el.dataset.hcInherited === '1' && !salaTouched[id]) return NaN;
+    return numVal(raw);
+  }
+
+  function applySalaHintsFromUltima() {
     const um = state && state.ultimaMedicion ? state.ultimaMedicion : null;
     if (!um) return;
     const map = [
-      ['dashQuickEC', um.ec],
-      ['dashQuickPH', um.ph],
-      ['dashQuickTemp', um.temp],
-      ['dashQuickVol', um.vol],
       ['dashQuickTempAire', um.tempAire],
       ['dashQuickHumSala', um.humSala],
       ['dashQuickCO2', um.co2],
@@ -74,9 +92,146 @@
     ];
     map.forEach(function (pair) {
       const el = document.getElementById(pair[0]);
+      if (!el || salaTouched[pair[0]]) return;
+      if (String(el.value || '').trim()) return;
+      if (pair[1] == null || String(pair[1]).trim() === '') return;
+      el.value = String(pair[1]);
+      el.dataset.hcInherited = '1';
+    });
+  }
+
+  function prefillQuickMedir() {
+    const volEl = document.getElementById('dashQuickVol');
+    if (volEl && !String(volEl.value || '').trim()) {
+      const sug = volDepositoSugerido();
+      if (sug !== '') volEl.placeholder = String(sug);
+    }
+    const um = state && state.ultimaMedicion ? state.ultimaMedicion : null;
+    if (!um) return;
+    [
+      ['dashQuickEC', um.ec],
+      ['dashQuickPH', um.ph],
+      ['dashQuickTemp', um.temp],
+      ['dashQuickVol', um.vol],
+    ].forEach(function (pair) {
+      const el = document.getElementById(pair[0]);
       if (!el || String(el.value || '').trim()) return;
       if (pair[1] != null && String(pair[1]).trim() !== '') el.placeholder = String(pair[1]);
     });
+    const details = document.getElementById('dashQuickSalaDetails');
+    if (details && details.open) applySalaHintsFromUltima();
+  }
+
+  function parseMedFechaMs(str) {
+    if (!str) return NaN;
+    try {
+      const p = String(str).split('/');
+      if (p.length >= 3) {
+        const d = new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
+        return d.getTime();
+      }
+    } catch (_) {}
+    return NaN;
+  }
+
+  function edadMedicionTexto(fecha, hora) {
+    const ts = parseMedFechaMs(fecha);
+    if (!Number.isFinite(ts)) return 'Sin fecha';
+    let ms = ts;
+    if (hora && String(hora).trim()) {
+      const hm = String(hora).match(/(\d{1,2}):(\d{2})/);
+      if (hm) ms += (parseInt(hm[1], 10) * 60 + parseInt(hm[2], 10)) * 60000;
+    }
+    const diff = Date.now() - ms;
+    if (diff < 0) return 'Ahora';
+    const min = Math.floor(diff / 60000);
+    if (min < 1) return 'Ahora mismo';
+    if (min < 60) return 'Hace ' + min + ' min';
+    const h = Math.floor(min / 60);
+    if (h < 24) return 'Hace ' + h + ' h';
+    const d = Math.floor(h / 24);
+    if (d === 1) return 'Ayer';
+    return 'Hace ' + d + ' d';
+  }
+
+  function tileMod(key, val) {
+    if (!Number.isFinite(val) && key !== 'vpd') return '';
+    try {
+      if (typeof getTileClass === 'function') return getTileClass(key, val);
+    } catch (_) {}
+    return '';
+  }
+
+  function fmtParam(key, raw) {
+    const n = numVal(raw);
+    if (!Number.isFinite(n)) return '—';
+    if (key === 'ec') return String(Math.round(n));
+    if (key === 'hr' || key === 'co2' || key === 'ppfd') return String(Math.round(n));
+    if (key === 'ph' || key === 'temp' || key === 'vol' || key === 'vpd') return (Math.round(n * 10) / 10).toFixed(1);
+    return String(n);
+  }
+
+  function chipHtml(label, value, unit, mod) {
+    const modCls = mod ? ' dash-estado-chip--' + mod : '';
+    return (
+      '<div class="dash-estado-chip' + modCls + '">' +
+      '<span class="dash-estado-chip-lab">' + esc(label) + '</span>' +
+      '<span class="dash-estado-chip-val">' + esc(value) + (unit ? ' <span class="dash-estado-chip-unit">' + esc(unit) + '</span>' : '') + '</span>' +
+      '</div>'
+    );
+  }
+
+  function refreshEstadoVivo() {
+    const sec = document.getElementById('dashEstadoVivo');
+    const body = document.getElementById('dashEstadoVivoBody');
+    const edadEl = document.getElementById('dashEstadoVivoEdad');
+    if (!sec || !body) return;
+    if (!operativaVisible()) {
+      sec.classList.add('setup-hidden');
+      return;
+    }
+    const um = state && state.ultimaMedicion ? state.ultimaMedicion : null;
+    if (!um || (!um.ec && !um.ph && !um.temp && !um.vol && !um.tempAire && !um.humSala)) {
+      sec.classList.add('setup-hidden');
+      return;
+    }
+    sec.classList.remove('setup-hidden');
+    if (edadEl) edadEl.textContent = edadMedicionTexto(um.fecha, um.hora);
+
+    const ec = numVal(um.ec);
+    const ph = numVal(um.ph);
+    const temp = numVal(um.temp);
+    const vol = numVal(um.vol);
+    const ta = numVal(um.tempAire);
+    const hr = numVal(um.humSala);
+    let vpd = numVal(um.vpd);
+    if (!Number.isFinite(vpd) && Number.isFinite(ta) && Number.isFinite(hr)) {
+      vpd = calcVpdKpaLocal(ta, hr);
+    }
+
+    let html = '<p class="dash-estado-vivo-meta">' + esc(um.fecha || '') + ' ' + esc(um.hora || '') + ' · datos guardados en este dispositivo</p>';
+    html += '<div class="dash-estado-grupo"><span class="dash-estado-grupo-tit">Depósito</span><div class="dash-estado-chips">';
+    if (Number.isFinite(ec) || um.ec) html += chipHtml('EC', fmtParam('ec', um.ec), 'µS/cm', tileMod('ec', ec));
+    if (Number.isFinite(ph) || um.ph) html += chipHtml('pH', fmtParam('ph', um.ph), '', tileMod('ph', ph));
+    if (Number.isFinite(temp) || um.temp) html += chipHtml('T° agua', fmtParam('temp', um.temp), '°C', tileMod('temp', temp));
+    if (Number.isFinite(vol) || um.vol) html += chipHtml('Volumen', fmtParam('vol', um.vol), 'L', tileMod('vol', vol));
+    html += '</div></div>';
+
+    const tieneSala =
+      Number.isFinite(ta) || Number.isFinite(hr) || Number.isFinite(vpd) ||
+      numVal(um.co2) || numVal(um.ppfd);
+    if (tieneSala) {
+      html += '<div class="dash-estado-grupo"><span class="dash-estado-grupo-tit">Sala (última medición con ambiente)</span><div class="dash-estado-chips">';
+      if (Number.isFinite(ta) || um.tempAire) html += chipHtml('T° aire', fmtParam('temp', um.tempAire), '°C', '');
+      if (Number.isFinite(hr) || um.humSala) html += chipHtml('HR', fmtParam('hr', um.humSala), '%', '');
+      if (Number.isFinite(vpd)) html += chipHtml('VPD', fmtParam('vpd', vpd), 'kPa', '');
+      if (numVal(um.co2)) html += chipHtml('CO₂', fmtParam('co2', um.co2), 'ppm', '');
+      if (numVal(um.ppfd)) html += chipHtml('PPFD', fmtParam('ppfd', um.ppfd), '', '');
+      html += '</div></div>';
+    } else {
+      html += '<p class="dash-estado-vivo-sala-hint">Sin datos de sala en la última medición — despliega «Sala» al medir si quieres HR/VPD.</p>';
+    }
+    body.innerHTML = html;
   }
 
   function hcCapturarCorreccionDesdeValores(ec, ph, vol) {
@@ -112,18 +267,6 @@
     }
   }
 
-  function parseMedFechaMs(str) {
-    if (!str) return NaN;
-    try {
-      const p = String(str).split('/');
-      if (p.length >= 3) {
-        const d = new Date(parseInt(p[2], 10), parseInt(p[1], 10) - 1, parseInt(p[0], 10));
-        return d.getTime();
-      }
-    } catch (_) {}
-    return NaN;
-  }
-
   function medicionesUltimosDias(dias) {
     const lim = Date.now() - dias * 86400000;
     const src = Array.isArray(state.mediciones) ? state.mediciones : [];
@@ -135,17 +278,9 @@
   }
 
   function promedioCampo(list, key) {
-    const vals = list
-      .map(function (m) {
-        return numVal(m[key]);
-      })
-      .filter(function (n) {
-        return Number.isFinite(n);
-      });
+    const vals = list.map(function (m) { return numVal(m[key]); }).filter(function (n) { return Number.isFinite(n); });
     if (!vals.length) return NaN;
-    return Math.round((vals.reduce(function (a, b) {
-      return a + b;
-    }, 0) / vals.length) * 10) / 10;
+    return Math.round((vals.reduce(function (a, b) { return a + b; }, 0) / vals.length) * 10) / 10;
   }
 
   function refreshResumenSemanal() {
@@ -159,51 +294,29 @@
     const sem = medicionesUltimosDias(7);
     sec.classList.remove('setup-hidden');
     if (!sem.length) {
-      body.innerHTML = '<p>Aún no hay mediciones esta semana. Usa la medición rápida arriba.</p>';
+      body.innerHTML = '<p>Sin mediciones en 7 días. Una medición rápida de EC/pH basta para empezar el seguimiento.</p>';
       return;
     }
     const ecAvg = promedioCampo(sem, 'ec');
     const phAvg = promedioCampo(sem, 'ph');
     const tempAvg = promedioCampo(sem, 'temp');
+    const hrAvg = promedioCampo(sem, 'humSala');
     const ecTrend =
       typeof getTrendDirection === 'function'
-        ? getTrendDirection(
-            sem
-              .slice(0, 6)
-              .map(function (m) {
-                return m.ec;
-              })
-              .reverse()
-          )
+        ? getTrendDirection(sem.slice(0, 6).map(function (m) { return m.ec; }).reverse())
         : 'flat';
     const trendLabel = ecTrend === 'up' ? '↑ sube' : ecTrend === 'down' ? '↓ baja' : '→ estable';
-    let recargaTxt = '—';
-    try {
-      if (typeof updateRecargaBar === 'function') {
-        /* bar updated elsewhere */
-      }
-      if (state.ultimaRecarga) {
-        recargaTxt = String(state.ultimaRecarga).slice(0, 10);
-      }
-    } catch (_) {}
-    const fase =
-      typeof getFaseCultivoActual === 'function'
-        ? getFaseCultivoActual()
-        : state.modo || 'vegetativo';
+    const recargaTxt = state.ultimaRecarga ? String(state.ultimaRecarga).slice(0, 10) : '—';
+    const fase = typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : state.modo || 'vegetativo';
     body.innerHTML =
       '<ul>' +
-      '<li><strong>' +
-      sem.length +
-      '</strong> mediciones (7 d)</li>' +
+      '<li><strong>' + sem.length + '</strong> mediciones en 7 días</li>' +
       (Number.isFinite(ecAvg) ? '<li>EC media: <strong>' + ecAvg + '</strong> µS/cm (' + trendLabel + ')</li>' : '') +
       (Number.isFinite(phAvg) ? '<li>pH media: <strong>' + phAvg + '</strong></li>' : '') +
       (Number.isFinite(tempAvg) ? '<li>T° agua media: <strong>' + tempAvg + '</strong> °C</li>' : '') +
-      '<li>Fase: <strong>' +
-      esc(fase) +
-      '</strong></li>' +
-      '<li>Última recarga: <strong>' +
-      esc(recargaTxt) +
-      '</strong></li>' +
+      (Number.isFinite(hrAvg) ? '<li>HR sala media: <strong>' + hrAvg + '</strong> %</li>' : '') +
+      '<li>Fase: <strong>' + esc(fase) + '</strong></li>' +
+      '<li>Última recarga: <strong>' + esc(recargaTxt) + '</strong></li>' +
       '</ul>';
   }
 
@@ -230,12 +343,18 @@
     const vol = numVal(um.vol);
     const volUse = Number.isFinite(vol) && vol > 0 ? vol : numVal(volDepositoSugerido());
     const corr = hcCapturarCorreccionDesdeValores(ec, ph, volUse);
+    sec.classList.remove('setup-hidden');
     if (!corr.ecHtml && !corr.phHtml) {
+      if (Number.isFinite(ec) || Number.isFinite(ph)) {
+        body.innerHTML =
+          '<p class="dash-que-anadir-ok">✅ Depósito dentro de objetivo según la última medición (' +
+          esc(um.fecha) + ' ' + esc(um.hora || '') + '). No hace falta corrección ahora.</p>';
+        return;
+      }
       sec.classList.add('setup-hidden');
       return;
     }
-    sec.classList.remove('setup-hidden');
-    let html = '<p class="dash-que-anadir-meta">Basado en medición del ' + esc(um.fecha) + ' ' + esc(um.hora || '') + '</p>';
+    let html = '<p class="dash-que-anadir-meta">Corrección sugerida · medición del ' + esc(um.fecha) + ' ' + esc(um.hora || '') + '</p>';
     if (corr.ecHtml) html += '<div class="dash-que-anadir-ec">' + corr.ecHtml + '</div>';
     if (corr.phHtml) html += '<div class="dash-que-anadir-ph">' + corr.phHtml + '</div>';
     body.innerHTML = html;
@@ -264,35 +383,6 @@
       (ref.nutrienteNombre ? ' (' + ref.nutrienteNombre + ')' : '');
   }
 
-  function hcBuildDeepLinkUrl(opts) {
-    opts = opts || {};
-    const base = location.origin + location.pathname;
-    const idx = state.torreActiva || 0;
-    let frag = 'hc=i:' + idx;
-    if (opts.nivel != null && opts.cesta != null) {
-      frag = 'hc=p:' + idx + ':' + opts.nivel + ':' + opts.cesta;
-    }
-    return base + '#' + frag;
-  }
-
-  function refreshQrAcceso() {
-    const sec = document.getElementById('dashQrAcceso');
-    const img = document.getElementById('dashQrImg');
-    const urlEl = document.getElementById('dashQrUrl');
-    if (!sec || !img || !urlEl) return;
-    if (!operativaVisible()) {
-      sec.classList.add('setup-hidden');
-      return;
-    }
-    sec.classList.remove('setup-hidden');
-    const url = hcBuildDeepLinkUrl();
-    urlEl.textContent = url;
-    img.alt = 'QR instalación activa';
-    img.src =
-      'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(url);
-    img.hidden = false;
-  }
-
   function refreshDashOperativaHub() {
     const hub = document.getElementById('dashOperativaHub');
     if (!hub) return;
@@ -302,31 +392,26 @@
     }
     hub.classList.remove('setup-hidden');
     prefillQuickMedir();
+    refreshEstadoVivo();
     refreshQueAnadir();
     refreshResumenSemanal();
     refreshRecargaRef();
-    refreshQrAcceso();
   }
 
   function buildPayloadFromQuickForm() {
     const ec = strVal(document.getElementById('dashQuickEC')?.value);
     const ph = strVal(document.getElementById('dashQuickPH')?.value);
     const temp = strVal(document.getElementById('dashQuickTemp')?.value);
-    let vol = strVal(document.getElementById('dashQuickVol')?.value);
-    const tempAire = numVal(document.getElementById('dashQuickTempAire')?.value);
-    const humSala = numVal(document.getElementById('dashQuickHumSala')?.value);
-    const co2 = numVal(document.getElementById('dashQuickCO2')?.value);
-    const ppfd = numVal(document.getElementById('dashQuickPPFD')?.value);
+    const vol = strVal(document.getElementById('dashQuickVol')?.value);
+    const tempAire = readSalaFieldForSave('dashQuickTempAire');
+    const humSala = readSalaFieldForSave('dashQuickHumSala');
+    const co2 = readSalaFieldForSave('dashQuickCO2');
+    const ppfd = readSalaFieldForSave('dashQuickPPFD');
     const notas = strVal(document.getElementById('dashQuickNotas')?.value);
     const vpd = calcVpdKpaLocal(tempAire, humSala);
-    const fase =
-      typeof getFaseCultivoActual === 'function'
-        ? getFaseCultivoActual()
-        : state.modo || '';
+    const fase = typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : state.modo || '';
 
-    if (!ec && !ph && !temp && !vol) {
-      return null;
-    }
+    if (!ec && !ph && !temp && !vol) return null;
 
     return {
       ec: ec,
@@ -373,36 +458,20 @@
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
-    const salaOpen = document.getElementById('dashQuickSalaDetails');
-    if (salaOpen && salaOpen.open) {
-      ['dashQuickTempAire', 'dashQuickHumSala', 'dashQuickCO2', 'dashQuickPPFD'].forEach(function (id) {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-    }
+    salaFieldIds.forEach(function (id) {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    resetSalaTouchedState();
     if (hint) {
       const sala =
         payload.tempAire !== '' || payload.humSala !== '' || payload.co2 !== '' || payload.ppfd !== ''
           ? ' · sala incluida'
           : ' · solo depósito';
-      hint.textContent = 'Guardado' + sala + '. Revisa «Qué añadir ahora» si hace falta corregir.';
+      hint.textContent = 'Guardado' + sala + '. Estado y corrección actualizados arriba.';
       hint.classList.add('is-ok');
     }
     refreshDashOperativaHub();
-  }
-
-  function hcCopiarEnlaceQr() {
-    const url = hcBuildDeepLinkUrl();
-    const done = function () {
-      if (typeof showToast === 'function') showToast('Enlace copiado');
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(done).catch(function () {
-        if (typeof showToast === 'function') showToast(url, false, { durationMs: 6000 });
-      });
-      return;
-    }
-    if (typeof showToast === 'function') showToast(url, false, { durationMs: 6000 });
   }
 
   function hcGuardarRecargaReferencia(recargaData) {
@@ -425,38 +494,9 @@
     } catch (_) {}
   }
 
-  function hcProcesarDeepLinkHash() {
-    const raw = String(location.hash || '').replace(/^#/, '');
-    if (!raw || raw.indexOf('hc=') !== 0) return;
-    const spec = raw.slice(3);
-    const parts = spec.split(':');
-    if (parts[0] === 'i' && parts.length >= 2) {
-      const idx = parseInt(parts[1], 10);
-      if (Number.isFinite(idx) && typeof cambiarTorreActiva === 'function') {
-        cambiarTorreActiva(idx);
-        goTab('inicio');
-        if (typeof showToast === 'function') showToast('Instalación abierta desde enlace');
-      }
-      return;
-    }
-    if (parts[0] === 'p' && parts.length >= 4) {
-      const idx = parseInt(parts[1], 10);
-      const n = parseInt(parts[2], 10);
-      const c = parseInt(parts[3], 10);
-      if (Number.isFinite(idx) && typeof cambiarTorreActiva === 'function') cambiarTorreActiva(idx);
-      goTab('sistema');
-      if (typeof showToast === 'function') {
-        showToast('Instalación abierta · maceta N' + (n + 1) + ' C' + (c + 1));
-      }
-    }
-  }
-
   window.refreshDashOperativaHub = refreshDashOperativaHub;
   window.hcGuardarMedicionRapida = hcGuardarMedicionRapida;
-  window.hcCopiarEnlaceQr = hcCopiarEnlaceQr;
   window.hcGuardarRecargaReferencia = hcGuardarRecargaReferencia;
-  window.hcProcesarDeepLinkHash = hcProcesarDeepLinkHash;
-  window.hcBuildDeepLinkUrl = hcBuildDeepLinkUrl;
 
   document.addEventListener('DOMContentLoaded', function () {
     const quickEc = document.getElementById('dashQuickEC');
@@ -465,6 +505,18 @@
         if (e.key !== 'Enter') return;
         e.preventDefault();
         hcGuardarMedicionRapida();
+      });
+    }
+    salaFieldIds.forEach(function (id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', function () { markSalaTouched(id); });
+      el.addEventListener('change', function () { markSalaTouched(id); });
+    });
+    const salaDetails = document.getElementById('dashQuickSalaDetails');
+    if (salaDetails) {
+      salaDetails.addEventListener('toggle', function () {
+        if (salaDetails.open) applySalaHintsFromUltima();
       });
     }
   });

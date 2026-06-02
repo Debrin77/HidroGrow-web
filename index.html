@@ -295,6 +295,15 @@
       </section>
 
       <section id="dashOperativaHub" class="dash-operativa-hub setup-hidden" aria-label="Operativa diaria">
+
+        <section id="dashEstadoVivo" class="dash-estado-vivo setup-hidden" aria-label="Últimos parámetros registrados">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">Estado del sistema</span>
+            <span id="dashEstadoVivoEdad" class="dash-operativa-block-tag">—</span>
+          </div>
+          <div id="dashEstadoVivoBody" class="dash-estado-vivo-body"></div>
+        </section>
+
         <section id="dashQueAnadir" class="dash-que-anadir setup-hidden" aria-live="polite">
           <div class="dash-operativa-block-head">
             <span class="dash-operativa-block-title">Qué añadir ahora</span>
@@ -308,7 +317,7 @@
           <div class="dash-operativa-block-head">
             <span class="dash-operativa-block-title" id="dashQuickMedirTitle">Medición rápida</span>
           </div>
-          <p class="dash-quick-lead">Guarda <strong>depósito</strong> (EC, pH…) para calcular dosis. La <strong>sala</strong> es opcional — despliega si quieres HR, CO₂, etc.</p>
+          <p class="dash-quick-lead">Anota <strong>depósito</strong> (EC y pH) en segundos. Tras guardar, arriba verás si hay que corregir dosis.</p>
           <div class="dash-quick-grid" role="group" aria-label="Parámetros del depósito">
             <label class="dash-quick-field">
               <span class="dash-quick-label">EC <span class="dash-quick-unit">µS/cm</span></span>
@@ -329,7 +338,7 @@
           </div>
           <details class="dash-quick-sala-details" id="dashQuickSalaDetails">
             <summary class="dash-quick-sala-sum">Sala de cultivo (opcional)</summary>
-            <p class="dash-quick-sala-hint">Si no rellenas estos campos, la medición guarda solo depósito. VPD se calcula solo si indicas T° aire y humedad.</p>
+            <p class="dash-quick-sala-hint">Al abrir, se rellenan T° aire y HR con la última medición de sala (referencia). <strong>Solo se guardan si los editas</strong> — si solo miden depósito, déjalos como están o no abras este bloque.</p>
             <div class="dash-quick-grid dash-quick-grid--sala" role="group" aria-label="Parámetros de sala">
               <label class="dash-quick-field">
                 <span class="dash-quick-label">T° aire <span class="dash-quick-unit">°C</span></span>
@@ -372,21 +381,7 @@
             <span class="dash-operativa-block-title">Última recarga de referencia</span>
           </div>
           <p id="dashRecargaRefBody" class="dash-recarga-ref-body"></p>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="goTab('mediciones'); try{ if(typeof abrirChecklist==='function') abrirChecklist('recarga'); }catch(_){}">Repetir recarga</button>
-        </section>
-
-        <section id="dashQrAcceso" class="dash-qr-acceso setup-hidden" aria-label="Acceso rápido QR">
-          <div class="dash-operativa-block-head">
-            <span class="dash-operativa-block-title">QR de acceso</span>
-          </div>
-          <p class="dash-qr-lead">Escanea en la sala para abrir esta instalación en el móvil (misma app / URL).</p>
-          <div class="dash-qr-row">
-            <img id="dashQrImg" class="dash-qr-img" width="160" height="160" alt="" hidden>
-            <div class="dash-qr-meta">
-              <code id="dashQrUrl" class="dash-qr-url"></code>
-              <button type="button" class="btn btn-secondary btn-sm" onclick="hcCopiarEnlaceQr()">Copiar enlace</button>
-            </div>
-          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="goTab('mediciones'); try{ if(typeof abrirChecklist==='function') abrirChecklist('recarga'); }catch(_){}">Abrir checklist recarga</button>
         </section>
       </section>
 
