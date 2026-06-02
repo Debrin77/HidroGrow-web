@@ -2651,10 +2651,13 @@
         </p>
         <div id="ayudaEstadoInstalacion" class="ayuda-estado-instal setup-hidden" role="status" aria-live="polite"></div>
         <div class="info-banner" style="margin-top:0;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
-          <span>¿Probando en móvil? Puedes reabrir la guía de bienvenida.</span>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="resetBienvenidaParaPruebas()">
-            Reabrir bienvenida
-          </button>
+          <span>¿Probando en móvil? Puedes reabrir la guía de bienvenida o descargar el <strong>diagrama de flujo completo</strong> (PDF).</span>
+          <span style="display:flex;gap:8px;flex-wrap:wrap">
+            <a class="btn btn-secondary btn-sm" href="docs/HidroGrow-diagrama-flujo-completo.pdf" download="HidroGrow-diagrama-flujo-completo.pdf">Descargar PDF flujo</a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="resetBienvenidaParaPruebas()">
+              Reabrir bienvenida
+            </button>
+          </span>
         </div>
         <nav class="ayuda-toc" aria-label="En esta página">
           <a href="#ayuda-esquema">Esquema</a>

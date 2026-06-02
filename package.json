@@ -12,6 +12,7 @@
     "cap:open:android": "npx cap open android",
     "cap:open:ios": "npx cap open ios",
     "rpi:memoria": "node scripts/generate-registro-pdf.js && node scripts/generate-registro-pdf-imprimible.js",
+    "docs:flujo-pdf": "node scripts/generate-app-flow-pdf.js",
     "rpi:deposito": "node scripts/prepare-rpi-deposit.mjs",
     "rpi:serve": "npx --yes serve . -l 5173",
     "rpi:capturas-check": "node scripts/rpi-check-capturas.mjs",

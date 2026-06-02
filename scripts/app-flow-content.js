@@ -1,0 +1,76 @@
+/**
+ * Contenido del diagrama de flujo HidroGrow (DWC/RDWC) — compartido por generate-app-flow-pdf.js
+ */
+module.exports = {
+  meta: {
+    app: 'HidroGrow',
+    version: '1.0',
+    fecha: '2026-05-31',
+    subtitulo: 'Cannabis hidropónico en casa · DWC y RDWC · España',
+    storageKey: 'hidrogrow_v2',
+  },
+  arranque: [
+    'Primera apertura → Bienvenida (carrusel funciones, legal plegable)',
+    'Cerrar bienvenida → Coach barra de pestañas (una vez)',
+    'Entendido coach → Asistente de configuración (si instalación vacía)',
+    'Alternativa: Inicio sin forzar asistente · reabrir bienvenida desde Ayuda',
+  ],
+  premium: [
+    'P0 · Tipo DWC o RDWC',
+    'P1 · Objetivo y legalidad',
+    'P2 · Entorno interior / exterior',
+    'P3 · Espacio y equipamiento (carpa, LED, extractor, catálogo ES)',
+    'P4 · Clima, luz y fotoperiodo (VPD orientativo)',
+    'P5 · Genética: SOG/SCROG · foto/auto',
+    'P6 · Origen: semilla · clon · madre (+ tienda semillas opcional)',
+    'P7 · Puente al montaje',
+  ],
+  setupTecnico: [
+    'S1 · Tu sistema — geometría depósito y cubos',
+    'S2 · Equipamiento hidráulico (bomba aire, difusores)',
+    'S3 · Agua y fijación en cestas',
+    'S4 · Nutriente y dosis orientativas',
+    'S5 · Meteo y preferencias (municipio)',
+    'S6 · Variedades a cultivar',
+    'S7 · Una o varias instalaciones · resumen y guardar',
+  ],
+  lifecycle: [
+    { id: 'config', label: '1 · Configurar', desc: 'Asistente guardado · nutriente · tipo hidro' },
+    { id: 'montaje', label: '2 · Montaje sala', desc: 'Checklist puesta en marcha (Sala)' },
+    { id: 'cultivo', label: '3 · Cultivo matriz', desc: 'Variedad + fecha trasplante por cesta' },
+    { id: 'deposito', label: '4 · Primer llenado', desc: 'Checklist depósito · recarga registrada' },
+    { id: 'operativa', label: '✓ Operativa diaria', desc: 'Hub Inicio · Medir · Historial · Calendario' },
+  ],
+  germinacion: [
+    'F1 · Germinador (papel o domo)',
+    'F2 · Radícula 5–10 mm',
+    'F3 · Cubo lana 4×4 (pH ~5,5)',
+    'F4 · Domo + luz suave 18/6',
+    'F5 · Net pot + arcilla',
+    'F6 · Traslado al cubo DWC/RDWC',
+  ],
+  origenRamas: [
+    { origen: 'Semilla', flujo: 'Hub Germinación en Inicio (6 fases) → traslado matriz → lifecycle' },
+    { origen: 'Clon / esqueje', flujo: 'Checklist prep → corte → domo 10 d → net pot → cubo' },
+    { origen: 'Madre', flujo: '18/6 permanente · sesiones de esqueje en calendario' },
+  ],
+  tabs: [
+    { tab: 'Inicio', uso: 'Progreso instalación · germinación · resumen EC/pH · accesos rápidos' },
+    { tab: 'Medir', uso: 'Registro EC/pH/T°/vol · asistente · PRO · IoT · checklists recarga' },
+    { tab: 'Sala', uso: 'Carpa, LED, clima sala, checklist montaje' },
+    { tab: 'Sistema', uso: 'Matriz cubos · diagrama DWC/RDWC · asignar cultivo' },
+    { tab: 'Calendario', uso: 'Mediciones, recargas, esquejes, recordatorios' },
+    { tab: 'Riego', uso: 'Plan y contexto de riego' },
+    { tab: 'Meteo', uso: 'AEMET / alertas · contexto exterior' },
+    { tab: 'Historial', uso: 'Gráficos EC/pH/VPD · seguimiento vs teórico' },
+    { tab: 'Consejos', uso: 'Guías por tema · flujo app · genéticas · equip Top 10' },
+    { tab: 'Ayuda', uso: 'FAQ · exportar · reabrir bienvenida' },
+  ],
+  rutinaDiaria: [
+    'Abrir Medir → lectura o IoT → comparar rangos por fase',
+    'Tareas del día (checklist automático si EC/pH guardados)',
+    'Revisar Inicio si hay alertas o germinación activa',
+    'Historial / Calendario según necesidad',
+    'Recarga depósito → checklist recarga en Medir o Sala',
+  ],
+};
