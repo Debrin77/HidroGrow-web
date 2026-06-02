@@ -30,16 +30,7 @@
       typeof tipoInstalacionNormalizado === 'function'
         ? tipoInstalacionNormalizado(state.configTorre)
         : 'dwc';
-    const vacioLbl =
-      _ti === 'nft'
-        ? 'Hueco vacÃ­o'
-        : _ti === 'dwc'
-          ? 'Maceta vacÃ­a'
-          : _ti === 'rdwc'
-            ? 'MÃ³dulo vacÃ­o'
-            : _ti === 'srf'
-              ? 'Hueco vacÃ­o'
-              : 'Cesta vacÃ­a';
+    const vacioLbl = _ti === 'rdwc' ? 'Módulo vacío' : 'Maceta vacía';
     const variedad = dat.variedad || vacioLbl;
     const dias = dat.fecha ? Math.max(0, Math.floor((Date.now() - new Date(dat.fecha)) / 86400000)) : null;
     const fotos = (dat.fotos || []).length;

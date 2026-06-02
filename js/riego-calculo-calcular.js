@@ -75,17 +75,10 @@ async function calcularRiego(opts = {}) {
   try {
     // ── Obtener datos Open-Meteo ──────────────────────────────────────────
     const tipoRiego = tipoInstalacionNormalizado(state.configTorre || {});
-    const objetivoTorre =
-      tipoRiego === 'torre' && typeof torreGetObjetivoCultivo === 'function'
-        ? torreGetObjetivoCultivo(state.configTorre || {})
-        : 'final';
-    const multObjetivoTorre =
-      tipoRiego !== 'torre'
-        ? 1
-        : (typeof torreObjetivoMultiplicadorDemanda === 'function'
-            ? torreObjetivoMultiplicadorDemanda(state.configTorre || {}, objetivoTorre)
-            : (objetivoTorre === 'baby' ? 0.92 : 1.06));
-    const idx = (tipoRiego === 'nft' || tipoRiego === 'dwc' || tipoRiego === 'rdwc') ? 0 : (diaRiego === 'manana' ? 1 : 0);
+    const esDwcRiego = tipoRiego === 'dwc';
+    const esRdwcRiego = tipoRiego === 'rdwc';
+    const multObjetivoTorre = 1;
+    const idx = 0;
     const offsetHoras = idx * 24;
 
     /* ≥3 días: cubre mañana completa a cualquier hora; evita que "hoy"/"mañana" compartan el mismo trozo horario cuando la serie no empieza a medianoche. */
@@ -339,53 +332,14 @@ async function calcularRiego(opts = {}) {
     if (sensRiego.mult !== 1) {
       demandaDia = Math.max(0.48, Math.min(1.58, demandaDia * sensRiego.mult));
     }
-    if (tipoRiego === 'torre') {
-      demandaDia = Math.max(0.48, Math.min(1.58, demandaDia * multObjetivoTorre));
-      if (typeof riegoMultDemandaFaseFenologicaTorre === 'function') {
-        demandaDia *= riegoMultDemandaFaseFenologicaTorre();
-        demandaDia = Math.max(0.48, Math.min(1.58, demandaDia));
-      }
-    }
-
-    if (!esInterior && tipoRiego === 'torre' && mcNear) {
-      const refH = meteoclimaticRiegoModeloHoraEnDia(times, dayHourIdx, tempHArr, rhArr, temp1315, hum1315);
-      const anaD = meteoclimaticFactorVpdDesdeMc(
-        mcNear,
-        refH.t,
-        refH.rh,
-        dTempPlanta,
-        MC_RIEGO_FAC_DIA_MIN,
-        MC_RIEGO_FAC_DIA_MAX
-      );
-      if (anaD) {
-        factorMcDiaRiego = anaD.factor;
-        demandaDia *= factorMcDiaRiego;
-        demandaDia = Math.max(0.48, Math.min(1.58, demandaDia));
-        mcRiegoLineaAjuste +=
-          '<br><span class="riego-clima-mc-ajuste">⚖️ <strong>Ajuste conservador Meteoclimatic (día):</strong> discrepancia fuerte (≥' +
-          MC_RIEGO_DIF_T_C + ' °C y/o ≥' + MC_RIEGO_DIF_RH_PP + ' pp HR) vs hora del modelo en el día elegido · lectura &lt;45 min · demanda ×' +
-          (Math.round(factorMcDiaRiego * 1000) / 1000) + ' <span class="riego-clima-mc-ajuste-sub">(tope ' + MC_RIEGO_FAC_DIA_MIN + '–' + MC_RIEGO_FAC_DIA_MAX + ' sobre VPD)</span>.</span>';
-      }
-    }
-
-    const esNftRiego = tipoRiego === 'nft';
-    const esDwcRiego = tipoRiego === 'dwc';
-    const esRdwcRiego = tipoRiego === 'rdwc';
-    const esSrfRiego = tipoRiego === 'srf';
-    if (esNftRiego || esDwcRiego || esRdwcRiego || esSrfRiego) {
-      const panelNft = document.getElementById('riegoNftPanel');
+    if (esDwcRiego || esRdwcRiego) {
       const panelDwc = document.getElementById('riegoDwcPanel');
       const panelRdwc = document.getElementById('riegoRdwcPanel');
-      const panelSrf = document.getElementById('riegoSrfPanel');
-      const climaNft = document.getElementById('riegoClimaUsadoNft');
       const climaDwc = document.getElementById('riegoClimaUsadoDwc');
       const climaRdwc = document.getElementById('riegoClimaUsadoRdwc');
-      const climaSrf = document.getElementById('riegoClimaUsadoSrf');
       const blockTorre = document.getElementById('riegoTorreResultBlock');
-      if (panelNft) panelNft.classList.toggle('setup-hidden', !esNftRiego);
       if (panelDwc) panelDwc.classList.toggle('setup-hidden', !esDwcRiego);
       if (panelRdwc) panelRdwc.classList.toggle('setup-hidden', !esRdwcRiego);
-      if (panelSrf) panelSrf.classList.toggle('setup-hidden', !esSrfRiego);
       if (blockTorre) blockTorre.classList.add('setup-hidden');
 
       const precipMmN = Math.round((Number(daily.precipitation_sum?.[idx]) || 0) * 10) / 10;
@@ -412,10 +366,6 @@ async function calcularRiego(opts = {}) {
           : '') +
         uvTipNft +
         (lineaMcNft || '');
-      if (esNftRiego && climaNft) {
-        climaNft.innerHTML = bloqueClima;
-        climaNft.classList.remove('setup-hidden');
-      }
       if (esDwcRiego && climaDwc) {
         climaDwc.innerHTML = bloqueClima;
         climaDwc.classList.remove('setup-hidden');
@@ -424,11 +374,6 @@ async function calcularRiego(opts = {}) {
         climaRdwc.innerHTML = bloqueClima;
         climaRdwc.classList.remove('setup-hidden');
       }
-      if (esSrfRiego && climaSrf) {
-        climaSrf.innerHTML = bloqueClima;
-        climaSrf.classList.remove('setup-hidden');
-      }
-
       ['resMinON', 'resMinOFF', 'resCiclos', 'resTotalON', 'resEspaciado', 'resDutyCiclo', 'resMedioON', 'resMedioOFF', 'resMedioCiclos', 'resMedioTotal', 'resMedioDutyCiclo', 'resNocON', 'resNocOFF', 'resNocCiclos', 'resNocTotal', 'resNocEspaciado', 'resNocDuty'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.textContent = '—';
@@ -440,7 +385,6 @@ async function calcularRiego(opts = {}) {
       }
 
       state.ultimoRiego = {
-        nftContinuo24h: esNftRiego,
         dwcOxigenacion24h: esDwcRiego,
         fecha: new Date().toLocaleDateString('es-ES'),
         vpd,
@@ -452,13 +396,9 @@ async function calcularRiego(opts = {}) {
         const pieMeteo = refetchMeteo
           ? '\n\n🌐 Previsión meteorológica pedida a la API en esta consulta (' + new Date().toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' }) + ').'
           : '\n\n🌐 Meteo: puede usarse caché reciente (~1 min). Pulsa «Calcular riego ahora» para traer datos nuevos del modelo.';
-        elHorarioHint.textContent = (esNftRiego
-          ? '🪴 NFT: riego continuo — no hay bloque de intensidad solar por pulsos; el clima sirve de referencia para vigilar estrés.'
-          : esRdwcRiego
-            ? '🔁 RDWC: recirculación y aireación continuas — no es riego por goteo ni por impulsos como en torre; el clima solo orienta el follaje.'
-            : esSrfRiego
-              ? '🛶 SRF: estanque común con aireación (o Kratky) — no hay riego por pulsos como en torre; el clima orienta toldo y estrés del follaje.'
-              : '💧 DWC: oxigenación continua — no hay bloque de intensidad solar por pulsos como en torre; el clima resume tu ubicación.') + pieMeteo;
+        elHorarioHint.textContent = (esRdwcRiego
+          ? '🔁 RDWC: recirculación y aireación continuas — el clima orienta toldo y estrés del follaje.'
+          : '💧 DWC: oxigenación continua — el clima resume tu ubicación para vigilar estrés.') + pieMeteo;
       }
       try {
         actualizarRiegoToldoRecoUI(esInterior, tempMax, uvMax, edadSem);
@@ -468,16 +408,14 @@ async function calcularRiego(opts = {}) {
       return;
     }
 
-    const panelNftT = document.getElementById('riegoNftPanel');
-    const panelDwcT = document.getElementById('riegoDwcPanel');
-    const panelRdwcT = document.getElementById('riegoRdwcPanel');
-    const panelSrfT = document.getElementById('riegoSrfPanel');
     const blockTorreT = document.getElementById('riegoTorreResultBlock');
-    if (panelNftT) panelNftT.classList.add('setup-hidden');
-    if (panelDwcT) panelDwcT.classList.add('setup-hidden');
-    if (panelRdwcT) panelRdwcT.classList.add('setup-hidden');
-    if (panelSrfT) panelSrfT.classList.add('setup-hidden');
-    if (blockTorreT) blockTorreT.classList.remove('setup-hidden');
+    if (blockTorreT) blockTorreT.classList.add('setup-hidden');
+    if (elHorarioHint) {
+      elHorarioHint.textContent = 'Solo DWC y RDWC: usa el panel de clima de arriba.';
+    }
+    document.getElementById('riegoLoader').classList.add('setup-hidden');
+    document.getElementById('riegoResultado').classList.remove('setup-hidden');
+    return;
 
     const ciclo = riegoMinutosDesdeDemanda(
       demandaDia, nPlantas, kcMedio, sustrato, esInterior
@@ -532,7 +470,7 @@ async function calcularRiego(opts = {}) {
     if (sensRiego.mult !== 1) {
       demandaMed = Math.max(0.48, Math.min(1.58, demandaMed * sensRiego.mult));
     }
-    if (tipoRiego === 'torre') {
+    if (esDwcRiego) {
       demandaMed = Math.max(0.48, Math.min(1.58, demandaMed * multObjetivoTorre));
       if (typeof riegoMultDemandaFaseFenologicaTorre === 'function') {
         demandaMed *= riegoMultDemandaFaseFenologicaTorre();
@@ -540,7 +478,7 @@ async function calcularRiego(opts = {}) {
       }
     }
 
-    if (!esInterior && tipoRiego === 'torre' && factorMcDiaRiego !== 1) {
+    if (!esInterior && esDwcRiego && factorMcDiaRiego !== 1) {
       demandaMed *= factorMcDiaRiego;
       demandaMed = Math.max(0.48, Math.min(1.58, demandaMed));
     }
@@ -613,14 +551,14 @@ async function calcularRiego(opts = {}) {
     const fNocTempAgua = riegoFactorDemandaNocPorTempAgua(tempAguaNocUse);
     const fNocDifusor = riegoFactorDemandaNocPorDifusor(cfgRiegoNoc.equipamiento);
     demandaNoc *= fNocTempAgua * fNocDifusor;
-    if (tipoRiego === 'torre') {
+    if (esDwcRiego) {
       demandaNoc *= multObjetivoTorre;
     }
     demandaNoc = esInterior
       ? Math.max(0.38, Math.min(1.02, demandaNoc))
       : Math.max(0.38, Math.min(1.12, demandaNoc));
 
-    if (!esInterior && tipoRiego === 'torre' && mcNear) {
+    if (!esInterior && esDwcRiego && mcNear) {
       const anaN = meteoclimaticFactorNocDesdeMc(mcNear, tempNocUse, rhNocUse, dTempPlanta, 0.38);
       if (anaN) {
         factorMcNocRiego = anaN.factor;
@@ -839,10 +777,7 @@ async function calcularRiego(opts = {}) {
       : '<br>🌙 Nocturno (21–07 h): ~' + tempNocTxt + ' °C · ' + rhNocTxt + '% HR · VPD ~' + vpdNocTxt + ' kPa · viento máx. horario ~' + windNocTxt + ' km/h · Σ ET₀ noche ~' + et0NocTxt + ' mm · demanda rel. ~' + demNocTxt + '. · ' + facNocAguaDifTxt;
     const lineaMcRiego = meteoclimaticFormatLineaHtml(mcNear) + (mcRiegoLineaAjuste || '');
     let lineaEdadKc = '';
-    if (
-      tipoRiego === 'torre' &&
-      typeof riegoResumenEdadKcTorre === 'function'
-    ) {
+    if (esDwcRiego && typeof riegoResumenEdadKcTorre === 'function') {
       const rk = riegoResumenEdadKcTorre(edadSem);
       if (rk) {
         const rangoD =
@@ -873,7 +808,7 @@ async function calcularRiego(opts = {}) {
         }
       }
     }
-    if (toldoAct && adjToldo.sombraLabel && tipoRiego === 'torre') {
+    if (toldoAct && adjToldo.sombraLabel && esDwcRiego) {
       lineaEdadKc +=
         (lineaEdadKc ? '' : '<br>') +
         '<span class="riego-clima-meta-line">☂️ Sombra en cálculo: <strong>' +
@@ -925,8 +860,8 @@ async function calcularRiego(opts = {}) {
       fecha: new Date().toLocaleDateString('es-ES'),
       mcRiegoFactorDia: factorMcDiaRiego !== 1 ? Math.round(factorMcDiaRiego * 1000) / 1000 : null,
       mcRiegoFactorNoc: factorMcNocRiego !== 1 ? Math.round(factorMcNocRiego * 1000) / 1000 : null,
-      objetivoTorreCultivo: tipoRiego === 'torre' ? objetivoTorre : null,
-      multObjetivoTorre: tipoRiego === 'torre' ? Math.round(multObjetivoTorre * 100) / 100 : null,
+      objetivoTorreCultivo: null,
+      multObjetivoTorre: null,
       tipoSombra: adjToldo.tipoSombra || null,
       sombraPct: adjToldo.sombraPct || 0,
       sombraLabel: adjToldo.sombraLabel || null,

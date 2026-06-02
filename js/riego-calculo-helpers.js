@@ -494,10 +494,10 @@ function actualizarRiegoToldoCopy(esModoClima) {
   }
 }
 
-/** Controles de riego: torre (cálculo) vs NFT/DWC (solo clima de referencia). */
+/** Controles de riego: DWC/RDWC muestran clima de referencia (sin cálculo por niveles). */
 function actualizarVistaRiegoPorTipoInstalacion() {
   const tipo = tipoInstalacionNormalizado(state.configTorre || {});
-  const esModoClima = tipo === 'nft' || tipo === 'dwc' || tipo === 'rdwc' || tipo === 'srf';
+  const esModoClima = tipo === 'dwc' || tipo === 'rdwc';
   const torreControls = document.getElementById('riegoTorreSoloWrap');
   const btnCalc = document.getElementById('btnCalcRiego');
   const titleEl = document.getElementById('riegoSectionTitle');
@@ -515,20 +515,12 @@ function actualizarVistaRiegoPorTipoInstalacion() {
   }
 
   if (titleEl) {
-    if (tipo === 'nft') {
-      titleEl.innerHTML =
-        '🪴 Riego <span class="accent">NFT</span> <span class="riego-section-title-sub">· clima de referencia</span>';
-    } else if (tipo === 'dwc') {
-      titleEl.innerHTML =
-        '🫧 Riego <span class="accent">DWC</span> <span class="riego-section-title-sub">· clima de referencia</span>';
-    } else if (tipo === 'rdwc') {
+    if (tipo === 'rdwc') {
       titleEl.innerHTML =
         '🔁 Riego <span class="accent">RDWC</span> <span class="riego-section-title-sub">· clima de referencia</span>';
-    } else if (tipo === 'srf') {
-      titleEl.innerHTML =
-        '🛶 Riego <span class="accent">SRF</span> <span class="riego-section-title-sub">· clima de referencia</span>';
     } else {
-      titleEl.innerHTML = '💧 Cálculo de <span class="accent">Riego</span>';
+      titleEl.innerHTML =
+        '🫧 Riego <span class="accent">DWC</span> <span class="riego-section-title-sub">· clima de referencia</span>';
     }
   }
   if (diaGrp) {

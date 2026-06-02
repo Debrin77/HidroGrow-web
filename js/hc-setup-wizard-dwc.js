@@ -709,24 +709,6 @@ function litrosDepositoParaChecklist(cfg) {
     const cap = getDwcCapacidadLitrosDesdeConfig(cfg);
     if (cap != null && cap >= 1 && cap <= 800) return cap;
   }
-  if (tipoNorm === 'srf') {
-    if (typeof srfVolumenSeguroLitrosDesdeConfig === 'function') {
-      const segS = srfVolumenSeguroLitrosDesdeConfig(cfg);
-      if (segS != null && segS >= 1 && segS <= 5000) return segS;
-    }
-    if (typeof srfCapacidadLitrosDesdeConfig === 'function') {
-      const capS = srfCapacidadLitrosDesdeConfig(cfg);
-      if (capS != null && capS >= 1 && capS <= 5000) return capS;
-    }
-  }
-  if (tipoNorm === 'nft') {
-    if (typeof nftVolumenDosificacionLitrosDesdeConfig === 'function') {
-      const d = nftVolumenDosificacionLitrosDesdeConfig(cfg);
-      if (d != null && d >= 1 && d <= 600) return d;
-    }
-    const v = Number(cfg.volDeposito);
-    if (Number.isFinite(v) && v >= 1 && v <= 600) return Math.round(v * 10) / 10;
-  }
   return null;
 }
 
@@ -2090,7 +2072,7 @@ function initTorreMatrizVacia(nFilas, nCols) {
 
 /** Redimensiona la matriz DWC (filas × columnas de macetas) conservando datos donde haya hueco. */
 function redimensionarMatrizTorreDwcPreservando(cfg, nFilas, nCols) {
-  if (!cfg || (cfg.tipoInstalacion !== 'dwc' && cfg.tipoInstalacion !== 'srf')) return;
+  if (!cfg || cfg.tipoInstalacion !== 'dwc') return;
   const nf = Math.max(1, Math.min(DWC_REJILLA_MAX_FILAS, parseInt(String(nFilas), 10) || 1));
   const nc = Math.max(1, Math.min(DWC_REJILLA_MAX_COLS, parseInt(String(nCols), 10) || 1));
   const empty = () => ({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] });

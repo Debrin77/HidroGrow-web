@@ -86,7 +86,7 @@
 
   function snapshotLight() {
     if (typeof HC_DIAG === 'undefined') return;
-    ['dwcScada', 'rdwcScada', 'nftScada', 'srfScada', 'torreScada', 'nft', 'torre'].forEach((k) => {
+    ['dwcScada', 'rdwcScada'].forEach((k) => {
       if (HC_DIAG[k] && !_lightSnapshots[k]) {
         _lightSnapshots[k] = Object.assign({}, HC_DIAG[k]);
       }
@@ -123,14 +123,8 @@
       ) {
         renderTorre();
       }
-      if (typeof updateNftSetupPreview === 'function' && typeof setupTipoInstalacion !== 'undefined') {
-        if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-        if (setupTipoInstalacion === 'rdwc' && typeof refreshRdwcSetupPreview === 'function') {
-          refreshRdwcSetupPreview();
-        }
-        if (setupTipoInstalacion === 'srf' && typeof updateTorreBuilder === 'function') {
-          updateTorreBuilder();
-        }
+      if (typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion === 'rdwc' && typeof refreshRdwcSetupPreview === 'function') {
+        refreshRdwcSetupPreview();
       }
     } catch (_) {}
   }

@@ -135,10 +135,8 @@ function hcSetupHayCultivosEnAsistente(draft) {
 function hcObjetivoCultivoDesdeConfig(cfg, tipo) {
   cfg = cfg || {};
   const t = String(tipo || cfg.tipoInstalacion || '').toLowerCase();
-  if (t === 'srf' && cfg.srfObjetivoCultivo) return srfNormalizeObjetivoCultivo(cfg.srfObjetivoCultivo);
-  if (t === 'dwc' && typeof dwcGetObjetivoCultivo === 'function') return dwcGetObjetivoCultivo(cfg);
-  if (t === 'nft' && cfg.nftObjetivoCultivo && typeof nftNormalizeObjetivoCultivo === 'function') {
-    return nftNormalizeObjetivoCultivo(cfg.nftObjetivoCultivo);
+  if (t === 'rdwc' || t === 'dwc') {
+    if (typeof dwcGetObjetivoCultivo === 'function') return dwcGetObjetivoCultivo(cfg);
   }
   if (cfg.objetivoCultivo) return hcCultivoObjetivoEsBaby(cfg.objetivoCultivo) ? 'baby' : 'final';
   return 'final';
@@ -165,11 +163,8 @@ function hcLabelUbicacionCultivo(nivel, cesta, cfg) {
       : String(c.tipoInstalacion || 'dwc').toLowerCase();
   const n = Number(nivel) + 1;
   const ci = Number(cesta) + 1;
-  if (tipo === 'nft') return 'Hueco ' + n + '-' + ci;
-  if (tipo === 'dwc') return 'Maceta ' + n + '-' + ci;
   if (tipo === 'rdwc') return 'Módulo ' + n + '-' + ci;
-  if (tipo === 'srf') return 'Planta ' + n + '-' + ci;
-  return 'Cesta N' + n + ' C' + ci;
+  return 'Maceta ' + n + '-' + ci;
 }
 
 function hcFasePlantaLabelTexto(cultivo, cesta) {

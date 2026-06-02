@@ -138,25 +138,20 @@ function instalacionEsUbicacionInterior(cfg) {
 function instalacionPlantillaSinCapacidadDepositoUsuario(cfg) {
   const c = cfg || state.configTorre || {};
   if (!c.hcPlantillaAutogenerada) return false;
-  const tipo = c.tipoInstalacion || 'torre';
-  if (tipo === 'dwc') return false;
+  const tipo =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(c) : 'dwc';
+  if (tipo === 'dwc' || tipo === 'rdwc') return false;
   const v = Number(c.volDeposito);
   return !(Number.isFinite(v) && v > 0);
 }
 
 /**
- * Volumen de referencia (L) para escalados y límites en Medir / checklist:
- * - Torre: `volDeposito` (tope del depósito).
- * - NFT: `volDeposito` = capacidad física del recipiente; la dosificación usa el recomendado con margen.
- * - RDWC: depósito de control (`rdwcControlVolL`, o `volDeposito` si ya está unificado en config).
- * - SRF: **llenado seguro** del estanque (cámara de aire + cesta) si hay medidas; si no, L×A×P.
- * - DWC: si se puede calcular, **llenado seguro** bajo la base del sustrato (`getDwcVolumenSeguroMaxLitrosDesdeConfig`);
- *   si no, `volDeposito` o capacidad geométrica.
+ * Volumen de referencia (L) para escalados y límites en Medir / checklist (solo DWC o RDWC).
  */
 function getVolumenDepositoMaxLitros(cfg) {
   cfg = cfg || state.configTorre || {};
   const tipoNorm =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   if (tipoNorm === 'rdwc') {
     if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cfg);
     const vCtl = Number(cfg.rdwcControlVolL);
@@ -164,27 +159,9 @@ function getVolumenDepositoMaxLitros(cfg) {
     const v = Number.isFinite(vCtl) && vCtl > 0 ? vCtl : vDep;
     if (Number.isFinite(v) && v > 0) return Math.min(800, Math.max(10, Math.round(v * 10) / 10));
   }
-  if (tipoNorm === 'srf') {
-    if (typeof srfVolumenSeguroLitrosDesdeConfig === 'function') {
-      const seg = srfVolumenSeguroLitrosDesdeConfig(cfg);
-      if (seg != null && seg > 0) return Math.min(5000, Math.max(1, Math.round(seg * 10) / 10));
-    }
-    if (typeof srfCapacidadLitrosDesdeConfig === 'function') {
-      const cap = srfCapacidadLitrosDesdeConfig(cfg);
-      if (cap != null && cap > 0) return Math.min(5000, Math.max(1, Math.round(cap * 10) / 10));
-    }
-  }
   if (tipoNorm === 'dwc' && typeof getDwcVolumenSeguroMaxLitrosDesdeConfig === 'function') {
     const vSafe = getDwcVolumenSeguroMaxLitrosDesdeConfig(cfg);
     if (vSafe != null && vSafe > 0) return Math.min(800, Math.max(1, Math.round(vSafe * 10) / 10));
-  }
-  if (tipoNorm === 'nft') {
-    const vFis = Number(cfg.volDeposito);
-    if (Number.isFinite(vFis) && vFis > 0) return Math.min(600, Math.max(1, Math.round(vFis * 10) / 10));
-    if (typeof nftVolumenDosificacionLitrosDesdeConfig === 'function') {
-      const d = nftVolumenDosificacionLitrosDesdeConfig(cfg);
-      if (d != null && d > 0) return d;
-    }
   }
   const v = Number(cfg.volDeposito);
   if (Number.isFinite(v) && v > 0) return Math.min(800, Math.max(1, Math.round(v * 10) / 10));
@@ -193,8 +170,7 @@ function getVolumenDepositoMaxLitros(cfg) {
     if (cap != null && cap > 0) return Math.min(800, Math.max(1, Math.round(cap * 10) / 10));
   }
   if (instalacionPlantillaSinCapacidadDepositoUsuario(cfg)) return null;
-  /** DWC sin medidas ni vol. guardado: no usar 18 L de calibración de tablas (solo torre/NFT legacy). */
-  if (tipoNorm === 'dwc') return null;
+  if (tipoNorm === 'dwc' || tipoNorm === 'rdwc') return null;
   return VOL_OBJETIVO;
 }
 
@@ -204,15 +180,6 @@ function getVolumenDepositoMaxLitros(cfg) {
  */
 function getVolumenMezclaLitros(cfg) {
   cfg = cfg || state.configTorre || {};
-  const tipoNorm =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  if (tipoNorm === 'nft') {
-    if (typeof nftVolumenDosificacionLitrosDesdeConfig === 'function') {
-      const dNft = nftVolumenDosificacionLitrosDesdeConfig(cfg);
-      if (dNft != null && Number.isFinite(dNft) && dNft > 0) return dNft;
-    }
-    return null;
-  }
   const maxL = getVolumenDepositoMaxLitros(cfg);
   if (maxL == null || !Number.isFinite(maxL) || maxL <= 0) return null;
   const mez = Number(cfg.volMezclaLitros);
@@ -933,7 +900,7 @@ function medirPuedeMostrarRangos(cfg) {
   if (!cfg.checklistInstalacionConfirmada) return false;
   const tipo =
     typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  if (!tipo || tipo === 'torre') return false;
+  if (!tipo || (tipo !== 'dwc' && tipo !== 'rdwc')) return false;
   const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
   if (!nut) return false;
   if (typeof torreTieneAlgunaVariedadAsignada === 'function' && torreTieneAlgunaVariedadAsignada()) {

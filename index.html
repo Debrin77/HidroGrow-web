@@ -1606,6 +1606,10 @@
           </div>
         </details>
         <div id="avisoCestasSinFechaTorre" class="aviso-cestas-sin-fecha setup-hidden" role="status"></div>
+        <div id="hcRevisionMontajeBanner" class="info-banner setup-hidden hc-revision-montaje-banner" role="alert">
+          <span class="compat-alert-mark" aria-hidden="true">!</span>
+          <span>Esta instalación venía de NFT, torre vertical o SRF (ya no soportados). Revisa medidas y montaje como <strong>DWC o RDWC</strong> en el asistente antes de confiar en volúmenes y dosis.</span>
+        </div>
         <div id="compatAlert" class="info-banner setup-hidden compat-alert-banner">
           <span class="compat-alert-mark" aria-hidden="true">!</span>
           <span id="compatAlertText"></span>
@@ -1656,7 +1660,7 @@
         <p id="sysEcPhStrategyHint" class="torre-dwc-max-cestas-hint setup-hidden" role="status"></p>
       </div>
 
-      <!-- Montaje NFT (Cultivo e instalación): desplegable con resumen tras aplicar -->
+      <!-- Montaje DWC/RDWC (Cultivo e instalación) -->
       
 
       <div id="sistemaDwcAyudaCard" class="torre-dwc-card torre-sistema-panel--dwc setup-hidden">
@@ -1846,7 +1850,7 @@
 
       
 
-      <!-- Esquema / lista y gráfico (torre, NFT o DWC) -->
+      <!-- Esquema / lista y gráfico (DWC o RDWC) -->
       <div class="torre-container">
         <div id="torreEsquemaSub" class="torre-esquema-intro">
           <strong>Esquema</strong> (orientativo). Toca macetas o cubos; <strong>Lista</strong> para recorrer todo. Basta variedad y fecha en las plazas ocupadas.
@@ -1873,9 +1877,9 @@
             <button type="button" id="btnTorreVistaLista" class="torre-vista-btn"
               onclick="setTorreVistaModo('lista')" aria-pressed="false"
               aria-label="Ver lista de cestas">Lista</button>
-            <label id="torreAnimSuavesLabel" class="torre-anim-label" title="Flujo animado en el dibujo (NFT: azul alimentación, verde retorno). Se respeta «reducir movimiento» del sistema.">
+            <label id="torreAnimSuavesLabel" class="torre-anim-label" title="Animación suave en el esquema hidráulico. Se respeta «reducir movimiento» del sistema.">
               <input type="checkbox" id="torreChkAnimSuaves" checked onchange="setTorreAnimSuaves(this.checked)"
-                aria-label="Animaciones suaves en el esquema (flujo NFT, depósito, riego)">
+                aria-label="Animaciones suaves en el esquema DWC o RDWC">
               <span>Animaciones</span>
             </label>
           </div>
@@ -1926,19 +1930,6 @@
                 <span id="torreAssignModoRapidoTxt">Modo rápido: un toque = asignar esa cesta al instante</span>
               </label>
             </div>
-            <div id="torreAssignNftAtajos" class="torre-assign-nft-atajos setup-hidden" aria-label="Atajos NFT">
-              <div class="form-label torre-assign-label-sub">3 · Ámbito (mismo cultivo)</div>
-              <div class="torre-assign-atajos-row">
-                <button type="button" class="btn btn-ghost torre-assign-btn" onclick="nftAsignarSeleccionarTodosHuecos()">Marcar todos los huecos</button>
-                <label class="torre-assign-tubo-sel">
-                  <span class="sr-only">Tubo</span>
-                  <select id="torreAssignNftTuboSel" class="form-select" aria-label="Elegir tubo"></select>
-                  <button type="button" class="btn btn-ghost torre-assign-btn" onclick="nftAsignarSeleccionarTuboDesdeSelect()">Marcar tubo</button>
-                </label>
-                <button type="button" class="btn btn-primary torre-assign-btn" onclick="aplicarCultivoATodosLosHuecosNft()">Aplicar a TODO ahora</button>
-              </div>
-              <p class="torre-assign-atajos-hint">Marca macetas con <strong>anillo ámbar</strong> y pulsa <em>Aplicar a selección</em>, o <em>Aplicar a TODO</em> con el cultivo de arriba.</p>
-            </div>
             <div id="torreAssignMultiBar" class="torre-assign-multibar setup-hidden">
               <span id="torreAssignCount" class="torre-assign-count"></span>
               <button type="button" id="torreBtnAplicarSeleccion" class="btn btn-primary torre-assign-btn"
@@ -1963,17 +1954,12 @@
 
         <!-- SVG o lista -->
         <div id="torreSVGWrap" class="torre-svg-canvas" role="img"
-          aria-label="Esquema de la instalación. Torre vertical: girar con flechas o deslizar; NFT y DWC: tocar huecos o macetas.">
+          aria-label="Esquema de la instalación DWC o RDWC: toca macetas o módulos en el dibujo.">
           <div class="torre-loading-placeholder">Cargando esquema…</div>
         </div>
         <div id="torreListaVista" class="torre-lista-wrap setup-hidden" aria-label="Lista de macetas por fila"></div>
         <div id="torreSistemaResumenWrap" class="torre-sistema-resumen-wrap" role="region" aria-label="Resumen de la configuración de la instalación" hidden></div>
         <div id="torreQuickTip" class="torre-quick-tip setup-hidden" aria-live="polite"></div>
-        <div id="torreSwipeHint" class="torre-swipe-hint">Flechas o deslizar para girar la torre</div>
-        <div id="torreNftDiagramHint" class="setup-hidden torre-nft-diagram-hint">
-          NFT: <strong class="fw-800" style="color:#2563eb">azul</strong> = alimentación (sale abajo · sube · serpentín); <strong class="fw-800" style="color:#16a34a">verde</strong> = retorno (entra arriba al depósito). Toca <strong class="fw-800">hueco</strong> o <strong class="fw-800">Lista</strong>
-        </div>
-
         <!-- Depósito y volumen (mezclas / checklist) -->
         <div class="torre-deposito torre-deposito-stack">
           <div class="torre-deposito-row">
@@ -2320,20 +2306,6 @@
       <!-- Resultado programa general -->
       <div class="riego-resultado setup-hidden" id="riegoResultado">
 
-        <div id="riegoNftPanel" class="riego-panel-nft setup-hidden">
-          <div class="riego-panel-inner">
-            <div class="riego-panel-kicker riego-panel-kicker--nft">
-              Flujo continuo 24 horas
-            </div>
-            <p class="riego-panel-lead">
-              En NFT el riego del canal es <strong>continuo</strong>: la bomba circula el nutriente <strong>todo el día</strong>.
-              No aplica un programa de ciclos ni temporizador como en torre vertical; aquí solo tienes <strong>referencia del clima</strong>.
-            </p>
-            <div class="card-title riego-card-title-sm"><svg class="hc-ico hc-ico--title-sm" aria-hidden="true" focusable="false"><use href="#hc-i-cloud-sun"/></svg> Datos climáticos</div>
-            <div id="riegoClimaUsadoNft" class="riego-clima-ref setup-hidden"></div>
-          </div>
-        </div>
-
         <div id="riegoDwcPanel" class="riego-panel-dwc setup-hidden">
           <div class="riego-panel-inner">
             <div class="riego-panel-kicker riego-panel-kicker--dwc">
@@ -2354,7 +2326,7 @@
               Recirculación continua (RDWC)
             </div>
             <p class="riego-panel-lead">
-              En <strong>RDWC</strong> la solución <strong>circula de forma continua</strong> entre el <strong>depósito de control</strong> (reservoir) y los módulos; la <strong>bomba de recirculación</strong> no sustituye a un temporizador de goteo: <strong>no</strong> es riego por impulsos ni por pulsos como en torre vertical.
+              En <strong>RDWC</strong> la solución <strong>circula de forma continua</strong> entre el <strong>depósito de control</strong> (reservoir) y los módulos; la <strong>bomba de recirculación</strong> trabaja de forma continua (no es riego por goteo ni por pulsos).
               Vigila caudal, purgado de aire, aireación y temperatura del líquido. Sitúa la <strong>bomba de aire</strong> por encima del nivel máximo de la solución para evitar reflujo. Aquí solo tienes <strong>referencia del clima</strong> para el follaje (toldo, estrés térmico).
             </p>
             <div class="card-title riego-card-title-sm"><svg class="hc-ico hc-ico--title-sm" aria-hidden="true" focusable="false"><use href="#hc-i-cloud-sun"/></svg> Datos climáticos</div>
@@ -2362,21 +2334,7 @@
           </div>
         </div>
 
-        <div id="riegoSrfPanel" class="riego-panel-dwc setup-hidden">
-          <div class="riego-panel-inner">
-            <div class="riego-panel-kicker riego-panel-kicker--dwc">
-              Estanque común (SRF / DFT)
-            </div>
-            <p class="riego-panel-lead">
-              En <strong>SRF</strong> (raíz flotante) todas las plantas comparten un <strong>estanque único</strong> bajo la balsa; la solución no se riega por pulsos como en torre vertical.
-              Vigila <strong>oxigenación</strong> (aireador o cámara de aire en Kratky), temperatura del líquido y nivel respecto a la balsa. Aquí solo tienes <strong>referencia del clima</strong> para toldo y estrés del follaje.
-            </p>
-            <div class="card-title riego-card-title-sm"><svg class="hc-ico hc-ico--title-sm" aria-hidden="true" focusable="false"><use href="#hc-i-cloud-sun"/></svg> Datos climáticos</div>
-            <div id="riegoClimaUsadoSrf" class="riego-clima-ref setup-hidden"></div>
-          </div>
-        </div>
-
-        <div id="riegoTorreResultBlock">
+        <div id="riegoTorreResultBlock" class="setup-hidden" hidden>
         <div id="riegoCiclosTorreWrap">
         <div class="riego-prog-card riego-prog-card--slate">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg> Programa general — 07:00 a 21:00h</div>
@@ -2710,11 +2668,11 @@
           </details>
           <details>
             <summary>¿EC manual o automático?</summary>
-            <div class="ayuda-faq-a">En <strong>torre vertical</strong>, la estrategia EC/pH se define en el <strong>asistente de configuración</strong> y se confirma en el <strong>checklist de recarga</strong>. <em>Automático</em> usa el catálogo por etapa (y el clima como ajuste suave). <em>Manual</em> fija un EC objetivo tuyo; eres responsable de revisarlo. En otros sistemas (NFT, DWC…) puedes ajustarla en Cultivo e instalación si aparece el bloque correspondiente.</div>
+            <div class="ayuda-faq-a">La estrategia EC/pH se define en el <strong>asistente de configuración</strong> y se confirma en el <strong>checklist de recarga</strong>. <em>Automático</em> usa el catálogo por etapa (y el clima como ajuste suave). <em>Manual</em> fija un EC objetivo tuyo; eres responsable de revisarlo. También puedes ajustarla en Cultivo e instalación.</div>
           </details>
           <details>
             <summary>Tengo varias instalaciones</summary>
-            <div class="ayuda-faq-a">Puedes crear varias desde el <strong>selector de instalación</strong> (torre vertical, NFT, DWC…). Cada una guarda su propia configuración, mediciones y nutriente. Cambia de instalación activa antes de medir o de abrir el checklist si no quieres mezclar datos.</div>
+            <div class="ayuda-faq-a">Puedes crear varias desde el <strong>selector de instalación</strong> (DWC o RDWC). Cada una guarda su propia configuración, mediciones y nutriente. Cambia de instalación activa antes de medir o de abrir el checklist si no quieres mezclar datos.</div>
           </details>
           <details>
             <summary>¿Cómo hago copia de seguridad?</summary>
@@ -3591,7 +3549,7 @@
       <!-- Bomba orientativa torre (no se pregunta Ø tubo central) -->
       
 
-      <!-- Tamaño de cestas (solo torre; DWC/RDWC/NFT/SRF usan Ø mm en su bloque) -->
+      <!-- Tamaño de cestas (DWC/RDWC: Ø mm en su bloque de montaje) -->
       <div id="setupBloqueTamanoCestas">
       <div class="setup-block-title setup-mb-8 setup-mt-4">
         <svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-package"/></svg>
@@ -4268,7 +4226,7 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="apunteModalTitle"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-note"/></svg> Apunte en el registro</div>
     <p class="apunte-modal-intro">
-      Se guarda en la <strong>instalación activa</strong> (torre, NFT, DWC, RDWC o SRF). Indica al menos <strong>texto</strong> o <strong>un valor numérico</strong>.
+      Se guarda en la <strong>instalación activa</strong> (DWC o RDWC). Indica al menos <strong>texto</strong> o <strong>un valor numérico</strong>.
     </p>
     <label for="apunteTexto" class="ctp-label">Texto</label>
     <textarea id="apunteTexto" class="form-input apunte-modal-textarea" rows="4" maxlength="4000"
@@ -4736,7 +4694,7 @@
     <div class="form-group">
       <label class="form-label">Fecha de trasplante</label>
       <input type="date" class="form-input" id="editFecha">
-      <p class="form-hint hc-origen-fecha-hint">Usa el día en que la planta <strong>entra al sistema</strong> (NFT, DWC o torre); así el calendario y el progreso coinciden con tu instalación.</p>
+      <p class="form-hint hc-origen-fecha-hint">Usa el día en que la planta <strong>entra al sistema</strong> (DWC o RDWC); así el calendario y el progreso coinciden con tu instalación.</p>
     </div>
 
     <div class="form-group">
@@ -4939,8 +4897,8 @@
 
 
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
-  <script src="js/torre-render-build.js?v=2026-05-31-dwc-filas"></script>
-<script src="js/torre-render-main.js?v=2026-06-02-icons-full"></script>
+  <script src="js/torre-render-build.js?v=2026-06-02-dwc-rdwc-only"></script>
+<script src="js/torre-render-main.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-select-fix"></script>
@@ -4948,15 +4906,15 @@
   <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
   <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
-  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
+  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-equip-full"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-guardar-resumen"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-06-02-dwc-rdwc-only2"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=2026-06-02-icons-full"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -4969,22 +4927,22 @@
   <script src="js/hc-mediciones-ambientales.js?v=2026-05-31-wiz-amb"></script>
   <script src="js/hc-monitor-sistema.js?v=2026-05-31-operativa"></script>
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ui-plantas-pm"></script>
-  <script src="js/hc-medicion-wizard.js?v=2026-05-31-wiz-amb"></script>
+  <script src="js/hc-medicion-wizard.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
-  <script src="js/hc-setup-checklist.js?v=2026-05-31-lifecycle"></script>
+  <script src="js/hc-setup-checklist.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-06-02-icons-full"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-06-02-icons-full"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
-  <script src="js/meteo-alarm-app.js?v=1"></script>
+  <script src="js/meteo-alarm-app.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/app-hc-medicion-toast.js?v=2026-06-02-icons-full"></script>
-  <script src="js/app-hc-setup-onboarding.js?v=2026-06-02-icons-full"></script>
+  <script src="js/app-hc-setup-onboarding.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-06-02-icons-full"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
   <script src="js/hc-puesta-marcha.js?v=2026-06-02-icons-full"></script>

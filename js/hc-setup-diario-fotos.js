@@ -261,7 +261,7 @@ async function renderDiarioSelector() {
   const cfg = state.configTorre || {};
   const sisAct = infoSistemaEntrada(getTorreActiva() || {});
   const tipoDiario =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'torre';
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'dwc';
   const fmtUbiDiario = (n0, c0) =>
     typeof formatoUbicacionEnRegistro === 'function'
       ? formatoUbicacionEnRegistro(tipoDiario, n0 + 1, c0 + 1).replace(', ', ' · ')
@@ -384,7 +384,7 @@ async function renderDiarioPlanta(nivel, cesta) {
   const tipoDiarioPlanta =
     typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(state.configTorre)
-      : state.configTorre?.tipoInstalacion || 'torre';
+      : state.configTorre?.tipoInstalacion || 'dwc';
   const ubiDiarioPlanta =
     typeof formatoUbicacionEnRegistro === 'function'
       ? formatoUbicacionEnRegistro(tipoDiarioPlanta, nivel + 1, cesta + 1).replace(', ', ' · ')
@@ -736,7 +736,7 @@ function openModal(nivel, cesta) {
   const tipoModal =
     typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(state.configTorre)
-      : state.configTorre?.tipoInstalacion || 'torre';
+      : state.configTorre?.tipoInstalacion || 'dwc';
   document.getElementById('modalTitle').textContent =
     typeof tituloModalUbicacionCesta === 'function'
       ? tituloModalUbicacionCesta(tipoModal, nivel, cesta)

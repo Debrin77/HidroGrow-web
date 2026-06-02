@@ -372,11 +372,10 @@ async function fetchMeteoalarmSpainProxied() {
 function buildAvisosMeteoHeuristicas() {
   if (!meteoData?.daily) return [];
   const tMw = tipoInstalacionNormalizado(state.configTorre || {});
-  const txtVientoExtremo = tMw === 'nft'
-    ? 'Asegura tubos, depósito y soportes del NFT; revisa anclajes.'
-    : tMw === 'dwc'
-      ? 'Asegura tapa, macetas y depósito DWC; revisa que no basculen.'
-      : 'Asegura la torre vertical y el depósito; revisa estabilidad y sujeciones.';
+  const txtVientoExtremo =
+    tMw === 'rdwc'
+      ? 'Asegura cubos, mangueras y reservorio RDWC; revisa anclajes y purgado de aire.'
+      : 'Asegura tapa, macetas y depósito DWC; revisa que no basculen.';
   const P =
     typeof meteoInstalacionPerfilCultivo === 'function'
       ? meteoInstalacionPerfilCultivo()

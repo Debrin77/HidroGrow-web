@@ -233,37 +233,76 @@ const COMPATIBILIDAD = {
 /** Sistemas hidropónicos soportados (cannabis — referencia cultivadores y fabricantes). */
 const HIDROGROW_SISTEMAS = ['dwc', 'rdwc'];
 
-/** Normaliza tipo: solo DWC o RDWC; torre/NFT/SRF → DWC (migración). */
+/** Normaliza tipo: solo DWC o RDWC. */
 function hidrogrowTipoInstalacionRaw(cfg) {
   const t = cfg && cfg.tipoInstalacion;
   if (t === 'rdwc') return 'rdwc';
   return 'dwc';
 }
 
-/** Migra config legacy y fija tipoInstalacion canónico. */
-function hidrogrowMigrarConfigInstalacion(cfg) {
-  if (!cfg || typeof cfg !== 'object') return cfg;
-  const prev = cfg.tipoInstalacion;
-  const norm = hidrogrowTipoInstalacionRaw(cfg);
-  if (prev && prev !== norm && prev !== 'dwc' && prev !== 'rdwc') {
-    cfg.hidrogrowMigradoDesde = prev;
-  }
-  cfg.tipoInstalacion = norm;
-  return cfg;
+/** Elimina claves de NFT, SRF y torre vertical que podrían alterar volúmenes o cálculos. */
+function hidrogrowPurgarClavesLegacyInstalacion(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  let purged = false;
+  Object.keys(cfg).forEach((k) => {
+    if (/^nft/i.test(k) || /^srf/i.test(k)) {
+      delete cfg[k];
+      purged = true;
+    }
+  });
+  [
+    'torreObjetivoCultivo',
+    'torreMontajeOrigen',
+    'torreBombaUsuarioCaudalLh',
+    'torreBombaUsuarioPotenciaW',
+    'alturaTorre',
+    'diametroTubo',
+    'antiRaices',
+    'hidrogrowMigradoDesde',
+  ].forEach((k) => {
+    if (Object.prototype.hasOwnProperty.call(cfg, k)) {
+      delete cfg[k];
+      purged = true;
+    }
+  });
+  return purged;
 }
 
-/** Migra estado global (modo cultivo + todas las instalaciones). */
+/**
+ * Migra config legacy: tipo canónico DWC/RDWC, purga campos obsoletos y marca revisión si venía de otro sistema.
+ * @returns {boolean} true si hubo cambios que conviene persistir
+ */
+function hidrogrowMigrarConfigInstalacion(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  const prev = String(cfg.tipoInstalacion || '').toLowerCase();
+  const wasLegacy = prev === 'nft' || prev === 'torre' || prev === 'srf';
+  const norm = hidrogrowTipoInstalacionRaw(cfg);
+  let changed = wasLegacy || prev !== norm;
+  cfg.tipoInstalacion = norm;
+  if (hidrogrowPurgarClavesLegacyInstalacion(cfg)) changed = true;
+  if (wasLegacy) {
+    cfg.hcRequiereRevisionMontaje = true;
+    changed = true;
+  }
+  return changed;
+}
+
+/** Migra estado global (modo cultivo + todas las instalaciones). @returns {boolean} */
 function hidrogrowMigrarStateCompleto(s) {
-  if (!s || typeof s !== 'object') return s;
+  if (!s || typeof s !== 'object') return false;
+  let dirty = false;
   const modosLegacy = { lechuga: 'vegetativo', lechugas: 'vegetativo', mixto: 'vegetativo', mini: 'esquejes' };
-  if (modosLegacy[s.modo]) s.modo = modosLegacy[s.modo];
-  if (s.configTorre) hidrogrowMigrarConfigInstalacion(s.configTorre);
+  if (modosLegacy[s.modo]) {
+    s.modo = modosLegacy[s.modo];
+    dirty = true;
+  }
+  if (s.configTorre && hidrogrowMigrarConfigInstalacion(s.configTorre)) dirty = true;
   if (Array.isArray(s.torres)) {
     s.torres.forEach((t) => {
-      if (t && t.config) hidrogrowMigrarConfigInstalacion(t.config);
+      if (t && t.config && hidrogrowMigrarConfigInstalacion(t.config)) dirty = true;
     });
   }
-  return s;
+  return dirty;
 }
 
 const MODOS_CULTIVO = {

@@ -1072,7 +1072,7 @@
 
     if (!eqArr.includes('difusor') && !items.some(function (it) { return it.id === 'hyd_difusor' || it.id === 'aireador'; })) {
       var tipo = String(cfg.tipoInstalacion || '').toLowerCase();
-      if (tipo === 'dwc' || tipo === 'rdwc' || tipo === 'torre' || tipo === 'nft') {
+      if (tipo === 'dwc' || tipo === 'rdwc') {
         items.push({
           id: 'aireador',
           label: 'Aireador / bomba de depósito OK',

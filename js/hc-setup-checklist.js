@@ -633,11 +633,7 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
     ciudad: '',
     sustrato: normalizaSustratoKey(state.configSustrato || 'esponja'),
     tamanoCesta: 'standard',
-    diametroTubo: 50,
-    antiRaices: 'tubo_interior',
-    alturaTorre: 1.2,
     sensoresHardware: { ec: false, ph: false, humedad: false },
-    torreObjetivoCultivo: 'final',
   };
 
   const dwcModo = (typeof dwcNormalizeModo === 'function' ? dwcNormalizeModo(dwcModoOpt) : 'aireado');
@@ -710,6 +706,11 @@ function aplicarConfigDesdeOverlayChecklistRecarga(tipo, vol, agua, nutId, volMe
       }
     }
   }
+
+  if (typeof hidrogrowPurgarClavesLegacyInstalacion === 'function') {
+    hidrogrowPurgarClavesLegacyInstalacion(state.configTorre);
+  }
+  delete state.configTorre.hcRequiereRevisionMontaje;
 
   const vmOpt = Number(volMezclaOpt);
   if (Number.isFinite(vmOpt) && vmOpt > 0 && vmOpt < vol - 0.02) {
@@ -1081,15 +1082,14 @@ function getCLPasos() {
   const pre = construirTextoChecklistPreliminar();
   const nNiv = cfg.numNiveles || NUM_NIVELES;
   const tipoInstCl =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : (cfg.tipoInstalacion || 'torre');
-  const esNft = tipoInstCl === 'nft';
-  const nftBomb =
-    esNft && typeof getNftBombaDesdeConfig === 'function' ? getNftBombaDesdeConfig(cfg) : null;
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : (cfg.tipoInstalacion || 'dwc');
   const esDwc = tipoInstCl === 'dwc';
   const esRdwc = tipoInstCl === 'rdwc';
-  const esSrf = tipoInstCl === 'srf';
-  const srfKratky =
-    esSrf && typeof srfNormalizeOxigenacionModo === 'function' && srfNormalizeOxigenacionModo(cfg.srfOxigenacionModo) === 'kratky';
+  const esNft = false;
+  const esSrf = false;
+  const srfKratky = false;
+  const esTorre = false;
+  const nftHyd = null;
   const volNutrientesTotal =
     typeof getVolumenNutrientesLitros === 'function' ? getVolumenNutrientesLitros(cfg) : vol;
   const volRdwcTxt =
@@ -1127,12 +1127,7 @@ function getCLPasos() {
       : dwcOxMult
         ? ' Repite el mismo orden (agua → CalMag → nutrientes → pH) en <strong>cada cubo</strong>; los ml no son para toda la suma de litros.'
         : '';
-  const esTorre = !esNft && !esDwc && !esRdwc && !esSrf;
-  const checklistTieneCalentador = Array.isArray(cfg.equipamiento) && cfg.equipamiento.includes('calentador');
-  const nftHyd = esNft ? getNftHidraulicaDesdeConfig(cfg) : null;
-  const nftReco = esNft && typeof nftRecomendacionCultivoDesdeConfig === 'function'
-    ? nftRecomendacionCultivoDesdeConfig(cfg)
-    : null;
+  const nftBomb = null;
   const nftCh = nftHyd ? nftHyd.nCh : 0;
   const nftHx = nftHyd ? nftHyd.nHx : 0;
   const shCl = ensureSensoresHardware();
@@ -2405,30 +2400,9 @@ function onPrimerLlenadoVolDesdeChecklist() {
     delete cfg.volMezclaLitros;
     if (elZ) elZ.value = '';
   } else {
-    const tipoP =
-      typeof tipoInstalacionNormalizado === 'function'
-        ? tipoInstalacionNormalizado(state.configTorre)
-        : state.configTorre.tipoInstalacion;
-    if (tipoP === 'nft') {
-      const recP =
-        typeof nftVolumenDosificacionLitrosDesdeConfig === 'function'
-          ? nftVolumenDosificacionLitrosDesdeConfig(state.configTorre)
-          : null;
-      const fisP =
-        typeof nftSnapCapacidadFisicaDepositoL === 'function' && recP != null
-          ? nftSnapCapacidadFisicaDepositoL(vMax, recP)
-          : vMax;
-      state.configTorre.volDeposito = fisP;
-      if (recP != null && recP > 0) state.configTorre.volMezclaLitros = recP;
-    } else {
-      state.configTorre.volDeposito = vMax;
-    }
+    state.configTorre.volDeposito = vMax;
   }
-  const esNftP =
-    typeof tipoInstalacionNormalizado === 'function'
-      ? tipoInstalacionNormalizado(state.configTorre) === 'nft'
-      : state.configTorre.tipoInstalacion === 'nft';
-  if (!esMc && !esNftP) {
+  if (!esMc) {
     const rawMez = elZ ? String(elZ.value || '').trim() : '';
     const m = parseFloat(rawMez.replace(',', '.'));
     if (rawMez !== '' && Number.isFinite(m) && m > 0 && m < vMax - 0.02) {
@@ -2590,15 +2564,7 @@ function clGetResumenDisenoChecklist(cfg) {
   if (tipo === 'dwc' && typeof textoResumenSistemaDwcPanel === 'function') {
     return textoResumenSistemaDwcPanel(c);
   }
-  if (tipo === 'nft') {
-    const canales = Math.max(1, Math.round(Number(c.nftNumCanales || c.numNiveles || 4)));
-    const huecos = Math.max(2, Math.round(Number(c.nftHuecosPorCanal || c.numCestas || 8)));
-    const pendiente = Math.max(1, Math.round(Number(c.nftPendientePct || 2)));
-    return canales + ' tubos · ' + huecos + ' huecos/tubo · ' + pendiente + '% pend.';
-  }
-  const niveles = Math.max(1, Math.round(Number(c.numNiveles || 1)));
-  const cestas = Math.max(1, Math.round(Number(c.numCestas || 8)));
-  return niveles + ' niveles · ' + cestas + ' cestas';
+  return 'Revisa medidas en Cultivo e instalación';
 }
 
 function renderChecklistHeaderSummary() {
@@ -2863,12 +2829,6 @@ function renderChecklist() {
     }
   });
   updateClProgress();
-  if ((state.configTorre || {}).tipoInstalacion === 'nft') {
-    try { refrescarUIMensajeBombaUsuarioNft('checklist'); } catch (e) {}
-    try { actualizarMensajeNftCanalChecklist(); } catch (e) {}
-    try { refrescarNftLayoutResumenChecklist(); } catch (e) {}
-    try { refrescarNftDepositoRecomendadoChecklistUI(); } catch (e) {}
-  }
   if ((state.configTorre || {}).tipoInstalacion === 'dwc') {
     try { refrescarDwcDifusorChecklist(); } catch (eDwcDif) {}
   }

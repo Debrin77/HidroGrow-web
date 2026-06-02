@@ -93,40 +93,7 @@ function hcResetSetupWizardSession(opts) {
 }
 
 function getSetupPlantasFilasCols() {
-  const t = typeof setupTipoInstalacion !== 'undefined' ? setupTipoInstalacion : 'torre';
-  if (t === 'nft') {
-    const mont =
-      typeof readNftMontajeFromSetupUi === 'function'
-        ? readNftMontajeFromSetupUi()
-        : { disposicion: 'mesa', escaleraCaras: 1, mesaMultinivel: false, mesaTubosStr: '' };
-    let nftNvSlider = parseInt(document.getElementById('sliderNftCanales')?.value || 0, 10);
-    const huecos = parseInt(document.getElementById('sliderNftHuecos')?.value || 0, 10);
-    if (nftNvSlider < 1 || huecos < 1) {
-      return { filas: 0, cols: 0, labelFila: 'Tubo', labelCol: 'Hueco' };
-    }
-    let niveles = Math.max(1, Math.min(24, nftNvSlider));
-    let colsHuecos = Math.max(1, Math.min(30, huecos));
-    if (mont.disposicion === 'mesa' && mont.mesaMultinivel && typeof parseNftMesaTubosPorNivelStr === 'function') {
-      const tiers = parseNftMesaTubosPorNivelStr(mont.mesaTubosStr || '');
-      if (tiers.length >= 2) {
-        niveles = Math.min(24, tiers.reduce((a, b) => a + b, 0));
-        const hxT = typeof parseNftMesaHuecosPorNivelStrLoose === 'function'
-          ? parseNftMesaHuecosPorNivelStrLoose(mont.mesaHuecosStr || '')
-          : [];
-        const hxPos = hxT.filter(h => h > 0);
-        if (hxPos.length) colsHuecos = Math.max(1, Math.min(30, Math.max.apply(null, hxPos)));
-      }
-    } else if (mont.disposicion === 'escalera') {
-      const caras = mont.escaleraCaras === 2 ? 2 : 1;
-      niveles = Math.min(24, Math.max(1, nftNvSlider * caras));
-    }
-    return {
-      filas: niveles,
-      cols: colsHuecos,
-      labelFila: 'Tubo',
-      labelCol: 'Hueco',
-    };
-  }
+  const t = typeof setupTipoInstalacion !== 'undefined' ? setupTipoInstalacion : 'dwc';
   if (t === 'rdwc') {
     const sitesRaw = parseInt(String(document.getElementById('setupRdwcSites')?.value || '').trim(), 10);
     const rowsRaw = parseInt(String(document.getElementById('setupRdwcRows')?.value || '').trim(), 10);
@@ -137,19 +104,6 @@ function getSetupPlantasFilasCols() {
     const rows = Math.max(1, Math.min(4, rowsRaw));
     const cols = Math.max(1, Math.ceil(sites / rows));
     return { filas: rows, cols, labelFila: 'Fila', labelCol: 'Sitio' };
-  }
-  if (t === 'srf') {
-    const filas = parseInt(String(document.getElementById('setupSrfFilas')?.value || '').trim(), 10);
-    const cols = parseInt(String(document.getElementById('setupSrfPlantasPorFila')?.value || '').trim(), 10);
-    if (!Number.isFinite(filas) || filas < 1 || !Number.isFinite(cols) || cols < 1) {
-      return { filas: 0, cols: 0, labelFila: 'Fila', labelCol: 'Hueco' };
-    }
-    return {
-      filas: Math.max(1, Math.min(8, filas)),
-      cols: Math.max(1, Math.min(16, cols)),
-      labelFila: 'Fila',
-      labelCol: 'Hueco',
-    };
   }
   if (t === 'dwc') {
     const filasD = parseInt(document.getElementById('sliderNiveles')?.value || '0', 10);
@@ -173,22 +127,7 @@ function getSetupPlantasFilasCols() {
       labelCol: 'Maceta',
     };
   }
-  const niveles = parseInt(document.getElementById('sliderNiveles')?.value || 0, 10);
-  const cestas = parseInt(document.getElementById('sliderCestas')?.value || 0, 10);
-  if (niveles < 1 || cestas < 1) {
-    return {
-      filas: 0,
-      cols: 0,
-      labelFila: t === 'dwc' ? 'Fila' : 'Nivel',
-      labelCol: 'Cesta',
-    };
-  }
-  return {
-    filas: niveles,
-    cols: cestas,
-    labelFila: t === 'dwc' ? 'Fila' : 'Nivel',
-    labelCol: 'Cesta',
-  };
+  return { filas: 0, cols: 0, labelFila: 'Fila', labelCol: 'Maceta' };
 }
 
 function asegurarSetupCestaVarDraftDims(filas, cols) {
@@ -245,15 +184,9 @@ function renderSetupCestasVariedadGrid() {
     wrap.classList.remove('setup-hidden');
     if (titleEl) titleEl.textContent = 'Cultivos en el esquema (después del asistente)';
     const bloque =
-      setupTipoInstalacion === 'srf'
-        ? 'filas y plantas por fila en el bloque SRF'
-        : setupTipoInstalacion === 'nft'
-          ? 'tubos y huecos en el bloque NFT'
-          : setupTipoInstalacion === 'rdwc'
-            ? 'sitios y filas en el bloque RDWC'
-            : setupTipoInstalacion === 'dwc'
-              ? 'medidas del cubo, cesta y rejilla en el bloque DWC'
-              : 'niveles y cestas en la torre';
+      setupTipoInstalacion === 'rdwc'
+        ? 'sitios y filas en el bloque RDWC'
+        : 'medidas del cubo, cesta y rejilla en el bloque DWC';
     gridHost.innerHTML =
       '<p class="setup-cesta-var-too-many">Completa <strong>' +
       bloque +
@@ -434,16 +367,6 @@ function toggleSetupPlanta(key) {
   renderSetupPlantasGrid();
   // Recalcular dosis con los cultivos actualizados
   renderDosisSetup();
-  if (typeof setupTipoInstalacion !== 'undefined') {
-    try {
-      if (setupTipoInstalacion === 'nft' && typeof renderNftCultivoRecoStatus === 'function') {
-        renderNftCultivoRecoStatus('setup');
-      }
-      if (setupTipoInstalacion === 'srf' && typeof renderSrfCultivoRecoStatus === 'function') {
-        renderSrfCultivoRecoStatus('setup');
-      }
-    } catch (_) {}
-  }
 }
 
 function seleccionarNumTorres(tipo) {
@@ -462,32 +385,31 @@ function seleccionarNumTorres(tipo) {
 function actualizarResumenSetup() {
   const el = document.getElementById('setupResumenContent');
   if (!el) return;
-  const isNft = setupTipoInstalacion === 'nft';
-  const isDwc = setupTipoInstalacion === 'dwc';
+  const isRdwc = setupTipoInstalacion === 'rdwc';
+  const isDwc = !isRdwc;
   const dwcMcSetup =
     isDwc &&
     typeof dwcNormalizeOxigenacionDiseno === 'function' &&
     dwcNormalizeOxigenacionDiseno(document.getElementById('setupDwcOxigenacionDiseno')?.value) ===
       'cubos_independientes';
-  const niveles = isNft
-    ? (document.getElementById('sliderNftCanales')?.value || 4)
-    : dwcMcSetup
-      ? '1'
+  const niveles = dwcMcSetup
+    ? '1'
+    : isRdwc
+      ? String(parseInt(String(document.getElementById('setupRdwcRows')?.value || '').trim(), 10) || 1)
       : (document.getElementById('sliderNiveles')?.value || 5);
-  const cestas = isNft
-    ? (document.getElementById('sliderNftHuecos')?.value || 8)
-    : dwcMcSetup
-      ? String(
-          Math.min(
-            24,
-            Math.max(
-              1,
-              parseInt(String(document.getElementById('setupDwcNumCubos')?.value || '').trim(), 10) || 4
-            )
+  const cestas = dwcMcSetup
+    ? String(
+        Math.min(
+          24,
+          Math.max(
+            1,
+            parseInt(String(document.getElementById('setupDwcNumCubos')?.value || '').trim(), 10) || 4
           )
         )
+      )
+    : isRdwc
+      ? String(parseInt(String(document.getElementById('setupRdwcSites')?.value || '').trim(), 10) || 4)
       : (document.getElementById('sliderCestas')?.value || 5);
-  const pendTxt = isNft ? (document.getElementById('sliderNftPendiente')?.value || 2) + '% pendiente · ' : '';
   const volMax  = getSetupVolumenMaxLitros();
   const volMez  = getSetupVolumenMezclaLitros();
   const volTxtResume = volMez < volMax - 0.05 ? volMax + 'L máx · mezcla ' + volMez + 'L' : volMax + 'L';
@@ -505,13 +427,6 @@ function actualizarResumenSetup() {
   const plantasSel = [...setupPlantasSeleccionadas].map(k => plantasNombres[k]||k).join(', ') || 'Sin seleccionar';
 
   const ecObj  = getSetupECObjetivo();
-  const montR = isNft ? readNftMontajeFromSetupUi() : { disposicion: 'mesa', alturaBombeoCm: 0 };
-  const draftNFT = isNft ? buildNftDraftConfigFromSetupUi() : null;
-  const hydNFT = isNft ? getNftHidraulicaDesdeConfig(draftNFT) : null;
-  const bResumenNft = isNft ? getNftBombaDesdeConfig(draftNFT) : null;
-  const altResNFT = isNft ? getNftAlturaBombeoEfectivaCm(draftNFT) : 0;
-  const potNft =
-    isNft && typeof readNftPotCestaFromSetupUi === 'function' ? readNftPotCestaFromSetupUi() : { rimMm: null, heightMm: null };
   const volDosis =
     typeof getSetupVolumenNutrientesLitros === 'function' ? getSetupVolumenNutrientesLitros() : volMez;
   const d      = calcularDosisSetup(window.setupNutriente || 'canna_aqua', volDosis, ecObj);
@@ -537,7 +452,7 @@ function actualizarResumenSetup() {
     : '📟 Sensores / medidores: <strong>sin marcar</strong> (configúralo en paso Equipamiento o en Mediciones)<br>';
 
   let geoDwcRes = '';
-  let geoTorreRes = '';
+  let geoRdwcRes = '';
   if (isDwc) {
     const formaOnb =
       typeof dwcNormalizeDepositoForma === 'function'
@@ -578,59 +493,52 @@ function actualizarResumenSetup() {
       if (mhG.hueco != null) geoDwcRes += ' · entre cestas ' + mhG.hueco + ' mm';
     }
   }
-  if (!isNft && !isDwc) {
-    const tObj = (state.configTorre && state.configTorre.torreObjetivoCultivo) || 'final';
-    const tSpec =
-      typeof torreGetObjetivoSpec === 'function'
-        ? torreGetObjetivoSpec(tObj)
-        : { label: tObj === 'baby' ? 'SOG / esquejes (alta densidad)' : 'Floración / tamaño completo' };
-    geoTorreRes = ' · objetivo ' + tSpec.label;
+  if (isRdwc) {
+    const volCtl = parseInt(String(document.getElementById('setupRdwcControlVolL')?.value || '').trim(), 10);
+    if (Number.isFinite(volCtl) && volCtl > 0) geoRdwcRes += ' · reservorio control ~' + volCtl + ' L';
+    const lh = parseInt(String(document.getElementById('setupRdwcRecirculationLh')?.value || '').trim(), 10);
+    if (Number.isFinite(lh) && lh > 0) geoRdwcRes += ' · recirc. ~' + lh + ' L/h';
   }
 
-  el.innerHTML =
-    (isNft
-      ? '🪴 NFT: <strong>' +
-        (hydNFT && typeof nftResumenCantidadesBreve === 'function'
-          ? nftResumenCantidadesBreve({ tipoInstalacion: 'nft', nftMesaMultinivel: montR.mesaMultinivel, nftMesaTubosPorNivelStr: montR.mesaTubosStr, nftMesaHuecosPorNivelStr: montR.mesaHuecosStr, nftNumCanales: hydNFT.nCh, nftHuecosPorCanal: cestas, nftDisposicion: montR.disposicion })
-          : (hydNFT ? hydNFT.nCh : niveles) + ' tubos × ' + cestas + ' huecos') +
-        ' · ' + pendTxt + volTxtResume + '</strong> · tubo principal Ø <strong>' + setupNftTuboMm + ' mm</strong> · disposición <strong>' +
-        (montR.disposicion === 'escalera' ? 'escalera' : montR.disposicion === 'pared' ? 'pared' : 'mesa') +
-        (montR.disposicion === 'mesa' && montR.mesaMultinivel ? ' · multinivel (tubos iguales/nivel)' : '') +
-        (montR.disposicion === 'escalera' && montR.escaleraCaras === 2 ? ' · A (2 caras)' : '') +
+  const bloqueInst =
+    isRdwc
+      ? '🔁 RDWC: <strong>' +
+        cestas +
+        ' sitio' +
+        (parseInt(cestas, 10) === 1 ? '' : 's') +
+        ' · ' +
+        niveles +
+        ' fila' +
+        (parseInt(niveles, 10) === 1 ? '' : 's') +
+        ' · ' +
+        volTxtResume +
         '</strong>' +
-        (potNft.rimMm != null || potNft.heightMm != null
-          ? ' · cesta net pot' +
-            (potNft.rimMm != null ? ' Ø <strong>' + potNft.rimMm + ' mm</strong>' : '') +
-            (potNft.heightMm != null ? ' · alto <strong>' + potNft.heightMm + ' mm</strong>' : '')
-          : '') +
-        (altResNFT > 0 ? ' · bombeo (efectivo) al 1.º tubo <strong>' + altResNFT + ' cm</strong>' : '') +
-        '<br>' +
-        (bResumenNft
-          ? '⚡ NFT: circulación <strong>24 h</strong> · criterio bomba/depósito en el paso de equipo y en checklist (veredicto visible; cifras en «detalle técnico»).<br>'
-          : '')
-      : isDwc
-        ? dwcMcSetup
-          ? '🫧 DWC: <strong>' +
-            cestas +
-            ' cubo' +
-            (parseInt(cestas, 10) === 1 ? '' : 's') +
-            ' (1 maceta/cubo) · ' +
-            volTxtResume +
-            '</strong>' +
-            geoDwcRes +
-            '<br>⚡ Aireador <strong>24 h</strong> · dosis <strong>por cubo</strong> (~' +
-            (typeof volDosis === 'number' && Number.isFinite(volDosis) ? Math.round(volDosis * 10) / 10 : '—') +
-            ' L) · Mediciones en cada cubo.<br>'
-          : '🫧 DWC: <strong>' +
-            niveles +
-            ' filas × ' +
-            cestas +
-            ' cestas · ' +
-            volTxtResume +
-            '</strong>' +
-            geoDwcRes +
-            '<br>⚡ Aireador <strong>24 h</strong> · nivel y nutrientes en <strong>Mediciones</strong>.<br>'
-        : '🌿 Torre: <strong>' + niveles + ' niveles × ' + cestas + ' cestas · ' + volTxtResume + '</strong>' + geoTorreRes + '<br>') +
+        geoRdwcRes +
+        '<br>⚡ Recirculación continua · EC/pH en <strong>depósito de control</strong> y cubos.<br>'
+      : dwcMcSetup
+        ? '🫧 DWC: <strong>' +
+          cestas +
+          ' cubo' +
+          (parseInt(cestas, 10) === 1 ? '' : 's') +
+          ' (1 maceta/cubo) · ' +
+          volTxtResume +
+          '</strong>' +
+          geoDwcRes +
+          '<br>⚡ Aireador <strong>24 h</strong> · dosis <strong>por cubo</strong> (~' +
+          (typeof volDosis === 'number' && Number.isFinite(volDosis) ? Math.round(volDosis * 10) / 10 : '—') +
+          ' L) · Mediciones en cada cubo.<br>'
+        : '🫧 DWC: <strong>' +
+          niveles +
+          ' filas × ' +
+          cestas +
+          ' macetas · ' +
+          volTxtResume +
+          '</strong>' +
+          geoDwcRes +
+          '<br>⚡ Aireador <strong>24 h</strong> · nivel y nutrientes en <strong>Mediciones</strong>.<br>';
+
+  el.innerHTML =
+    bloqueInst +
     '🧪 Nutriente: <strong>' + (nut?.nombre || 'Canna Aqua Vega') + '</strong><br>' +
     '⚡ EC objetivo: <strong>' + ecObj.min + '–' + ecObj.max + ' µS/cm</strong>' +
     (ecObj.fuente === 'cultivos' ? ' <span class="setup-ec-fuente">(según cultivos)</span>' : '') + '<br>' +
@@ -641,7 +549,7 @@ function actualizarResumenSetup() {
       : '') + '<br>' +
     hwResumen +
     '🌱 Cultivos: <strong>' + plantasSel + '</strong><br>' +
-    '🌿 Torres: <strong>' + (setupNumTorres === 'varias' ? 'Varias (añadir desde pestaña Cultivo e instalación)' : 'Una torre') + '</strong>';
+    '🏠 Instalaciones: <strong>' + (setupNumTorres === 'varias' ? 'Varias (añadir desde Cultivo e instalación)' : 'Una instalación') + '</strong>';
 }
 
 // Tamaño de cestas
@@ -714,135 +622,6 @@ function seleccionarTubo(mm) {
   }
 
   calcularBombaRecomendada();
-}
-
-function seleccionarAntiRaices(tipo) {
-  setupAntiRaices = tipo;
-  ['TuboInt','Separadores','Canal','Ninguno'].forEach(t => {
-    const el = document.getElementById('anti' + t);
-    if (el) el.classList.remove('selected');
-  });
-  const map = { tubo_interior:'TuboInt', separadores:'Separadores', canal_lateral:'Canal', ninguno:'Ninguno' };
-  const el = document.getElementById('anti' + (map[tipo]||tipo));
-  if (el) el.classList.add('selected');
-}
-
-function calcularBombaRecomendada() {
-  const sliderH = document.getElementById('sliderAltura');
-  if (!sliderH) return;
-  setupAlturaTorre = parseFloat(sliderH.value);
-
-  const alturaEl = document.getElementById('valAltura');
-  if (alturaEl) alturaEl.textContent = ' ' + setupAlturaTorre.toFixed(1) + 'm';
-
-  const niveles = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10) || 5;
-  const cestas = parseInt(document.getElementById('sliderCestas')?.value || 5, 10) || 5;
-
-  const b =
-    typeof hcComputeTorreBombaOrientativa === 'function'
-      ? hcComputeTorreBombaOrientativa(niveles, setupAlturaTorre, cestas)
-      : null;
-  if (!b) return;
-
-  const caudalMin = b.caudalMin;
-  const caudalRec = b.caudalRec;
-  const headMetros = b.headMetros;
-  const potenciaRec = b.potenciaRec;
-  const modeloRec = b.modeloRec;
-
-  // Aviso tubo interior si aplica
-  let avisoTuboInt = '';
-  if (setupDiametroTubo >= 125 && setupAntiRaices === 'tubo_interior') {
-    const dTuboInt = setupDiametroTubo >= 200 ? '50mm' : setupDiametroTubo >= 160 ? '40mm' : '32mm';
-    avisoTuboInt = '<br>🔩 <strong>Tubo interior recomendado: ' + dTuboInt + '</strong> perforado (agujeros 8mm cada 7cm) + tela filtrante tipo jersey.';
-  }
-
-  const el = document.getElementById('resultadoBomba');
-  if (!el) return;
-  el.innerHTML =
-    '<div class="bomba-res-title">' +
-      '⚡ Bomba recomendada para tu torre' +
-    '</div>' +
-    '<div class="bomba-res-grid">' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Caudal mínimo</div>' +
-        '<div class="bomba-res-cell-val">' + caudalMin + ' L/h</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Caudal recomendado</div>' +
-        '<div class="bomba-res-cell-val">' + caudalRec + ' L/h</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Head necesario</div>' +
-        '<div class="bomba-res-cell-val">' + headMetros + 'm</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Potencia mínima</div>' +
-        '<div class="bomba-res-cell-val">' + potenciaRec + 'W</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="bomba-res-foot">' +
-      '💡 ' + modeloRec + avisoTuboInt +
-    '</div>';
-
-  // Guardar en setupData
-  window.setupBombaCalculada = { caudalMin, caudalRec, headMetros, potenciaRec, modeloRec };
-  try {
-    if (typeof refrescarUIMensajeBombaUsuarioTorre === 'function') refrescarUIMensajeBombaUsuarioTorre();
-  } catch (_) {}
-}
-
-function calcularBombaRecomendadaSistema() {
-  const sliderH = document.getElementById('sysSliderAltura');
-  if (!sliderH) return;
-  const alturaM = parseFloat(sliderH.value) || 1.2;
-  const alturaEl = document.getElementById('sysValAltura');
-  if (alturaEl) alturaEl.textContent = ' ' + alturaM.toFixed(1) + 'm';
-
-  const niveles = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10) || 5;
-  const cestas = parseInt(document.getElementById('sliderCestas')?.value || 5, 10) || 5;
-
-  const b =
-    typeof hcComputeTorreBombaOrientativa === 'function'
-      ? hcComputeTorreBombaOrientativa(niveles, alturaM, cestas)
-      : null;
-  if (!b) return;
-
-  const caudalMin = b.caudalMin;
-  const caudalRec = b.caudalRec;
-  const headMetros = b.headMetros;
-  const potenciaRec = b.potenciaRec;
-  const modeloRec = b.modeloRec;
-
-  const el = document.getElementById('sysResultadoBomba');
-  if (!el) return;
-  el.innerHTML =
-    '<div class="bomba-res-title">' +
-      '⚡ Bomba orientativa para tu torre' +
-    '</div>' +
-    '<div class="bomba-res-grid">' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Caudal mínimo</div>' +
-        '<div class="bomba-res-cell-val">' + caudalMin + ' L/h</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Caudal recomendado</div>' +
-        '<div class="bomba-res-cell-val">' + caudalRec + ' L/h</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Head necesario</div>' +
-        '<div class="bomba-res-cell-val">' + headMetros + 'm</div>' +
-      '</div>' +
-      '<div class="bomba-res-cell">' +
-        '<div class="bomba-res-cell-lab">Potencia mínima</div>' +
-        '<div class="bomba-res-cell-val">' + potenciaRec + 'W</div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="bomba-res-foot">💡 ' + modeloRec + '</div>';
-
-  try {
-    if (typeof refrescarUIMensajeBombaUsuarioTorreSistema === 'function') refrescarUIMensajeBombaUsuarioTorreSistema();
-  } catch (_) {}
 }
 
 function seleccionarCesta(tam) {
@@ -1085,3 +864,7 @@ function aplicarSetupDataATorre() {
   } catch (_) {}
 }
 
+
+function calcularBombaRecomendada() {}
+function calcularBombaRecomendadaSistema() {}
+function seleccionarAntiRaices(_tipo) {}

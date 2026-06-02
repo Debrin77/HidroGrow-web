@@ -45,8 +45,18 @@ function loadState() {
         (nivel || []).forEach(cell => asegurarCamposFilaTorre(cell));
       });
       if (s.modo) modoActual = s.modo;
-      if (typeof hidrogrowMigrarStateCompleto === 'function') hidrogrowMigrarStateCompleto(s);
+      let legacyPersist = false;
+      if (typeof hidrogrowMigrarStateCompleto === 'function') {
+        legacyPersist = !!hidrogrowMigrarStateCompleto(s);
+      }
       normalizarNotifOpcionesEnState(s);
+      if (legacyPersist) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+        } catch (e) {
+          console.warn('No se pudo persistir migración DWC/RDWC', e);
+        }
+      }
       return s;
     }
   } catch(e) { console.error('Error loading state:', e); }

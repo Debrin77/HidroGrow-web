@@ -374,7 +374,7 @@ function bindTorreCestas(wrap, opts = {}) {
       t = setTimeout(() => {
         const dat = (state.torre?.[n]?.[c]) || {};
         const _ti = tipoInstalacionNormalizado(state.configTorre);
-        const vacioLbl = _ti === 'nft' ? 'Hueco vacío' : _ti === 'dwc' ? 'Maceta vacía' : 'Cesta vacía';
+        const vacioLbl = _ti === 'dwc' ? 'Maceta vacía' : 'Módulo vacío';
         const variedad = dat.variedad || vacioLbl;
         const dias = dat.fecha ? Math.max(0, Math.floor((Date.now() - new Date(dat.fecha)) / 86400000)) : null;
         const fotos = (dat.fotos || []).length;
@@ -902,6 +902,14 @@ function getEmoji(estado) {
   return map[estado] || '🌱';
 }
 
+function refreshHcRevisionMontajeBanner(cfg) {
+  const el = document.getElementById('hcRevisionMontajeBanner');
+  if (!el) return;
+  const c = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const show = c.hcRequiereRevisionMontaje === true && c.checklistInstalacionConfirmada !== true;
+  el.classList.toggle('setup-hidden', !show);
+}
+
 function updateTorreStats() {
   try { initTorres(); } catch (_) {}
 
@@ -912,10 +920,10 @@ function updateTorreStats() {
   const torreNombre = rawNombre || (hayInst ? 'Instalación' : '');
   const volMax = getVolumenDepositoMaxLitros(cfg);
   const volMez = getVolumenMezclaLitros(cfg);
-  const esNftCfg = cfg.tipoInstalacion === 'nft';
-  const esDwcCfg = cfg.tipoInstalacion === 'dwc';
-  const esRdwcCfg = cfg.tipoInstalacion === 'rdwc';
-  const esSrfCfg = cfg.tipoInstalacion === 'srf';
+  const tipoInst =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'dwc';
+  const esDwcCfg = tipoInst === 'dwc';
+  const esRdwcCfg = tipoInst === 'rdwc';
 
   // Título torre
   renderTablaVariedades();
@@ -932,16 +940,10 @@ function updateTorreStats() {
   const depEl = document.getElementById('depositoTitulo');
   if (depEl) {
     const pref = rawNombre ? rawNombre + ' · ' : '';
-    if (esNftCfg) {
-      depEl.textContent = pref + 'Depósito (capacidad y mezcla)';
-    } else if (esDwcCfg) {
-      depEl.textContent = pref + 'Depósito DWC (capacidad y mezcla)';
-    } else if (esRdwcCfg) {
+    if (esRdwcCfg) {
       depEl.textContent = pref + 'Depósito RDWC (control y recirculación)';
-    } else if (esSrfCfg) {
-      depEl.textContent = pref + 'Estanque SRF (capacidad y mezcla)';
     } else {
-      depEl.textContent = pref + 'Depósito (capacidad y mezcla)';
+      depEl.textContent = pref + 'Depósito DWC (capacidad y mezcla)';
     }
   }
 
@@ -954,18 +956,9 @@ function updateTorreStats() {
       volHintEl.classList.remove('setup-hidden');
       volHintEl.innerHTML =
         'En RDWC este bloque es el <strong>reservorio de control</strong> (suele venir en la placa del kit); para nutrientes la app suma los <strong>cubos útiles</strong> configurados arriba.';
-    } else if (cfg.tipoInstalacion === 'torre') {
-      volHintEl.classList.remove('setup-hidden');
-      volHintEl.innerHTML =
-        'En <strong>torre vertical</strong> indicas tú la <strong>capacidad máxima</strong> del depósito y, si quieres, los <strong>litros de mezcla</strong> (abajo). No se calculan automáticamente: vacío en mezcla = se usa el máximo.';
-    } else if (esSrfCfg) {
-      volHintEl.classList.remove('setup-hidden');
-      volHintEl.innerHTML =
-        'SRF: volumen del <strong>estanque común</strong> (panel SRF abajo o asistente). Las dosis usan los litros útiles que guardes; vacío en mezcla = capacidad L×A×profundidad.';
     } else {
-      volHintEl.classList.remove('setup-hidden');
-      volHintEl.innerHTML =
-        'Litros de mezcla usados por el checklist. Si no sabes el máximo, mira la <strong>etiqueta del depósito</strong>. Resumen de cultivo en <strong>Inicio</strong>.';
+      volHintEl.classList.add('setup-hidden');
+      volHintEl.textContent = '';
     }
   }
 
@@ -997,14 +990,9 @@ function updateTorreStats() {
       refreshDwcSistemaMedidasUI();
     } catch (eDwcSysUi) {}
   }
-  if (esSrfCfg) {
-    try {
-      if (typeof syncSrfFormDesdeConfig === 'function') syncSrfFormDesdeConfig(cfg, 'sys');
-      if (typeof renderSrfCalculoStatus === 'function') renderSrfCalculoStatus(cfg, 'sysSrfCalcStatus');
-    } catch (_) {}
-  }
 
   actualizarAvisoCestasSinFecha();
+  refreshHcRevisionMontajeBanner(cfg);
   renderTorreInstalacionPicker();
 
   try {

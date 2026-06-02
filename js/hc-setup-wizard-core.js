@@ -1,5 +1,5 @@
 ﻿/**
- * Asistente de configuración: tipo de instalación, estado del wizard, NFT montaje/canal (hasta aplicar sistema).
+ * Asistente de configuración: tipo de instalación y estado del wizard (solo DWC / RDWC).
  * Tras nutrientes-catalog.js; antes de hc-setup-wizard-dwc.js.
  */
 
@@ -9,7 +9,7 @@
 
 let setupPagina = 0;
 let setupTipoTorre = 'custom';
-/** 'torre' | 'nft' | 'dwc' | 'rdwc' | 'srf' | '' (nueva instalación: hay que elegir en paso 0) */
+/** 'dwc' | 'rdwc' | '' (nueva instalación: hay que elegir en paso 0) */
 let setupTipoInstalacion = 'dwc';
 let setupRdwcDraft = null;
 
@@ -30,36 +30,12 @@ function tipoInstalacionNormalizado(cfg) {
 }
 
 /** Siempre DIY/a medida (opción kit comercial retirada de la UI). */
-function hcNftMontajeOrigenNormalizado(_cfg) {
-  return 'diy';
-}
-
 function hcRdwcMontajeOrigenNormalizado(_cfg) {
   return 'diy';
 }
 
-function hcTorreMontajeOrigenNormalizado(_cfg) {
-  return 'diy';
-}
-
-function readTorreMontajeOrigenDesdeSetupUi() {
-  return 'diy';
-}
-
-function readTorreMontajeOrigenDesdeSistemaUi() {
-  return 'diy';
-}
-
 function _hcExposeMontajeDiyBlocks() {
-  [
-    'setupNftMontajeDiyBlock',
-    'sysNftMontajeDiyBlock',
-    'setupRdwcMontajeDiyExtra',
-    'setupRdwcBombasWrap',
-    'sysRdwcMontajeDiyExtra',
-    'setupTorreBombaUsuarioBlock',
-    'sysTorreBombaUsuarioBlock',
-  ].forEach((id) => {
+  ['setupRdwcMontajeDiyExtra', 'setupRdwcBombasWrap', 'sysRdwcMontajeDiyExtra'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.classList.remove('setup-hidden');
   });
@@ -87,13 +63,7 @@ function restaurarSetupTorreBuilderControls() {
     wrap.parentElement.insertBefore(secBomba, wrap.nextSibling);
   }
   try {
-    if (
-      typeof setupTipoInstalacion !== 'undefined' &&
-      setupTipoInstalacion === 'torre' &&
-      typeof updateTorreBuilder === 'function'
-    ) {
-      updateTorreBuilder();
-    }
+    if (typeof updateTorreBuilder === 'function') updateTorreBuilder();
   } catch (_) {}
 }
 
@@ -123,12 +93,6 @@ function onTorreSlidersInput() {
     const sc = document.getElementById('sliderCestas');
     if (sn) sn.setAttribute('aria-valuenow', String(n));
     if (sc) sc.setAttribute('aria-valuenow', String(c));
-    try {
-      calcularBombaRecomendadaSistema();
-    } catch (_) {}
-    try {
-      refrescarUIMensajeBombaUsuarioTorreSistema();
-    } catch (_) {}
     return;
   }
   const n = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10) || 5;
@@ -146,170 +110,6 @@ function onTorreSlidersInput() {
   } catch (_) {}
 }
 
-/**
- * Estimación orientativa de bomba para torre vertical (caudal L/h, head m, potencia W)
- * según niveles, altura y carga por cestas por nivel.
- */
-function hcComputeTorreBombaOrientativa(niveles, alturaM, cestasPorNivel) {
-  const n = Math.max(1, Math.min(10, parseInt(String(niveles), 10) || 5));
-  const c = Math.max(1, Math.min(8, parseInt(String(cestasPorNivel), 10) || 5));
-  const h = Math.max(0.5, Math.min(3, Number(alturaM) || 1.2));
-  const cargaCestas = 1 + 0.07 * Math.max(0, c - 4);
-  const caudalMin = Math.round(1.5 * n * 60 * cargaCestas);
-  const caudalRec = Math.round(2.0 * n * 60 * cargaCestas);
-  const headMetros = Math.round(h * 1.2 * 10) / 10;
-  const Q = caudalRec / 1000;
-  const potenciaW = Math.ceil((Q * headMetros) / (0.367 * 0.35));
-  const potenciaRec = Math.max(5, potenciaW * 2);
-  let modeloRec = '';
-  if (caudalRec <= 400 && headMetros <= 1.5) {
-    modeloRec = 'Bomba 5-8W · 400-600 L/h · head 1.5m (ej: Jebao, Sunsun SS-200)';
-  } else if (caudalRec <= 600 && headMetros <= 2.0) {
-    modeloRec = 'Bomba 8-12W · 600-800 L/h · head 2.0m (ej: Jebao PP-388)';
-  } else if (caudalRec <= 900 && headMetros <= 2.5) {
-    modeloRec = 'Bomba 12-18W · 800-1000 L/h · head 2.5m (ej: Sunsun CHJ-503)';
-  } else {
-    modeloRec = 'Bomba 18-25W · 1200+ L/h · head 3m+ (consultar catálogo)';
-  }
-  return { caudalMin, caudalRec, headMetros, potenciaRec, modeloRec, niveles: n, cestas: c };
-}
-
-function validarBombaUsuarioTorreVsCalculo(b, lhStr, wStr) {
-  if (!b) return { tipo: 'sin_datos', html: '', toast: null };
-  const q = parseFloat(String(lhStr ?? '').replace(',', '.'));
-  const potW = parseFloat(String(wStr ?? '').replace(',', '.'));
-  const caudalMinLH = b.caudalMin;
-  const caudalRecLH = b.caudalRec;
-  if (!Number.isFinite(caudalMinLH) || !Number.isFinite(caudalRecLH)) {
-    return { tipo: 'sin_datos', html: '', toast: null };
-  }
-  if (!Number.isFinite(q) || q <= 0) {
-    return {
-      tipo: 'vacío',
-      html:
-        '<p class="setup-validation-text">Opcional: indica el caudal de la placa (L/h) para comprobar si encaja con la altura y los niveles.</p>',
-      toast: null,
-    };
-  }
-  if (q < caudalMinLH) {
-    return {
-      tipo: 'error',
-      html:
-        '<div class="setup-torre-bomba-verdict setup-torre-bomba-verdict--bad">Bomba: puede quedarse corta</div>' +
-        '<p class="setup-validation-text">El caudal declarado está <strong>por debajo del mínimo orientativo</strong> (' +
-        caudalMinLH +
-        ' L/h) para ' +
-        b.niveles +
-        ' niveles y la carga de cestas indicada. Revisa la curva Q–H del fabricante a unos <strong>' +
-        b.headMetros +
-        ' m</strong> de altura manométrica.</p>',
-      toast:
-        'Torre vertical: el caudal de tu bomba parece insuficiente para esta altura y número de niveles (revisa la curva Q–H).',
-    };
-  }
-  let tipo = 'ok';
-  let html =
-    '<div class="setup-torre-bomba-verdict setup-torre-bomba-verdict--ok">Bomba: dentro del rango orientativo</div>' +
-    '<p class="setup-validation-text">Superas el mínimo orientativo (' +
-    caudalMinLH +
-    ' L/h); el valor recomendado orientativo es ~' +
-    caudalRecLH +
-    ' L/h con altura manométrica ~' +
-    b.headMetros +
-    ' m.</p>';
-  if (q < caudalRecLH) {
-    tipo = 'marginal';
-    html =
-      '<div class="setup-torre-bomba-verdict setup-torre-bomba-verdict--warn">Bomba: justa</div>' +
-      '<p class="setup-validation-text">Cumples el mínimo orientativo pero <strong>sin mucho margen</strong>. Si la subida real es mayor o el tubo es estrecho, vigila el reparto en copas altas.</p>';
-  }
-  if (Number.isFinite(potW) && potW > 0 && potW < Math.max(4, Math.round(b.potenciaRec * 0.52))) {
-    tipo = tipo === 'ok' ? 'potencia_baja' : tipo;
-    html +=
-      '<p class="setup-validation-text"><strong>Potencia eléctrica baja</strong> frente al orden de magnitud orientativo (~' +
-      b.potenciaRec +
-      ' W): confirma en la ficha que el caudal se mantiene a la altura real de bombeo.</p>';
-  }
-  return { tipo, html, toast: null };
-}
-
-function seleccionarSetupTorreMontajeOrigen(_mode) {
-  _hcExposeMontajeDiyBlocks();
-  const sec = document.getElementById('seccionTuboBomba');
-  const torreSoloGraficoSliders =
-    typeof setupTipoInstalacion !== 'undefined' &&
-    setupTipoInstalacion === 'torre' &&
-    typeof setupPagina !== 'undefined' &&
-    setupPagina === SETUP_PAGE_GEOMETRY;
-  if (sec) {
-    if (torreSoloGraficoSliders) {
-      sec.classList.add('setup-hidden');
-      sec.style.display = 'none';
-    } else {
-      sec.classList.remove('setup-hidden');
-      sec.style.display = 'block';
-    }
-  }
-  try {
-    calcularBombaRecomendada();
-  } catch (_) {}
-  try {
-    refrescarUIMensajeBombaUsuarioTorre();
-  } catch (_) {}
-  try {
-    actualizarResumenSetup();
-  } catch (_) {}
-}
-
-function seleccionarSistemaTorreMontajeOrigen(_mode) {
-  _hcExposeMontajeDiyBlocks();
-  try {
-    calcularBombaRecomendadaSistema();
-  } catch (_) {}
-  try {
-    refrescarUIMensajeBombaUsuarioTorreSistema();
-  } catch (_) {}
-}
-
-function refrescarUIMensajeBombaUsuarioTorreSistema() {
-  const el = document.getElementById('sysTorreBombaUsuarioMsg');
-  if (!el) return;
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'torre') {
-    el.innerHTML = '';
-    return;
-  }
-  const sliderH = document.getElementById('sysSliderAltura');
-  const n = parseInt(document.getElementById('sliderNiveles')?.value || state.configTorre.numNiveles || 5, 10);
-  const c = parseInt(document.getElementById('sliderCestas')?.value || state.configTorre.numCestas || 5, 10);
-  const b = hcComputeTorreBombaOrientativa(n, sliderH ? parseFloat(sliderH.value) : 1.2, c);
-  const lhRaw = document.getElementById('sysTorreBombaUsuarioLh')?.value ?? '';
-  const wRaw = document.getElementById('sysTorreBombaUsuarioW')?.value ?? '';
-  const v = validarBombaUsuarioTorreVsCalculo(b, lhRaw, wRaw);
-  el.innerHTML = v.html || '';
-}
-
-function onSistemaTorreBombaUsuarioInput() {
-  refrescarUIMensajeBombaUsuarioTorreSistema();
-}
-
-let _torreBombaSistemaBlurToastKey = '';
-function onSistemaTorreBombaUsuarioBlur() {
-  refrescarUIMensajeBombaUsuarioTorreSistema();
-  const sliderH = document.getElementById('sysSliderAltura');
-  const n = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10);
-  const c = parseInt(document.getElementById('sliderCestas')?.value || 5, 10);
-  const b = hcComputeTorreBombaOrientativa(n, sliderH ? parseFloat(sliderH.value) : 1.2, c);
-  const lhRaw = document.getElementById('sysTorreBombaUsuarioLh')?.value ?? '';
-  const wRaw = document.getElementById('sysTorreBombaUsuarioW')?.value ?? '';
-  const v = validarBombaUsuarioTorreVsCalculo(b, lhRaw, wRaw);
-  const key = v.tipo + '|' + lhRaw + '|' + wRaw;
-  if (v.tipo === 'error' && v.toast && key !== _torreBombaSistemaBlurToastKey) {
-    _torreBombaSistemaBlurToastKey = key;
-    showToast(v.toast, true);
-  }
-}
-
-/** Niveles, cestas y bomba orientativa solo en el asistente (paso Geometría), no en Cultivo e instalación. */
 function ocultarTorreMontajeWizardEnPestanaSistema() {
   const card = document.getElementById('sistemaTorreMontajeCard');
   if (card) {
@@ -329,115 +129,11 @@ function sincronizarSistemaTorreMontajeUI(_cfg) {
   ocultarTorreMontajeWizardEnPestanaSistema();
 }
 
-function aplicarSistemaTorreMontajeDesdeFormulario() {
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'torre') return;
-  const cfg = state.configTorre;
-  const n = Math.max(1, Math.min(10, parseInt(document.getElementById('sliderNiveles')?.value || 5, 10) || 5));
-  const c = Math.max(1, Math.min(8, parseInt(document.getElementById('sliderCestas')?.value || 5, 10) || 5));
-  cfg.numNiveles = n;
-  cfg.numCestas = c;
-  const altM = parseFloat(document.getElementById('sysSliderAltura')?.value || '');
-  if (Number.isFinite(altM)) cfg.alturaTorre = Math.max(0.5, Math.min(3, altM));
-  delete cfg.torreMontajeOrigen;
-  {
-    const lhTorre = document.getElementById('sysTorreBombaUsuarioLh');
-    const wTorre = document.getElementById('sysTorreBombaUsuarioW');
-    const uLhT = lhTorre ? parseFloat(String(lhTorre.value).replace(',', '.')) : NaN;
-    const uWT = wTorre ? parseFloat(String(wTorre.value).replace(',', '.')) : NaN;
-    if (Number.isFinite(uLhT) && uLhT > 0) cfg.torreBombaUsuarioCaudalLh = Math.round(uLhT);
-    else delete cfg.torreBombaUsuarioCaudalLh;
-    if (Number.isFinite(uWT) && uWT > 0) cfg.torreBombaUsuarioPotenciaW = Math.round(uWT);
-    else delete cfg.torreBombaUsuarioPotenciaW;
-    const bTorre = hcComputeTorreBombaOrientativa(n, cfg.alturaTorre || 1.2, c);
-    const vTorre = validarBombaUsuarioTorreVsCalculo(bTorre, lhTorre ? lhTorre.value : '', wTorre ? wTorre.value : '');
-    if (vTorre.tipo === 'error' && vTorre.toast) showToast(vTorre.toast, true);
-  }
-  const b =
-    typeof hcComputeTorreBombaOrientativa === 'function'
-      ? hcComputeTorreBombaOrientativa(n, cfg.alturaTorre || 1.2, c)
-      : null;
-  if (b) {
-    cfg.bombaCalculada = {
-      caudalMin: b.caudalMin,
-      caudalRec: b.caudalRec,
-      headMetros: b.headMetros,
-      potenciaRec: b.potenciaRec,
-      modeloRec: b.modeloRec,
-    };
-  }
-  guardarEstadoTorreActual();
-  saveState();
-  try {
-    renderTorre();
-  } catch (_) {}
-  try {
-    renderTorreSistemaResumenTabla(cfg);
-  } catch (_) {}
-  showToast('Niveles, cestas y bomba de torre guardados para esta instalación.');
-}
-
-function refrescarUIMensajeBombaUsuarioTorre() {
-  const el = document.getElementById('setupTorreBombaUsuarioMsg');
-  if (!el) return;
-  if (typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion !== 'torre') {
-    el.innerHTML = '';
-    return;
-  }
-  const sliderH = document.getElementById('sliderAltura');
-  const n = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10);
-  const c = parseInt(document.getElementById('sliderCestas')?.value || 5, 10);
-  const b = hcComputeTorreBombaOrientativa(n, sliderH ? parseFloat(sliderH.value) : 1.2, c);
-  const lhRaw = document.getElementById('setupTorreBombaUsuarioLh')?.value ?? '';
-  const wRaw = document.getElementById('setupTorreBombaUsuarioW')?.value ?? '';
-  const v = validarBombaUsuarioTorreVsCalculo(b, lhRaw, wRaw);
-  el.innerHTML = v.html || '';
-}
-
-function onSetupTorreBombaUsuarioInput() {
-  refrescarUIMensajeBombaUsuarioTorre();
-}
+function onSetupTorreBombaUsuarioInput() {}
 
 let _torreBombaBlurToastKey = '';
-function onSetupTorreBombaUsuarioBlur() {
-  refrescarUIMensajeBombaUsuarioTorre();
-  const sliderH = document.getElementById('sliderAltura');
-  const n = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10);
-  const c = parseInt(document.getElementById('sliderCestas')?.value || 5, 10);
-  const b = hcComputeTorreBombaOrientativa(n, sliderH ? parseFloat(sliderH.value) : 1.2, c);
-  const lhRaw = document.getElementById('setupTorreBombaUsuarioLh')?.value ?? '';
-  const wRaw = document.getElementById('setupTorreBombaUsuarioW')?.value ?? '';
-  const v = validarBombaUsuarioTorreVsCalculo(b, lhRaw, wRaw);
-  const key = v.tipo + '|' + lhRaw + '|' + wRaw;
-  if (v.tipo === 'error' && v.toast && key !== _torreBombaBlurToastKey) {
-    _torreBombaBlurToastKey = key;
-    showToast(v.toast, true);
-  }
-}
-
-function readNftMontajeOrigenDesdeSetupUi() {
-  return 'diy';
-}
-
-function readNftMontajeOrigenDesdeSistemaUi() {
-  return 'diy';
-}
-
 function readRdwcMontajeOrigenDesdeForm(_scope) {
   return 'diy';
-}
-
-function seleccionarSetupNftMontajeOrigen(_mode) {
-  _hcExposeMontajeDiyBlocks();
-  try {
-    updateNftSetupPreview();
-  } catch (_) {}
-  try {
-    actualizarResumenSetup();
-  } catch (_) {}
-}
-
-function seleccionarSistemaNftMontajeOrigen(_mode) {
-  _hcExposeMontajeDiyBlocks();
 }
 
 function seleccionarSetupRdwcMontajeOrigen(_mode) {
@@ -495,17 +191,6 @@ function rdwcEnsureConfigDefaults(cfg) {
   c.ecPhEstrategia = 'auto';
   c.ecPhIntensidad = 'conservador';
   return c;
-}
-
-/** NFT: difusor de aire en el depósito de circulación (siempre). */
-function nftEnsureDifusorEnDeposito(cfg) {
-  if (!cfg) return cfg;
-  const tipo =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  if (tipo !== 'nft') return cfg;
-  if (!Array.isArray(cfg.equipamiento)) cfg.equipamiento = [];
-  if (cfg.equipamiento.indexOf('difusor') < 0) cfg.equipamiento.push('difusor');
-  return cfg;
 }
 
 function initSetupRdwcPresetSelect() {
@@ -976,7 +661,7 @@ function hcResetSetupFormForNewInstall(tipo) {
       const p =
         document.getElementById('setupDwcPreview') ||
         document.querySelector('#setupTorrePreviewSlot .torre-preview');
-      if (p && (!tipo || tipo === 'dwc' || tipo === 'torre')) hcRenderSetupPreviewPlaceholder(p);
+      if (p && (!tipo || tipo === 'dwc' || tipo === 'rdwc')) hcRenderSetupPreviewPlaceholder(p);
     }
   } catch (_) {}
 }
@@ -2203,8 +1888,6 @@ function torreNormalizeObjetivoCultivo(raw) {
 }
 
 function torreGetObjetivoCultivo(cfg) {
-  const c = cfg || state.configTorre || {};
-  if (c.torreObjetivoCultivo) return torreNormalizeObjetivoCultivo(c.torreObjetivoCultivo);
   const mk = typeof normalizeTorreModoActual === 'function' ? normalizeTorreModoActual(modoActual) : modoActual;
   return mk === 'mini' ? 'baby' : 'final';
 }
@@ -2269,23 +1952,11 @@ function torreGetObjetivoAjustes(cfg, objetivo) {
   };
 }
 
-function torreAplicarObjetivoEcRango(ecRange, cfg, objetivo) {
-  const c = cfg || state.configTorre || {};
-  if (tipoInstalacionNormalizado(c) !== 'torre') return ecRange;
-  const baseMin = Number(ecRange && ecRange.min);
-  const baseMax = Number(ecRange && ecRange.max);
-  if (!Number.isFinite(baseMin) || !Number.isFinite(baseMax)) return ecRange;
-  const adj = torreGetObjetivoAjustes(c, objetivo);
-  const minAdj = Math.max(350, Math.round(baseMin * adj.ecMult));
-  const maxAdj = Math.max(minAdj + 80, Math.round(baseMax * adj.ecMult));
-  return { min: minAdj, max: maxAdj };
-}
-
 function torreGetPhRangoObjetivo(nut, cfg, objetivo) {
   const c = cfg || state.configTorre || {};
   const n = nut || getNutrienteTorre();
   const base = (n && Array.isArray(n.pHRango) && n.pHRango.length >= 2) ? n.pHRango : [5.5, 6.5];
-  if (tipoInstalacionNormalizado(c) !== 'torre') return [base[0], base[1]];
+  return [base[0], base[1]];
   const adj = torreGetObjetivoAjustes(c, objetivo);
   const pMin = Math.round((Math.max(4.8, Math.min(6.9, Number(base[0]) + adj.phShift))) * 10) / 10;
   const pMax = Math.round((Math.max(pMin + 0.2, Math.min(7.2, Number(base[1]) + adj.phShift))) * 10) / 10;
@@ -2296,66 +1967,18 @@ function torreGetDiasCosechaObjetivo(diasBase, cfg, objetivo) {
   const c = cfg || state.configTorre || {};
   const d = Number(diasBase);
   if (!Number.isFinite(d) || d <= 0) return 45;
-  if (tipoInstalacionNormalizado(c) !== 'torre') return Math.max(18, Math.round(d));
+  return Math.max(18, Math.round(d));
   const adj = torreGetObjetivoAjustes(c, objetivo);
   return Math.max(14, Math.round(d * adj.diasMult));
 }
 
-function nftNormalizeObjetivoCultivo(raw) {
-  const v = String(raw == null ? '' : raw).trim().toLowerCase();
-  return v === 'baby' || v === 'babyleaf' || v === 'alta' ? 'baby' : 'final';
-}
-
-function nftGetObjetivoCultivo(cfg) {
-  const c = cfg || state.configTorre || {};
-  if (c.nftObjetivoCultivo) return nftNormalizeObjetivoCultivo(c.nftObjetivoCultivo);
-  if (c.torreObjetivoCultivo) return torreNormalizeObjetivoCultivo(c.torreObjetivoCultivo);
-  const mk = typeof normalizeTorreModoActual === 'function' ? normalizeTorreModoActual(modoActual) : modoActual;
-  return mk === 'mini' ? 'baby' : 'final';
-}
-
 /** Ajuste de rango EC por objetivo baby/final en NFT (misma lógica orientativa que torre/DWC). */
-function nftAplicarObjetivoEcRango(ecRange, cfg, objetivo) {
-  const c = cfg || state.configTorre || {};
-  if (tipoInstalacionNormalizado(c) !== 'nft') return ecRange;
-  const baseMin = Number(ecRange && ecRange.min);
-  const baseMax = Number(ecRange && ecRange.max);
-  if (!Number.isFinite(baseMin) || !Number.isFinite(baseMax)) return ecRange;
-  const objRaw =
-    objetivo != null
-      ? objetivo
-      : (typeof nftGetObjetivoCultivo === 'function' ? nftGetObjetivoCultivo(c) : 'final');
-  const obj = torreNormalizeObjetivoCultivo(objRaw);
-  const adj = torreGetObjetivoAjustes(c, obj);
-  const minAdj = Math.max(350, Math.round(baseMin * adj.ecMult));
-  const maxAdj = Math.max(minAdj + 80, Math.round(baseMax * adj.ecMult));
-  return { min: minAdj, max: maxAdj };
-}
-
-function nftGetObjetivoSpec(objetivo) {
-  const k = nftNormalizeObjetivoCultivo(objetivo);
-  if (k === 'baby') {
-    return {
-      key: 'baby',
-      label: 'SOG / esquejes (alta densidad)',
-      densidadTxt: '8–12 cm c-c',
-      cicloTxt: 'cosecha joven (aprox. 20–35 días)',
-    };
-  }
-  return {
-    key: 'final',
-    label: 'Planta adulta (tamaño completo)',
-    densidadTxt: '15–25 cm c-c',
-    cicloTxt: 'cosecha completa (aprox. 35–60 días)',
-  };
-}
-
 /** Etiquetas de nivel y plaza según tipo de instalación (índices 1-based en texto). */
 function labelsUbicacionInstalacion(tipoInstal) {
-  const t = (tipoInstal === 'nft' || tipoInstal === 'dwc' || tipoInstal === 'rdwc' || tipoInstal === 'srf' || tipoInstal === 'torre') ? tipoInstal : 'torre';
+  const t = tipoInstal === 'rdwc' ? 'rdwc' : 'dwc';
   return {
-    lblPlaza: t === 'nft' ? 'hueco' : t === 'dwc' ? 'maceta' : t === 'rdwc' ? 'cubo' : t === 'srf' ? 'planta' : 'cesta',
-    lblNivel: t === 'nft' ? 'Canal' : t === 'dwc' || t === 'rdwc' || t === 'srf' ? 'Fila' : 'Nivel',
+    lblPlaza: t === 'rdwc' ? 'cubo' : 'maceta',
+    lblNivel: 'Fila',
   };
 }
 
@@ -2379,7 +2002,10 @@ function formatoUbicacionEnRegistro(tipoInstal, nivel1Based, plaza1Based) {
 /** Tipo de instalación para mostrar una entrada antigua: snapshot; si no, config de la torre del registro; si no, activa. */
 function tipoInstalParaEntradaRegistro(e) {
   const s = e && e.tipoInstalSnap;
-  if (s === 'nft' || s === 'dwc' || s === 'rdwc' || s === 'srf' || s === 'torre') return s;
+  if (s === 'dwc' || s === 'rdwc') return s;
+  if (s && typeof hidrogrowTipoInstalacionRaw === 'function') {
+    return hidrogrowTipoInstalacionRaw({ tipoInstalacion: s });
+  }
   const tid = e && e.torreId;
   if (tid != null && Array.isArray(state.torres)) {
     const tr = state.torres.find(t => t.id === tid);
@@ -2411,85 +2037,7 @@ function infoSistemaEntrada(e) {
   return fallback;
 }
 let setupEquipamiento = new Set(['difusor']);
-/** NFT: Ø interior línea de alimentación/distribución desde bomba (no el canal de cultivo 75–110 mm), mm — 16–40 */
-let setupNftTuboMm = null;
 
-/** true si el usuario eligió un Ø de tubería de riego en el asistente (chip marcado). */
-function nftTuboRiegoElegidoEnSetup() {
-  return [16, 20, 25, 32, 40].some(d => document.getElementById('nftTubo' + d)?.classList.contains('selected'));
-}
-
-function hcResetNftTuboRiegoSeleccion() {
-  setupNftTuboMm = null;
-  [16, 20, 25, 32, 40].forEach(d => {
-    const el = document.getElementById('nftTubo' + d);
-    if (el) el.classList.remove('selected');
-  });
-  const slider = document.getElementById('sliderVol');
-  if (slider) {
-    slider.removeAttribute('data-hc-nft-vol-auto');
-    slider.removeAttribute('data-hc-nft-vol-manual');
-  }
-  const block = document.getElementById('setupNftRecoBlock');
-  if (block) {
-    block.classList.add('setup-hidden');
-    block.setAttribute('aria-hidden', 'true');
-  }
-}
-let setupNftCanalDiamMm = 90;
-
-function readNftCanalGeomFromSetupUi() {
-  const rect = document.getElementById('nftCanalFormaRect')?.classList.contains('selected');
-  const lamRaw = parseFloat(String(document.getElementById('sliderNftLamina')?.value ?? '3'));
-  const laminaMm = Number.isFinite(lamRaw) ? Math.min(6, Math.max(2, lamRaw)) : 3;
-  const longRaw = parseFloat(String(document.getElementById('nftLongCanalM')?.value || '').replace(',', '.'));
-  const anchoRaw = parseInt(String(document.getElementById('nftCanalAnchoMm')?.value || '100'), 10);
-  return {
-    forma: rect ? 'rectangular' : 'redondo',
-    diamMm: Math.min(160, Math.max(50, setupNftCanalDiamMm || 90)),
-    anchoMm: Number.isFinite(anchoRaw) ? Math.min(220, Math.max(40, anchoRaw)) : 100,
-    laminaMm,
-    longCanalM: Number.isFinite(longRaw) && longRaw > 0 ? Math.min(15, Math.max(0.5, longRaw)) : null,
-  };
-}
-
-function onSliderNftLaminaInput() {
-  const s = document.getElementById('sliderNftLamina');
-  const v = document.getElementById('valNftLamina');
-  if (v && s) v.innerHTML = s.value + '<span class="setup-inline-unit-mm"> mm</span>';
-  updateNftSetupPreview();
-}
-
-function seleccionarNftCanalForma(which) {
-  const rect = which !== 'redondo';
-  const rd = document.getElementById('nftCanalFormaRedondo');
-  const rt = document.getElementById('nftCanalFormaRect');
-  const wrapR = document.getElementById('nftCanalRedondoWrap');
-  const wrapRt = document.getElementById('nftCanalRectWrap');
-  if (rd) {
-    rd.classList.toggle('selected', !rect);
-    rd.setAttribute('aria-pressed', !rect ? 'true' : 'false');
-  }
-  if (rt) {
-    rt.classList.toggle('selected', rect);
-    rt.setAttribute('aria-pressed', rect ? 'true' : 'false');
-  }
-  if (wrapR) wrapR.style.display = rect ? 'none' : 'block';
-  if (wrapRt) wrapRt.style.display = rect ? 'block' : 'none';
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-}
-
-function seleccionarNftCanalDiam(mm) {
-  setupNftCanalDiamMm = Math.max(50, Math.min(160, parseInt(String(mm), 10) || 90));
-  [75, 90, 110].forEach(d => {
-    const el = document.getElementById('nftCanalDiam' + d);
-    if (el) el.classList.toggle('selected', d === setupNftCanalDiamMm);
-  });
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-  try {
-    renderNftCultivoRecoStatus('setup');
-  } catch (_) {}
-}
 let setupUbicacion = 'interior';
 let setupNutriente = 'canna_aqua';
 let setupCoordenadas = { lat: null, lon: null, ciudad: '' };
@@ -2548,98 +2096,6 @@ function abrirSetup() {
   if (setupTipoInstalacion === 'rdwc') {
     try { syncSetupRdwcFieldsDesdeConfig(c); } catch (_) {}
   }
-  if (setupTipoInstalacion === 'srf') {
-    try {
-      syncSrfFormDesdeConfig(c, 'setup');
-    } catch (_) {}
-  }
-  const snc = document.getElementById('sliderNftCanales');
-  const snh = document.getElementById('sliderNftHuecos');
-  const snp = document.getElementById('sliderNftPendiente');
-  const dispN = nftDisposicionNormalizada(c.nftDisposicion);
-  let sliderCanales = Math.max(1, Math.min(24, c.nftNumCanales || c.numNiveles || 4));
-  if (dispN === 'escalera' && c.nftEscaleraNivelesCara != null && Number(c.nftEscaleraNivelesCara) > 0) {
-    sliderCanales = Math.max(1, Math.min(12, Math.round(Number(c.nftEscaleraNivelesCara))));
-  }
-  if (snc) snc.value = String(sliderCanales);
-  if (snh) snh.value = String(Math.max(2, Math.min(30, c.nftHuecosPorCanal || c.numCestas || 8)));
-  if (snp) snp.value = String(Math.max(1, Math.min(4, c.nftPendientePct != null ? Math.round(c.nftPendientePct) : 2)));
-  const altB = document.getElementById('nftAlturaBombeoCm');
-  if (altB) {
-    altB.value =
-      c.nftAlturaBombeoCm != null && Number(c.nftAlturaBombeoCm) > 0 ? String(Math.round(Number(c.nftAlturaBombeoCm))) : '';
-  }
-  seleccionarNftDisposicion(c.nftDisposicion || 'mesa');
-  syncNftMesaRecorridoUiFromCfg(c);
-  const mmChk = document.getElementById('nftMesaMultinivelChk');
-  if (mmChk) mmChk.checked = c.nftMesaMultinivel === true;
-  if (mmChk && mmChk.checked) {
-    const tiersW = parseNftMesaTubosPorNivelStrLoose(c.nftMesaTubosPorNivelStr || '');
-    const tiersUse = tiersW.length >= 2 ? tiersW : [0, 0];
-    let huecosW = parseNftMesaHuecosPorNivelStrLoose(c.nftMesaHuecosPorNivelStr || '');
-    if (huecosW.length < tiersUse.length) {
-      const hxFb = Math.max(0, parseInt(String(c.nftHuecosPorCanal ?? c.numCestas ?? ''), 10) || 0);
-      while (huecosW.length < tiersUse.length) huecosW.push(hxFb);
-    }
-    rebuildNftMesaMultinivelTierSliders('nft', tiersUse, huecosW);
-  } else {
-    const host = document.getElementById('nftMesaTierConfigHost');
-    if (host) host.innerHTML = '';
-  }
-  const mmSep = document.getElementById('nftMesaSepNivelesCm');
-  if (mmSep) {
-    mmSep.value =
-      c.nftMesaSeparacionNivelesCm != null && Number(c.nftMesaSeparacionNivelesCm) > 0
-        ? String(Math.round(Number(c.nftMesaSeparacionNivelesCm)))
-        : '';
-  }
-  seleccionarNftEscaleraCaras(nftEscaleraCarasNormalizada(c.nftEscaleraCaras));
-  onNftMesaMultinivelToggle();
-  refrescarNftMontajeSubpanels();
-  const tuboCfg = parseInt(String(c.nftTuboInteriorMm), 10);
-  if (Number.isFinite(tuboCfg) && tuboCfg >= 16 && tuboCfg <= 40) {
-    seleccionarTuboNft(tuboCfg);
-  } else {
-    hcResetNftTuboRiegoSeleccion();
-  }
-  setupNftCanalDiamMm = Math.max(50, Math.min(160, parseInt(String(c.nftCanalDiamMm), 10) || 90));
-  const anchEl = document.getElementById('nftCanalAnchoMm');
-  if (anchEl) anchEl.value = String(c.nftCanalAnchoMm != null ? c.nftCanalAnchoMm : 100);
-  const lcmEl = document.getElementById('nftLongCanalM');
-  if (lcmEl) lcmEl.value = c.nftLongCanalM != null && c.nftLongCanalM !== '' ? String(c.nftLongCanalM) : '';
-  seleccionarNftCanalForma(c.nftCanalForma === 'rectangular' ? 'rectangular' : 'redondo');
-  seleccionarNftCanalDiam(setupNftCanalDiamMm);
-  const rimNftIn = document.getElementById('setupNftPotRimMm');
-  const hNftIn = document.getElementById('setupNftPotHmm');
-  if (rimNftIn) {
-    const rNv =
-      c.nftNetPotRimMm != null && Number(c.nftNetPotRimMm) > 0
-        ? Math.round(Number(c.nftNetPotRimMm))
-        : c.dwcNetPotRimMm != null && Number(c.dwcNetPotRimMm) > 0
-          ? Math.round(Number(c.dwcNetPotRimMm))
-          : '';
-    rimNftIn.value = rNv !== '' ? String(rNv) : '';
-  }
-  if (hNftIn) {
-    const hNv =
-      c.nftNetPotHeightMm != null && Number(c.nftNetPotHeightMm) > 0
-        ? Math.round(Number(c.nftNetPotHeightMm))
-        : c.dwcNetPotHeightMm != null && Number(c.dwcNetPotHeightMm) > 0
-          ? Math.round(Number(c.dwcNetPotHeightMm))
-          : '';
-    hNftIn.value = hNv !== '' ? String(hNv) : '';
-  }
-  try {
-    syncNftPotRimChipsFromInput();
-  } catch (_) {}
-  const lamEl = document.getElementById('sliderNftLamina');
-  if (lamEl) {
-    const lm = Number.isFinite(parseFloat(String(c.nftLaminaAguaMm)))
-      ? Math.min(5, Math.max(2, parseFloat(String(c.nftLaminaAguaMm))))
-      : 3;
-    lamEl.value = String(lm);
-    onSliderNftLaminaInput();
-  }
   const sv = document.getElementById('sliderVol');
   const svm = document.getElementById('setupVolMezclaL');
   if (sv) {
@@ -2671,30 +2127,7 @@ function abrirSetup() {
     } catch (_) {}
   }
 
-  if (tipoInstalacionNormalizado(c) === 'torre') {
-    try {
-      restaurarSetupTorreBuilderControls();
-    } catch (_) {}
-    const nTorre = Math.max(1, Math.min(10, parseInt(String(c.numNiveles || 5), 10) || 5));
-    const cTorre = Math.max(1, Math.min(8, parseInt(String(c.numCestas || 5), 10) || 5));
-    const snTorre = document.getElementById('sliderNiveles');
-    const scTorre = document.getElementById('sliderCestas');
-    if (snTorre) snTorre.value = String(nTorre);
-    if (scTorre) scTorre.value = String(cTorre);
-    const vnTorre = document.getElementById('valNiveles');
-    const vcTorre = document.getElementById('valCestas');
-    if (vnTorre) vnTorre.textContent = String(nTorre);
-    if (vcTorre) vcTorre.textContent = String(cTorre);
-    setupDiametroTubo =
-      c.diametroTubo != null && Number(c.diametroTubo) > 0 ? Math.round(Number(c.diametroTubo)) : 75;
-    setupAntiRaices = c.antiRaices || 'tubo_interior';
-    setupAlturaTorre = Number.isFinite(parseFloat(String(c.alturaTorre))) ? parseFloat(String(c.alturaTorre)) : 1.2;
-    const saTorre = document.getElementById('sliderAltura');
-    if (saTorre) saTorre.value = String(Math.max(0.5, Math.min(3, setupAlturaTorre)));
-    const vaTorre = document.getElementById('valAltura');
-    if (vaTorre) vaTorre.textContent = ' ' + setupAlturaTorre.toFixed(1) + 'm';
-  }
-  if (tipoInstalacionNormalizado(c) === 'dwc') {
+  if (setupTipoInstalacion === 'dwc') {
     try {
       if (typeof dwcAsegurarOxigenacionCoherenteConRejilla === 'function') dwcAsegurarOxigenacionCoherenteConRejilla(c);
     } catch (_) {}
@@ -2751,54 +2184,21 @@ function abrirSetup() {
   const o = document.getElementById('setupOverlay');
   o.classList.add('open');
   renderNutrientesGrid();
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-  else if (setupTipoInstalacion === 'dwc') {
+  if (setupTipoInstalacion === 'rdwc') {
+    try {
+      if (typeof syncSetupRdwcFieldsDesdeConfig === 'function') syncSetupRdwcFieldsDesdeConfig(c);
+    } catch (_) {}
+  } else if (setupTipoInstalacion === 'dwc') {
     try {
       if (typeof dwcSyncSetupMontajePreview === 'function') dwcSyncSetupMontajePreview();
     } catch (_) {}
-  } else updateTorreBuilder();
-  try {
-    if (setupTipoInstalacion === 'nft') {
-      seleccionarSetupNftMontajeOrigen('diy');
-    } else if (tipoInstalacionNormalizado(c) === 'torre') {
-      seleccionarSetupTorreMontajeOrigen('diy');
-    }
-  } catch (_) {}
+  }
   renderSetupPage();
   setTimeout(function () {
-    const lhIn = document.getElementById('nftBombaUsuarioLh');
-    const wIn = document.getElementById('nftBombaUsuarioW');
-    if (lhIn) {
-      lhIn.value =
-        c.nftBombaUsuarioCaudalLh != null && c.nftBombaUsuarioCaudalLh !== ''
-          ? String(c.nftBombaUsuarioCaudalLh)
-          : '';
-    }
-    if (wIn) {
-      wIn.value =
-        c.nftBombaUsuarioPotenciaW != null && c.nftBombaUsuarioPotenciaW !== ''
-          ? String(c.nftBombaUsuarioPotenciaW)
-          : '';
-    }
-    if (setupTipoInstalacion === 'nft') refrescarUIMensajeBombaUsuarioNft('setup');
-    if (tipoInstalacionNormalizado(c) === 'torre') {
-      const lhT = document.getElementById('setupTorreBombaUsuarioLh');
-      const wT = document.getElementById('setupTorreBombaUsuarioW');
-      if (lhT) {
-        lhT.value =
-          c.torreBombaUsuarioCaudalLh != null && c.torreBombaUsuarioCaudalLh !== ''
-            ? String(c.torreBombaUsuarioCaudalLh)
-            : '';
-      }
-      if (wT) {
-        wT.value =
-          c.torreBombaUsuarioPotenciaW != null && c.torreBombaUsuarioPotenciaW !== ''
-            ? String(c.torreBombaUsuarioPotenciaW)
-            : '';
-      }
-      refrescarUIMensajeBombaUsuarioTorre();
-    }
-  }, 0);
+    try {
+      if (typeof actualizarResumenSetup === 'function') actualizarResumenSetup();
+    } catch (_) {}
+  }, 80);
   a11yDialogOpened(o);
 }
 
@@ -2841,25 +2241,13 @@ function iniciarConfiguracionTorre() {
  * Importante: debe ejecutarse aunque setupPagina !== 1 (antes el return temprano impedía ocultar al cambiar de tipo en otros pasos).
  */
 function aplicarSetupWizardExclusividadTorreVertical() {
-  const tipo = typeof setupTipoInstalacion !== 'undefined' ? setupTipoInstalacion : 'torre';
-  const pag = typeof setupPagina !== 'undefined' ? setupPagina : 0;
   const sec = document.getElementById('seccionTuboBomba');
-  const mostrarBloqueTorreMontajeYTubo = tipo === 'torre' && pag === SETUP_PAGE_GEOMETRY;
-  if (!mostrarBloqueTorreMontajeYTubo) {
-    if (sec) {
-      sec.style.display = 'none';
-      sec.classList.add('setup-hidden');
-    }
-    try {
-      if (typeof mostrarSeccionTuboBomba === 'function') mostrarSeccionTuboBomba(false);
-    } catch (_) {}
-    return;
+  if (sec) {
+    sec.style.display = 'none';
+    sec.classList.add('setup-hidden');
   }
   try {
-    restaurarSetupTorreBuilderControls();
-  } catch (_) {}
-  try {
-    seleccionarSetupTorreMontajeOrigen('diy');
+    if (typeof mostrarSeccionTuboBomba === 'function') mostrarSeccionTuboBomba(false);
   } catch (_) {}
 }
 
@@ -2883,11 +2271,6 @@ function seleccionarTipoInstalacionSetup(tipo) {
   if (setupTipoInstalacion !== 'dwc') {
     try {
       if (typeof clearSetupVolMezclaDwcAutofill === 'function') clearSetupVolMezclaDwcAutofill();
-    } catch (_) {}
-  }
-  if (setupTipoInstalacion !== 'srf') {
-    try {
-      if (typeof clearSetupVolMezclaSrfAutofill === 'function') clearSetupVolMezclaSrfAutofill();
     } catch (_) {}
   }
   if (setupTipoInstalacion === 'rdwc') {
@@ -3101,944 +2484,10 @@ function onSetupVolMezclaInput() {
   if (typeof setupPagina !== 'undefined' && setupPagina === SETUP_PAGE_RESUMEN) actualizarResumenSetup();
 }
 
-/**
- * Geometría del canal de cultivo (no la línea de alimentación).
- * @param {object} cfg state.configTorre o fragmento
- */
-function nftCanalGeomDesdeConfig(cfg) {
-  const c = cfg || {};
-  const forma = c.nftCanalForma === 'rectangular' ? 'rectangular' : 'redondo';
-  const lamRaw = parseFloat(String(c.nftLaminaAguaMm));
-  const laminaMm = Number.isFinite(lamRaw) ? Math.min(6, Math.max(2, lamRaw)) : 3;
-  const longRaw = parseFloat(String(c.nftLongCanalM));
-  const longCanalM =
-    Number.isFinite(longRaw) && longRaw > 0 ? Math.min(15, Math.max(0.5, longRaw)) : null;
-  const diamRaw = parseInt(String(c.nftCanalDiamMm), 10);
-  const diamMm = Number.isFinite(diamRaw) ? Math.min(160, Math.max(50, diamRaw)) : 90;
-  const anchoRaw = parseInt(String(c.nftCanalAnchoMm), 10);
-  const anchoMm = Number.isFinite(anchoRaw) ? Math.min(220, Math.max(40, anchoRaw)) : 100;
-  return { forma, laminaMm, longCanalM, diamMm, anchoMm };
-}
-
-/** Área efectiva (mm²) del flujo con lámina de agua en el fondo del canal. */
-function nftAreaFlujoLaminaMm2(g) {
-  const lam = Math.min(6, Math.max(2, g.laminaMm || 3));
-  if (g.forma === 'rectangular') {
-    const w = Math.min(220, Math.max(40, g.anchoMm || 100));
-    return Math.max(1, w * lam);
-  }
-  const D = Math.min(160, Math.max(50, g.diamMm || 90));
-  const R = D / 2;
-  const h = Math.min(lam, Math.max(0.3, R - 0.25));
-  const dy = R - h;
-  const halfW = Math.sqrt(Math.max(0, R * R - dy * dy));
-  const wMm = 2 * halfW;
-  return Math.max(1, wMm * lam);
-}
-
-/** NFT: mesa (horizontal), escalera/inclinado (peldaños), pared (tubos horizontales en zigzag en muro). */
-function nftDisposicionNormalizada(v) {
-  const s = String(v == null ? '' : v).toLowerCase();
-  if (s === 'escalera') return 'escalera';
-  if (s === 'pared' || s === 'mural' || s === 'vertical') return 'pared';
-  return 'mesa';
-}
-
-/** Mesa: serie (tubo a tubo) o paralelo (colector por tubo). */
-function nftMesaRecorridoNormalizada(v) {
-  const s = String(v == null ? '' : v).toLowerCase();
-  if (s === 'paralelo' || s === 'parallel' || s === 'manifold' || s === 'colector') return 'paralelo';
-  return 'serie';
-}
-
-/** Colectores izq./der. (paralelo) en mesa o pared. */
-function nftColectoresParaleloDesdeConfig(cfg) {
-  cfg = cfg || {};
-  const disp = nftDisposicionNormalizada(cfg.nftDisposicion);
-  if (disp === 'mesa') {
-    if (cfg.nftMesaMultinivel) return false;
-    return nftMesaRecorridoNormalizada(cfg.nftMesaRecorridoAgua) === 'paralelo';
-  }
-  if (disp === 'pared') {
-    const rec = cfg.nftParedRecorridoAgua != null ? cfg.nftParedRecorridoAgua : cfg.nftMesaRecorridoAgua;
-    return nftMesaRecorridoNormalizada(rec) === 'paralelo';
-  }
-  return false;
-}
-
-/** Vista cenital (mesa MM): solo multinivel con 2+ franjas; paralelo 1 nivel usa esquema lateral como serie. */
-function nftMesaUsaDiagramaCenital(cfg) {
-  if (!cfg || nftDisposicionNormalizada(cfg.nftDisposicion) !== 'mesa') return false;
-  if (cfg.nftMesaMultinivel) {
-    const tiers = parseNftMesaTubosPorNivelStr(cfg.nftMesaTubosPorNivelStr || '');
-    if (tiers.length >= 2) return true;
-  }
-  return false;
-}
-
-/** Topología hidráulica para caudal de bomba: serie (un flujo) o paralelo (suma por tubo/rama). */
-function nftFlowTopologyFromConfig(cfg) {
-  cfg = cfg || {};
-  const disp = nftDisposicionNormalizada(cfg.nftDisposicion);
-  if (disp === 'mesa' || disp === 'pared') {
-    return nftColectoresParaleloDesdeConfig(cfg) ? 'paralelo' : 'serie';
-  }
-  if (disp === 'escalera') {
-    const caras =
-      typeof nftEscaleraCarasNormalizada === 'function'
-        ? nftEscaleraCarasNormalizada(cfg.nftEscaleraCaras)
-        : 1;
-    return caras >= 2 ? 'paralelo' : 'serie';
-  }
-  return 'serie';
-}
-
-/** @returns {number[]} tubos por franja de arriba a abajo */
-function parseNftMesaTubosPorNivelStr(str) {
-  const s = String(str == null ? '' : str).trim();
-  if (!s) return [];
-  const parts = s.split(/[,;\s]+/).filter(Boolean);
-  const out = [];
-  for (const p of parts) {
-    const n = parseInt(p, 10);
-    if (Number.isFinite(n) && n >= 1 && n <= 12) out.push(n);
-  }
-  const loose = nftMesaTubosPorNivelUniforme(out.slice(0, 8));
-  return loose.filter(n => n >= 1);
-}
-
-/** @returns {number[]} tubos por franja (0–12 permitido; conserva posiciones) */
-function parseNftMesaTubosPorNivelStrLoose(str) {
-  const s = String(str == null ? '' : str).trim();
-  if (!s) return [];
-  const parts = s.split(/[,;\s]+/).filter(Boolean);
-  const out = [];
-  for (const p of parts) {
-    const n = parseInt(p, 10);
-    if (Number.isFinite(n) && n >= 0 && n <= 12) out.push(n);
-  }
-  return nftMesaTubosPorNivelUniforme(out.slice(0, 8));
-}
-
-/** Mesa multinivel: mismo número de tubos en cada nivel (columnas alineadas). */
-function nftMesaTubosPorNivelUniforme(tiers) {
-  const raw = Array.isArray(tiers) ? tiers.slice() : [];
-  if (raw.length < 2) return raw;
-  const ref = raw.find(t => t > 0);
-  const n =
-    ref != null
-      ? Math.min(12, Math.max(0, ref))
-      : Math.min(12, Math.max(0, parseInt(String(raw[0]), 10) || 0));
-  return raw.map(() => n);
-}
-
-/** Etiqueta resumen tubos multinivel: «3×4» si todos iguales, si no «2+3+4». */
-function nftMesaTubosUniformLabel(tiers) {
-  const u = nftMesaTubosPorNivelUniforme(tiers);
-  if (!u.length) return '';
-  if (u.length < 2) return String(u[0]);
-  const t = u[0];
-  if (u.every(x => x === t)) return u.length + '×' + t;
-  return u.join('+');
-}
-
-/** Resumen corto de tubos/huecos para Cultivo, Consejos y checklist. */
-function nftResumenCantidadesBreve(cfg) {
-  cfg = cfg || state.configTorre || {};
-  const hyd = getNftHidraulicaDesdeConfig(cfg);
-  if (!hyd || !hyd.nCh) return '';
-  if (cfg.nftMesaMultinivel && hyd.mesaTiers && hyd.mesaTiers.length >= 2) {
-    const tubLbl = nftMesaTubosUniformLabel(hyd.mesaTiers);
-    let hxPart = hyd.nHx + ' huecos/tubo (ref.)';
-    if (hyd.mesaHuecosTiers && hyd.mesaHuecosTiers.length >= 2) {
-      const vals = hyd.mesaHuecosTiers.filter(h => h > 0);
-      if (vals.length) {
-        const allEq = vals.every(h => h === vals[0]);
-        hxPart = allEq ? vals[0] + ' huecos/franja' : hyd.mesaHuecosTiers.join('+') + ' huecos/franja';
-      }
-    }
-    return tubLbl + ' tubos/nivel · ' + hyd.mesaTiers.length + ' niveles · ' + hxPart;
-  }
-  return hyd.nCh + ' tubos × ' + hyd.nHx + ' huecos';
-}
-
-/** @returns {number[]} huecos/cestas por franja (0–30 permitido; conserva posiciones) */
-function parseNftMesaHuecosPorNivelStrLoose(str) {
-  const s = String(str == null ? '' : str).trim();
-  if (!s) return [];
-  const parts = s.split(/[,;\s]+/).filter(Boolean);
-  const out = [];
-  for (const p of parts) {
-    const n = parseInt(p, 10);
-    if (Number.isFinite(n) && n >= 0 && n <= 30) out.push(n);
-  }
-  return out.slice(0, 8);
-}
-
-/** Serializa huecos/cestas por franja desde el asistente (nft) o cuadrícula Cultivo (sys). */
-function getNftMesaHuecosPorNivelStrFromGrid(prefix) {
-  const isSys = prefix === 'sys';
-  const nEl = document.getElementById(isSys ? 'sysNftMesaNumNiveles' : 'nftMesaNumNiveles');
-  let n = parseInt(String(nEl && nEl.value != null ? nEl.value : ''), 10);
-  if (!Number.isFinite(n) || n < 2) n = 2;
-  n = Math.min(8, n);
-  const parts = [];
-  if (!isSys) {
-    const host = document.getElementById('nftMesaTierConfigHost');
-    if (host && host.children.length) {
-      for (let i = 0; i < n; i++) {
-        const sl = document.getElementById('sliderNftMesaTierHuecos_' + i);
-        const v = parseInt(String(sl && sl.value != null ? sl.value : ''), 10);
-        parts.push(Math.min(30, Math.max(0, Number.isFinite(v) ? v : 0)));
-      }
-      return parts.join(',');
-    }
-  }
-  for (let i = 0; i < n; i++) {
-    const id = (isSys ? 'sysNftMesaHuecosNivel_' : 'nftMesaHuecosNivel_') + i;
-    const el = document.getElementById(id);
-    if (!el) break;
-    const v = parseInt(String(el.value || ''), 10);
-    parts.push(Math.min(30, Math.max(0, Number.isFinite(v) ? v : 0)));
-  }
-  return parts.join(',');
-}
-
-/** Serializa tubos por nivel desde sliders del asistente (nft) o cuadrícula Cultivo (sys). */
-function getNftMesaTubosPorNivelStrFromGrid(prefix) {
-  const isSys = prefix === 'sys';
-  const nEl = document.getElementById(isSys ? 'sysNftMesaNumNiveles' : 'nftMesaNumNiveles');
-  let n = parseInt(String(nEl && nEl.value != null ? nEl.value : ''), 10);
-  if (!Number.isFinite(n) || n < 2) n = 2;
-  n = Math.min(8, n);
-  let tubos = 0;
-  if (isSys) {
-    const el = document.getElementById('sysNftMesaTubosTodos');
-    tubos = Math.min(12, Math.max(0, parseInt(String(el && el.value != null ? el.value : ''), 10) || 0));
-  } else {
-    const sl = document.getElementById('sliderNftMesaTubosTodos');
-    if (sl) {
-      tubos = Math.min(12, Math.max(0, parseInt(String(sl.value), 10) || 0));
-    }
-  }
-  const parts = [];
-  for (let i = 0; i < n; i++) parts.push(tubos);
-  return parts.join(',');
-}
-
-function rebuildNftMesaMultinivelTierSliders(prefix, tiersInit, huecosInit) {
-  if (prefix !== 'nft') {
-    rebuildNftMesaMultinivelGrid(prefix, tiersInit);
-    return;
-  }
-  const host = document.getElementById('nftMesaTierConfigHost');
-  const numInp = document.getElementById('nftMesaNumNiveles');
-  if (!host || !numInp) return;
-  let tiers = [];
-  if (Array.isArray(tiersInit)) {
-    tiers = tiersInit.map(t => Math.min(12, Math.max(0, parseInt(String(t), 10) || 0)));
-  } else {
-    const parsed = String(tiersInit || '')
-      .split(/[,;\s]+/)
-      .filter(Boolean)
-      .map(p => Math.min(12, Math.max(0, parseInt(String(p), 10) || 0)));
-    tiers = parsed.length >= 2 ? parsed : [0, 0];
-  }
-  let huecos = [];
-  if (Array.isArray(huecosInit)) {
-    huecos = huecosInit.map(h => Math.min(30, Math.max(0, parseInt(String(h), 10) || 0)));
-  } else {
-    huecos = parseNftMesaHuecosPorNivelStrLoose(String(huecosInit || ''));
-  }
-  if (tiers.length < 2) tiers = [0, 0];
-  tiers = tiers.slice(0, 8);
-  numInp.value = String(Math.min(8, Math.max(2, tiers.length)));
-  const n = parseInt(String(numInp.value), 10) || 2;
-  while (tiers.length < n) tiers.push(0);
-  while (huecos.length < n) huecos.push(0);
-  tiers = tiers.slice(0, n);
-  huecos = huecos.slice(0, n);
-  tiers = nftMesaTubosPorNivelUniforme(tiers);
-  const tubosTodos = tiers.find(t => t > 0) != null ? tiers.find(t => t > 0) : tiers[0] != null ? tiers[0] : 0;
-  let html =
-    '<div class="setup-nft-tier-tubos-global">' +
-    '<div class="torre-control-row setup-nft-tier-slider-row">' +
-    '<div class="torre-control-label"><span>Tubos por nivel</span> <span class="torre-control-val" id="valNftMesaTubosTodos">' +
-    tubosTodos +
-    '</span> <span class="setup-nft-tier-tubos-hint">(igual en todos)</span></div>' +
-    '<input type="range" class="torre-slider" id="sliderNftMesaTubosTodos" min="0" max="12" value="' +
-    tubosTodos +
-    '" oninput="onNftMesaTubosTodosChange()">' +
-    '</div></div>';
-  for (let i = 0; i < n; i++) {
-    const hVal = huecos[i] != null ? huecos[i] : 0;
-    let franja = 'Franja ' + (i + 1);
-    if (i === 0) franja += ' (arriba)';
-    else if (i === n - 1 && n > 1) franja += ' (abajo)';
-    html +=
-      '<div class="setup-nft-tier-franja" data-nft-mesa-tier-idx="' +
-      i +
-      '">' +
-      '<div class="setup-nft-tier-franja-title">' +
-      escHtmlUi(franja) +
-      '</div>' +
-      '<div class="torre-control-row setup-nft-tier-slider-row">' +
-      '<div class="torre-control-label"><span>Huecos / cestas por tubo</span> <span class="torre-control-val" id="valNftMesaTierHuecos_' +
-      i +
-      '">' +
-      hVal +
-      '</span></div>' +
-      '<input type="range" class="torre-slider" id="sliderNftMesaTierHuecos_' +
-      i +
-      '" min="0" max="30" value="' +
-      hVal +
-      '" oninput="updateNftSetupPreview()">' +
-      '</div>' +
-      '</div>';
-  }
-  host.innerHTML = html;
-  if (typeof refrescarNftMesaMultinivelCantidadesUi === 'function') refrescarNftMesaMultinivelCantidadesUi();
-}
-
-function rebuildNftMesaMultinivelGrid(prefix, tiersInit) {
-  const isSys = prefix === 'sys';
-  if (!isSys) {
-    rebuildNftMesaMultinivelTierSliders('nft', tiersInit, null);
-    return;
-  }
-  const numId = 'sysNftMesaNumNiveles';
-  const numInp = document.getElementById(numId);
-  const tubosInp = document.getElementById('sysNftMesaTubosTodos');
-  if (!numInp || !tubosInp) return;
-  let tiers = [];
-  if (Array.isArray(tiersInit)) {
-    tiers = tiersInit.map(t => Math.min(12, Math.max(0, parseInt(String(t), 10) || 0)));
-  } else {
-    tiers = parseNftMesaTubosPorNivelStrLoose(String(tiersInit || ''));
-  }
-  if (tiers.length < 2) tiers = [0, 0];
-  tiers = nftMesaTubosPorNivelUniforme(tiers.slice(0, 8));
-  numInp.value = String(Math.min(8, Math.max(2, tiers.length)));
-  const n = parseInt(String(numInp.value), 10) || 2;
-  const tubosTodos = tiers.find(t => t > 0) != null ? tiers.find(t => t > 0) : tiers[0] != null ? tiers[0] : 0;
-  tubosInp.value = String(tubosTodos);
-}
-
-function onNftMesaTubosTodosChange() {
-  const sl = document.getElementById('sliderNftMesaTubosTodos');
-  const val = document.getElementById('valNftMesaTubosTodos');
-  if (val && sl) val.textContent = String(parseInt(String(sl.value), 10) || 0);
-  if (typeof updateNftSetupPreview === 'function') updateNftSetupPreview();
-}
-
-function onNftWizardMesaNumNivelesChange() {
-  const want = Math.min(8, Math.max(2, parseInt(String(document.getElementById('nftMesaNumNiveles')?.value || ''), 10) || 2));
-  const prevT =
-    parseInt(String(document.getElementById('sliderNftMesaTubosTodos')?.value || ''), 10) || 0;
-  const prevH = [];
-  for (let i = 0; i < 8; i++) {
-    const elH = document.getElementById('sliderNftMesaTierHuecos_' + i);
-    if (elH) prevH.push(Math.min(30, Math.max(0, parseInt(String(elH.value), 10) || 0)));
-  }
-  const tiersArr = [];
-  for (let i = 0; i < want; i++) tiersArr.push(prevT);
-  while (prevH.length < want) prevH.push(0);
-  rebuildNftMesaMultinivelTierSliders('nft', tiersArr, prevH.slice(0, want));
-  document.getElementById('nftMesaNumNiveles').value = String(want);
-  if (typeof updateNftSetupPreview === 'function') updateNftSetupPreview();
-}
-
-function onSistemaNftMesaNumNivelesChange() {
-  const want = Math.min(8, Math.max(2, parseInt(String(document.getElementById('sysNftMesaNumNiveles')?.value || ''), 10) || 2));
-  const prevT =
-    parseInt(String(document.getElementById('sysNftMesaTubosTodos')?.value || ''), 10) || 0;
-  const tiersArr = [];
-  for (let i = 0; i < want; i++) tiersArr.push(prevT);
-  rebuildNftMesaMultinivelGrid('sys', tiersArr);
-  document.getElementById('sysNftMesaNumNiveles').value = String(want);
-}
-
-function nftEscaleraCarasNormalizada(v) {
-  const n = parseInt(String(v), 10);
-  return n === 2 ? 2 : 1;
-}
-
-/**
- * Caras para dibujar escalera: parámetro explícito + UI + config (en ese orden en navegador).
- * @param {number|string} carasParam valor pasado a buildNftEscaleraDiagramSvg (p. ej. 2)
- */
-function nftEscaleraCarasParaDiagrama(carasParam, EO) {
-  EO = EO || {};
-  let car = nftEscaleraCarasNormalizada(carasParam);
-  if (typeof readNftMontajeFromSetupUi === 'function' && typeof document !== 'undefined') {
-    try {
-      const m = readNftMontajeFromSetupUi();
-      if (m.disposicion === 'escalera') car = nftEscaleraCarasNormalizada(m.escaleraCaras);
-    } catch (_) {}
-  } else if (EO.escaleraCaras != null) {
-    car = nftEscaleraCarasNormalizada(EO.escaleraCaras);
-  } else if (EO.cfgSnapshot && EO.cfgSnapshot.nftEscaleraCaras != null) {
-    car = nftEscaleraCarasNormalizada(EO.cfgSnapshot.nftEscaleraCaras);
-  }
-  return car;
-}
-
-/** Caras escalera: prioriza botones del asistente (nftEscCara*) si disposición = escalera. */
-function nftEscaleraCarasDesdeCfgYUi(cfg, EO) {
-  cfg = cfg || {};
-  EO = EO || {};
-  if (typeof readNftMontajeFromSetupUi === 'function' && typeof document !== 'undefined') {
-    try {
-      const m = readNftMontajeFromSetupUi();
-      if (m.disposicion === 'escalera') return nftEscaleraCarasNormalizada(m.escaleraCaras);
-    } catch (_) {}
-  }
-  if (EO.escaleraCaras != null) return nftEscaleraCarasNormalizada(EO.escaleraCaras);
-  return nftEscaleraCarasNormalizada(cfg.nftEscaleraCaras);
-}
-
-/** Peldaños por cara: slider del asistente o config (no confundir con nCh total en 2 caras). */
-function nftEscaleraNvDesdeCfgYUi(cfg, EO, canalesArg) {
-  cfg = cfg || {};
-  EO = EO || {};
-  const caras = nftEscaleraCarasDesdeCfgYUi(cfg, EO);
-  if (typeof readNftMontajeFromSetupUi === 'function' && typeof document !== 'undefined') {
-    try {
-      const m = readNftMontajeFromSetupUi();
-      if (m.disposicion === 'escalera') {
-        const sliderNv = parseInt(document.getElementById('sliderNftCanales')?.value ?? '', 10);
-        if (Number.isFinite(sliderNv) && sliderNv >= 1) return Math.min(12, sliderNv);
-      }
-    } catch (_) {}
-  }
-  let nv = EO.escaleraNiveles;
-  if (nv == null || !Number.isFinite(nv)) nv = parseInt(String(cfg.nftEscaleraNivelesCara), 10);
-  if (Number.isFinite(nv) && nv >= 1) return Math.min(12, Math.max(1, Math.round(nv)));
-  const raw = parseInt(String(canalesArg), 10);
-  if (!Number.isFinite(raw) || raw < 1) return 1;
-  if (raw <= 12) return raw;
-  if (caras === 2 && raw % 2 === 0 && raw / 2 <= 12) return raw / 2;
-  if (raw % caras === 0 && raw / caras <= 12) return raw / caras;
-  return Math.min(12, Math.max(1, Math.ceil(raw / caras)));
-}
-
-/**
- * Canales hidráulicos efectivos y metadatos de montaje para cálculo y SVG.
- * @returns {{ nCh: number, nHx: number, mesaTiers?: number[], escaleraNiveles?: number, escaleraCaras?: number }}
- */
-/** NFT ya definido en asistente (tubos/huecos): no repetir montaje ni EC/pH en Cultivo e instalación. */
-function nftInstalacionYaConfigurada(cfg) {
-  if (!cfg || cfg.tipoInstalacion !== 'nft') return false;
-  const nCh = parseInt(String(cfg.nftNumCanales ?? cfg.numNiveles ?? ''), 10);
-  const hx = parseInt(String(cfg.nftHuecosPorCanal ?? cfg.numCestas ?? ''), 10);
-  return Number.isFinite(nCh) && nCh >= 1 && Number.isFinite(hx) && hx >= 2;
-}
-
-function nftHuecosDesdeCfg(cfg) {
-  const raw = parseInt(String(cfg.nftHuecosPorCanal ?? cfg.numCestas ?? ''), 10);
-  if (Number.isFinite(raw) && raw >= 0 && raw <= 30) {
-    return raw === 0 ? 0 : Math.min(30, Math.max(2, raw));
-  }
-  return 8;
-}
-
-function nftCanalesRawDesdeCfg(cfg) {
-  const raw = parseInt(String(cfg.nftNumCanales ?? cfg.numNiveles ?? ''), 10);
-  if (Number.isFinite(raw) && raw >= 0) return Math.min(24, raw);
-  return 4;
-}
-
-function getNftHidraulicaDesdeConfig(cfg) {
-  cfg = cfg || {};
-  const disp = nftDisposicionNormalizada(cfg.nftDisposicion);
-  const hx = nftHuecosDesdeCfg(cfg);
-  if (disp === 'mesa' && cfg.nftMesaMultinivel) {
-    const tiers = parseNftMesaTubosPorNivelStrLoose(cfg.nftMesaTubosPorNivelStr);
-    if (tiers.length >= 2) {
-      const sumT = tiers.reduce((a, b) => a + b, 0);
-      let huecosTiers = parseNftMesaHuecosPorNivelStrLoose(cfg.nftMesaHuecosPorNivelStr);
-      while (huecosTiers.length < tiers.length) huecosTiers.push(0);
-      huecosTiers = huecosTiers.slice(0, tiers.length);
-      const hxTier = huecosTiers.filter(h => h > 0);
-      const nHxEff = hxTier.length ? Math.min(30, Math.max(2, Math.max.apply(null, hxTier))) : hx;
-      return { nCh: Math.min(24, Math.max(0, sumT)), nHx: nHxEff, mesaTiers: tiers, mesaHuecosTiers: huecosTiers };
-    }
-  }
-  if (disp === 'escalera') {
-    const caras = nftEscaleraCarasDesdeCfgYUi(cfg, null);
-    const nv = nftEscaleraNvDesdeCfgYUi(cfg, null, cfg.nftNumCanales);
-    if (nv < 1) return { nCh: 0, nHx: hx, escaleraNiveles: 0, escaleraCaras: caras };
-    const nCh = Math.min(24, Math.max(0, nv * caras));
-    return { nCh, nHx: hx, escaleraNiveles: nv, escaleraCaras: caras };
-  }
-  const nCh = nftCanalesRawDesdeCfg(cfg);
-  return { nCh: Math.max(0, nCh), nHx: hx };
-}
-
-/** Sliders NFT a 0 (asistente nueva instalación). */
-function hcResetNftSetupSlidersZero() {
-  const set = (id, v) => {
-    const el = document.getElementById(id);
-    if (el) el.value = String(v);
-  };
-  set('sliderNftCanales', 0);
-  set('sliderNftHuecos', 0);
-  set('sliderNftPendiente', 0);
-  set('sliderNftMesaTubosTodos', 0);
-  const vTodos = document.getElementById('valNftMesaTubosTodos');
-  if (vTodos) vTodos.textContent = '0';
-  for (let i = 0; i < 8; i++) {
-    set('sliderNftMesaTierHuecos_' + i, 0);
-    const vH = document.getElementById('valNftMesaTierHuecos_' + i);
-    if (vH) vH.textContent = '0';
-  }
-  const vC = document.getElementById('valNftCanales');
-  const vH = document.getElementById('valNftHuecos');
-  const vP = document.getElementById('valNftPendiente');
-  if (vC) vC.textContent = '0';
-  if (vH) vH.textContent = '0';
-  if (vP) vP.innerHTML = '0<span class="setup-inline-unit-percent">%</span>';
-  try {
-    if (typeof updateNftSetupPreview === 'function') updateNftSetupPreview();
-  } catch (_) {}
-}
-
-/** Altura estática efectiva (cm) para el cálculo de bomba: manual o estimada en mesa multinivel. */
-function getNftAlturaBombeoEfectivaCm(cfg) {
-  cfg = cfg || {};
-  const raw = cfg.nftAlturaBombeoCm;
-  if (raw != null && Number.isFinite(Number(raw)) && Number(raw) > 0) {
-    return Math.min(500, Math.max(0, Math.round(Number(raw))));
-  }
-  const disp = nftDisposicionNormalizada(cfg.nftDisposicion);
-  if (disp === 'mesa' && cfg.nftMesaMultinivel) {
-    const tiers = parseNftMesaTubosPorNivelStrLoose(cfg.nftMesaTubosPorNivelStr);
-    if (tiers.length >= 2) {
-      let sep = parseFloat(String(cfg.nftMesaSeparacionNivelesCm ?? '').replace(',', '.'));
-      if (!Number.isFinite(sep) || sep <= 0) sep = 28;
-      sep = Math.min(150, Math.max(10, sep));
-      return Math.round((tiers.length - 1) * sep);
-    }
-  }
-  return 0;
-}
-
-function readNftMontajeFromSetupUi() {
-  let dispo = 'mesa';
-  if (document.getElementById('nftDispEscalera')?.classList.contains('selected')) dispo = 'escalera';
-  else if (document.getElementById('nftDispPared')?.classList.contains('selected')) dispo = 'pared';
-  const raw = parseFloat(String(document.getElementById('nftAlturaBombeoCm')?.value || '').replace(',', '.'));
-  const altCm =
-    Number.isFinite(raw) && raw > 0 ? Math.min(500, Math.round(raw)) : 0;
-  const mesaMultinivel = document.getElementById('nftMesaMultinivelChk')?.checked === true;
-  const mesaTubosStr = mesaMultinivel ? getNftMesaTubosPorNivelStrFromGrid('nft') : '';
-  const mesaHuecosStr = mesaMultinivel ? getNftMesaHuecosPorNivelStrFromGrid('nft') : '';
-  const sepRaw = parseFloat(String(document.getElementById('nftMesaSepNivelesCm')?.value || '').replace(',', '.'));
-  const mesaSepCm =
-    Number.isFinite(sepRaw) && sepRaw > 0 ? Math.min(150, Math.round(sepRaw)) : 0;
-  let escaleraCaras = 1;
-  if (document.getElementById('nftEscCara2')?.classList.contains('selected')) escaleraCaras = 2;
-  const mesaRecorrido = mesaMultinivel
-    ? 'serie'
-    : document.getElementById('nftMesaRecorridoParalelo')?.checked === true
-      ? 'paralelo'
-      : 'serie';
-  return {
-    disposicion: dispo,
-    alturaBombeoCm: altCm,
-    mesaMultinivel,
-    mesaTubosStr,
-    mesaHuecosStr,
-    mesaSepCm,
-    mesaRecorrido,
-    escaleraCaras,
-  };
-}
-
-function readNftMesaRecorridoFromUi(prefix) {
-  const p = prefix === 'sys' ? 'sys' : 'nft';
-  const par = document.getElementById(p + 'NftMesaRecorridoParalelo');
-  if (par) return par.checked ? 'paralelo' : 'serie';
-  return 'serie';
-}
-
-function syncNftMesaRecorridoUiFromCfg(cfg) {
-  cfg = cfg || {};
-  const disp = nftDisposicionNormalizada(cfg.nftDisposicion);
-  const rawRec =
-    disp === 'pared' && cfg.nftParedRecorridoAgua != null ? cfg.nftParedRecorridoAgua : cfg.nftMesaRecorridoAgua;
-  const rec = nftMesaRecorridoNormalizada(rawRec);
-  const elS = document.getElementById('nftMesaRecorridoSerie');
-  const elP = document.getElementById('nftMesaRecorridoParalelo');
-  const elSs = document.getElementById('sysNftMesaRecorridoSerie');
-  const elPs = document.getElementById('sysNftMesaRecorridoParalelo');
-  if (elS) elS.checked = rec === 'serie';
-  if (elP) elP.checked = rec === 'paralelo';
-  if (elSs) elSs.checked = rec === 'serie';
-  if (elPs) elPs.checked = rec === 'paralelo';
-  const lS = document.getElementById('nftMesaRecorridoSerieLbl');
-  const lP = document.getElementById('nftMesaRecorridoParaleloLbl');
-  const lSs = document.getElementById('sysNftMesaRecorridoSerieLbl');
-  const lPs = document.getElementById('sysNftMesaRecorridoParaleloLbl');
-  if (lS) lS.classList.toggle('selected', rec === 'serie');
-  if (lP) lP.classList.toggle('selected', rec === 'paralelo');
-  if (lSs) lSs.classList.toggle('selected', rec === 'serie');
-  if (lPs) lPs.classList.toggle('selected', rec === 'paralelo');
-}
-
-function onNftMesaRecorridoChange(prefix) {
-  const rec = readNftMesaRecorridoFromUi(prefix);
-  const map =
-    prefix === 'sys'
-      ? [
-          { id: 'sysNftMesaRecorridoSerieLbl', on: rec === 'serie' },
-          { id: 'sysNftMesaRecorridoParaleloLbl', on: rec === 'paralelo' },
-        ]
-      : [
-          { id: 'nftMesaRecorridoSerieLbl', on: rec === 'serie' },
-          { id: 'nftMesaRecorridoParaleloLbl', on: rec === 'paralelo' },
-        ];
-  map.forEach((m) => {
-    const el = document.getElementById(m.id);
-    if (el) el.classList.toggle('selected', m.on);
-  });
-  if (prefix === 'sys') {
-    try {
-      if (typeof renderTorre === 'function') renderTorre();
-    } catch (_) {}
-    return;
-  }
-  try {
-    if (typeof updateNftSetupPreview === 'function') updateNftSetupPreview();
-  } catch (_) {}
-}
-
-function refrescarNftMontajeSubpanels() {
-  const d = readNftMontajeFromSetupUi().disposicion;
-  const mesaW = document.getElementById('nftMesaExtraWrap');
-  const escW = document.getElementById('nftEscaleraExtraWrap');
-  const hint = document.getElementById('nftAlturaBombeoHint');
-  if (mesaW) mesaW.classList.toggle('setup-hidden', d !== 'mesa' && d !== 'pared');
-  if (escW) escW.classList.toggle('setup-hidden', d !== 'escalera');
-  const mesaMmLbl = document.getElementById('nftMesaMultinivelChk')?.closest('label');
-  if (mesaMmLbl) mesaMmLbl.classList.toggle('setup-hidden', d !== 'mesa');
-  const mesaMmFields = document.getElementById('nftMesaMultinivelFields');
-  if (mesaMmFields && d !== 'mesa') mesaMmFields.classList.add('setup-hidden');
-  const mesaRecKicker = mesaW && mesaW.querySelector('.setup-nft-subkicker');
-  if (mesaRecKicker) {
-    mesaRecKicker.textContent =
-      d === 'pared' ? 'Recorrido del agua (pared)' : 'Recorrido del agua (mesa)';
-  }
-  if (hint) {
-    hint.innerHTML =
-      d === 'mesa'
-        ? 'Opcional en mesa plana; <strong>imprescindible</strong> en pared y escalera. En mesa multinivel puedes usar la separación entre niveles si no pones altura total.'
-        : d === 'pared' || d === 'escalera'
-          ? '<strong>Imprescindible</strong> en este montaje: sin altura (cm) el cálculo de bomba solo usa pérdidas orientativas.'
-          : '';
-  }
-  const mf = document.getElementById('nftMesaMultinivelFields');
-  const chk = document.getElementById('nftMesaMultinivelChk');
-  if (mf && chk) mf.classList.toggle('setup-hidden', !(d === 'mesa' && chk.checked));
-  if (typeof refrescarNftMesaMultinivelCantidadesUi === 'function') refrescarNftMesaMultinivelCantidadesUi();
-  if (typeof refrescarNftMesaRecorridoMultinivelUi === 'function') refrescarNftMesaRecorridoMultinivelUi();
-}
-
-/** Mesa multinivel: solo serie; oculta y desactiva recorrido en paralelo. */
-function refrescarNftMesaRecorridoMultinivelUi() {
-  const disp = readNftMontajeFromSetupUi().disposicion;
-  const mm = document.getElementById('nftMesaMultinivelChk')?.checked === true;
-  const bloqueaParalelo = disp === 'mesa' && mm;
-  const elS = document.getElementById('nftMesaRecorridoSerie');
-  const elP = document.getElementById('nftMesaRecorridoParalelo');
-  const lS = document.getElementById('nftMesaRecorridoSerieLbl');
-  const lP = document.getElementById('nftMesaRecorridoParaleloLbl');
-  const hint = document.getElementById('nftMesaRecorridoHint');
-  if (bloqueaParalelo) {
-    if (elS) {
-      elS.checked = true;
-      elS.disabled = false;
-    }
-    if (elP) {
-      elP.checked = false;
-      elP.disabled = true;
-    }
-    if (lS) lS.classList.add('selected');
-    if (lP) lP.classList.remove('selected');
-    if (lP) lP.classList.add('setup-hidden');
-    if (hint) {
-      hint.innerHTML =
-        'Mesa <strong>multinivel</strong>: el <strong>mismo número de tubos en cada nivel</strong> (columnas alineadas). El agua recorre las franjas en <strong>serie</strong> (serpentín); <strong>paralelo</strong> no aplica.';
-    }
-  } else {
-    if (elP) elP.disabled = false;
-    if (lP) lP.classList.remove('setup-hidden');
-    if (hint) {
-      hint.innerHTML =
-        'Paralelo: cada tubo recibe mezcla desde el colector izquierdo y devuelve por el derecho (como bancada comercial). Serie: el agua pasa por todos los tubos en orden.';
-    }
-    if (typeof onNftMesaRecorridoChange === 'function') onNftMesaRecorridoChange('nft');
-  }
-}
-
-const NFT_COUNTS_HELP_DEFAULT =
-  'Misma sección de tubo y huecos alineados en todo el esquema. La <strong>línea azul</strong> es el agua: subida desde la bomba al <strong>primer tubo</strong> (en A, reparto en T en el vértice), recorrido en <strong>zigzag</strong> entre extremos de cada peldaño y <strong>retorno al depósito</strong> desde el último tubo de cada cara.';
-
-function refrescarNftMesaMultinivelCantidadesUi() {
-  const mont =
-    typeof readNftMontajeFromSetupUi === 'function' ? readNftMontajeFromSetupUi() : { disposicion: 'mesa', mesaMultinivel: false };
-  const showMm = mont.disposicion === 'mesa' && mont.mesaMultinivel === true;
-  const canRow = document.getElementById('nftCanalesSliderRow');
-  const huecosRow = document.getElementById('nftHuecosSliderRow');
-  const help = document.getElementById('setupNftCountsHelp');
-  const countsTitle = document.getElementById('setupNftCountsTitle');
-  if (canRow) canRow.classList.toggle('setup-hidden', showMm);
-  if (huecosRow) huecosRow.classList.toggle('setup-hidden', showMm);
-  if (countsTitle) countsTitle.textContent = showMm ? 'Pendiente del circuito' : 'Cantidades en el diagrama';
-  if (help) {
-    help.innerHTML = showMm
-      ? 'Mesa <strong>multinivel</strong>: un solo valor de <strong>tubos por nivel</strong> (igual en todos) y <strong>huecos por franja</strong> (arriba → abajo). El diagrama alinea columnas entre niveles. Aquí solo la <strong>pendiente</strong> aproximada.'
-      : NFT_COUNTS_HELP_DEFAULT;
-  }
-}
-
-function onNftMesaMultinivelToggle() {
-  const mf = document.getElementById('nftMesaMultinivelFields');
-  const chk = document.getElementById('nftMesaMultinivelChk');
-  if (mf && chk) mf.classList.toggle('setup-hidden', !chk.checked);
-  if (chk && chk.checked && !document.getElementById('nftMesaTierConfigHost')?.children.length) {
-    rebuildNftMesaMultinivelTierSliders('nft', [0, 0], [0, 0]);
-  } else if (chk && !chk.checked) {
-    const host = document.getElementById('nftMesaTierConfigHost');
-    if (host) host.innerHTML = '';
-  }
-  if (typeof refrescarNftMesaMultinivelCantidadesUi === 'function') refrescarNftMesaMultinivelCantidadesUi();
-  if (typeof refrescarNftMesaRecorridoMultinivelUi === 'function') refrescarNftMesaRecorridoMultinivelUi();
-  updateNftSetupPreview();
-}
-
-function seleccionarNftEscaleraCaras(n) {
-  const caras = nftEscaleraCarasNormalizada(n);
-  if (caras === 2 && readNftMontajeFromSetupUi().disposicion !== 'escalera') {
-    seleccionarNftDisposicion('escalera');
-  }
-  const b1 = document.getElementById('nftEscCara1');
-  const b2 = document.getElementById('nftEscCara2');
-  if (b1) {
-    b1.classList.toggle('selected', caras === 1);
-    b1.setAttribute('aria-pressed', caras === 1 ? 'true' : 'false');
-  }
-  if (b2) {
-    b2.classList.toggle('selected', caras === 2);
-    b2.setAttribute('aria-pressed', caras === 2 ? 'true' : 'false');
-  }
-  if (setupTipoInstalacion === 'nft') {
-    if (typeof refrescarNftCanalesSliderEtiqueta === 'function') refrescarNftCanalesSliderEtiqueta();
-    updateNftSetupPreview();
-  }
-}
-
-function seleccionarNftDisposicion(which) {
-  const w = nftDisposicionNormalizada(which);
-  const ids = { mesa: 'nftDispMesa', escalera: 'nftDispEscalera', pared: 'nftDispPared' };
-  Object.keys(ids).forEach(k => {
-    const el = document.getElementById(ids[k]);
-    if (!el) return;
-    const on = k === w;
-    el.classList.toggle('selected', on);
-    el.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  refrescarNftMontajeSubpanels();
-  if (typeof refrescarNftMesaRecorridoMultinivelUi === 'function') refrescarNftMesaRecorridoMultinivelUi();
-  if (setupTipoInstalacion === 'nft') updateNftSetupPreview();
-}
-
-function onSistemaNftMesaMultinivelToggle() {
-  const mf = document.getElementById('sysNftMesaMultinivelFields');
-  const chk = document.getElementById('sysNftMesaMultinivelChk');
-  if (mf && chk) mf.style.display = chk.checked ? 'block' : 'none';
-  if (chk && chk.checked) {
-    const tubosInp = document.getElementById('sysNftMesaTubosTodos');
-    const n = parseInt(String(document.getElementById('sysNftMesaNumNiveles')?.value || ''), 10) || 2;
-    const t = parseInt(String(tubosInp?.value || ''), 10) || 0;
-    if (!tubosInp || t <= 0) rebuildNftMesaMultinivelGrid('sys', Array(Math.min(8, Math.max(2, n))).fill(1));
-  }
-  refrescarSistemaNftMontajeSubpanels();
-  if (typeof refrescarSistemaNftMesaRecorridoMultinivelUi === 'function') refrescarSistemaNftMesaRecorridoMultinivelUi();
-}
-
-function seleccionarSistemaNftEscaleraCaras(n) {
-  const caras = nftEscaleraCarasNormalizada(n);
-  const b1 = document.getElementById('sysNftEscCara1');
-  const b2 = document.getElementById('sysNftEscCara2');
-  if (b1) {
-    b1.classList.toggle('selected', caras === 1);
-    b1.setAttribute('aria-pressed', caras === 1 ? 'true' : 'false');
-  }
-  if (b2) {
-    b2.classList.toggle('selected', caras === 2);
-    b2.setAttribute('aria-pressed', caras === 2 ? 'true' : 'false');
-  }
-  try {
-    if (typeof renderTorre === 'function') renderTorre();
-  } catch (_) {}
-}
-
-function seleccionarSistemaNftDisposicion(which) {
-  const w = nftDisposicionNormalizada(which);
-  const ids = { mesa: 'sysNftDispMesa', escalera: 'sysNftDispEscalera', pared: 'sysNftDispPared' };
-  Object.keys(ids).forEach(k => {
-    const el = document.getElementById(ids[k]);
-    if (!el) return;
-    const on = k === w;
-    el.classList.toggle('selected', on);
-    el.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-  refrescarSistemaNftMontajeSubpanels();
-}
-
-function refrescarSistemaNftMontajeSubpanels() {
-  const mesaW = document.getElementById('sysNftMesaExtraWrap');
-  const escW = document.getElementById('sysNftEscaleraExtraWrap');
-  const rowC = document.getElementById('sysNftRowNumCanales');
-  let d = 'mesa';
-  if (document.getElementById('sysNftDispEscalera')?.classList.contains('selected')) d = 'escalera';
-  else if (document.getElementById('sysNftDispPared')?.classList.contains('selected')) d = 'pared';
-  if (mesaW) mesaW.style.display = d === 'mesa' || d === 'pared' ? 'block' : 'none';
-  if (escW) escW.style.display = d === 'escalera' ? 'block' : 'none';
-  const sysMmChk = document.getElementById('sysNftMesaMultinivelChk');
-  const sysMmRow = sysMmChk?.closest('label');
-  if (sysMmRow) sysMmRow.style.display = d === 'mesa' ? '' : 'none';
-  const sysRecKicker = mesaW && mesaW.querySelector('.torre-nft-cara-kicker');
-  if (sysRecKicker) {
-    sysRecKicker.textContent = d === 'pared' ? 'Recorrido del agua (pared)' : 'Recorrido del agua (mesa)';
-  }
-  if (rowC) {
-    const mm = document.getElementById('sysNftMesaMultinivelChk')?.checked === true;
-    rowC.style.display = d === 'escalera' ? 'none' : 'block';
-    if (d === 'mesa' && mm) rowC.style.display = 'none';
-  }
-  const mf = document.getElementById('sysNftMesaMultinivelFields');
-  const chk = document.getElementById('sysNftMesaMultinivelChk');
-  if (mf && chk) mf.style.display = d === 'mesa' && chk.checked ? 'block' : 'none';
-  if (typeof refrescarSistemaNftMesaRecorridoMultinivelUi === 'function') refrescarSistemaNftMesaRecorridoMultinivelUi();
-}
-
-/** Cultivo: mesa multinivel fuerza serie y oculta paralelo (igual que el asistente). */
-function refrescarSistemaNftMesaRecorridoMultinivelUi() {
-  if (document.getElementById('sysNftDispEscalera')?.classList.contains('selected')) return;
-  if (document.getElementById('sysNftDispPared')?.classList.contains('selected')) return;
-  const mm = document.getElementById('sysNftMesaMultinivelChk')?.checked === true;
-  const elS = document.getElementById('sysNftMesaRecorridoSerie');
-  const elP = document.getElementById('sysNftMesaRecorridoParalelo');
-  const lS = document.getElementById('sysNftMesaRecorridoSerieLbl');
-  const lP = document.getElementById('sysNftMesaRecorridoParaleloLbl');
-  const note = document.querySelector('#sysNftMesaExtraWrap .torre-nft-p-note');
-  if (!mm) {
-    if (elP) elP.disabled = false;
-    if (lP) lP.style.display = '';
-    if (note) {
-      note.textContent =
-        'Paralelo = colectores (cada tubo con entrada propia). Serie = agua pasa por todos en orden.';
-    }
-    return;
-  }
-  if (elS) elS.checked = true;
-  if (elP) {
-    elP.checked = false;
-    elP.disabled = true;
-  }
-  if (lS) lS.classList.add('selected');
-  if (lP) {
-    lP.classList.remove('selected');
-    lP.style.display = 'none';
-  }
-  if (note) {
-    note.innerHTML =
-      'Mesa <strong>multinivel</strong>: mismos tubos en cada nivel, recorrido en <strong>serie</strong> entre franjas. Los huecos pueden variar por franja (asistente); aquí <strong>Huecos / canal</strong> es referencia común.';
-  }
-  const huecosNote = document.getElementById('sysNftMesaMultinivelHuecosNote');
-  if (huecosNote) huecosNote.classList.toggle('setup-hidden', !mm);
-}
-
-/** Redimensiona state.torre a la hidráulica NFT conservando huecos existentes cuando sea posible. */
-function redimensionarMatrizTorreNftPreservando(cfg) {
-  if (!cfg || cfg.tipoInstalacion !== 'nft') return;
-  const hyd = getNftHidraulicaDesdeConfig(cfg);
-  const nCh = hyd.nCh;
-  const nHx = Math.min(30, Math.max(2, parseInt(String(cfg.nftHuecosPorCanal ?? cfg.numCestas ?? 8), 10) || 8));
-  const empty = () => ({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] });
-  const copy = o => {
-    if (!o || typeof o !== 'object') return empty();
-    return {
-      variedad: o.variedad || '',
-      fecha: o.fecha || '',
-      notas: o.notas || '',
-      origenPlanta:
-        typeof normalizarOrigenPlanta === 'function'
-          ? normalizarOrigenPlanta(o.origenPlanta)
-          : (o.origenPlanta || ''),
-      fotos: Array.isArray(o.fotos) ? o.fotos.slice() : [],
-      fotoKeys: Array.isArray(o.fotoKeys) ? o.fotoKeys.slice() : [],
-    };
-  };
-  const prev = state.torre || [];
-  const nue = [];
-  for (let i = 0; i < nCh; i++) {
-    const row = [];
-    const pi = prev[i];
-    for (let j = 0; j < nHx; j++) {
-      row.push(pi && pi[j] ? copy(pi[j]) : empty());
-    }
-    nue.push(row);
-  }
-  state.torre = nue;
-  cfg.numNiveles = nCh;
-  cfg.numCestas = nHx;
-}
-
-function textoResumenMontajeNftSistema(cfg) {
-  if (!cfg || cfg.tipoInstalacion !== 'nft') return '';
-  const d = nftDisposicionNormalizada(cfg.nftDisposicion || 'mesa');
-  const dTxt = d === 'mesa' ? 'Mesa' : d === 'escalera' ? 'Escalera' : 'Pared';
-  const mm = d === 'mesa' && cfg.nftMesaMultinivel === true;
-  const recTxt =
-    mm
-      ? ' · multinivel · serie'
-      : (d === 'mesa' || d === 'pared') && typeof nftColectoresParaleloDesdeConfig === 'function' && nftColectoresParaleloDesdeConfig(cfg)
-        ? ' · paralelo'
-        : d === 'mesa' || d === 'pared'
-          ? ' · serie'
-          : '';
-  const qty = typeof nftResumenCantidadesBreve === 'function' ? nftResumenCantidadesBreve(cfg) : '';
-  const pend = cfg.nftPendientePct ?? 2;
-  let rim =
-    cfg.nftNetPotRimMm != null && Number(cfg.nftNetPotRimMm) > 0
-      ? Math.round(Number(cfg.nftNetPotRimMm))
-      : cfg.dwcNetPotRimMm != null && Number(cfg.dwcNetPotRimMm) > 0
-        ? Math.round(Number(cfg.dwcNetPotRimMm))
-        : null;
-  const cestaShort = rim != null ? ' · cesta Ø' + rim + ' mm' : '';
-  const objLbl = nftGetObjetivoSpec(nftGetObjetivoCultivo(cfg)).key === 'baby' ? 'baby' : 'final';
-  return dTxt + recTxt + ' · ' + (qty || '—') + ' · ' + pend + '% pend. · obj ' + objLbl + cestaShort;
-}
-
 const SISTEMA_NFT_POT_RIM_PRESETS_MM = [27, 38, 40, 50, 75];
 
-function syncSistemaNftPotRimChipsFromInput() {
-  const el = document.getElementById('sysNftPotRimMm');
-  const raw = parseInt(String(el && el.value != null ? el.value : '').trim(), 10);
-  SISTEMA_NFT_POT_RIM_PRESETS_MM.forEach(d => {
-    const b = document.getElementById('sysNftPotRim' + d);
-    if (b) b.classList.toggle('selected', Number.isFinite(raw) && raw === d);
-  });
-}
-
-function seleccionarSistemaNftPotRimPreset(mm) {
-  const v = Math.max(25, Math.min(120, parseInt(String(mm), 10) || 50));
-  const inp = document.getElementById('sysNftPotRimMm');
-  if (inp) inp.value = String(v);
-  syncSistemaNftPotRimChipsFromInput();
+function textoResumenMontajeNftSistema(_cfg) {
+  return '';
 }
 
 function textoResumenSistemaDwcPanel(cfg) {
@@ -4214,12 +2663,6 @@ function applySistemaTipoPanelesColapsablesUI() {
     nftCard.style.display = 'none';
     nftCard.hidden = true;
   }
-  if (false && nftCard && nftBtn && nftBody && cfg && cfg.tipoInstalacion === 'nft' && nftCard.style.display === 'block') {
-    if (nftRes) nftRes.textContent = textoResumenMontajeNftSistema(cfg);
-    const col = cfg.uiSistemaNftMontajeColapsado === true;
-    nftBody.hidden = col;
-    nftBtn.setAttribute('aria-expanded', col ? 'false' : 'true');
-  }
   const dwcCard = document.getElementById('sistemaDwcAyudaCard');
   const dwcBtn = document.getElementById('btnToggleSistemaDwc');
   const dwcBody = document.getElementById('sistemaDwcAyudaBody');
@@ -4233,40 +2676,15 @@ function applySistemaTipoPanelesColapsablesUI() {
     dwcBtn.setAttribute('aria-expanded', colD ? 'false' : 'true');
   }
   const srfCard = document.getElementById('sistemaSrfAyudaCard');
-  const srfBtn = document.getElementById('btnToggleSistemaSrf');
-  const srfBody = document.getElementById('sistemaSrfAyudaBody');
-  const srfRes = document.getElementById('sistemaSrfResumen');
-  if (srfCard && srfBtn && srfBody && cfg && cfg.tipoInstalacion === 'srf' && srfCard.style.display !== 'none') {
-    if (srfRes && typeof textoResumenSistemaSrfPanel === 'function') {
-      srfRes.textContent = textoResumenSistemaSrfPanel(cfg);
-    }
-    const colS = cfg.uiSistemaSrfColapsado === true;
-    srfBody.hidden = colS;
-    srfBtn.setAttribute('aria-expanded', colS ? 'false' : 'true');
+  if (srfCard) {
+    srfCard.style.display = 'none';
+    srfCard.hidden = true;
   }
 }
 
-function toggleSistemaNftMontajePanel() {
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'nft') return;
-  state.configTorre.uiSistemaNftMontajeColapsado = !state.configTorre.uiSistemaNftMontajeColapsado;
-  guardarEstadoTorreActual();
-  saveState();
-  applySistemaTipoPanelesColapsablesUI();
-}
+function toggleSistemaNftMontajePanel() {}
 
-function toggleSistemaSrfPanel() {
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'srf') return;
-  state.configTorre.uiSistemaSrfColapsado = !state.configTorre.uiSistemaSrfColapsado;
-  guardarEstadoTorreActual();
-  saveState();
-  const body = document.getElementById('sistemaSrfAyudaBody');
-  const btn = document.getElementById('btnToggleSistemaSrf');
-  if (body && btn) {
-    const col = state.configTorre.uiSistemaSrfColapsado === true;
-    body.hidden = col;
-    btn.setAttribute('aria-expanded', col ? 'false' : 'true');
-  }
-}
+function toggleSistemaSrfPanel() {}
 
 function toggleSistemaDwcPanel() {
   if (
@@ -4486,30 +2904,15 @@ function refrescarSistemaDatosFacilesBanner(cfg) {
     el.classList.add('setup-hidden');
     return;
   }
-  const tipo = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  if (!tipo || tipo === 'torre') {
+  const tipo = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
+  if (tipo === 'rdwc') {
     el.classList.add('setup-hidden');
     el.textContent = '';
     return;
   }
   el.classList.remove('setup-hidden');
-  if (tipo === 'nft') {
-    el.textContent =
-      'NFT: disposición, tubos/huecos y Ø de cesta (suele venir en la caja del net pot). Altura de bombeo solo si el agua sube; datos de bomba son opcionales (placa del equipo).';
-  } else if (tipo === 'dwc') {
-    el.textContent =
-      'DWC: cinta por dentro del depósito o litros en etiqueta; Ø de cesta en el envase. Rejilla y litros de mezcla los orienta la app si dejas vacío lo opcional.';
-  } else if (tipo === 'rdwc') {
-    el.classList.add('setup-hidden');
-    el.textContent = '';
-    return;
-  } else if (tipo === 'srf') {
-    el.textContent =
-      'SRF: mide el estanque (L×A×profundidad útil) y huecos en la balsa. Aireación y litros de mezcla pueden quedar orientativos hasta que los completes.';
-  } else {
-    el.classList.add('setup-hidden');
-    el.textContent = '';
-  }
+  el.textContent =
+    'DWC: cinta por dentro del depósito o litros en etiqueta; Ø de cesta en el envase. Rejilla y litros de mezcla los orienta la app si dejas vacío lo opcional.';
 }
 
 function sincronizarSistemaNftMontajeUI() {
@@ -4662,112 +3065,12 @@ function aplicarSistemaEcPhStrategyDesdeFormulario() {
   );
 }
 
-/** Desde Cultivo e instalación: mismo overlay que «configurar», saltando al paso 1 (NFT: canal, tubo Ø, lámina, bomba). */
+/** Legacy NFT retirado — redirige al asistente DWC/RDWC. */
 function abrirAsistenteNftCanalYTuboDesdeSistema() {
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'nft') return;
+  if (!state.configTorre) return;
   guardarEstadoTorreActual();
   saveState();
   abrirSetup();
-  setupTipoInstalacion = 'nft';
-  setupPagina = SETUP_PAGE_PREMIUM_START;
-  renderSetupPage();
-  try {
-    updateNftSetupPreview();
-  } catch (e) {}
-}
-
-function aplicarSistemaNftMontajeDesdeFormulario() {
-  if (!state.configTorre || state.configTorre.tipoInstalacion !== 'nft') return;
-  const cfg = state.configTorre;
-  let dispo = 'mesa';
-  if (document.getElementById('sysNftDispEscalera')?.classList.contains('selected')) dispo = 'escalera';
-  else if (document.getElementById('sysNftDispPared')?.classList.contains('selected')) dispo = 'pared';
-  cfg.nftDisposicion = dispo;
-  delete cfg.nftMontajeOrigen;
-  const altRaw = parseFloat(String(document.getElementById('sysNftAlturaBombeoCm')?.value || '').replace(',', '.'));
-  if (Number.isFinite(altRaw) && altRaw > 0) cfg.nftAlturaBombeoCm = Math.min(500, Math.round(altRaw));
-  else delete cfg.nftAlturaBombeoCm;
-  const pendSel = parseInt(String(document.getElementById('sysNftPendiente')?.value || '2'), 10);
-  cfg.nftPendientePct = Math.max(1, Math.min(4, Number.isFinite(pendSel) ? pendSel : 2));
-  cfg.nftObjetivoCultivo = nftNormalizeObjetivoCultivo(document.getElementById('sysNftObjetivoCultivo')?.value || cfg.nftObjetivoCultivo);
-  const hxInp = parseInt(String(document.getElementById('sysNftHuecos')?.value || ''), 10);
-  cfg.nftHuecosPorCanal = Math.max(2, Math.min(30, Number.isFinite(hxInp) ? hxInp : cfg.nftHuecosPorCanal || 8));
-  const rimSys = parseInt(String(document.getElementById('sysNftPotRimMm')?.value ?? '').trim(), 10);
-  const hSys = parseInt(String(document.getElementById('sysNftPotHmm')?.value ?? '').trim(), 10);
-  if (Number.isFinite(rimSys) && rimSys >= 25 && rimSys <= 120) cfg.nftNetPotRimMm = rimSys;
-  else delete cfg.nftNetPotRimMm;
-  if (Number.isFinite(hSys) && hSys >= 30 && hSys <= 200) cfg.nftNetPotHeightMm = hSys;
-  else delete cfg.nftNetPotHeightMm;
-  const lhSys = parseFloat(String(document.getElementById('sysNftBombaLh')?.value || '').replace(',', '.'));
-  const wSys = parseFloat(String(document.getElementById('sysNftBombaW')?.value || '').replace(',', '.'));
-  if (Number.isFinite(lhSys) && lhSys > 0) cfg.nftBombaUsuarioCaudalLh = Math.round(lhSys);
-  else delete cfg.nftBombaUsuarioCaudalLh;
-  if (Number.isFinite(wSys) && wSys > 0) cfg.nftBombaUsuarioPotenciaW = Math.round(wSys);
-  else delete cfg.nftBombaUsuarioPotenciaW;
-  delete cfg.nftMesaMultinivel;
-  delete cfg.nftMesaTubosPorNivelStr;
-  delete cfg.nftMesaHuecosPorNivelStr;
-  delete cfg.nftMesaSeparacionNivelesCm;
-  delete cfg.nftMesaRecorridoAgua;
-  delete cfg.nftParedRecorridoAgua;
-  delete cfg.nftEscaleraCaras;
-  delete cfg.nftEscaleraNivelesCara;
-  if (dispo === 'mesa') {
-    cfg.nftMesaRecorridoAgua = readNftMesaRecorridoFromUi('sys');
-    const mm = document.getElementById('sysNftMesaMultinivelChk')?.checked === true;
-    const tiersStr = getNftMesaTubosPorNivelStrFromGrid('sys');
-    const sepRaw = parseFloat(String(document.getElementById('sysNftMesaSepCm')?.value || '').replace(',', '.'));
-    if (mm) {
-      const tiers = parseNftMesaTubosPorNivelStr(tiersStr);
-      if (tiers.length < 2) {
-        showToast('Multinivel: indica al menos dos niveles y al menos un tubo por nivel (igual en todos).', true);
-        return;
-      }
-      cfg.nftMesaMultinivel = true;
-      cfg.nftMesaTubosPorNivelStr = tiers.join(',');
-      if (Number.isFinite(sepRaw) && sepRaw > 0) cfg.nftMesaSeparacionNivelesCm = Math.min(150, Math.round(sepRaw));
-      else delete cfg.nftMesaSeparacionNivelesCm;
-      cfg.nftNumCanales = getNftHidraulicaDesdeConfig(cfg).nCh;
-    } else {
-      const nc = parseInt(String(document.getElementById('sysNftNumCanales')?.value || ''), 10);
-      cfg.nftNumCanales = Math.max(1, Math.min(24, Number.isFinite(nc) ? nc : 4));
-    }
-  } else if (dispo === 'escalera') {
-    const caras = document.getElementById('sysNftEscCara2')?.classList.contains('selected') ? 2 : 1;
-    cfg.nftEscaleraCaras = caras;
-    const nv = parseInt(String(document.getElementById('sysNftPeldaños')?.value || ''), 10);
-    cfg.nftEscaleraNivelesCara = Math.max(1, Math.min(12, Number.isFinite(nv) ? nv : 4));
-    cfg.nftNumCanales = cfg.nftEscaleraNivelesCara * caras;
-  } else {
-    cfg.nftParedRecorridoAgua = readNftMesaRecorridoFromUi('sys');
-    const nc = parseInt(String(document.getElementById('sysNftNumCanales')?.value || ''), 10);
-    cfg.nftNumCanales = Math.max(1, Math.min(24, Number.isFinite(nc) ? nc : 4));
-  }
-  cfg.nftBombaEstimada = getNftBombaDesdeConfig(cfg);
-  redimensionarMatrizTorreNftPreservando(cfg);
-  cfg.uiSistemaNftMontajeColapsado = true;
-  guardarEstadoTorreActual();
-  saveState();
-  aplicarConfigTorre();
-  renderTorre();
-  updateTorreStats();
-  updateDashboard();
-  actualizarBadgesNutriente();
-  try {
-    refrescarUIMensajeBombaUsuarioNft('checklist');
-  } catch (e) {}
-  if (document.getElementById('tab-consejos')?.classList.contains('active')) {
-    try {
-      renderConsejos();
-    } catch (e2) {}
-  }
-  showToast('Montaje NFT aplicado');
-  try {
-    renderTorreSistemaResumenTabla(cfg);
-  } catch (_) {}
-  try {
-    applySistemaTipoPanelesColapsablesUI();
-  } catch (_) {}
 }
 
 const DWC_FORM_IDS_SISTEMA = {

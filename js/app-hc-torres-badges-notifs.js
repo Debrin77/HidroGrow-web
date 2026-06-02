@@ -24,7 +24,9 @@ function hcEtiquetaTipoInstalacion(tipo) {
 
 function hcNormalizarConfigSegunTipo(cfg) {
   const c = hcClonePlainData(cfg, {}) || {};
+  if (typeof hidrogrowMigrarConfigInstalacion === 'function') hidrogrowMigrarConfigInstalacion(c);
   const tipo = tipoInstalacionNormalizado(c);
+  c.tipoInstalacion = tipo;
   const prefixes = [
     { tipo: 'dwc', prefijo: 'dwc' },
     { tipo: 'rdwc', prefijo: 'rdwc' },
@@ -166,13 +168,11 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
 
 function emojiMigracionPorTipoInstalacion(cfg) {
   const tipo = cfg && cfg.tipoInstalacion ? tipoInstalacionNormalizado(cfg) : '';
-  if (typeof emojiSistemaPorTipo === 'function') return emojiSistemaPorTipo(tipo || 'torre');
-  if (!tipo) return '🌿';
-  if (tipo === 'nft') return '💧';
+  if (typeof emojiSistemaPorTipo === 'function') return emojiSistemaPorTipo(tipo || 'dwc');
+  if (!tipo) return '🫧';
   if (tipo === 'dwc') return '🫧';
   if (tipo === 'rdwc') return '♻️';
-  if (tipo === 'srf') return '🟩';
-  return '🌿';
+  return '🫧';
 }
 
 function emojiSistemaUiPorTorre(t) {
@@ -522,7 +522,7 @@ function guardarEstadoTorreActual() {
   const idx = state.torreActiva || 0;
   if (!state.torres[idx]) return;
   const slot = state.torres[idx];
-  if (state.configTorre && typeof hidrogrowMigrarConfigInstalacion === 'function') {
+  if (typeof hidrogrowMigrarConfigInstalacion === 'function') {
     hidrogrowMigrarConfigInstalacion(state.configTorre);
   }
   const integrity = hcEvaluarIntegridadGuardadoInstalacion(slot, state.configTorre || null);
@@ -592,8 +592,8 @@ function cargarEstadoTorre(idx) {
   state.registro    = hcClonePlainData(t.registro, []);
   state.configTorre = hcClonePlainData(hcNormalizarConfigSegunTipo(t.config).config, null);
   if (state.configTorre) {
+    if (typeof hidrogrowMigrarConfigInstalacion === 'function') hidrogrowMigrarConfigInstalacion(state.configTorre);
     if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(state.configTorre);
-    if (typeof nftEnsureDifusorEnDeposito === 'function') nftEnsureDifusorEnDeposito(state.configTorre);
   }
   const umSlot = t.ultimaMedicion;
   if (umSlot && typeof umSlot === 'object') {
@@ -1185,7 +1185,7 @@ function actualizarBadgesNutriente() {
     const niv = cfg.numNiveles || 5;
     const ces = cfg.numCestas  || 5;
     const tipoDash =
-      typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || 'torre';
+      typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
     let geomTxt;
     if (tipoDash === 'dwc') {
       const esMc =
@@ -1199,10 +1199,8 @@ function actualizarBadgesNutriente() {
       }
     } else if (tipoDash === 'rdwc') {
       geomTxt = (cfg.rdwcRows || 1) + ' filas · ' + (cfg.rdwcSites || 4) + ' módulos';
-    } else if (tipoDash === 'nft') {
-      geomTxt = niv + ' canales · ' + ces + ' huecos';
     } else {
-      geomTxt = niv + ' niveles · ' + ces + ' cestas';
+      geomTxt = niv + ' filas · ' + ces + ' macetas';
     }
     const vMax = getVolumenDepositoMaxLitros(cfg);
     const vMez = getVolumenMezclaLitros(cfg);

@@ -40,10 +40,10 @@ const CONSEJOS_DATA = {
         texto:'Las primeras 48h son críticas. Mantén la esponja siempre húmeda pero no encharcada. El sistema de cascada debe estar activo desde el primer momento. <strong>No expongas las raíces al aire.</strong>',
         alerta:{ tipo:'info', txt:'ℹ️ Las plántulas nuevas pueden necesitar 2-3 días para adaptarse al sistema hidropónico si vienen de semillero en tierra.' } },
       { icono:'🏪', titulo:'Origen en ficha: plántula de vivero',
-        texto:'Si compras en vivero o garden center, suele venir sustrato (coco, turba, plug de semillero) en el pan de raíces. En hidroponía conviene <strong>retirar con suavidad lo suelto</strong> o seguir las indicaciones del proveedor, para no arrastrar tierra o materia orgánica al depósito. En la ficha elige <strong>Plántula de vivero</strong> y la <strong>fecha en que entra al sistema</strong> (NFT, DWC o torre).',
+        texto:'Si compras en vivero o garden center, suele venir sustrato (coco, turba, plug de semillero) en el pan de raíces. En hidroponía conviene <strong>retirar con suavidad lo suelto</strong> o seguir las indicaciones del proveedor, para no arrastrar tierra o materia orgánica al depósito. En la ficha elige <strong>Plántula de vivero</strong> y la <strong>fecha en que entra al sistema</strong> (DWC/RDWC).',
         alerta:{ tipo:'info', txt:'ℹ️ Con «vivero» la app suma una <strong>media de días en plug</strong> por cultivo (referencia comercial) a los días en hidro para <strong>EC/pH automáticos</strong>, riego y cosecha. Los recordatorios de <strong>pH diario en plántula nueva</strong> siguen contando solo desde la entrada al sistema (raíz nueva en la solución).' } },
       { icono:'🫘', titulo:'Origen en ficha: germinación propia',
-        texto:'Desde semilla: bandeja a <strong>oscuras</strong> hasta radícula (2–4 días), luego luz suave <strong>18/6</strong> (o 20/4 en plántula muy joven) hasta 2–3 hojas reales y raíz visible; entonces <strong>trasplanta al circuito</strong> (DWC/NFT/torre). En la ficha marca <strong>Germinación propia</strong> y como fecha el <strong>día de entrada al hidro</strong> (no el de la siembra), para que EC, pH y progreso coincidan con la planta en solución.',
+        texto:'Desde semilla: bandeja a <strong>oscuras</strong> hasta radícula (2–4 días), luego luz suave <strong>18/6</strong> (o 20/4 en plántula muy joven) hasta 2–3 hojas reales y raíz visible; entonces <strong>trasplanta al circuito</strong> (DWC/RDWC). En la ficha marca <strong>Germinación propia</strong> y como fecha el <strong>día de entrada al hidro</strong> (no el de la siembra), para que EC, pH y progreso coincidan con la planta en solución.',
         alerta:{ tipo:'ok', txt:'✅ En modo «Asignar cultivo» verás los mismos pasos al elegir germinación propia; los tiempos exactos dependen de la variedad y del sobre del semillero.' } },
       { icono:'⚗️', titulo:'pH inestable tras trasplantar plántulas',
         texto:'Es completamente normal que el pH suba 1-2 unidades en las primeras 24-72h tras añadir plántulas nuevas al sistema. Las raíces jóvenes absorben más aniones (nitratos) que cationes y liberan OH⁻ al agua, subiendo el pH. Con agua destilada este efecto es más pronunciado porque no hay carbonatos que amortigüen. <strong>No es un problema — es fisiología normal.</strong>',
@@ -69,17 +69,11 @@ const CONSEJOS_DATA = {
       { icono:'🌙', titulo:'Fuga de luz en floración (12/12)',
         texto:'En fotoperiodo <strong>12/12</strong> cualquier luz en la carpa (LED en standby, móvil, ventana cercana) puede estresar la planta o provocar hermafroditismo. Usa carpa <strong>100% opaca</strong>, tapa LEDs de equipos y evita abrir en horario de oscuridad.',
         alerta:{ tipo:'warn', txt:'⚠️ Calices en nodos bajos o «pelotas» en flor: revisa fugas de luz antes de culpar a la genética.' } },
-      { icono:'🔃', titulo:'Rotación escalonada (torre por niveles)',
-        texto:'Sobre todo en <strong>torre vertical</strong> con varios niveles: rota cada 12-15 días (cosecha abajo → subes plantas → plántulas arriba). Así mantienes producción continua con un solo depósito. En NFT/DWC el ritmo es distinto; usa fechas en fichas y calendario.',
-        alerta:{ tipo:'info', txt:'ℹ️ Al rotar, ajusta la EC del depósito al estado del cultivo predominante.' } },
-      { icono:'⏱️', titulo:'NFT vs torre: ¿mismos días de ciclo?',
-        texto:'En cannabis hidropónico el calendario lo marca la <strong>genética</strong> (foto vs auto), el <strong>fotoperiodo</strong> (18/6 veg, 12/12 flor en fotodependientes) y la <strong>EC/pH</strong>. DWC/RDWC/NFT/torre cambian oxigenación y estabilidad de raíz, no el genotipo: un NFT con película pobre o una torre con sombra desigual puede alargar veg o flor.',
-        alerta:{ tipo:'info', txt:'ℹ️ Usa fechas en ficha + días de la genética en HidroGrow; ajusta lámpara y extractor según fase.' } },
       { icono:'📅', titulo:'Fecha de trasplante en la ficha',
         texto:'Cada hueco, maceta o cesta debe llevar <strong>variedad + fecha</strong> desde que plantas o trasplantas. Sin fecha, el riego automático, las medias de edad y el calendario no reflejan lo que hay en la instalación activa: puedes regar como si fueran plántulas cuando ya van por la mitad del ciclo (o al revés).',
         alerta:{ tipo:'ok', txt:'✅ Un momento al trasplantar: abre la ficha, elige cultivo y fecha. Así fotos, registro y cálculo de riego quedan alineados con tus plantas reales.' } },
       { icono:'🧩', titulo:'Genéticas compatibles o no (y por qué)',
-        texto:'En un solo depósito (torre, NFT, DWC, RDWC) todas comparten <strong>EC y pH</strong>. Mezcla <strong>índicas con híbridas</strong> si están en fase similar. <strong>No mezcles autoflorecientes con fotodependientes</strong> en la misma sala: el 12/12 de las fotos fuerza flor en autos demasiado pronto. Sativas altas pueden sombrear índicas compactas en torre. CBD suele ir con EC más baja: mejor depósito dedicado si mezclas con genéticas THC muy exigentes.',
+        texto:'En un solo depósito (DWC o RDWC) todas comparten <strong>EC y pH</strong>. Mezcla <strong>índicas con híbridas</strong> si están en fase similar. <strong>No mezcles autoflorecientes con fotodependientes</strong> en la misma sala: el 12/12 de las fotos fuerza flor en autos demasiado pronto. Sativas altas pueden sombrear índicas compactas en la misma fila. CBD suele ir con EC más baja: mejor cubo o circuito dedicado si mezclas con genéticas THC muy exigentes.',
         alerta:{ tipo:'info', txt:'ℹ️ En <strong>Cultivo e instalación → Compatibilidad</strong> la app avisa si combinas grupos poco recomendables.' } },
       { icono:'🌿', titulo:'Planta madre en DWC/RDWC',
         texto:'Mantén <strong>1 cubo dedicado</strong> bajo <strong>18/6</strong> permanente. Tras 5–6 semanas en veg estable puedes tomar esquejes cada <strong>10–14 días</strong> sin volver a sembrar. En el asistente premium elige <strong>Madre DWC/RDWC</strong>; la app programa prep (EC −20–30 %), sesión de corte y enraizamiento en el <strong>calendario</strong>.',
@@ -168,7 +162,7 @@ const CONSEJOS_DATA = {
         texto:'Vegetativo: ~300–450 µmol/s·m² (PPFD) según altura. Floración: ~600–900+ según genética y temperatura. Sativas toleran más intensidad si la temperatura de copa se controla; índicas densas necesitan buena penetración bajo copa.',
         alerta:{ tipo:'warn', txt:'⚠️ Demasiada luz con VPD descontrolado quema hojas antes que subir EC.' } },
       { icono:'❌', titulo:'Qué NO mezclar en el mismo depósito',
-        texto:'<strong>Autos + fotos</strong> en la misma instalación o sala con un solo programa de luz. <strong>CBD de EC baja + genéticas THC altas</strong> en el mismo tanque. <strong>Sativas muy altas + índicas en torre</strong> sin separar niveles o poda.',
+        texto:'<strong>Autos + fotos</strong> en la misma instalación o sala con un solo programa de luz. <strong>CBD de EC baja + genéticas THC altas</strong> en el mismo tanque. <strong>Sativas muy altas + índicas compactas</strong> en la misma fila sin poda.',
         alerta:{ tipo:'warn', txt:'⚠️ Un solo depósito = una sola EC/pH: las plantas en fases distintas (plántula vs flor plena) compiten por nutrientes.' } },
     ]
   },
@@ -771,7 +765,7 @@ function buildHtmlTablaConsejosPersonal() {
         <div class="consejo-titulo consejo-titulo--mb6">Tu tabla (volumen a medida)</div>
         <div class="consejo-ecph-note">
           Al <strong>completar el checklist de recarga</strong> (no es la primera configuración), puedes guardar aquí el nutriente y los litros del depósito.
-          Verás la <strong>misma tabla</strong> que arriba (solo tu marca) pero <strong>escalada</strong> a ese volumen, para el <strong>sistema activo</strong> (torre, NFT, DWC, RDWC o SRF) en la pestaña Cultivo e instalación.
+          Verás la <strong>misma tabla</strong> que arriba (solo tu marca) pero <strong>escalada</strong> a ese volumen, para el <strong>sistema activo</strong> (DWC o RDWC) en la pestaña Cultivo e instalación.
         </div>
       </div>`;
   }
@@ -1092,13 +1086,9 @@ function htmlConsejoCard(cat, c) {
 function buildConsejosNutrienteChecklistResumenHtml(nut, cfg) {
   const t = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   const sysLargo =
-    t === 'nft' ? 'NFT — canales en recirculación'
-    : t === 'dwc' ? 'DWC — raíces en el depósito'
-    : t === 'rdwc' ? 'RDWC — recirculación compartida'
-    : t === 'srf' ? 'SRF — raíz flotante en estanque común'
-    : 'Torre vertical';
+    t === 'rdwc' ? 'RDWC — recirculación compartida' : 'DWC — raíces en el depósito';
   const sysBreve =
-    typeof etiquetaSistemaHidroponicoBreve === 'function' ? etiquetaSistemaHidroponicoBreve(cfg) : t === 'nft' ? 'NFT' : t === 'dwc' ? 'DWC' : 'Torre';
+    typeof etiquetaSistemaHidroponicoBreve === 'function' ? etiquetaSistemaHidroponicoBreve(cfg) : t === 'rdwc' ? 'RDWC' : 'DWC';
 
   let nombreInst = '';
   try {
@@ -1108,14 +1098,12 @@ function buildConsejosNutrienteChecklistResumenHtml(nut, cfg) {
 
   let objTxt = '—';
   try {
-    if (t === 'dwc' && typeof dwcGetObjetivoSpec === 'function' && typeof dwcGetObjetivoCultivo === 'function') {
+    if (
+      (t === 'dwc' || t === 'rdwc') &&
+      typeof dwcGetObjetivoSpec === 'function' &&
+      typeof dwcGetObjetivoCultivo === 'function'
+    ) {
       const s = dwcGetObjetivoSpec(dwcGetObjetivoCultivo(cfg));
-      objTxt = meteoEscHtml(s.label) + ' · ' + meteoEscHtml(s.densidadTxt);
-    } else if (t === 'nft' && typeof nftGetObjetivoSpec === 'function' && typeof nftGetObjetivoCultivo === 'function') {
-      const s = nftGetObjetivoSpec(nftGetObjetivoCultivo(cfg));
-      objTxt = meteoEscHtml(s.label) + ' · ' + meteoEscHtml(s.densidadTxt);
-    } else if (t === 'torre' && typeof torreGetObjetivoSpec === 'function' && typeof torreGetObjetivoCultivo === 'function') {
-      const s = torreGetObjetivoSpec(torreGetObjetivoCultivo(cfg));
       objTxt = meteoEscHtml(s.label) + ' · ' + meteoEscHtml(s.densidadTxt);
     }
   } catch (e) {}
@@ -1157,7 +1145,7 @@ function buildConsejosNutrienteChecklistResumenHtml(nut, cfg) {
     Number.isFinite(manualEc) && manualEc >= 200 && manualEc <= 6000
       ? '<span class="consejo-checklist-resumen-note">Meta EC <strong>fijada a mano</strong> en el checklist.</span>'
       : '<span class="consejo-checklist-resumen-note">Meta EC = centro del rango orientativo' +
-        (t === 'torre' || t === 'dwc' ? ' (ajustado por <strong>objetivo de cultivo</strong> en ' + meteoEscHtml(sysBreve) + ')' : '') +
+        (t === 'dwc' ? ' (ajustado por <strong>objetivo de cultivo</strong> en ' + meteoEscHtml(sysBreve) + ')' : '') +
         '; en las ~2 primeras semanas en hidro se acerca hacia el <strong>mínimo</strong> del rango, <strong>sin salir</strong> del intervalo mostrado arriba.</span>';
 
   const fa = typeof getFactorArranquePlantulaHidro === 'function' ? getFactorArranquePlantulaHidro() : 1;
@@ -1405,26 +1393,6 @@ function buildConsejoCambioNutrientePorFase() {
   });
 }
 
-function buildConsejoObjetivoTorreCultivo() {
-  const cfg = state.configTorre || {};
-  if (cfg.tipoInstalacion !== 'torre') return '';
-  if (typeof torreGetObjetivoSpec !== 'function' || typeof torreGetObjetivoCultivo !== 'function') return '';
-  const sp = torreGetObjetivoSpec(torreGetObjetivoCultivo(cfg));
-  return htmlConsejoCard(CONSEJOS_DATA.cultivo, {
-    icono: '🧭',
-    titulo: 'Objetivo de cosecha en torre vertical',
-    texto:
-      'Objetivo activo: <strong>' +
-      meteoEscHtml(sp.label) +
-      '</strong>. Densidad orientativa <strong>' +
-      meteoEscHtml(sp.densidadTxt) +
-      '</strong> · ' +
-      meteoEscHtml(sp.cicloTxt) +
-      '.',
-    alerta: { tipo: 'info', txt: 'ℹ️ Puedes cambiarlo en el checklist de recarga (paso objetivo de torre) o al reconfigurar en el asistente.' },
-  });
-}
-
 /** Tabla de tiempos orientativos de germinación por cada cultivo del catálogo. */
 function buildConsejoTablaGerminacionCultivos() {
   if (typeof getGerminacionSpecPorVariedad !== 'function' || typeof CULTIVOS_DB === 'undefined') return '';
@@ -1614,6 +1582,10 @@ function hcConsejosCultivoVisibles(consejos) {
     const t = String(c && c.titulo ? c.titulo : '');
     if (/rotaci[oó]n escalonada.*torre/i.test(t)) return false;
     if (/objetivo de cosecha en torre/i.test(t)) return false;
+    if (/NFT vs torre/i.test(t)) return false;
+    if (/\bNFT\b/i.test(t) && !/DWC\/RDWC/i.test(t)) return false;
+    if (/\bSRF\b/i.test(t)) return false;
+    if (/torre vertical/i.test(t)) return false;
     return true;
   });
 }
@@ -1954,116 +1926,6 @@ function buildConsejoLuzExposicionCultivo() {
   });
 }
 
-function buildConsejosNftHidraulica() {
-  const cat = CONSEJOS_DATA.nft;
-  const cfg = state.configTorre || {};
-  const resumenTxt = cfg.tipoInstalacion === 'nft' ? nftTextoResumenInstalacion(cfg) : '';
-  const recoNft = cfg.tipoInstalacion === 'nft' && typeof nftRecomendacionCultivoDesdeConfig === 'function'
-    ? nftRecomendacionCultivoDesdeConfig(cfg)
-    : null;
-  const b = cfg.tipoInstalacion === 'nft' ? getNftBombaDesdeConfig(cfg) : null;
-  let dyn;
-  if (b) {
-    const vDepCfg = parseFloat(String(cfg.volDeposito ?? '').replace(',', '.'));
-    const vDepAct = Number.isFinite(vDepCfg) && vDepCfg > 0 ? Math.round(vDepCfg) : null;
-    const dynDetalle =
-      (resumenTxt
-        ? '<p class="consejo-p consejo-p--lead">' + escHtmlUi(resumenTxt) + '</p>'
-        : '') +
-      '<p class="consejo-p consejo-p--mb10">Lo importante aquí es si el <strong>depósito</strong> y la <strong>bomba</strong> encajan con un criterio práctico (24 h, película fina, pérdidas típicas). Los números detallados van en el desplegable. Contrasta siempre con la <strong>curva Q–H</strong> del fabricante.</p>' +
-      nftDepositoVeredictoBloqueHtml(b, vDepAct) +
-      nftWrapDetalleTecnicoSummary(nftBombaDetalleTecnicoHtml(b), 'Bomba, caudal y geometría (detalle)');
-    const dynWrap =
-      typeof hcWrapOrigenDetails === 'function'
-        ? hcWrapOrigenDetails(dynDetalle, 'Ver veredicto y cálculo hidráulico completo', false)
-        : dynDetalle;
-    dyn = htmlInnerConsejoCard(cat, {
-      icono: '⚡',
-      titulo: 'Tu instalación NFT — cumplimiento orientativo',
-      html:
-        '<p class="consejo-p consejo-p--tight"><strong>Resumen:</strong> valida depósito y bomba frente a tu geometría real antes de afinar riego.</p>' +
-        dynWrap,
-    });
-  } else {
-    dyn = htmlInnerConsejoCard(cat, {
-      icono: 'ℹ️',
-      titulo: 'Configuración NFT',
-      html:
-        '<p class="consejo-p consejo-p--flush">Elige en <strong>Cultivo e instalación</strong> instalación <strong>NFT</strong> y completa canal, lámina y longitud en el checklist (N·ref) o en el asistente para ver aquí el criterio orientativo de tu caso.</p>',
-    });
-  }
-  const formulaDetalle =
-    'Se aproxima el <strong>área</strong> de la lámina en el fondo del canal: en tubo redondo, una <em>cuerda</em> del arco inundado; en perfil rectangular, <strong>ancho útil × altura de lámina</strong>. Con velocidad de película ~0,08–0,12 m/s (según pendiente) se obtiene L/h por canal. La app <strong>combina</strong> este resultado con un modelo empírico y adopta el caudal más exigente. No sustituye medición in situ ni el catálogo de la bomba.';
-  const formulaWrap =
-    typeof hcWrapOrigenDetails === 'function'
-      ? hcWrapOrigenDetails(formulaDetalle, 'Ver método de cálculo NFT', false)
-      : formulaDetalle;
-  const formula = htmlConsejoCard(cat, {
-    icono: '📐',
-    titulo: 'Cómo se estima el caudal (orientativo)',
-    texto:
-      '<p class="consejo-p consejo-p--tight"><strong>Resumen:</strong> caudal orientativo por geometría + pendiente, siempre verificado con fabricante y observación real.</p>' +
-      formulaWrap,
-    alerta: { tipo: 'info', txt: 'ℹ️ Lámina habitual ~2–4 mm (~3 mm); si sube mucho, suele haber exceso de caudal o pendiente insuficiente.' },
-  });
-  const cultivo = recoNft
-    ? htmlConsejoCard(cat, {
-        icono: '🧭',
-        titulo: 'Diseño del canal según cultivo objetivo',
-        // Modo compacto: conservar decisión principal sin saturar texto.
-        texto:
-          '<strong>' +
-          meteoEscHtml(recoNft.perfil.etiqueta) +
-          '</strong> · canal <strong>Ø' +
-          recoNft.perfil.canalMinMm +
-          '–' +
-          recoNft.perfil.canalMaxMm +
-          ' mm</strong> · cesta <strong>' +
-          meteoEscHtml(recoNft.perfil.cestaTxt) +
-          '</strong> · separación <strong>' +
-          meteoEscHtml(recoNft.perfil.sepTxt) +
-          '</strong>.<br>Canal (Ø actual): <strong>' +
-          (recoNft.diamActualMm != null ? 'Ø' + recoNft.diamActualMm + ' mm' : '—') +
-          '</strong> · ' +
-          cultivoEstadoChipHtml(recoNft.estado) +
-          '.',
-        alerta: {
-          tipo: recoNft.estado === 'bad' ? 'warn' : recoNft.estado === 'warn' ? 'warn' : 'ok',
-          txt:
-            recoNft.estado === 'bad'
-              ? '⚠️ Mejor otro sistema o NFT de frutos dedicado.'
-              : recoNft.estado === 'warn'
-                ? '⚠️ Ajusta diámetro de canal para mejorar el encaje.'
-                : '✅ Configuración alineada con el cultivo objetivo.',
-        },
-      })
-    : '';
-  const mmCard =
-    cfg.tipoInstalacion === 'nft' && cfg.nftMesaMultinivel
-      ? htmlConsejoCard(cat, {
-          icono: '📚',
-          titulo: 'Mesa multinivel — reglas en la app',
-          texto:
-            '<p class="consejo-p consejo-p--tight"><strong>Resumen:</strong> ' +
-            (typeof nftResumenCantidadesBreve === 'function' ? escHtmlUi(nftResumenCantidadesBreve(cfg)) : 'mesa multinivel') +
-            '.</p>' +
-            '<p class="consejo-p consejo-p--tight"><strong>Mismos tubos</strong> en cada nivel (columnas alineadas). ' +
-            'Agua en <strong>serie</strong> entre franjas (sin paralelo). ' +
-            '<strong>Huecos por franja</strong> en el asistente. ' +
-            '<strong>Difusor</strong> en depósito. Revisa saltos entre niveles en el checklist.</p>',
-          alerta: {
-            tipo: 'info',
-            txt: 'ℹ️ En Cultivo e instalación el campo «Huecos / canal» es referencia común; el detalle por franja queda en la config guardada desde el asistente.',
-          },
-        })
-      : '';
-  const docWrap =
-    '<div class="consejo-card"><div class="consejo-texto consejo-texto--flush">' +
-    nftTuberiaReferenciaDocHtml({ forChecklist: true }) +
-    '</div></div>';
-  return dyn + mmCard + cultivo + formula + docWrap;
-}
-
 function buildConsejosCestasPorSistemaTabla() {
   const cat = CONSEJOS_DATA.cultivo;
   if (typeof hcCultivoCestaRecoCelda !== 'function' || !HC_CESTA_MATRIX_GRUPOS) {
@@ -2171,84 +2033,6 @@ function buildConsejosDwcDifusorBloque() {
       txt: '⚠️ No sustituye el dato del fabricante de la bomba ni un medidor de oxígeno disuelto.',
     },
   });
-}
-
-function buildConsejosSrf() {
-  const cat = CONSEJOS_DATA.srf;
-  const cfg = state.configTorre || {};
-  const cap =
-    typeof srfCapacidadLitrosDesdeConfig === 'function' ? srfCapacidadLitrosDesdeConfig(cfg) : null;
-  const n = typeof srfGetNumPlantas === 'function' ? srfGetNumPlantas(cfg) : '—';
-  const kratky =
-    typeof srfNormalizeOxigenacionModo === 'function' &&
-    srfNormalizeOxigenacionModo(cfg.srfOxigenacionModo) === 'kratky';
-  const intro = htmlConsejoCard(cat, {
-    icono: '🟩',
-    titulo: 'SRF / DFT en esta app',
-    texto:
-      '<p class="consejo-p consejo-p--tight"><strong>Resumen:</strong> las plantas van en una <strong>balsa flotante</strong> sobre un <strong>estanque común</strong>; todas comparten la misma EC y el mismo pH.</p>' +
-      '<p class="consejo-p consejo-p--tight">Tu instalación: <strong>' +
-      n +
-      ' plantas</strong>' +
-      (cap != null ? ' · estanque ~<strong>' + cap + ' L</strong>' : '') +
-      ' · modo <strong>' +
-      (kratky ? 'Kratky (cámara de aire)' : 'aireador') +
-      '</strong>.</p>' +
-      '<p class="consejo-p consejo-p--tight">Para dosis en recarga, la app usa los <strong>litros útiles del estanque</strong> (L×A×P o volumen medido en Cultivo e instalación).</p>',
-    alerta: {
-      tipo: 'info',
-      txt: 'ℹ️ Solo mezcla cultivos compatibles en el mismo estanque (como en un DWC compartido).',
-    },
-  });
-  const tres = htmlConsejoCard(cat, {
-    icono: '✅',
-    titulo: 'Montaje: 3 comprobaciones rápidas',
-    texto:
-      '<p class="consejo-p consejo-p--mb10">Antes de plantar o tras ampliar el estanque:</p>' +
-      '<ol class="consejo-proto-ol">' +
-      '<li class="consejo-proto-li"><strong>Bomba de aire</strong> por encima del nivel máximo de la solución (evita reflujo por sifón).</li>' +
-      '<li class="consejo-proto-li"><strong>Balsa:</strong> huecos alineados, net pots estables y sin hundir la placa por exceso de peso en un solo punto.</li>' +
-      '<li class="consejo-proto-li"><strong>Nivel:</strong> en Kratky deja cámara de aire bajo la balsa; con aireador, superficie activa sin cubrir la base del sustrato.</li>' +
-      '</ol>',
-    alerta: {
-      tipo: 'ok',
-      txt: '✅ En el esquema, toca la balsa o el estanque para repasar oxigenación y disposición de plantas.',
-    },
-  });
-  const recoSrf =
-    cfg.tipoInstalacion === 'srf' && typeof srfRecomendacionCultivoDesdeConfig === 'function'
-      ? srfRecomendacionCultivoDesdeConfig(cfg)
-      : null;
-  const recoCard = htmlConsejoCard(cat, {
-    icono: '📐',
-    titulo: 'SRF: estanque, balsa y cesta según cultivo',
-    texto:
-      '<p class="consejo-p consejo-p--tight">En SRF la solución es <strong>casi estática</strong> (opcional recirculación). Profundidad útil ~<strong>24–30 cm</strong> para floración cannabis; balsa EPS <strong>35–50 mm</strong>; cámara de aire bajo la balsa en <strong>Kratky</strong> o <strong>bomba de aire</strong> en recirculación.</p>' +
-      (recoSrf
-        ? '<p class="consejo-p consejo-p--tight">Tu instalación: <strong>' +
-          meteoEscHtml(recoSrf.perfil.etiqueta) +
-          '</strong> · ' +
-          meteoEscHtml(recoSrf.perfil.objetivoLabel) +
-          ' · orientativo: <em>' +
-          meteoEscHtml(recoSrf.perfil.resumenTxt) +
-          '</em> · ' +
-          cultivoEstadoChipHtml(recoSrf.estado) +
-          '.</p>'
-        : '<p class="consejo-p consejo-p--tight">Activa una instalación <strong>SRF</strong> y elige cultivo en el asistente para ver aquí la validación en vivo.</p>'),
-    alerta: recoSrf
-      ? {
-          tipo: recoSrf.estado === 'ok' ? 'ok' : 'warn',
-          txt:
-            recoSrf.estado === 'ok'
-              ? '✅ Parámetros alineados con la referencia de la tabla general (Consejos → Cultivo).'
-              : '⚠️ ' + recoSrf.veredicto,
-        }
-      : {
-          tipo: 'info',
-          txt: 'ℹ️ Tabla completa en Consejos → Cultivo · «Cestas y geometría por cultivo y sistema».',
-        },
-  });
-  return intro + tres + recoCard;
 }
 
 function buildConsejosRdwc() {
@@ -2562,7 +2346,6 @@ function renderConsejosLista() {
       hcConsejosCultivoVisibles(cat.consejos).map(c => htmlConsejoCard(cat, c)).join('') +
       (typeof buildConsejosCestasPorSistemaTabla === 'function' ? buildConsejosCestasPorSistemaTabla() : '') +
       buildConsejoCambioNutrientePorFase() +
-      buildConsejoObjetivoTorreCultivo() +
       buildConsejoTablaGerminacionCultivos() +
       buildConsejoLuzExposicionCultivo();
     plegarTodosDesplegablesConsejosLista(lista);

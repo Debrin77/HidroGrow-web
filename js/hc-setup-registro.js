@@ -23,7 +23,7 @@ function addRegistro(tipo, datos, horaConSegundos) {
   let tidReg = d.torreId;
   delete d.torreId;
   const tipoSnap =
-    snap === 'nft' || snap === 'dwc' || snap === 'torre'
+    snap === 'dwc' || snap === 'rdwc'
       ? snap
       : tipoInstalacionNormalizado(state.configTorre || {});
   const torreIdReg =

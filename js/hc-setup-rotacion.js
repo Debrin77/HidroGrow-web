@@ -6,9 +6,8 @@
 /** Texto del paso de limpieza tras rotar, según tipo de instalación. */
 function etiquetaLimpiezaTrasRotacion() {
   const t = tipoInstalacionNormalizado(state.configTorre);
-  if (t === 'nft') return '🧹 Limpiar huecos y restos con agua oxigenada diluida';
-  if (t === 'dwc') return '🧹 Limpiar macetas y zona de cultivo vacías con agua oxigenada diluida';
-  return '🧹 Limpiar cestas vacías con agua oxigenada diluida';
+  if (t === 'rdwc') return '🧹 Limpiar módulos y zona de cultivo vacíos con agua oxigenada diluida';
+  return '🧹 Limpiar macetas y zona de cultivo vacías con agua oxigenada diluida';
 }
 
 function calcularRotacion() {

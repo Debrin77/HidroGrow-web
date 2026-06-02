@@ -337,7 +337,7 @@
     const box = el('wizSystemHint');
     if (!box) return;
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    const tipo = String((cfg && cfg.tipoInstalacion) || 'torre').toLowerCase();
+    const tipo = String(tipoInstalacionNormalizado(cfg || {})).toLowerCase();
     if (tipo === 'dwc') {
       const esKratky = typeof esDwcKratky === 'function' && esDwcKratky(cfg);
       const esMc =
@@ -351,11 +351,11 @@
           : 'DWC aireado: prioriza temperatura y pH estables; una deriva rápida suele pedir corrección hoy.';
       return;
     }
-    if (tipo === 'nft') {
-      box.textContent = 'NFT: además de EC/pH, vigila caudal y retorno continuo. Si sube mucho EC, suele tocar diluir.';
+    if (tipo === 'rdwc') {
+      box.textContent = 'RDWC: prioriza caudal de recirculación, purgado de aire y EC/pH estables en el depósito de control.';
       return;
     }
-    box.textContent = 'Torre vertical: prioriza estabilidad EC/pH y nivel mínimo seguro para bomba y reparto uniforme.';
+    box.textContent = 'DWC: prioriza temperatura del agua, oxigenación y pH/EC estables en cada cubo.';
   }
 
   function renderHero(diag) {
@@ -364,7 +364,7 @@
     const score = el('wizHeroScore');
     if (!st || !mode || !score) return;
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    const tipo = String((cfg && cfg.tipoInstalacion) || 'torre').toUpperCase();
+    const tipo = String(tipoInstalacionNormalizado(cfg || {})).toUpperCase();
     mode.textContent = tipo;
 
     const d = diag || getCorrections();

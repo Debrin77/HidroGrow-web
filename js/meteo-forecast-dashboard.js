@@ -587,7 +587,7 @@ function getRecargaBaseDiasObjetivo(cfg, volRef) {
   const c = cfg || {};
   const tipo =
     typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(c) : c.tipoInstalacion;
-  let dias = tipo === 'rdwc' ? 16 : tipo === 'nft' ? 14 : tipo === 'dwc' ? 13 : 12;
+  let dias = tipo === 'rdwc' ? 16 : tipo === 'dwc' ? 13 : 12;
   const vol = Number(volRef) || 0;
   if (vol >= 200) dias += 5;
   else if (vol >= 120) dias += 3;
