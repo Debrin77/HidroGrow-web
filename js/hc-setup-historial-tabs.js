@@ -241,6 +241,10 @@ function setFiltroTorre(id) {
   renderHistRecargas();
   renderRegistro();
   if (histTabActiva === 'diario') renderDiarioSelector();
+  if (typeof renderHistorialSeguimiento === 'function') {
+    const meds = (histDatos || []).filter(coincideFiltroTorre);
+    renderHistorialSeguimiento(meds);
+  }
 }
 
 
@@ -790,6 +794,11 @@ function renderHistMediciones() {
       ${m.notas ? `<span class="hist-val hist-note-line">${typeof hcMetricLine === 'function' ? hcMetricLine('nota', m.notas) : '📝 ' + m.notas}</span>` : ''}
     </div>
   `).join('');
+
+  const medsSeguimiento = (histDatos || state.mediciones || []).filter(coincideFiltroTorre);
+  if (typeof renderHistorialSeguimiento === 'function') {
+    renderHistorialSeguimiento(medsSeguimiento);
+  }
 }
 
 

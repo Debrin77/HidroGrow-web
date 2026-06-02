@@ -1596,6 +1596,7 @@
         </div>
       </div>
       <p class="medir-sala-intro setup-hidden" aria-hidden="true">Configuración de sala (no cambia en cada medición).</p>
+      <div id="salaSeguimientoCta" class="sala-seg-cta" role="region" aria-label="Resumen ambiental y seguimiento"></div>
       <div id="salaCultivoEquipMount" class="sala-cultivo-equip-mount" aria-label="Equipamiento y montaje de sala">
         <details class="sistema-montaje-details config-section-collapsible sala-montaje-details" id="sistemaMontajeChecksDetails">
           <summary class="config-section-collapse-head sistema-montaje-summary">
@@ -2882,6 +2883,41 @@
             </div>
           </div>
         </div>
+
+        <!-- Seguimiento real vs objetivo teórico -->
+        <section id="histSeguimientoWrap" class="hist-seg-wrap" aria-labelledby="histSeguimientoTitle">
+          <div class="hist-seg-head">
+            <h2 id="histSeguimientoTitle" class="hist-seg-title">Seguimiento vs objetivo</h2>
+            <div id="histSegPeriodo" class="hist-seg-period" role="group" aria-label="Periodo del gráfico">
+              <button type="button" class="hist-seg-period-btn" data-hist-seg-dias="7" aria-pressed="false">7 d</button>
+              <button type="button" class="hist-seg-period-btn active" data-hist-seg-dias="14" aria-pressed="true">14 d</button>
+              <button type="button" class="hist-seg-period-btn" data-hist-seg-dias="30" aria-pressed="false">30 d</button>
+            </div>
+          </div>
+          <p id="histSeguimientoLeyenda" class="hist-seg-leyenda"></p>
+          <p id="histSeguimientoAviso" class="hist-seg-aviso setup-hidden" role="status"></p>
+          <div class="hist-seg-charts">
+            <div class="hist-seg-chart-block">
+              <div class="hist-seg-chart-lbl">EC depósito</div>
+              <div id="histSegChartEc" class="hist-seg-chart-area"></div>
+            </div>
+            <div class="hist-seg-chart-block">
+              <div class="hist-seg-chart-lbl">pH depósito</div>
+              <div id="histSegChartPh" class="hist-seg-chart-area"></div>
+            </div>
+            <div class="hist-seg-chart-block hist-seg-chart-block--vpd">
+              <div class="hist-seg-chart-lbl">VPD sala</div>
+              <div id="histSegChartVpd" class="hist-seg-chart-area"></div>
+            </div>
+          </div>
+          <div class="hist-seg-keys" aria-hidden="true">
+            <span class="hist-seg-key"><span class="hist-seg-swatch hist-seg-swatch--line"></span> Medición</span>
+            <span class="hist-seg-key"><span class="hist-seg-swatch hist-seg-swatch--band"></span> Objetivo teórico</span>
+            <span class="hist-seg-key"><span class="hist-seg-dot hist-seg-dot--ok"></span> En rango</span>
+            <span class="hist-seg-key"><span class="hist-seg-dot hist-seg-dot--warn"></span> Cerca</span>
+            <span class="hist-seg-key"><span class="hist-seg-dot hist-seg-dot--bad"></span> Fuera</span>
+          </div>
+        </section>
 
         <!-- Tabla últimas mediciones (scroll horizontal si hace falta) -->
         <div class="hist-tabla hist-tabla--scroll">
@@ -5022,6 +5058,7 @@
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-06-02-icons-full"></script>
+  <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>

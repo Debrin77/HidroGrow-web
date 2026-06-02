@@ -129,8 +129,9 @@ function cultivoFaseDesdeDias(cultivo, diasDesdeSiembra, opts) {
  * EC/pH «crudos» por ficha de cesta (sin cruce entre plantas ni ajuste instalación/contexto).
  * Misma base que el bucle de getRecomendacionEcPhTorre.
  */
-function torreSliceEcPhCestaRaw(c, cfg) {
+function torreSliceEcPhCestaRaw(c, cfg, atMs) {
   cfg = cfg || state.configTorre || {};
+  const refMs = Number.isFinite(atMs) ? atMs : Date.now();
   if (!c || !c.variedad) return null;
   const cultivo = getCultivoDB(c.variedad);
   if (!cultivo) return null;
@@ -143,11 +144,11 @@ function torreSliceEcPhCestaRaw(c, cfg) {
   if (c.fecha) {
     const ms = new Date(c.fecha).getTime();
     if (Number.isFinite(ms)) {
-      const dias = getDiasEfectivosCicloBiologico(c, cultivo, Date.now());
+      const dias = getDiasEfectivosCicloBiologico(c, cultivo, refMs);
       const diasHydro =
         typeof getDiasEnSistemaDesdeFecha === 'function'
-          ? getDiasEnSistemaDesdeFecha(c, Date.now())
-          : Math.max(0, Math.floor((Date.now() - ms) / 86400000));
+          ? getDiasEnSistemaDesdeFecha(c, refMs)
+          : Math.max(0, Math.floor((refMs - ms) / 86400000));
       const origNorm =
         typeof normalizarOrigenPlanta === 'function' ? normalizarOrigenPlanta(c.origenPlanta) : '';
       const origClon = origNorm === 'clon' || origNorm === 'madre';
@@ -812,6 +813,170 @@ function getRecomendacionEcPhTorre() {
     semilleroOverlay,
   };
 }
+
+function getNutrienteDesdeCfg(cfg) {
+  cfg = cfg || {};
+  const raw = cfg.nutriente && String(cfg.nutriente).trim() ? String(cfg.nutriente).trim() : null;
+  if (!raw) {
+    if (cfg.hcPlantillaAutogenerada) return null;
+    const fb = 'canna_aqua';
+    return typeof NUTRIENTES_DB !== 'undefined'
+      ? NUTRIENTES_DB.find(n => n && n.id === fb) || NUTRIENTES_DB[0]
+      : null;
+  }
+  return typeof NUTRIENTES_DB !== 'undefined'
+    ? NUTRIENTES_DB.find(n => n && n.id === raw) || NUTRIENTES_DB[0]
+    : null;
+}
+
+function torreVariedadesIdsEnGrid(torreGrid, cfg) {
+  const ids = new Set();
+  const numN = (cfg && cfg.numNiveles) || (typeof NUM_NIVELES !== 'undefined' ? NUM_NIVELES : 4);
+  const grid = torreGrid || [];
+  for (let n = 0; n < numN; n++) {
+    (grid[n] || []).forEach(c => {
+      if (c && c.variedad) ids.add(c.variedad);
+    });
+  }
+  return [...ids];
+}
+
+/**
+ * EC/pH objetivo para una instalación concreta en un instante (Historial: banda teórica por fecha).
+ * @param {object} cfg — configTorre de la instalación
+ * @param {Array} torreGrid — rejilla de cestas (state.torre o torres[i].torre)
+ * @param {number} [atMs] — fecha de referencia (medición); por defecto ahora
+ */
+function getRecomendacionEcPhDesdeInstalacion(cfg, torreGrid, atMs) {
+  cfg = cfg || {};
+  torreGrid = torreGrid || [];
+  const refMs = Number.isFinite(atMs) ? atMs : Date.now();
+  const strategy = getEcPhStrategy(cfg);
+  let nut = getNutrienteDesdeCfg(cfg);
+  if (!nut && Array.isArray(NUTRIENTES_DB) && NUTRIENTES_DB.length) {
+    nut = NUTRIENTES_DB.find(n => n && n.id === 'canna_aqua') || NUTRIENTES_DB[0];
+  }
+  if (!nut) {
+    return {
+      ec: { min: 900, max: 1400 },
+      ph: { min: 5.5, max: 6.5 },
+      faseDominante: null,
+      conFaseReal: false,
+      estrategia: strategy,
+      variedadUnicaNombre: null,
+    };
+  }
+  if (strategy === 'manual') {
+    const ecM = getEcObjetivoManualUs(cfg);
+    const phM = getPhObjetivoManualRango(cfg, nut);
+    const ecLo = ecM != null ? Math.max(250, ecM - 60) : (nut.ecObjetivo?.[0] || 900);
+    const ecHi = ecM != null ? Math.min(6200, ecM + 60) : (nut.ecObjetivo?.[1] || 1400);
+    const idsMan = torreVariedadesIdsEnGrid(torreGrid, cfg);
+    const varUnicaMan = idsMan.length === 1 ? idsMan[0] : null;
+    let variedadUnicaNombre = null;
+    if (varUnicaMan && typeof getCultivoDB === 'function') {
+      const cuMan = getCultivoDB(varUnicaMan);
+      if (cuMan) variedadUnicaNombre = cuMan.nombre || varUnicaMan;
+    }
+    return {
+      ec: { min: ecLo, max: ecHi },
+      ph: { min: phM[0], max: phM[1] },
+      faseDominante: 'manual',
+      conFaseReal: false,
+      estrategia: 'manual',
+      variedadUnicaNombre,
+    };
+  }
+  const numNiveles = cfg.numNiveles || (typeof NUM_NIVELES !== 'undefined' ? NUM_NIVELES : 4);
+  const nivelesActivos = Array.from({ length: numNiveles }, (_, i) => i);
+  const rangosEc = [];
+  const rangosPh = [];
+  const fases = {};
+  let totalConFecha = 0;
+  for (let i = 0; i < nivelesActivos.length; i++) {
+    const n = nivelesActivos[i];
+    (torreGrid[n] || []).forEach(c => {
+      if (!c || !c.variedad) return;
+      const slice = torreSliceEcPhCestaRaw(c, cfg, refMs);
+      if (!slice) return;
+      if (slice.conFasePorFecha && slice.faseKey) {
+        fases[slice.faseKey] = (fases[slice.faseKey] || 0) + 1;
+        totalConFecha++;
+      }
+      if (Number.isFinite(slice.ec.min) && Number.isFinite(slice.ec.max)) {
+        rangosEc.push({ min: slice.ec.min, max: slice.ec.max });
+      }
+      if (Number.isFinite(slice.ph.min) && Number.isFinite(slice.ph.max)) {
+        rangosPh.push({ min: slice.ph.min, max: slice.ph.max });
+      }
+    });
+  }
+  let ecRec;
+  if (rangosEc.length === 0) {
+    ecRec = { min: nut.ecObjetivo?.[0] || 900, max: nut.ecObjetivo?.[1] || 1400 };
+  } else {
+    const ecMin = Math.max(...rangosEc.map(r => r.min));
+    const ecMax = Math.min(...rangosEc.map(r => r.max));
+    ecRec =
+      ecMax >= ecMin + 80
+        ? { min: ecMin, max: ecMax }
+        : {
+            min: Math.round(rangosEc.reduce((s, r) => s + r.min, 0) / rangosEc.length),
+            max: Math.round(rangosEc.reduce((s, r) => s + r.max, 0) / rangosEc.length),
+          };
+  }
+  ecRec = aplicarAjusteEcObjetivoPorInstalacion(ecRec, cfg);
+  const ctx = getAjustesEcPhPorContexto(cfg);
+  ecRec = {
+    ...ecRec,
+    min: Math.max(320, Math.round(ecRec.min * ctx.ecMult)),
+    max: Math.max(420, Math.round(ecRec.max * ctx.ecMult)),
+  };
+  if (ecRec.min > ecRec.max) {
+    const t = ecRec.min;
+    ecRec.min = ecRec.max;
+    ecRec.max = t;
+  }
+  let phRec;
+  if (rangosPh.length === 0) {
+    const b = nut && Array.isArray(nut.pHRango) ? nut.pHRango : [5.5, 6.5];
+    phRec = { min: b[0], max: b[1] };
+  } else {
+    const pMin = Math.max(...rangosPh.map(r => r.min));
+    const pMax = Math.min(...rangosPh.map(r => r.max));
+    phRec =
+      pMax >= pMin + 0.15
+        ? { min: pMin, max: pMax }
+        : {
+            min: Math.round((rangosPh.reduce((s, r) => s + r.min, 0) / rangosPh.length) * 10) / 10,
+            max: Math.round((rangosPh.reduce((s, r) => s + r.max, 0) / rangosPh.length) * 10) / 10,
+          };
+  }
+  phRec = {
+    ...phRec,
+    min: Math.round((Math.max(4.8, Math.min(6.9, Number(phRec.min) + ctx.phShift)) * 10)) / 10,
+    max: Math.round((Math.max(5.0, Math.min(7.1, Number(phRec.max) + ctx.phShift)) * 10)) / 10,
+  };
+  const dom = Object.entries(fases).sort((a, b) => b[1] - a[1])[0];
+  const ids = torreVariedadesIdsEnGrid(torreGrid, cfg);
+  const varUnica = ids.length === 1 ? ids[0] : null;
+  let variedadUnicaNombre = null;
+  if (varUnica && typeof getCultivoDB === 'function') {
+    const cuU = getCultivoDB(varUnica);
+    if (cuU) variedadUnicaNombre = cuU.nombre || varUnica;
+  }
+  return {
+    ec: ecRec,
+    ph: phRec,
+    faseDominante: dom ? dom[0] : null,
+    conFaseReal: totalConFecha > 0,
+    estrategia: 'auto',
+    mezclaFasesDistintas: Object.keys(fases).length > 1,
+    variedadUnicaNombre,
+  };
+}
+
+window.getRecomendacionEcPhDesdeInstalacion = getRecomendacionEcPhDesdeInstalacion;
 
 // EC óptima según cultivos plantados en la torre ACTIVA (no setup)
 function getECOptimaTorre() {

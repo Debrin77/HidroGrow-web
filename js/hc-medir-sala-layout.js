@@ -344,6 +344,7 @@
     if (typeof updateRecargaBar === 'function') updateRecargaBar();
     if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
     refreshSalaEquipMontaje();
+    if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
   }
 
   function refreshSistemaCultivoExtras() {

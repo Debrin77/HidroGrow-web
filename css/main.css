@@ -9089,6 +9089,215 @@ button.dia-card {
   white-space: nowrap;
 }
 
+/* Historial — seguimiento real vs objetivo teórico */
+.hist-seg-wrap {
+  margin: 14px 0 16px;
+  padding: 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.hist-seg-wrap--muted {
+  opacity: 0.92;
+}
+.hist-seg-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.hist-seg-title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--white);
+}
+.hist-seg-period {
+  display: flex;
+  gap: 4px;
+}
+.hist-seg-period-btn {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+}
+.hist-seg-period-btn.active {
+  background: var(--accent-dim, #ecfdf5);
+  border-color: var(--accent, #059669);
+  color: var(--accent, #059669);
+}
+.hist-seg-leyenda {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.hist-seg-aviso {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--warn, #d97706);
+  line-height: 1.4;
+}
+.hist-seg-charts {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+@media (min-width: 520px) {
+  .hist-seg-charts {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 900px) {
+  .hist-seg-charts {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+.hist-seg-chart-block--vpd .hist-seg-svg {
+  --hist-seg-line: #059669;
+}
+.hist-seg-chart-block {
+  min-width: 0;
+}
+.hist-seg-chart-lbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.hist-seg-chart-area {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.hist-seg-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 140px;
+}
+.hist-seg-band-rect {
+  fill: rgba(5, 150, 105, 0.22);
+  stroke: none;
+}
+.hist-seg-band-rect--vpd {
+  fill: rgba(5, 150, 105, 0.18);
+}
+.hist-seg-axis-lbl {
+  font-size: 8px;
+  fill: var(--muted, #64748b);
+  font-family: var(--font-ui, system-ui, sans-serif);
+}
+.hist-seg-unit {
+  position: absolute;
+  right: 4px;
+  top: 2px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.hist-seg-empty {
+  margin: 0;
+  padding: 20px 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.hist-seg-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 10px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.hist-seg-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.hist-seg-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+.hist-seg-swatch--line {
+  background: #2563eb;
+}
+.hist-seg-swatch--band {
+  background: rgba(5, 150, 105, 0.45);
+  height: 10px;
+  width: 10px;
+  border-radius: 2px;
+}
+.hist-seg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.hist-seg-dot--ok { background: #16a34a; }
+.hist-seg-dot--warn { background: #d97706; }
+.hist-seg-dot--bad { background: #dc2626; }
+
+html.hc-theme-dark .hist-seg-wrap {
+  --hist-seg-plot-bg: #1e293b;
+  --hist-seg-line: #60a5fa;
+}
+html.hc-theme-dark .hist-seg-band-rect {
+  fill: rgba(52, 211, 153, 0.2);
+}
+html.hc-theme-dark .hist-seg-period-btn.active {
+  background: rgba(5, 150, 105, 0.15);
+}
+
+/* Sala — atajo a seguimiento en Historial */
+.sala-seg-cta {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.sala-seg-cta-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sala-seg-cta-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.sala-seg-cta-stat strong {
+  color: var(--white);
+  font-weight: 700;
+}
+.sala-seg-cta-edad {
+  font-size: 11px;
+  color: var(--muted);
+  width: 100%;
+}
+.sala-seg-cta-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  flex: 1 1 180px;
+}
+
 /* Tabla historial */
 .hist-tabla {
   background: var(--bg2);

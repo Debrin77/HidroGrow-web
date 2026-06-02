@@ -212,6 +212,7 @@ async function guardarMedicion(payloadOverride) {
 
   try {
     if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
+    if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
   } catch (_) {}
 
   // Alertas unificadas (motor único)
