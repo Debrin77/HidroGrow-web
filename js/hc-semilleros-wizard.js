@@ -194,7 +194,7 @@
       fld('pH min', 'semPerfilPhMin', p.phMin, 0.1, 5, 7) +
       fld('pH max', 'semPerfilPhMax', p.phMax, 0.1, 5, 7.5) +
       '</div>' +
-      '<label class="hc-sem-perfil-text"><span>Nota hidro (semillero)</span>' +
+      '<label class="hc-sem-perfil-text"><span>Nota hidro (tienda)</span>' +
       '<textarea id="semPerfilHidroNota" class="setup-input-city" rows="2" maxlength="300" onchange="persistSemilleroPerfilCustom()">' +
       (p.hidroNota || '') + '</textarea></label>' +
       (p.soportePack ? '<p class="hc-sem-perfil-pack">📦 ' + p.soportePack + '</p>' : '') +
@@ -256,7 +256,7 @@
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     renderSemilleroPerfilPanel();
     if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
-    if (showToast && typeof showToast === 'function') showToast('Perfil de semillero guardado con tus ajustes');
+    if (showToast && typeof showToast === 'function') showToast('Perfil de la tienda guardado con tus ajustes');
   }
 
   function aceptarSemilleroTalCual() {
@@ -269,7 +269,7 @@
     if (typeof saveState === 'function') saveState();
     renderSemilleroPerfilPanel();
     if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
-    if (typeof showToast === 'function') showToast('✓ Perfil de ' + (s.marca || 'semillero') + ' aceptado');
+    if (typeof showToast === 'function') showToast('✓ Perfil de ' + (s.marca || 'tienda') + ' aceptado');
   }
 
   function restaurarSemilleroCatalogo() {
