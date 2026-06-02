@@ -4297,6 +4297,9 @@ body.hc-welcome-open .welcome-card--guide .welcome-eyebrow,
 body.hc-welcome-open .welcome-card--guide .welcome-theme-switch,
 body.hc-welcome-open .welcome-card--guide .welcome-title,
 body.hc-welcome-open .welcome-card--guide .welcome-lead,
+body.hc-welcome-open .welcome-card--guide .welcome-block,
+body.hc-welcome-open .welcome-card--guide .welcome-setup-callout,
+body.hc-welcome-open .welcome-card--guide .welcome-legal,
 body.hc-welcome-open .welcome-card--guide .welcome-kpis,
 body.hc-welcome-open .welcome-card--guide .welcome-value-grid,
 body.hc-welcome-open .welcome-card--guide .welcome-foot--guide,
@@ -4309,11 +4312,15 @@ body.hc-welcome-open .welcome-card--guide .welcome-guide-actions {
 body.hc-welcome-open .welcome-card--guide .welcome-theme-switch { animation-delay: 40ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-title { animation-delay: 70ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-lead { animation-delay: 95ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-block:nth-of-type(1) { animation-delay: 115ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-block:nth-of-type(2) { animation-delay: 135ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-setup-callout { animation-delay: 155ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-legal { animation-delay: 175ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-kpis { animation-delay: 120ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-value-grid { animation-delay: 145ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-foot--guide { animation-delay: 170ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-no-mas-label { animation-delay: 190ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-guide-actions { animation-delay: 210ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-foot--guide { animation-delay: 195ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-no-mas-label { animation-delay: 210ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-guide-actions { animation-delay: 225ms; }
 body.hc-welcome-open .welcome-card--guide::before {
   animation: welcomeGlassSweep 1900ms ease-out 140ms 1 both;
 }
@@ -4627,17 +4634,13 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
 }
 .welcome-foot--guide {
   margin: 0 0 12px;
-  font-size: 16px;
-  line-height: 1.65;
-  color: #475569;
-  text-align: justify;
-  text-justify: inter-word;
-  hyphens: auto;
-  -webkit-hyphens: auto;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  border-radius: 10px;
-  padding: 13px 16px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
+  text-align: center;
+  background: transparent;
+  border: none;
+  padding: 0;
 }
 .welcome-guide-actions {
   display: flex;
@@ -4690,6 +4693,35 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
 }
 #welcomeOverlay[data-welcome-theme="dark"] .welcome-lead {
   color: #dbe3ee;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-block {
+  background: rgba(15, 23, 42, 0.55);
+  border-color: rgba(148, 163, 184, 0.38);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-block-title {
+  color: #5eead4;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-check-list,
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-feature-grid li {
+  color: #dbe3ee;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-setup-callout {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.55) 0%, rgba(15, 23, 42, 0.65) 100%);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-setup-txt {
+  color: #dbe3ee;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal {
+  background: rgba(120, 53, 15, 0.35);
+  border-color: rgba(251, 191, 36, 0.35);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-title {
+  color: #fcd34d;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-txt,
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-txt--emph {
+  color: #e7e5e4;
 }
 #welcomeOverlay[data-welcome-theme="dark"] .welcome-kpi {
   background: rgba(15, 23, 42, 0.72);
@@ -4947,12 +4979,103 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   text-align: center;
 }
 .welcome-lead {
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.55;
   color: #334155;
-  margin: 0 0 14px;
-  text-align: justify;
-  text-justify: inter-word;
+  margin: 0 0 12px;
+  text-align: left;
+}
+.welcome-block {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+.welcome-block-title {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+.welcome-check-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+}
+.welcome-check-list li {
+  margin-bottom: 6px;
+}
+.welcome-check-list li:last-child {
+  margin-bottom: 0;
+}
+.welcome-feature-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.welcome-feature-grid li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #334155;
+}
+.welcome-feature-ico {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+.welcome-setup-callout {
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(220, 252, 231, 0.9) 0%, rgba(255, 255, 255, 0.85) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+.welcome-setup-txt {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #334155;
+}
+.welcome-cta-btn--block {
+  width: 100%;
+  justify-content: center;
+}
+.welcome-legal {
+  margin: 0 0 10px;
+  padding: 11px 12px;
+  border-radius: 10px;
+  background: rgba(254, 243, 199, 0.55);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+}
+.welcome-legal-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #92400e;
+  letter-spacing: 0.02em;
+}
+.welcome-legal-txt {
+  margin: 0 0 6px;
+  font-size: 11.5px;
+  line-height: 1.48;
+  color: #57534e;
+  text-align: left;
+}
+.welcome-legal-txt:last-child {
+  margin-bottom: 0;
+}
+.welcome-legal-txt--emph {
+  color: #44403c;
 }
 .welcome-list {
   margin: 0 0 14px;

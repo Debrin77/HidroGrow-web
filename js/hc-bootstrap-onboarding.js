@@ -8,7 +8,7 @@
 const HC_GUIDE_DISMISS_KEY = 'hc_guia_primer_dia_dismiss';
 const HC_ONBOARD_RIEGO_VISIT_KEY = 'hc_onboarding_visit_riego';
 const HC_HINT_CTX = { mediciones: 'hc_hint_ctx_med', sala: 'hc_hint_ctx_sala', sistema: 'hc_hint_ctx_sis', riego: 'hc_hint_ctx_riego' };
-const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_4';
+const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_5_cannabis';
 const HC_TAB_BAR_COACH_KEY = 'hc_tab_bar_coach_dismiss_v2';
 const HC_WELCOME_THEME_PREVIEW_KEY = 'hc_welcome_theme_preview';
 
@@ -62,6 +62,10 @@ function initWelcomeValueCarousel() {
   const grid = ov.querySelector('.welcome-value-grid');
   const dotsWrap = document.getElementById('welcomeValueDots');
   if (!grid || !dotsWrap) return;
+  if (grid.classList.contains('setup-hidden') || grid.getAttribute('aria-hidden') === 'true') {
+    dotsWrap.innerHTML = '';
+    return;
+  }
 
   const cards = Array.from(grid.querySelectorAll('.welcome-value-card'));
   if (cards.length <= 1) {
@@ -590,7 +594,7 @@ function ensurePostSetupChecklistRail() {
       '</div>' +
       '<div class="hc-post-setup-rail-title" id="hcPostSetupRailTitle">Montaje de sala</div>' +
       '<p class="hc-post-setup-rail-text" id="hcPostSetupRailText">' +
-        'En <strong>Sala</strong>, revisa el equipamiento y completa el checklist de <strong>montaje</strong> hasta verificar la puesta en marcha.' +
+        'Completa el checklist de <strong>montaje</strong> en Sala.' +
       '</p>' +
       '<p class="hc-post-setup-rail-status setup-hidden" id="hcPostSetupRailStatus" role="status"></p>' +
       '<div class="hc-post-setup-rail-actions">' +
@@ -667,8 +671,7 @@ function actualizarPostSetupChecklistRail() {
   const btn = document.getElementById('hcPostSetupBtnChecklist');
 
   let title = 'Montaje de sala';
-  let text =
-    'En <strong>Sala</strong>, revisa el equipamiento y completa el checklist de <strong>montaje</strong> hasta verificar la puesta en marcha.';
+  let text = 'Completa el checklist de <strong>montaje</strong> en Sala.';
   let btnLabel = 'Ir a montaje';
   let statusTxt = '';
   let btnDisabled = false;
@@ -676,7 +679,7 @@ function actualizarPostSetupChecklistRail() {
   if (fase === 'cultivo_pendiente') {
     title = 'Cultivo en el esquema';
     text =
-      'En <strong>Cultivo e instalación</strong>, asigna <strong>variedad</strong> y <strong>fecha de trasplante al hidro</strong> en cada cesta con planta.';
+      'Asigna <strong>variedad</strong> y <strong>fecha</strong> en cada cesta con planta.';
     btnLabel = 'Asignar cultivos';
     const sinVariedad =
       typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
@@ -691,7 +694,7 @@ function actualizarPostSetupChecklistRail() {
   } else if (fase === 'deposito_pendiente') {
     title = 'Checklist del depósito (nutrientes)';
     text =
-      'Montaje y cultivo listos. Abre el <strong>checklist del depósito</strong> para el primer llenado con dosis guiadas.';
+      'Abre el <strong>checklist del depósito</strong> para el primer llenado.';
     btnLabel = 'Checklist depósito';
     const bloqueado =
       typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&

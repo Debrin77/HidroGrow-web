@@ -633,15 +633,13 @@
     }
     if (bloqueada) {
       hintEl.innerHTML =
-        '🔒 Montaje en solo lectura: ya completaste el <strong>primer llenado del depósito</strong>. ' +
-        'Para cambios físicos importantes, planifica vaciado y recarga.';
+        '🔒 Montaje cerrado tras el primer llenado del depósito.';
     } else if (verificada) {
       hintEl.innerHTML =
-        '✓ Montaje verificado. Puedes <strong>desmarcar puntos</strong> o abrir guías para revisar ' +
-        'hasta el primer llenado del depósito (mezcla de nutrientes).';
+        '✓ Montaje verificado. Editable hasta el primer llenado del depósito.';
     } else {
       hintEl.innerHTML =
-        'Al verificar, confirmas que el montaje funciona. Podrás modificarlo hasta el primer llenado del depósito.';
+        'Verifica el montaje. Editable hasta el primer llenado del depósito.';
     }
   }
 
@@ -672,11 +670,11 @@
 
     var bloqueada = montajeEdicionBloqueada();
     var ventanaTxt = bloqueada
-      ? 'Montaje cerrado tras el primer llenado del depósito.'
-      : 'Editable hasta el <strong>primer llenado del depósito</strong> (mezcla de nutrientes). Después queda en solo lectura.';
+      ? 'Montaje cerrado tras el primer llenado.'
+      : 'Editable hasta el <strong>primer llenado del depósito</strong>.';
 
     host.innerHTML =
-      '<p class="hc-pm-lead">' + ventanaTxt + ' Pulsa <strong>📖 Guía</strong> en cada paso. No sustituye al checklist de <strong>recarga</strong>.</p>' +
+      '<p class="hc-pm-lead">' + ventanaTxt + ' Cada paso tiene <strong>Guía</strong>.</p>' +
       (!bloqueada
         ? '<p class="hc-pm-config-link"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento o sistema (configurador)</button></p>'
         : '') +
@@ -709,10 +707,10 @@
     return (
       '<p class="hc-pm-inline-lead">' +
       (bloqueada
-        ? 'Montaje verificado y cerrado tras el primer llenado del depósito.'
+        ? 'Montaje cerrado tras el primer llenado.'
         : 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>' +
-          (nEquip ? ' (' + nEquip + ' componentes en catálogo)' : '') +
-          '. Cada paso tiene enlace <strong>Guía</strong>.') +
+          (nEquip ? ' (' + nEquip + ' equipos)' : '') +
+          '.') +
       '</p>' +
       '<p class="hc-pm-prog">' +
       (verificada ? '✓ Puesta en marcha verificada · ' : '') +

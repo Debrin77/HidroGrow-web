@@ -143,9 +143,9 @@
         var nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
         if (sub) {
           sub.textContent =
-            'Introduce EC, pH, temperatura y volumen según tu ' +
+            'EC, pH, temperatura y volumen según tu ' +
             (nut ? nut.nombre : 'nutriente') +
-            ' configurado — manualmente o con IoT. Los valores alimentan calendario, historial y avisos meteo.';
+            ' configurado.';
         }
         if (rangos) rangos.innerHTML = buildRangosHtml(cfg);
         try {

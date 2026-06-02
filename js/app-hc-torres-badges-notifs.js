@@ -117,40 +117,12 @@ function hcCrearNombreInstalacionPorTipo(tipo, ordinal) {
   return base + ' ' + ordinal;
 }
 
-/** Banner en pestaña Mediciones: qué datos son fáciles de anotar según el tipo activo. */
+/** Banner en pestaña Mediciones — oculto (menos ruido visual). */
 function refrescarMedirDatosFacilesBanner(cfg) {
   const el = document.getElementById('medirDatosFacilesBanner');
   if (!el) return;
-  if (!cfg) {
-    el.classList.add('setup-hidden');
-    return;
-  }
-  const tipo =
-    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion;
-  if (tipo === 'rdwc' && typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cfg);
-  if (tipo === 'nft' && typeof nftEnsureDifusorEnDeposito === 'function') nftEnsureDifusorEnDeposito(cfg);
-  if (!tipo || tipo === 'torre') {
-    el.classList.add('setup-hidden');
-    el.textContent = '';
-    return;
-  }
-  el.classList.remove('setup-hidden');
-  if (tipo === 'nft') {
-    el.textContent =
-      'Anota lo que leas hoy en el medidor (EC, pH, °C del agua). Volumen: litros actuales en el depósito de circulación; el rango te orienta frente a la capacidad guardada.';
-  } else if (tipo === 'dwc') {
-    el.textContent =
-      'Lecturas reales del agua; el volumen es lo que tienes hoy en el depósito. Si la app ya conoce la geometría DWC, el rango puede mostrar el útil seguro frente al tope.';
-  } else if (tipo === 'rdwc') {
-    el.textContent =
-      'Las dosis usan control + cubos configurados en Cultivo e instalación; aquí registras mediciones del día (EC, pH, °C, volumen al preparar o revisar la mezcla).';
-  } else if (tipo === 'srf') {
-    el.textContent =
-      'SRF: lecturas en el estanque común; el volumen es la solución útil que tienes hoy (L×A×P o litros que anotaste en Cultivo e instalación).';
-  } else {
-    el.classList.add('setup-hidden');
-    el.textContent = '';
-  }
+  el.classList.add('setup-hidden');
+  el.textContent = '';
 }
 
 function hcAppendNuevaInstalacionDesdeEstado(opts) {

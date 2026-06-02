@@ -162,7 +162,7 @@
     flow.id = 'medirFlow';
     flow.innerHTML =
       '<p class="medir-flow-lead">' +
-      'Introduce los valores del <strong>depósito</strong> o pega la lectura del medidor. Evaluación al instante.' +
+      'Valores del depósito. Evaluación al instante.' +
       '</p>' +
       '<div class="medir-quick-parse medir-quick-parse--premium">' +
       '<div class="medir-quick-parse-head">' +

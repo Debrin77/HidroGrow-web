@@ -432,8 +432,7 @@
     ban.innerHTML =
       '<strong>✅ ' +
       esc(titulo) +
-      '</strong> Completa el checklist de montaje abajo (carpa, LED, aireador, fugas…). ' +
-      'Pulsa <strong>Abrir checklist de montaje</strong> para marcar cada punto.';
+      '</strong> Checklist de montaje abajo.';
     var intro = tab.querySelector('.medir-sala-intro');
     if (intro) intro.insertAdjacentElement('afterend', ban);
     else tab.insertBefore(ban, tab.firstChild);

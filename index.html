@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-montaje-sala">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-welcome-cannabis">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-sala-equip">
 </head>
 <body>
@@ -269,8 +269,7 @@
         </span>
       </button>
       <section id="dashSinInstalacionCta" class="dash-sin-instalacion" aria-label="Configurar tu primera instalación">
-        <p class="dash-sin-instalacion-lead">Aún no has configurado ningún sistema de cultivo.</p>
-        <p class="dash-sin-instalacion-hint">El asistente te guía paso a paso: tipo de instalación, depósito, nutriente y equipamiento.</p>
+        <p class="dash-sin-instalacion-lead">Configura tu primer DWC o RDWC con el asistente.</p>
         <button type="button" class="btn btn-primary dash-sin-instalacion-btn" onclick="hcAbrirPrimeraInstalacion()">Configurar instalación</button>
       </section>
       <div id="hcMultiCoachInicio" class="hc-multi-coach setup-hidden" role="note" aria-live="polite"></div>
@@ -532,12 +531,11 @@
         </details>
       </div>
 
-      <aside id="dashPostSetupCamino" class="dash-post-setup-camino" role="note" aria-label="Flujo tras configurar la instalación">
+      <aside id="dashPostSetupCamino" class="dash-post-setup-camino setup-hidden" role="note" aria-label="Flujo tras configurar la instalación">
         <div class="dash-post-setup-camino-inner">
-          <span class="dash-post-setup-kicker">Tras configurar el hidro</span>
+          <span class="dash-post-setup-kicker">Siguiente</span>
           <p class="dash-post-setup-txt">
-            <strong>Cultivo e instalación</strong> primero: en modo EC automático, variedad y <strong>fecha de trasplante al hidro</strong> en cada cesta con cultivo (así EC/pH van por etapa).
-            Después el <strong>checklist de recarga</strong> dosifica el depósito con esos valores.
+            Montaje en <strong>Sala</strong>, cultivos en el esquema, luego <strong>checklist del depósito</strong>.
           </p>
           <div class="dash-post-setup-actions">
             <button type="button" class="btn btn-secondary btn-sm dash-post-setup-btn" onclick="goTab('sistema')">Ir a Cultivo e instalación</button>
@@ -559,7 +557,7 @@
           <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
         </button>
         <div class="config-section-collapse-body recarga-proxima-collapse-body" id="panelNotifPrefsInicio">
-          <p class="dash-notif-prefs-lead">Las alertas meteorológicas (MeteoAlarm / AEMET en tu zona) siguen con el permiso del navegador. Las casillas de avisos <strong>extra</strong> de cultivo son <strong>por instalación activa</strong> (cada sistema hidropónico puede llevarlas distinto).</p>
+          <p class="dash-notif-prefs-lead">Meteo con permiso del navegador. Avisos de cultivo, por instalación activa.</p>
           <fieldset class="dash-notif-prefs-fieldset" id="dashNotifPrefsFieldset">
             <label class="dash-notif-toggle-row">
               <input type="checkbox" id="notifOptRecarga" onchange="persistNotifOpciones()">
@@ -621,7 +619,7 @@
       </h1>
       <div id="tabContextHintMediciones" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Medir</strong> = registro rápido de EC, pH, temperatura del agua y volumen. La <strong>sala</strong>, IoT, agua de base y recargas están en la pestaña <strong>Sala</strong> (icono casa).
+          EC, pH, temperatura y volumen del depósito. Configuración de sala en la pestaña <strong>Sala</strong>.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('mediciones')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -1501,11 +1499,11 @@
       </h1>
       <div id="tabContextHintSala" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          Configura <strong>ubicación, agua, equipamiento de sala</strong> (LED, extractor, medidor…), IoT y recargas. El <strong>esquema DWC/RDWC y las plantas</strong> están en <strong>Cultivo e instalación</strong>. Los valores diarios del depósito se registran en <strong>Medir</strong>.
+          Ubicación, agua, equipamiento e IoT. Esquema y plantas en <strong>Cultivo e instalación</strong>; mediciones diarias en <strong>Medir</strong>.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sala')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
-      <p class="medir-sala-intro">Ubicación, agua de base, equipamiento de sala, dimensiones de carpa/LED, referencia de ambiente para riego, IoT y recargas — configuración que no cambia en cada medición (DWC/RDWC, sin torre ni NFT).</p>
+      <p class="medir-sala-intro setup-hidden" aria-hidden="true">Configuración de sala (no cambia en cada medición).</p>
       <div id="salaCultivoEquipMount" class="sala-cultivo-equip-mount" aria-label="Equipamiento y montaje de sala">
         <details class="sistema-montaje-details config-section-collapsible sala-montaje-details" id="sistemaMontajeChecksDetails">
           <summary class="config-section-collapse-head sistema-montaje-summary">
@@ -1551,7 +1549,7 @@
       </h1>
       <div id="tabContextHintSistema" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          <strong>Cultivo e instalación</strong>: esquema DWC/RDWC, genética y fecha en cada maceta/módulo. <strong>Sala</strong> = ubicación, agua, equipamiento (LED, extractor…) y montaje. <strong>Medir</strong> = registro diario del depósito y ambiente del día.
+          Esquema, genética y fechas por maceta. Sala = montaje; Medir = depósito del día.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('sistema')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -2187,7 +2185,7 @@
       <h1 class="section-title section-title--with-ico" id="riegoSectionTitle"><svg class="hc-ico hc-ico--section" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg><span>Cálculo de <span class="accent">Riego</span></span></h1>
       <div id="tabContextHintRiego" class="tab-context-hint setup-hidden" role="note">
         <div class="tab-context-hint-inner">
-          El <strong>riego sugerido</strong> combina tu instalación con <strong>clima previsto</strong> (modelo). Es una guía; comprueba siempre con tus <strong>mediciones</strong> y el aspecto de las plantas.
+          Riego estimado según clima previsto. Confirma con tus <strong>mediciones</strong> y las plantas.
           <button type="button" class="tab-context-hint-close" onclick="dismissTabContextHint('riego')" aria-label="Entendido, ocultar aviso">Entendido</button>
         </div>
       </div>
@@ -2954,8 +2952,8 @@
           <path d="M18 4v8M174 4v8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3 4"/>
         </svg>
       </div>
-      <h2 id="hcTabBarCoachTitle" class="hc-tab-bar-coach-title">Navega por abajo</h2>
-      <p class="hc-tab-bar-coach-text">La barra fija agrupa <strong>Inicio</strong>, <strong>Medir</strong>, <strong>Cultivo e instalación</strong>, calendario, historial y más. <strong>Riego</strong> y <strong>Meteo avanzado</strong> aparecen tras el primer llenado del depósito. Si no ves todos los iconos, <strong>desliza horizontalmente</strong>.</p>
+      <h2 id="hcTabBarCoachTitle" class="hc-tab-bar-coach-title">Barra inferior</h2>
+      <p class="hc-tab-bar-coach-text"><strong>Inicio</strong>, <strong>Medir</strong>, <strong>Cultivo</strong> y más abajo. Desliza si no ves todos los iconos.</p>
       <button type="button" class="btn btn-primary hc-tab-bar-coach-btn" onclick="dismissTabBarCoach()">Entendido</button>
     </div>
   </div>
@@ -2963,7 +2961,7 @@
 </div>
 <!-- FIN APP -->
 
-<!-- ══ BIENVENIDA (primera vez) — guía rápida en una pantalla ══ -->
+<!-- ══ BIENVENIDA (primera vez) — cannabis hidro en casa (España) ══ -->
 <div class="welcome-overlay setup-hidden" id="welcomeOverlay" role="dialog" aria-modal="true"
   data-welcome-theme="light"
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
@@ -2972,76 +2970,54 @@
       <img class="welcome-brand-emblem" alt="" src="icons/splash-brand-gold.png?v=2026-05-31-gold-v2" width="40" height="40" decoding="async">
       <span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span>
     </div>
-    <p class="welcome-eyebrow">Planifica · Mide · Ajusta</p>
+    <p class="welcome-eyebrow">Cannabis hidro en casa · España</p>
     <div class="welcome-theme-switch" role="group" aria-label="Aspecto de la guía">
       <button type="button" class="welcome-theme-btn is-active" id="welcomeThemeBtnLight"
         onclick="setWelcomeTheme('light')" aria-pressed="true">Claro</button>
       <button type="button" class="welcome-theme-btn" id="welcomeThemeBtnDark"
         onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
     </div>
-    <h2 id="welcomeGuideTitle" class="welcome-title">Controla tu cultivo hidropónico sin perderte</h2>
-    <p class="welcome-lead">HidroGrow está pensado para <strong>cannabis en hidro</strong>: los dos sistemas más usados por cultivadores — <strong>DWC</strong> (cubos aireados) y <strong>RDWC</strong> (recirculación entre depósito y macetas). Calculamos <strong>litros, oxígeno, net pots, EC/pH</strong>, checklist de mezcla y <strong>meteorología</strong> de tu municipio.</p>
-    <div class="welcome-kpis" aria-label="Resumen de utilidad">
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-grid"/></svg><strong>1</strong> panel operativo</span>
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-layers"/></svg><strong>2</strong> sistemas DWC · RDWC</span>
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><strong>8</strong> módulos clave</span>
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-check"/></svg>Checklist guiado</span>
-      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg>Nutriente recomendado por cultivo y fase</span>
-    </div>
-    <div class="welcome-value-grid" role="list" aria-label="Qué puedes hacer con la app">
-      <article class="welcome-value-card welcome-value-card--green" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">⚙️</div>
-        <h3>Configuración de sistemas</h3>
-        <p>DWC o RDWC: volumen, aireador, net pots, recirculación y checklist de mezcla desde el asistente.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--blue" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">📝</div>
-        <h3>Registro diario</h3>
-        <p>Mediciones, recargas, apuntes y fotos con contexto temporal útil.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--violet welcome-value-card--assistant" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">🧭</div>
-        <h3>Asistente de mediciones</h3>
-        <p>Guía paso a paso con rangos recomendados y correcciones accionables.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--teal welcome-value-card--protools" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">🛠️</div>
-        <h3>Herramientas PRO</h3>
-        <p>Calculadoras rápidas de EC, pH y luz LED para decidir y actuar en segundos.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--violet" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">📊</div>
-        <h3>Cálculo según cultivos</h3>
-        <p>Recomendaciones por genética, SOG o flor completa, y validación de cestas en cada sistema.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--teal" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">💧</div>
-        <h3>Cultivo e instalación completo</h3>
-        <p>Visión integrada de agua, nutrientes y operación por instalación activa.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--indigo" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">🧪</div>
-        <h3>Nutrientes más usados</h3>
-        <p>Catálogo práctico con referencias habituales en hidroponía para trabajar con agilidad.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--amber" role="listitem">
-        <div class="welcome-value-icon" aria-hidden="true">🌤️</div>
-        <h3>Meteorología local</h3>
-        <p>Contexto climático por ubicación para anticipar y ajustar con criterio.</p>
-      </article>
-      <article class="welcome-value-card welcome-value-card--cta" role="listitem" aria-label="Empezar sistema hidropónico">
-        <div class="welcome-value-icon" aria-hidden="true">🚀</div>
-        <h3>Empezar sistema hidropónico</h3>
-        <p>Configura tu primera instalación en modo guiado y deja el sistema listo para el checklist.</p>
-        <button type="button" class="btn btn-primary welcome-cta-btn" onclick="welcomeAbrirSetup()"
-          aria-label="Empezar sistema hidropónico: abrir asistente de configuración">
-          Empezar ahora
-        </button>
-        <div class="welcome-cta-foot">Desliza para repasar · Último paso: acción</div>
-      </article>
-    </div>
-    <div class="welcome-carousel-dots welcome-value-dots" id="welcomeValueDots" aria-label="Páginas de la guía" role="tablist"></div>
-    <p class="welcome-foot welcome-foot--guide"><strong>Importante:</strong> clima y riego son apoyo de decisión; la referencia final siempre son tus mediciones y observación directa del cultivo.</p>
+    <h2 id="welcomeGuideTitle" class="welcome-title">Tu cultivo de cannabis en hidro, en casa y con criterio</h2>
+    <p class="welcome-lead">HidroGrow está pensada para <strong>autocultivo hidropónico de cannabis</strong> en vivienda: configura <strong>DWC</strong> o <strong>RDWC</strong>, registra <strong>EC/pH</strong>, dosifica según <strong>litros reales</strong> y sigue checklists sin perderte entre pantallas.</p>
+
+    <section class="welcome-block" aria-labelledby="welcomeBondadesTitle">
+      <h3 id="welcomeBondadesTitle" class="welcome-block-title">Por qué te conviene</h3>
+      <ul class="welcome-check-list">
+        <li><strong>Fácil de usar:</strong> asistente paso a paso, mediciones rápidas y avisos claros.</li>
+        <li><strong>Menos desperdicio:</strong> nutriente y agua según volumen real del depósito, no a ojo.</li>
+        <li><strong>Más control:</strong> historial, calendario, meteo local y rangos por genética y fase.</li>
+      </ul>
+    </section>
+
+    <section class="welcome-block" aria-labelledby="welcomeFeaturesTitle">
+      <h3 id="welcomeFeaturesTitle" class="welcome-block-title">Qué incluye la app</h3>
+      <ul class="welcome-feature-grid" role="list">
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">⚙️</span><span><strong>Sistema en casa</strong> — DWC/RDWC, cubos, aireador, depósito y montaje.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📝</span><span><strong>Medir y registrar</strong> — EC, pH, temperatura, volumen y recargas.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧭</span><span><strong>Asistente guiado</strong> — correcciones con rangos recomendados.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📊</span><span><strong>Cultivo</strong> — genética, SOG/SCROG, fechas por cesta y esquema visual.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧪</span><span><strong>Nutrientes</strong> — catálogo habitual y checklist de mezcla del depósito.</span></li>
+        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🌤️</span><span><strong>Meteo y riego</strong> — contexto climático de tu municipio.</span></li>
+      </ul>
+    </section>
+
+    <section class="welcome-setup-callout" aria-label="Configurar primera instalación">
+      <h3 class="welcome-block-title">Configura tu instalación</h3>
+      <p class="welcome-setup-txt">El asistente te guía: tipo de sistema, sala (LED, extractor), plantas, geometría del hidro, agua, nutriente y cultivos en cestas. En minutos dejas lista la primera instalación con checklist de montaje.</p>
+      <button type="button" class="btn btn-primary welcome-cta-btn welcome-cta-btn--block" onclick="welcomeAbrirSetup()"
+        aria-label="Abrir asistente de configuración de instalación hidropónica">
+        Configurar mi sistema
+      </button>
+    </section>
+
+    <aside class="welcome-legal" role="note" aria-labelledby="welcomeLegalTitle">
+      <h3 id="welcomeLegalTitle" class="welcome-legal-title">Nota legal — autocultivo en España</h3>
+      <p class="welcome-legal-txt">HidroGrow es una <strong>herramienta técnica</strong> (EC, pH, VPD, oxígeno, checklists); no promueve el consumo ni sustituye asesoramiento legal o sanitario.</p>
+      <p class="welcome-legal-txt">El cultivo de cannabis en el <strong>domicilio habitual</strong> para <strong>autoconsumo</strong> en España está regulado (entre otras, <strong>Ley Orgánica 4/2023</strong> y <strong>Real Decreto 933/2023</strong>), además de la normativa de tu <strong>comunidad autónoma</strong>. Debe ser en espacio <strong>privado</strong>, sin exposición pública, <strong>sin menores</strong>, sin venta ni tráfico, y dentro de los <strong>límites vigentes</strong> (plantas, conservación, publicidad, etc.).</p>
+      <p class="welcome-legal-txt welcome-legal-txt--emph"><strong>Consulta siempre la legislación actual</strong> antes de cultivar. Las sugerencias de la app (clima, riego, dosis) son apoyo; la referencia final son tus mediciones y la observación directa del cultivo.</p>
+    </aside>
+
+    <p class="welcome-foot welcome-foot--guide">Uso responsable · Solo mayores de edad según la ley aplicable.</p>
     <label class="welcome-no-mas-label" for="welcomeChkNoMas">
       <input type="checkbox" id="welcomeChkNoMas" checked>
       <span>No volver a mostrar esta guía al abrir la app</span>
@@ -3091,7 +3067,7 @@
     <div class="setup-page active" id="spage0">
       <div class="setup-title">Configura tu instalación</div>
       <div class="setup-subtitle">
-        Elige <strong>DWC</strong> (cubos con aireador) o <strong>RDWC</strong> (recirculación con depósito de control). El asistente calcula litros, oxígeno y EC/pH paso a paso.
+        <strong>DWC</strong> (cubos aireados) o <strong>RDWC</strong> (recirculación). Litros, oxígeno y EC/pH calculados paso a paso.
       </div>
 
       <div id="setupTipoInstalacionPanel" class="setup-tipo-panel">
@@ -3119,12 +3095,12 @@
         aria-label="Empezar asistente de configuración paso a paso">
         Empezar asistente
       </button>
-      <p class="welcome-hint">Tras el asistente: revisa todo en <strong>Cultivo e instalación</strong>, asigna variedades y fechas en las cestas, y usa el <strong>checklist de recarga</strong> para preparar el nutriente en el depósito. También podrás afinar datos en Medir → Configuración.</p>
+      <p class="welcome-hint setup-hidden" aria-hidden="true">Tras guardar: montaje en Sala, cultivos en el esquema, checklist del depósito.</p>
     </div>
 
     <div class="setup-page" id="spagePremium1">
       <div class="setup-title">Objetivo y legalidad</div>
-      <div class="setup-subtitle">HidroGrow orienta el cultivo hidropónico personal de cannabis. Confirma tu contexto antes de dimensionar sala y sistema.</div>
+      <div class="setup-subtitle">Uso personal responsable. Confirma contexto antes de dimensionar.</div>
       <div class="setup-box-warn setup-mb-16">
         <strong>Uso personal responsable.</strong> Esta app es una herramienta técnica (EC, pH, VPD, oxígeno, checklist). Respeta la normativa de tu territorio sobre autocultivo.
       </div>
@@ -3155,7 +3131,7 @@
 
     <div class="setup-page" id="spagePremium2">
       <div class="setup-title">Entorno de cultivo</div>
-      <div class="setup-subtitle">Interior o exterior define clima, VPD y equipamiento.</div>
+      <div class="setup-subtitle">Interior o exterior — define clima y equipamiento.</div>
       <div class="setup-block-title">¿Dónde estará el sistema?</div>
       <div class="setup-grid-2 setup-grid-gap-10 setup-mb-16">
         <button type="button" class="equip-card equip-card-pad-14 selected" id="setupPremiumLocInterior" onclick="seleccionarPremiumEntorno('interior')">
@@ -3171,7 +3147,7 @@
 
     <div class="setup-page" id="spagePremium3">
       <div class="setup-title">Espacio y equipamiento</div>
-      <div class="setup-subtitle" id="setupPremium3Subtitle">Primero elige marca y modelo de cada elemento; después revisa las medidas de sala/carpa que rellenamos con la ficha técnica.</div>
+      <div class="setup-subtitle" id="setupPremium3Subtitle">Marca y modelo de LED, extractor y carpa (catálogo opcional).</div>
       <div id="setupPremiumEquipSection">
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
         <p class="setup-field-hint setup-mb-8">Top 10 por categoría (marcas habituales en growshops ES). Cada selección aporta datos de ficha (m², W, m³/h…). Puedes dejar «Manual / otro modelo».</p>
@@ -3225,7 +3201,7 @@
 
     <div class="setup-page" id="spagePremium4">
       <div class="setup-title">Clima, luz y fotoperiodo</div>
-      <div class="setup-subtitle">Objetivos de VPD y PPFD según fase. Se usarán en el protocolo de mediciones.</div>
+      <div class="setup-subtitle">Fase y horas de luz → objetivos VPD y EC.</div>
       <div class="setup-mb-8">
         <label class="setup-field-label" for="setupPremiumFase">Fase inicial del cultivo</label>
         <select id="setupPremiumFase" class="setup-input-city" onchange="calcularPremiumSala();refreshPremiumClimaResumen()">
@@ -3255,7 +3231,7 @@
 
     <div class="setup-page" id="spagePremium5">
       <div class="setup-title">Genética y método</div>
-      <div class="setup-subtitle">SOG o SCROG según porte. En el paso Cultivos elegirás variedades concretas.</div>
+      <div class="setup-subtitle">SOG o SCROG. Variedades concretas en Cultivos.</div>
       <div class="setup-block-title">Método de cultivo</div>
       <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">
         <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumMetodoSOG" onclick="seleccionarPremiumMetodo('sog')">
@@ -3288,7 +3264,7 @@
 
     <div class="setup-page" id="spagePremium6">
       <div class="setup-title">Germinación, clones y madre</div>
-      <div class="setup-subtitle">Elige origen (semilla, clon o madre). Si germinas semilla, marca las <strong>6 fases en orden</strong> hasta el cubo hidro.</div>
+      <div class="setup-subtitle">Origen de planta y <strong>6 fases en orden</strong> hasta el cubo hidro.</div>
       <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
       <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div class="setup-block-title">Origen de plantas</div>
@@ -3338,7 +3314,7 @@
 
     <div class="setup-page" id="spagePremium7">
       <div class="setup-title">Puente al montaje</div>
-      <div class="setup-subtitle">Ya tienes contexto (sala, genética, origen). Ahora medimos cubos, equipamiento y mezcla — sin repetir lo anterior.</div>
+      <div class="setup-subtitle">Resumen de contexto. Siguiente: geometría del sistema.</div>
       <div class="setup-box-info setup-mb-12">
         <strong>Siguiente:</strong> geometría del sistema (filas×cestas o cubos RDWC), equipamiento hidro, agua de mezcla y nutriente.
       </div>
@@ -3353,7 +3329,7 @@
 
     <div class="setup-page" id="spage1">
       <div class="setup-title" id="spage1Title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-sprout"/></svg> Tu sistema</div>
-      <div class="setup-subtitle" id="spage1Subtitle">Solo lo que ves en tu montaje o en la caja del kit: sin fórmulas raras; lo demás lo inferimos o lo afinas después en Cultivo e instalación.</div>
+      <div class="setup-subtitle" id="spage1Subtitle">Medidas del montaje real; el resto lo afinas después.</div>
       <p class="setup-field-hint setup-field-hint--banner" id="setupPaso1FacilBanner">
         <strong>Sin cálculos obligatorios:</strong> cinta métrica o etiqueta del fabricante. Los campos opcionales pueden quedar vacíos: usamos valores orientativos razonables hasta que los completes.
       </p>
@@ -3668,7 +3644,7 @@
 
     <div class="setup-page" id="spage2">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg> Equipamiento</div>
-      <div class="setup-subtitle">Marca/modelo del catálogo y dispositivos del circuito hidro (aireador, bomba, medidor…).</div>
+      <div class="setup-subtitle">Aireador, bomba y medidor del circuito hidro.</div>
 
       <details class="setup-equip-catalog-details setup-mb-16" id="setupEquipCatalogDetails" open>
         <summary class="setup-block-title setup-equip-catalog-summary">Selección marca y modelo (catálogo ES)</summary>
@@ -3749,7 +3725,7 @@
 
     <div class="setup-page" id="spage3">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-droplet"/></svg> Agua y fijación en cestas</div>
-      <div class="setup-subtitle">Agua de la <strong>mezcla del depósito</strong> y medio en la <strong>net pot</strong> — distinto del cubo de germinación (paso Planta).</div>
+      <div class="setup-subtitle">Agua del depósito y medio en la net pot.</div>
       <div id="setupAguaRecapPanel" class="setup-flow-recap setup-box-info setup-mb-12 setup-hidden" role="note"></div>
 
       <!-- Tipo de agua -->
@@ -3836,7 +3812,7 @@
 
     <div class="setup-page" id="spage4">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg> Nutriente</div>
-      <div class="setup-subtitle">Top 10 marcas más habituales en growshops de España. Adaptaremos cálculos y checklist a tu elección.</div>
+      <div class="setup-subtitle">Línea de nutrientes para dosis por litros calculados.</div>
 
       <div class="setup-block-title setup-mb-8">Más vendidos en España</div>
       <div class="nutrientes-grid" id="nutrientesGrid">
@@ -3854,7 +3830,7 @@
 
     <div class="setup-page" id="spage5">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-globe"/></svg> Meteo y preferencias</div>
-      <div class="setup-subtitle">Ubicación e iluminación ya vienen de los pasos Entorno y Clima. Aquí solo lo que falta.</div>
+      <div class="setup-subtitle">Exterior: ciudad para meteo (interior salta este paso).</div>
       <div id="setupUbicacionRecapPanel" class="setup-flow-recap setup-box-info setup-mb-12 setup-hidden" role="note"></div>
 
       <div id="setupUbicacionDuplicadaWrap">
@@ -3966,7 +3942,7 @@
 
     <div class="setup-page" id="spage6">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-sprout"/></svg> ¿Qué vas a cultivar?</div>
-      <div class="setup-subtitle">Marca grupos genéticos (orientan EC/pH). Abajo, opcional: variedad y fecha por cesta. Si lo dejas vacío, lo completas después en Cultivo e instalación.</div>
+      <div class="setup-subtitle">Variedad y fecha por cesta (opcional; puedes completar después).</div>
       <div id="setupCultivosResumen" class="setup-cultivos-resumen setup-box-info setup-mb-12 setup-hidden" role="status" aria-live="polite"></div>
 
       <div id="setupPlantasGrid" class="setup-plantas-grid">
@@ -3992,7 +3968,7 @@
 
     <div class="setup-page" id="spage7">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-layers"/></svg> ¿Una o varias instalaciones?</div>
-      <div class="setup-subtitle">Hasta <strong>10 sistemas DWC/RDWC independientes</strong>. Cada uno tiene sus plantas, mediciones, nutriente y clima. Ejemplos: <strong>Esquejes</strong>, <strong>Veg 18/6</strong>, <strong>Flor 12/12</strong>. La germinación en domo no necesita instalación salvo que uses un cubo dedicado.</div>
+      <div class="setup-subtitle">Hasta 10 instalaciones DWC/RDWC (Veg, Flor, Esquejes…).</div>
 
       <div class="setup-grid-2 setup-grid-gap-10 setup-mb-16">
         <button type="button" class="equip-card selected equip-card-pad-14-center" id="torreSolo" onclick="seleccionarNumTorres('una')">
@@ -4842,12 +4818,12 @@
   <script src="js/hc-bootstrap-config.js?v=2026-05-31-hidrogrow-genetics"></script>
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
-  <script src="js/hc-medir-operativa.js?v=2026-05-31-tabs-operativa"></script>
-  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-montaje-sala"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-sin-instalacion"></script>
+  <script src="js/hc-medir-operativa.js?v=2026-05-31-copy-lite"></script>
+  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-copy-lite"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-welcome-cannabis"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-tareas-hoy"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
@@ -4874,7 +4850,7 @@
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-crash-fix"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-skip-equip"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-diagram-vivid"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-rdwc-defaults"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
   <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-guardar-toast"></script>
@@ -4906,13 +4882,13 @@
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/meteo-alarm-app.js?v=1"></script>
-  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-montaje-sala"></script>
+  <script src="js/app-hc-medicion-toast.js?v=2026-05-31-copy-lite"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-setup-save"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-sin-instalacion"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
-  <script src="js/hc-puesta-marcha.js?v=2026-05-31-montaje-sala"></script>
+  <script src="js/hc-puesta-marcha.js?v=2026-05-31-copy-lite"></script>
   <script src="js/app-hc-pwa-fotodb.js?v=2026-05-26-paralelo-colectores"></script>
 </body>
 </html>

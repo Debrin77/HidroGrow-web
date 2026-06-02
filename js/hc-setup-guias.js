@@ -1,70 +1,25 @@
 /**
- * HidroGrow — micro-ayudas del asistente de configuración (≤2 líneas por paso).
+ * HidroGrow — micro-ayudas del asistente de configuración (una línea por paso).
  */
 (function (global) {
   'use strict';
 
   var SETUP_GUIAS = {
-    0: {
-      l1: 'Elige DWC o RDWC una sola vez; el resto del asistente no volverá a preguntarlo salvo error.',
-      l2: 'Fases: contexto → planta → montaje hidro → mezcla → cultivos en cestas.',
-    },
-    1: {
-      l1: 'Objetivo y nivel Consejos (principiante/avanzado); solo se pregunta aquí.',
-      l2: 'Siguiente: interior o exterior (define clima y meteo).',
-    },
-    2: {
-      l1: 'Interior o exterior — única vez; no se repite en pasos posteriores.',
-      l2: 'Exterior: más adelante pediremos ciudad para meteo si hace falta.',
-    },
-    3: {
-      l1: 'Medidas de carpa, LED y extractor; catálogo opcional para rellenar fichas.',
-      l2: 'Estos datos validan plantas/m² en el paso Cultivos.',
-    },
-    4: {
-      l1: 'Fase y fotoperiodo: única fuente de horas de luz y objetivos VPD/EC.',
-      l2: 'No volverás a ajustar el slider de horas más adelante.',
-    },
-    5: {
-      l1: 'SOG = muchas plantas bajas; SCROG = red con pocas plantas. El recuadro explica al elegir.',
-      l2: 'Semillero = referencia EC/pH. Variedades en cestas van al paso Cultivos.',
-    },
-    6: {
-      l1: 'Las 6 casillas son fases en orden hasta el cubo hidro, no opciones alternativas.',
-      l2: 'Radícula = raíz blanca; domo = plántula húmeda; nunca siembra en depósito.',
-    },
-    7: {
-      l1: 'Resumen de lo ya definido; ahora pasamos a medidas del montaje real.',
-      l2: 'Siguiente: geometría con diagrama nítido del sistema.',
-    },
-    8: {
-      l1: 'Filas×cestas o cubos RDWC y medidas del depósito; diagrama en vivo.',
-      l2: 'DWC/RDWC ya elegido — cambia solo si te equivocaste.',
-    },
-    9: {
-      l1: 'Aireador, calentador y medidor hidro (distinto del catálogo LED/extractor).',
-      l2: 'Aparecen en el diagrama del paso anterior.',
-    },
-    10: {
-      l1: 'Agua de mezcla del depósito + medio en net pot (no el cubo de germinación).',
-      l2: 'Sustrato sugerido según origen Planta; confirma o cambia.',
-    },
-    11: {
-      l1: 'Línea de nutrientes para dosis según litros calculados en Geometría.',
-      l2: 'Editable después en Medir → Configuración.',
-    },
-    12: {
-      l1: 'Solo si cultivas en exterior: ciudad para meteo (interior salta este paso).',
-      l2: 'Ubicación, luz y horas ya vienen de Entorno y Clima.',
-    },
-    13: {
-      l1: 'Grupos genéticos + variedad/fecha por cesta. Revisa el resumen de tu configuración arriba.',
-      l2: 'Distinto del semillero (referencia) y del medio en net pot (paso Agua).',
-    },
-    14: {
-      l1: '¿Varias salas? Crea instalaciones con nombres claros (Esquejes, Veg, Flor). Germinación en domo no necesita cubo DWC.',
-      l2: 'Antes de medir otra sala: Cambiar › en Inicio o Medir. Cada sistema guarda EC e historial aparte.',
-    },
+    0: { l1: 'DWC o RDWC — define el resto del asistente.' },
+    1: { l1: 'Objetivo y nivel; luego entorno interior/exterior.' },
+    2: { l1: 'Interior o exterior (clima y meteo).' },
+    3: { l1: 'Carpa, LED y extractor; catálogo opcional.' },
+    4: { l1: 'Fase y horas de luz → objetivos EC/VPD.' },
+    5: { l1: 'SOG o SCROG; variedades en paso Cultivos.' },
+    6: { l1: '6 fases en orden hasta el cubo hidro.' },
+    7: { l1: 'Resumen; siguiente: geometría del sistema.' },
+    8: { l1: 'Filas, cubos y depósito; diagrama en vivo.' },
+    9: { l1: 'Aireador, calentador y medidor del circuito.' },
+    10: { l1: 'Agua del depósito y medio en net pot.' },
+    11: { l1: 'Nutriente para dosis según litros calculados.' },
+    12: { l1: 'Exterior: ciudad para meteo (interior salta).' },
+    13: { l1: 'Variedad y fecha por cesta con cultivo.' },
+    14: { l1: 'Varias salas: nombra instalaciones (Veg, Flor…).' },
   };
 
   var SETUP_ROADMAP = [
@@ -129,9 +84,7 @@
       return;
     }
     panel.classList.remove('setup-hidden');
-    panel.innerHTML =
-      '<p class="setup-guia-l1">' + esc(g.l1) + '</p>' +
-      '<p class="setup-guia-l2">' + esc(g.l2) + '</p>';
+    panel.innerHTML = '<p class="setup-guia-l1">' + esc(g.l1) + '</p>';
     renderSetupRoadmapMini(page);
   }
 
@@ -303,7 +256,7 @@
       '<li><strong>Mezcla:</strong> agua ' + esc(agua) + ' · fijación ' + esc(su) + '</li>' +
       '<li><strong>Nutriente:</strong> ' + esc(String(nutNom).trim()) + '</li>' +
       '</ul>' +
-      '<p class="setup-cultivos-resumen-foot">Pulsa «Guardar y empezar» para crear la instalación con estos datos.</p>';
+      '<p class="setup-cultivos-resumen-foot">Pulsa «Guardar y empezar» para crear la instalación.</p>';
     panel.classList.remove('setup-hidden');
   }
 

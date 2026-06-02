@@ -246,8 +246,8 @@ function hcNotifyInstalacionGuardada(opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
   const nombre = String(opts.nombre || '').trim();
   const msg = nombre
-    ? '✅ «' + nombre + '» guardada. Revisa el checklist de montaje en Sala (se abre ahora).'
-    : '✅ Instalación guardada. Revisa el checklist de montaje en Sala (se abre ahora).';
+    ? '✅ «' + nombre + '» guardada · Checklist en Sala'
+    : '✅ Instalación guardada · Checklist en Sala';
   const delayMs = Number.isFinite(opts.delayMs) ? opts.delayMs : 280;
   setTimeout(function () {
     showToast(msg, false, { durationMs: 8200, zIndex: 10400, prominent: true });
