@@ -552,7 +552,7 @@ function checkNivelCompat(nivel) {
     const combKey2 = grupos[1] + '-' + grupos[0];
     const compat = COMPATIBILIDAD[combKey1] || COMPATIBILIDAD[combKey2];
     if (compat && !compat.ok) return 'Mezcla no recomendada';
-    if (compat && compat.icono === '⚠️') return 'Ajustar EC al mezclar';
+    if (compat && compat.warn) return 'Ajustar EC al mezclar';
   }
   return null;
 }
@@ -636,7 +636,11 @@ function renderCompatGrid() {
       '<div class="compat-grupo-card" style="--cg-bg:' + g.color + '18;--cg-bd:' + g.color + '55;--cg-fg:' + g.color + ';--cg-chip-bg:' + g.color + '22">' +
         '<div class="compat-grupo-head">' +
           '<span class="compat-grupo-name">' +
-            '<span class="compat-grupo-emoji" aria-hidden="true">' + (GRUPO_EMOJI_REP[key] || '🌱') + '</span>' +
+            '<span class="compat-grupo-emoji" aria-hidden="true">' +
+            (typeof hcGrupoCultivoIconMarkup === 'function'
+              ? hcGrupoCultivoIconMarkup(key).replace('setup-grupo-icon', 'compat-grupo-ico-wrap')
+              : GRUPO_EMOJI_REP[key] || '🌱') +
+            '</span>' +
             g.nombre + '</span>' +
           '<span class="compat-grupo-chip">' + unicas.length + ' var.</span>' +
         '</div>' +
@@ -644,17 +648,28 @@ function renderCompatGrid() {
           unicas.map(function(u) { return escHtmlUi(cultivoNombreLista(getCultivoDB(u), u)); }).join(', ') + '</div>' +
         '<div class="compat-grupo-tags">' +
           '<span class="compat-tag-soft">' +
-            '⚡ EC ' + g.ec + ' µS/cm</span>' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('ec', 'EC ' + g.ec + ' µS/cm') : '⚡ EC ' + g.ec + ' µS/cm') +
+            '</span>' +
           '<span class="compat-tag-soft">' +
-            '🧪 pH ' + g.ph + '</span>' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('ph', 'pH ' + g.ph) : '🧪 pH ' + g.ph) +
+            '</span>' +
         '</div>' +
-        '<div class="compat-grupo-nota">💡 ' + (g.nota || '') + '</div>' +
+        '<div class="compat-grupo-nota">' +
+            (typeof hcTextWithLeadingIcons === 'function'
+              ? hcTextWithLeadingIcons('💡 ' + (g.nota || ''), 'info')
+              : '💡 ' + (g.nota || '')) +
+            '</div>' +
       '</div>';
   });
 
   // ── Análisis compatibilidad ───────────────────────────────────────────────
   if (gruposMap.size > 1) {
-    html += '<div class="compat-bloque-title">🔬 Compatibilidad entre grupos</div>';
+    html +=
+      '<div class="compat-bloque-title">' +
+      (typeof hcTextWithLeadingIcons === 'function'
+        ? hcTextWithLeadingIcons('🔬 Compatibilidad entre grupos', 'info')
+        : '🔬 Compatibilidad entre grupos') +
+      '</div>';
 
     const keys = [...gruposMap.keys()];
     let hayIncomp = false;
@@ -672,16 +687,37 @@ function renderCompatGrid() {
         html +=
           '<div class="compat-pair-card ' + (ok ? 'compat-pair-card--ok' : 'compat-pair-card--bad') + '">' +
             '<div class="compat-pair-head">' +
-              '<span class="compat-pair-icon">' + (ok?'✅':'⚠️') + '</span>' +
+              '<span class="compat-pair-icon">' +
+              (typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup(ok ? 'ok' : 'warn') : ok ? '✅' : '⚠️') +
+              '</span>' +
               '<span class="compat-pair-name">' +
                 gA.nombre + ' + ' + gB.nombre + '</span>' +
             '</div>' +
             '<div class="compat-pair-text">' +
               (ok
-                ? '✅ Rango EC compartido: ' + Math.max(ecA[0],ecB[0]) + '–' + Math.min(ecA[1],ecB[1]) + ' µS/cm'
-                : '⚠️ EC incompatible — ' + gA.nombre + ' (' + gA.ec + ') vs ' + gB.nombre + ' (' + gB.ec + ')') +
+                ? (typeof hcTextWithLeadingIcons === 'function'
+                    ? hcTextWithLeadingIcons(
+                        '✅ Rango EC compartido: ' + Math.max(ecA[0], ecB[0]) + '–' + Math.min(ecA[1], ecB[1]) + ' µS/cm',
+                        'ok'
+                      )
+                    : '✅ Rango EC compartido: ' + Math.max(ecA[0], ecB[0]) + '–' + Math.min(ecA[1], ecB[1]) + ' µS/cm')
+                : (typeof hcTextWithLeadingIcons === 'function'
+                    ? hcTextWithLeadingIcons(
+                        '⚠️ EC incompatible — ' + gA.nombre + ' (' + gA.ec + ') vs ' + gB.nombre + ' (' + gB.ec + ')',
+                        'warn'
+                      )
+                    : '⚠️ EC incompatible — ' + gA.nombre + ' (' + gA.ec + ') vs ' + gB.nombre + ' (' + gB.ec + ')')) +
             '</div>' +
-            (!ok ? '<div class="compat-pair-reco">💡 Recomendación: pon ' + gB.nombre + ' en una torre separada con EC ' + gB.ec + ' µS/cm</div>' : '') +
+            (!ok
+              ? '<div class="compat-pair-reco">' +
+                (typeof hcTextWithLeadingIcons === 'function'
+                  ? hcTextWithLeadingIcons(
+                      '💡 Recomendación: pon ' + gB.nombre + ' en una torre separada con EC ' + gB.ec + ' µS/cm',
+                      'info'
+                    )
+                  : '💡 Recomendación: pon ' + gB.nombre + ' en una torre separada con EC ' + gB.ec + ' µS/cm') +
+                '</div>'
+              : '') +
           '</div>';
       }
     }
@@ -690,7 +726,10 @@ function renderCompatGrid() {
       html +=
         '<div class="compat-dist-box">' +
           '<div class="compat-dist-title">' +
-            '🌿 Distribución óptima entre torres</div>' +
+            (typeof hcTextWithLeadingIcons === 'function'
+              ? hcTextWithLeadingIcons('🌿 Distribución óptima entre torres', 'info')
+              : '🌿 Distribución óptima entre torres') +
+            '</div>' +
           '<div class="compat-dist-text">' +
             '• Torre EC 800–1400: Lechugas + Asiáticas + Albahaca<br>' +
             '• Torre EC 1400–2300: Hojas verdes + Acelga + Rúcula<br>' +
@@ -704,7 +743,8 @@ function renderCompatGrid() {
   // ── EC del nutriente activo ──────────────────────────────────────────────
   html +=
     '<div class="compat-nut-box">' +
-      '<div class="compat-nut-title">⚡ Nutriente activo: ' +
+      '<div class="compat-nut-title">' +
+      (typeof hcMetricLine === 'function' ? hcMetricLine('ec', 'Nutriente activo: ') : '⚡ Nutriente activo: ') +
       (nut ? nut.nombre : 'sin elegir') +
       '</div>' +
       '<div class="compat-nut-text">' +

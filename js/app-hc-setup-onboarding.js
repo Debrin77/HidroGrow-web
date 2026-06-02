@@ -353,7 +353,11 @@ function renderSetupPlantasGrid() {
       grupoEmojiHtml(g.key) +
       '<span class="spc-label">' + g.label + '</span>' +
       '<span class="spc-desc">' + g.desc + '</span>' +
-      (sel ? '<span class="spc-check" aria-hidden="true">✅</span>' : '') +
+      (sel
+        ? '<span class="spc-check" aria-hidden="true">' +
+          (typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup('ok') : '✅') +
+          '</span>'
+        : '') +
       '</button>';
   }).join('');
 

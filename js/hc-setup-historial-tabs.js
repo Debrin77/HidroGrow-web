@@ -202,15 +202,36 @@ function renderFiltroTorres() {
   }
   wrap.style.display = 'block';
   const tAll = { id: null, nombre: 'Todas las instalaciones', emoji: '📊' };
+  const btnIcon =
+    typeof hcFiltroTorreBtnIcon === 'function'
+      ? function (tor) {
+          return hcFiltroTorreBtnIcon(tor);
+        }
+      : function (tor) {
+          return tor.emoji || '📊';
+        };
   rowTodas.innerHTML =
     '<button type="button" onclick="setFiltroTorre(' + JSON.stringify(tAll.id) + ')" ' +
     'class="hist-torre-filter-btn hist-torre-filter-btn--todas' + (filtroTorreActivo === null ? ' active' : '') + '">' +
-    (tAll.emoji || '📊') + ' ' + tAll.nombre + '</button>';
-  rowInst.innerHTML = state.torres.map(t =>
-    '<button type="button" onclick="setFiltroTorre(' + JSON.stringify(t.id) + ')" ' +
-    'class="hist-torre-filter-btn' + (filtroTorreActivo === t.id ? ' active' : '') + '">' +
-    (t.emoji || '🌿') + ' ' + t.nombre + '</button>'
-  ).join('');
+    btnIcon(tAll) +
+    ' ' +
+    tAll.nombre +
+    '</button>';
+  rowInst.innerHTML = state.torres
+    .map(
+      (t) =>
+        '<button type="button" onclick="setFiltroTorre(' +
+        JSON.stringify(t.id) +
+        ')" ' +
+        'class="hist-torre-filter-btn' +
+        (filtroTorreActivo === t.id ? ' active' : '') +
+        '">' +
+        btnIcon(t) +
+        ' ' +
+        t.nombre +
+        '</button>'
+    )
+    .join('');
 }
 
 function setFiltroTorre(id) {
@@ -388,7 +409,7 @@ function importarMedicionesAlRegistro() {
   saveState();
   guardarEstadoTorreActual();
   renderRegistro();
-  showToast('✅ ' + meds.length + ' entradas importadas al registro');
+  showToast('✅ ' + meds.length + ' entradas importadas al registro', false);
 }
 
 function escRegistroAttr(s) {
@@ -452,14 +473,14 @@ function renderRegistro() {
   }
 
   const colores = {
-    medicion: { bg:'#f0fdf4', border:'#16a34a', color:'#15803d',  icon:'📊' },
-    recarga:  { bg:'#eff6ff', border:'#2563eb', color:'#1d4ed8',  icon:'🔄' },
-    cosecha:  { bg:'#fef3c7', border:'#d97706', color:'#b45309',  icon:'✂️' },
-    foto:       { bg:'#faf5ff', border:'#9333ea', color:'#7e22ce',  icon:'📸' },
-    foto_sistema: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'🏗' },
-    reposicion: { bg:'#ecfeff', border:'#06b6d4', color:'#0e7490',  icon:'💧' },
-    apunte: { bg:'#f5f3ff', border:'#7c3aed', color:'#5b21b6', icon:'📝' },
-    tareas_dia: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'✅' },
+    medicion: { bg:'#f0fdf4', border:'#16a34a', color:'#15803d',  icon:'hc-i-chart' },
+    recarga:  { bg:'#eff6ff', border:'#2563eb', color:'#1d4ed8',  icon:'hc-i-refresh' },
+    cosecha:  { bg:'#fef3c7', border:'#d97706', color:'#b45309',  icon:'hc-i-scissors' },
+    foto:       { bg:'#faf5ff', border:'#9333ea', color:'#7e22ce',  icon:'hc-i-camera' },
+    foto_sistema: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'hc-i-building' },
+    reposicion: { bg:'#ecfeff', border:'#06b6d4', color:'#0e7490',  icon:'hc-i-droplet' },
+    apunte: { bg:'#f5f3ff', border:'#7c3aed', color:'#5b21b6', icon:'hc-i-note' },
+    tareas_dia: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'hc-i-alert-ok' },
   };
 
   // Agrupar por fecha
@@ -472,55 +493,83 @@ function renderRegistro() {
 
   lista.innerHTML = Object.entries(porFecha).map(([fecha, evs]) => {
     const cols = evs.map(e => {
-      const c = colores[e.tipo] || { bg:'#f8fafc', border:'#94a3b8', color:'#475569', icon:'📌' };
+      const c = colores[e.tipo] || { bg:'#f8fafc', border:'#94a3b8', color:'#475569', icon:'hc-i-pin' };
       const badgeIcon = (e.tipo === 'reposicion' && e.icono) ? e.icono : c.icon;
+      const badgeIconHtml =
+        typeof hcRegistroIconMarkup === 'function' ? hcRegistroIconMarkup(badgeIcon) : badgeIcon;
       const sis = infoSistemaEntrada(e);
       let detalle = '';
       if (e.tipo === 'medicion') {
+        const mLine = typeof hcMetricLine === 'function' ? hcMetricLine : function () { return ''; };
         detalle = [
-          e.ec   ? '⚡ ' + e.ec + ' µS' : '',
-          e.ph   ? '🧪 ' + e.ph         : '',
-          e.temp ? '🌡️ ' + e.temp + '°C agua'  : '',
-          e.vol  ? '🪣 ' + e.vol + 'L'   : '',
-          e.tempAire ? '🌬️ ' + e.tempAire + '°C aire' : '',
-          e.humSala != null && e.humSala !== '' ? '💧 HR ' + e.humSala + '%' : '',
+          e.ec ? mLine('ec', e.ec + ' µS') : '',
+          e.ph ? mLine('ph', e.ph) : '',
+          e.temp ? mLine('temp', e.temp + '°C agua') : '',
+          e.vol ? mLine('vol', e.vol + 'L') : '',
+          e.tempAire ? mLine('tempAire', e.tempAire + '°C aire') : '',
+          e.humSala != null && e.humSala !== '' ? mLine('hum', 'HR ' + e.humSala + '%') : '',
           e.vpd != null && e.vpd !== '' ? 'VPD ' + e.vpd + ' kPa' : '',
-          e.ppfd ? '💡 PPFD ' + e.ppfd : '',
+          e.ppfd ? mLine('ppfd', 'PPFD ' + e.ppfd) : '',
           e.lux ? 'Lux ' + e.lux : '',
-          e.co2 ? 'CO₂ ' + e.co2 + ' ppm' : '',
+          e.co2 ? mLine('co2', 'CO₂ ' + e.co2 + ' ppm') : '',
           e.tempExt ? 'Ext. ' + e.tempExt + '°C' : '',
         ].filter(Boolean).join(' · ');
-        if (e.notas) detalle += '<br><span class="registro-note-sub">📝 ' + e.notas + '</span>';
+        if (e.notas) {
+          detalle += '<br><span class="registro-note-sub">' + mLine('nota', e.notas) + '</span>';
+        }
       } else if (e.tipo === 'recarga') {
+        const mLine = typeof hcMetricLine === 'function' ? hcMetricLine : function () { return ''; };
         detalle = [
-          e.ecFinal  ? '⚡ EC final: ' + e.ecFinal + ' µS' : '',
-          e.phFinal  ? '🧪 pH: ' + e.phFinal              : '',
-          e.calmagMl ? '💊 CalMag: ' + e.calmagMl + 'ml'   : '',
-          e.vegaAMl  ? '🌿 ' + [e.vegaAMl, e.vegaBMl, e.vegaCMl].filter(x => x != null && String(x).trim() !== '').join(' + ') + ' ml' : '',
-          (e.phMasMl != null && String(e.phMasMl).trim() !== '') ? '⬆️ pH+: ' + e.phMasMl + ' ml' : '',
-          (e.phMenosMl != null && String(e.phMenosMl).trim() !== '') ? '⬇️ pH−: ' + e.phMenosMl + ' ml' : '',
+          e.ecFinal ? mLine('ec', 'EC final: ' + e.ecFinal + ' µS') : '',
+          e.phFinal ? mLine('ph', 'pH: ' + e.phFinal) : '',
+          e.calmagMl ? mLine('calmag', 'CalMag: ' + e.calmagMl + ' ml') : '',
+          e.vegaAMl
+            ? mLine(
+                'vega',
+                [e.vegaAMl, e.vegaBMl, e.vegaCMl].filter((x) => x != null && String(x).trim() !== '').join(' + ') + ' ml'
+              )
+            : '',
+          e.phMasMl != null && String(e.phMasMl).trim() !== '' ? mLine('phUp', 'pH+: ' + e.phMasMl + ' ml') : '',
+          e.phMenosMl != null && String(e.phMenosMl).trim() !== '' ? mLine('phDown', 'pH−: ' + e.phMenosMl + ' ml') : '',
         ].filter(Boolean).join(' · ');
-        if (e.notas) detalle += '<br><span class="registro-note-sub">📝 ' + e.notas + '</span>';
+        if (e.notas) {
+          detalle += '<br><span class="registro-note-sub">' + mLine('nota', e.notas) + '</span>';
+        }
       } else if (e.tipo === 'cosecha') {
         detalle = e.variedad || '';
         const ubiC = formatoUbicacionEnRegistro(tipoInstalParaEntradaRegistro(e), e.nivel, e.cesta);
         if (ubiC) detalle += ' · ' + ubiC;
-        if (e.fechaSiembra) detalle += ' · 🌱 ' + e.fechaSiembra;
+        if (e.fechaSiembra) {
+          detalle +=
+            ' · ' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('planta', e.fechaSiembra) : '🌱 ' + e.fechaSiembra);
+        }
         if (e.diasCultivo) detalle += ' · ' + e.diasCultivo + ' días';
         if (typeof etiquetaOrigenPlantaBreve === 'function') {
           const orL = etiquetaOrigenPlantaBreve(e.origenPlanta);
           if (orL) detalle += ' · ' + orL;
         }
-        if (e.notas) detalle += '<br><span class="registro-note-sub">📝 ' + e.notas + '</span>';
+        if (e.notas) {
+          detalle +=
+            '<br><span class="registro-note-sub">' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('nota', e.notas) : '📝 ' + e.notas) +
+            '</span>';
+        }
       } else if (e.tipo === 'foto_sistema') {
         detalle = 'Vista completa de la instalación';
-        if (e.fotoFecha) detalle += ' · 📅 ' + e.fotoFecha;
+        if (e.fotoFecha) {
+          detalle +=
+            ' · ' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('fecha', e.fotoFecha) : '📅 ' + e.fotoFecha);
+        }
         if (e.fotoKey) {
+          const phIco =
+            typeof hcInlineIcon === 'function' ? hcInlineIcon('hc-i-building', 'hc-ico--thumb-ph') : '🏗';
           detalle +=
             '<div class="registro-foto-thumb" data-foto-key="' + escRegistroAttr(e.fotoKey) + '" ' +
             'data-variedad="' + escRegistroAttr('Vista del sistema') + '" ' +
             'data-fecha="' + escRegistroAttr(e.fotoFecha || e.fecha || '') + '" ' +
-            'class="registro-foto-thumb registro-foto-thumb--placeholder">🏗</div>';
+            'class="registro-foto-thumb registro-foto-thumb--placeholder">' + phIco + '</div>';
         }
       } else if (e.tipo === 'foto') {
         detalle = (e.variedad || 'Planta');
@@ -529,17 +578,28 @@ function renderRegistro() {
           if (ubiF) detalle += ' · ' + ubiF;
         }
         if (e.diasCultivo != null && e.diasCultivo !== '') detalle += ' · día ' + e.diasCultivo;
-        if (e.fotoFecha) detalle += ' · 📅 ' + e.fotoFecha;
+        if (e.fotoFecha) {
+          detalle +=
+            ' · ' +
+            (typeof hcMetricLine === 'function' ? hcMetricLine('fecha', e.fotoFecha) : '📅 ' + e.fotoFecha);
+        }
         if (e.fotoKey) {
+          const phIco =
+            typeof hcInlineIcon === 'function' ? hcInlineIcon('hc-i-camera', 'hc-ico--thumb-ph') : '📸';
           detalle +=
             '<div class="registro-foto-thumb" data-foto-key="' + escRegistroAttr(e.fotoKey) + '" ' +
             'data-variedad="' + escRegistroAttr(e.variedad || 'Planta') + '" ' +
             'data-fecha="' + escRegistroAttr(e.fotoFecha || e.fecha || '') + '" ' +
-            'class="registro-foto-thumb registro-foto-thumb--placeholder">📸</div>';
+            'class="registro-foto-thumb registro-foto-thumb--placeholder">' + phIco + '</div>';
         }
       } else if (e.tipo === 'reposicion') {
         const Lnum = typeof e.litros === 'number' ? e.litros : parseFloat(e.litros);
-        const Ltxt = isFinite(Lnum) && Lnum > 0 ? '<strong>🪣 +' + Lnum + ' L</strong> añadidos. ' : '';
+        const Ltxt =
+          isFinite(Lnum) && Lnum > 0
+            ? '<strong>' +
+              (typeof hcMetricLine === 'function' ? hcMetricLine('vol', '+' + Lnum + ' L') : '🪣 +' + Lnum + ' L') +
+              '</strong> añadidos. '
+            : '';
         if (e.modo === 'solo_agua') {
           detalle = Ltxt + 'Reposición parcial: solo agua (sin vaciar). Mantiene nivel para plantas, bomba y calefactor sumergidos. No es recarga completa — conviene medir volumen total y EC/pH al medir.';
         } else if (e.modo === 'parcial_nutrientes') {
@@ -548,8 +608,10 @@ function renderRegistro() {
           detalle = (Ltxt || '') + (e.notas || 'Reposición registrada');
         }
       } else if (e.tipo === 'tareas_dia') {
+        const tIco = typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup('ok') : '✅ ';
         detalle =
-          '✅ <strong>' +
+          tIco +
+          '<strong>' +
           escRegistroHtml(e.tareaLabel || 'Tarea') +
           '</strong>' +
           (e.tareaFreq === 'semanal' ? ' · esta semana' : ' · hoy') +
@@ -561,7 +623,10 @@ function renderRegistro() {
         if (esSugerencia) {
           const slotSug = typeof e._slotIdx === 'number' ? e._slotIdx : (state.torreActiva || 0);
           const titleSug = escRegistroHtml(e.sugerenciaTitulo || 'Correcciones sugeridas');
-          const chipTxt = estadoSug === 'aplicado' ? '✅ Aplicado' : '🧭 Sugerido';
+          const chipTxt =
+            estadoSug === 'aplicado'
+              ? (typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup('ok') : '✅') + ' Aplicado'
+              : (typeof hcIcon === 'function' ? hcIcon('hc-i-globe', 'hc-ico--status') : '🧭') + ' Sugerido';
           bloques.push(
             '<div class="registro-sugerencia-head">' +
               '<span class="registro-sugerencia-chip ' + (estadoSug === 'aplicado' ? 'is-aplicado' : 'is-sugerido') + '">' + chipTxt + '</span>' +
@@ -589,10 +654,11 @@ function renderRegistro() {
           );
         }
         const bits = [];
-        if (e.ec) bits.push('⚡ ' + escRegistroHtml(e.ec) + ' µS/cm');
-        if (e.ph) bits.push('🧪 pH ' + escRegistroHtml(e.ph));
-        if (e.temp) bits.push('🌡️ ' + escRegistroHtml(e.temp) + ' °C');
-        if (e.vol) bits.push('🪣 ' + escRegistroHtml(e.vol) + ' L');
+        const mLine = typeof hcMetricLine === 'function' ? hcMetricLine : null;
+        if (e.ec) bits.push(mLine ? mLine('ec', escRegistroHtml(e.ec) + ' µS/cm') : '⚡ ' + escRegistroHtml(e.ec) + ' µS/cm');
+        if (e.ph) bits.push(mLine ? mLine('ph', 'pH ' + escRegistroHtml(e.ph)) : '🧪 pH ' + escRegistroHtml(e.ph));
+        if (e.temp) bits.push(mLine ? mLine('temp', escRegistroHtml(e.temp) + ' °C') : '🌡️ ' + escRegistroHtml(e.temp) + ' °C');
+        if (e.vol) bits.push(mLine ? mLine('vol', escRegistroHtml(e.vol) + ' L') : '🪣 ' + escRegistroHtml(e.vol) + ' L');
         if (bits.length) bloques.push('<div class="registro-apunte-nums">' + bits.join(' · ') + '</div>');
         if (e.apunteEtiqueta1 && e.apunteValor1) {
           bloques.push(
@@ -611,7 +677,7 @@ function renderRegistro() {
         '<div class="registro-entry-head">' +
           '<div class="registro-entry-left">' +
             '<span class="registro-entry-badge">' +
-              badgeIcon + ' ' +
+              badgeIconHtml + ' ' +
               (e.tipo === 'foto_sistema'
                 ? 'Foto sistema'
                 : e.tipo === 'foto'
@@ -626,9 +692,11 @@ function renderRegistro() {
                           ? 'Tarea del día'
                           : (String(e.tipo || 'medicion').charAt(0).toUpperCase() + String(e.tipo || 'medicion').slice(1))) +
             '</span>' +
-            (sis && sis.nombre ?
-              '<span class="registro-entry-torre-chip">' +
-              (sis.emoji||'🌿') + ' ' + sis.nombre + '</span>' : '') +
+            (sis && sis.nombre
+              ? typeof hcInstalacionChipHtml === 'function'
+                ? hcInstalacionChipHtml(sis, e.torreId, 'registro-entry-torre-chip')
+                : '<span class="registro-entry-torre-chip">' + (sis.emoji || '🌿') + ' ' + sis.nombre + '</span>'
+              : '') +
           '</div>' +
           '<div class="registro-entry-right">' +
             '<span class="registro-entry-time">' + (e.hora||'') + '</span>' +
@@ -637,7 +705,9 @@ function renderRegistro() {
               'data-hc-fecha="' + escRegistroAttr(e.fecha || '') + '" ' +
               'data-hc-hora="' + escRegistroAttr(e.hora || '') + '" ' +
               'data-hc-tipo="' + escRegistroAttr(tipoDel) + '" ' +
-              'title="Borrar entrada" aria-label="Borrar entrada">🗑</button>' +
+              'title="Borrar entrada" aria-label="Borrar entrada">' +
+              (typeof hcIcon === 'function' ? hcIcon('hc-i-trash', 'hc-ico--btn') : '🗑') +
+              '</button>' +
           '</div>' +
         '</div>' +
         '<div class="registro-entry-detail">' + detalle + '</div>' +
@@ -693,7 +763,12 @@ function renderHistMediciones() {
     <div class="hist-row hist-row--full${i===0 ? ' hist-row--latest' : ''}">
       <span class="hist-fecha"><span class="hist-fecha-dia">${m.fecha}</span><br>
         <span class="hist-fecha-hora">${m.hora}</span>
-        ${(() => { const sis = infoSistemaEntrada(m); return `<span class="hist-torre-chip">${sis.emoji||'🌿'} ${sis.nombre}</span>`; })()}
+        ${(() => {
+          const sis = infoSistemaEntrada(m);
+          return typeof hcInstalacionChipHtml === 'function'
+            ? hcInstalacionChipHtml(sis, m.torreId)
+            : `<span class="hist-torre-chip">${sis.emoji || '🌿'} ${sis.nombre}</span>`;
+        })()}
       </span>
       <span class="hist-val ${getClaseVal('ec',   m.ec)}">${fmtHist(m.ec)}</span>
       <span class="hist-val ${getClaseVal('ph',   m.ph)}">${fmtHist(m.ph)}</span>
@@ -712,7 +787,7 @@ function renderHistMediciones() {
           data-hc-torre-id="${escRegistroAttr(m.torreId == null ? '' : String(m.torreId))}"
           aria-label="Borrar esta medición">🗑</button>
       </span>
-      ${m.notas ? `<span class="hist-val hist-note-line">📝 ${m.notas}</span>` : ''}
+      ${m.notas ? `<span class="hist-val hist-note-line">${typeof hcMetricLine === 'function' ? hcMetricLine('nota', m.notas) : '📝 ' + m.notas}</span>` : ''}
     </div>
   `).join('');
 }
@@ -729,7 +804,10 @@ function renderHistRecargas() {
   if (recargas.length === 0 && (!histRecargasDatos || histRecargasDatos.length === 0)) {
     if (localSection) localSection.innerHTML =
       '<div class="hist-recargas-empty">' +
-      '🔄 Sin recargas registradas aún.<br>Completa el checklist de recarga para ver el historial.</div>';
+      (typeof hcTextWithLeadingIcons === 'function'
+        ? hcTextWithLeadingIcons('🔄 Sin recargas registradas aún.', 'info')
+        : '🔄 Sin recargas registradas aún.') +
+      '<br>Completa el checklist de recarga para ver el historial.</div>';
     return;
   }
 
@@ -745,10 +823,14 @@ function renderHistRecargas() {
         <div class="hist-recarga-head">
           <div>
             <div class="hist-recarga-title">
-              🔄 Recarga #${recargas.length - i}
+              ${typeof hcInlineIcon === 'function' ? hcInlineIcon('hc-i-refresh', 'hc-ico--inline') : '🔄'} Recarga #${recargas.length - i}
             </div>
             <div class="hist-recarga-date">${r.fecha} · ${r.hora}</div>
-            <div class="hist-recarga-nutriente">${sis.emoji || '🌿'} ${sis.nombre}</div>
+            <div class="hist-recarga-nutriente">${
+              typeof hcInstalacionChipHtml === 'function'
+                ? hcInstalacionChipHtml(sis, r.torreId, 'hist-recarga-sis-chip')
+                : (sis.emoji || '🌿') + ' ' + sis.nombre
+            }</div>
             ${r.nutrienteNombre ? '<div class="hist-recarga-nutriente">🧪 ' + r.nutrienteNombre + '</div>' : ''}
             ${(r.cambioNutriente === 'sí' || (r.nutrientePrevioNombre && r.nutrienteNombre))
               ? ('<div class="hist-recarga-nutriente">🔁 Cambio nutriente: ' +
@@ -791,7 +873,7 @@ function renderHistRecargas() {
         ${r.colorAgua || r.estadoPlantas ? `
         <div class="hist-recarga-obs">
           ${r.colorAgua ? '🎨 Agua: ' + r.colorAgua + ' · ' : ''}
-          ${r.estadoPlantas ? '🌿 Plantas: ' + r.estadoPlantas : ''}
+          ${r.estadoPlantas ? (typeof hcMetricLine === 'function' ? hcMetricLine('planta', 'Plantas: ' + r.estadoPlantas) : '🌿 Plantas: ' + r.estadoPlantas) : ''}
         </div>` : ''}
       </div>
     `;

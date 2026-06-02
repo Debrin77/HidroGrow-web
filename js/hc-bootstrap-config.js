@@ -139,6 +139,7 @@ const GRUPO_EMOJI_REP = {
 };
 
 function grupoEmojiHtml(grupoKey) {
+  if (typeof hcGrupoCultivoIconMarkup === 'function') return hcGrupoCultivoIconMarkup(grupoKey);
   const em = GRUPO_EMOJI_REP[grupoKey] || '🌱';
   return '<span class="setup-grupo-icon" aria-hidden="true">' + em + '</span>';
 }
@@ -219,10 +220,10 @@ const DIAS_COSECHA = Object.fromEntries(CULTIVOS_DB.map(c => [c.nombre, c.dias])
 const COMPATIBILIDAD = {
   'A-A': { ok: true, icono: '✅', texto: 'Compatibles — mismo depósito' },
   'A-B': { ok: true, icono: '✅', texto: 'Compatibles con ajuste de EC' },
-  'A-C': { ok: true, icono: '⚠️', texto: 'Compatibles — vigilar estiramiento sativa' },
+  'A-C': { ok: true, warn: true, icono: '⚠️', texto: 'Compatibles — vigilar estiramiento sativa' },
   'A-D': { ok: false, icono: '⛔', texto: 'No mezclar auto con foto en misma instalación' },
   'B-B': { ok: true, icono: '✅', texto: 'Compatibles' },
-  'B-C': { ok: true, icono: '⚠️', texto: 'Compatibles — EC intermedia' },
+  'B-C': { ok: true, warn: true, icono: '⚠️', texto: 'Compatibles — EC intermedia' },
   'B-D': { ok: false, icono: '⛔', texto: 'Autos en instalación separada' },
   'C-C': { ok: true, icono: '✅', texto: 'Compatibles' },
   'C-D': { ok: false, icono: '⛔', texto: 'Autos en instalación separada' },

@@ -620,7 +620,9 @@
     var hero =
       '<div class="hc-pm-guia-hero-inner hc-pm-guia-hero--' + esc(def.accent || 'neutral') + '">' +
       '<span class="hc-pm-guia-hero-icon" aria-hidden="true">' +
-      (def.icon || '📖') +
+      (typeof hcGuiaHeroIconMarkup === 'function'
+        ? hcGuiaHeroIconMarkup(def.icon || '📖')
+        : def.icon || '📖') +
       '</span>' +
       '<div class="hc-pm-guia-hero-text">' +
       '<span class="hc-pm-guia-hero-kicker">Mini-guía de montaje</span>' +
@@ -682,48 +684,299 @@
     var safe = String(itemId || '').replace(/[^a-zA-Z0-9_]/g, '');
     if (!safe) return '';
     var cls = compact ? 'hc-pm-guia-chip' : 'hc-pm-guia-btn';
-    var label = compact ? 'Guía' : '📖 Guía';
+    var label = compact ? 'Guía' : 'Guía';
     return (
       '<button type="button" class="' +
       cls +
       '" onclick="event.preventDefault();event.stopPropagation();hcOpenPmGuia(\'' +
       safe +
-      '\')">' +
+      '\')" aria-label="Abrir guía: ' +
+      esc(safe) +
+      '">' +
       label +
       '</button>'
     );
   }
 
-  function renderPmChecklistItem(it, cfg, checks) {
+  var PM_ICON_FALLBACK = {
+    sistema: 'hc-i-cog',
+    fugas: 'hc-i-droplet',
+    nombre: 'hc-i-note',
+    iot: 'hc-i-signal',
+    led: 'hc-i-bulb',
+    extractor: 'hc-i-fan',
+    medidor: 'hc-i-chart',
+    aireador: 'hc-i-bubbles',
+    eq_armario: 'hc-i-home',
+    eq_filtro_carbon: 'hc-i-wind',
+    eq_ventilador_circ: 'hc-i-fan',
+    eq_temporizador: 'hc-i-calendar',
+    eq_tijeras: 'hc-i-wrench',
+    eq_lupa: 'hc-i-microscope',
+    ext_ubic: 'hc-i-pin',
+    ext_deposito: 'hc-i-bucket',
+    ext_viento: 'hc-i-wind',
+    ext_sombra: 'hc-i-sun',
+    hyd_difusor: 'hc-i-bubbles',
+    hyd_bomba: 'hc-i-cog',
+    hyd_calentador: 'hc-i-therm',
+    hyd_timer: 'hc-i-calendar',
+    hyd_medidor_ec: 'hc-i-trend',
+  };
+
+  function pmItemIcon(it) {
+    var id = PM_ICON_FALLBACK[it.id] || 'hc-i-alert-ok';
+    if (typeof hcIcon === 'function') return hcIcon(id, 'hc-pm-card-ico-svg');
+    return '<span class="hc-pm-card-ico-fallback" aria-hidden="true">•</span>';
+  }
+
+  function pmItemAccent(it) {
+    var def = resolveGuiaDef(it.id);
+    return (def && def.accent) || 'neutral';
+  }
+
+  function buildPmProgressHtml(prog, verificada, bloqueada) {
+    var pct = prog.total > 0 ? Math.round((prog.done / prog.total) * 100) : 0;
+    var r = 15.5;
+    var c = 2 * Math.PI * r;
+    var off = c - (pct / 100) * c;
+    var badge = bloqueada
+      ? 'Cerrado'
+      : verificada
+        ? 'Verificado'
+        : prog.done >= prog.total
+          ? 'Listo'
+          : 'En curso';
+    var badgeCls =
+      'hc-pm-progress-badge' +
+      (verificada ? ' hc-pm-progress-badge--ok' : '') +
+      (bloqueada ? ' hc-pm-progress-badge--lock' : '');
+    return (
+      '<div class="hc-pm-progress" role="status" aria-live="polite">' +
+      '<div class="hc-pm-progress-ring" aria-hidden="true">' +
+      '<svg viewBox="0 0 36 36" focusable="false">' +
+      '<circle class="hc-pm-progress-ring-bg" cx="18" cy="18" r="' +
+      r +
+      '"></circle>' +
+      '<circle class="hc-pm-progress-ring-fill" cx="18" cy="18" r="' +
+      r +
+      '" stroke-dasharray="' +
+      c.toFixed(2) +
+      '" stroke-dashoffset="' +
+      off.toFixed(2) +
+      '"></circle></svg>' +
+      '<span class="hc-pm-progress-pct">' +
+      pct +
+      '%</span></div>' +
+      '<div class="hc-pm-progress-meta">' +
+      '<span class="hc-pm-progress-title">Checklist de montaje</span>' +
+      '<span class="hc-pm-progress-sub">' +
+      prog.done +
+      ' / ' +
+      prog.total +
+      ' puntos esenciales</span>' +
+      '<div class="hc-pm-progress-bar" aria-hidden="true">' +
+      '<div class="hc-pm-progress-fill" style="width:' +
+      pct +
+      '%"></div></div></div>' +
+      '<span class="' +
+      badgeCls +
+      '">' +
+      esc(badge) +
+      '</span></div>'
+    );
+  }
+
+  function buildPmEquipRefHtml(cfg) {
+    var inst = cfg.equipamientoInstalado || {};
+    var equipList = Object.keys(inst)
+      .filter(function (k) {
+        return inst[k] && (inst[k].marca || inst[k].id);
+      })
+      .map(function (k) {
+        return equipLabel(inst[k], k);
+      })
+      .join(', ');
+    if (equipList) {
+      return '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' + esc(equipList) + '</p>';
+    }
+    return (
+      '<p class="hc-pm-equip-ref hc-pm-equip-ref--warn">' +
+      'Sin equipamiento en catálogo: completa el asistente (Espacio y equipamiento) o la pestaña <strong>Sala</strong>.' +
+      '</p>'
+    );
+  }
+
+  function buildPmCestaRecoHtml(cfg) {
+    cfg = cfg || getCfg();
+    try {
+      if (typeof hcCultivoCestaRecoCelda !== 'function') return '';
+      var tipo =
+        typeof tipoInstalacionNormalizado === 'function'
+          ? tipoInstalacionNormalizado(cfg)
+          : String(cfg.tipoInstalacion || 'dwc').toLowerCase();
+      if (tipo !== 'dwc' && tipo !== 'rdwc') return '';
+      var grupo =
+        typeof hcGrupoCultivoDominanteDesdeConfig === 'function'
+          ? hcGrupoCultivoDominanteDesdeConfig(cfg)
+          : 'hibrida';
+      var objetivo =
+        typeof hcObjetivoCultivoDesdeConfig === 'function'
+          ? hcObjetivoCultivoDesdeConfig(cfg, tipo)
+          : 'final';
+      var celda = hcCultivoCestaRecoCelda(grupo, tipo, objetivo);
+      if (!celda || !celda.txt) return '';
+      var actual =
+        tipo === 'rdwc'
+          ? Number(cfg.rdwcNetPotMm || 0)
+          : Number(cfg.dwcNetPotRimMm || 0);
+      var txtActual = Number.isFinite(actual) && actual > 0 ? actual + ' mm' : 'sin definir';
+      return (
+        '<p class="hc-pm-cesta-reco">' +
+        '<strong>Cesta recomendada según cultivo:</strong> ' +
+        esc(celda.txt) +
+        ' · actual: ' +
+        esc(txtActual) +
+        '</p>'
+      );
+    } catch (_) {
+      return '';
+    }
+  }
+
+  function renderPmCard(it, cfg, checks, mode) {
     var auto = isAutoDone(it, cfg);
     var checked = auto || !!checks[it.id];
     var bloqueada = montajeEdicionBloqueada();
+    var disabled = auto || bloqueada;
+    var safe = String(it.id || '').replace(/[^a-zA-Z0-9_]/g, '');
+    var accent = pmItemAccent(it);
+    var compact = mode === 'inline';
+    var labelMain = it.label;
+    var dot = labelMain.indexOf(' · ');
+    var title = dot > 0 ? labelMain.slice(0, dot) : labelMain;
+    var sub = dot > 0 ? labelMain.slice(dot + 3) : '';
     return (
-      '<li class="hc-pm-item' +
-      (it.optional ? ' hc-pm-item--opt' : '') +
-      (checked ? ' hc-pm-item--checked' : '') +
-      (bloqueada ? ' hc-pm-item--locked' : '') +
-      '">' +
-      '<div class="hc-pm-item-row">' +
-      '<label class="hc-pm-lbl">' +
-      '<input type="checkbox" data-pm-id="' +
-      it.id +
+      '<article class="hc-pm-card hc-pm-card--' +
+      accent +
+      (checked ? ' hc-pm-card--checked' : '') +
+      (disabled ? ' hc-pm-card--disabled' : '') +
+      (it.optional ? ' hc-pm-card--opt' : '') +
+      (compact ? ' hc-pm-card--compact' : '') +
+      '" data-pm-id="' +
+      esc(safe) +
+      '" role="listitem" tabindex="' +
+      (disabled ? '-1' : '0') +
+      '" aria-pressed="' +
+      (checked ? 'true' : 'false') +
+      '" onclick="hcPmCardActivate(event,\'' +
+      safe +
+      '\')" onkeydown="hcPmCardKey(event,\'' +
+      safe +
+      '\')">' +
+      '<label class="hc-pm-card-check' +
+      (checked ? ' is-on' : '') +
+      '" aria-hidden="true">' +
+      '<input type="checkbox" class="hc-pm-card-input" data-pm-input="' +
+      esc(safe) +
       '"' +
       (checked ? ' checked' : '') +
-      (auto || bloqueada ? ' disabled' : '') +
-      ' onchange="hcPuestaMarchaToggle(\'' +
-      it.id +
-      '\', this.checked)">' +
-      '<span class="hc-pm-lbl-text"><strong>' +
-      esc(it.label) +
-      '</strong>' +
+      (disabled ? ' disabled' : '') +
+      ' tabindex="-1">' +
+      '<span class="hc-pm-card-check-icon"></span></label>' +
+      '<div class="hc-pm-card-body">' +
+      '<span class="hc-pm-card-icon" aria-hidden="true">' +
+      pmItemIcon(it) +
+      '</span>' +
+      '<div class="hc-pm-card-text">' +
+      '<h4 class="hc-pm-card-title">' +
+      esc(title) +
       (it.optional ? ' <span class="hc-pm-opt">(opcional)</span>' : '') +
-      '<span class="hc-pm-hint">' +
+      '</h4>' +
+      (sub ? '<p class="hc-pm-card-sub">' + esc(sub) + '</p>' : '') +
+      '<p class="hc-pm-card-hint">' +
       esc(it.hint) +
-      '</span></span></label>' +
-      guiaBtnHtml(it.id, false) +
-      '</div></li>'
+      '</p></div></div>' +
+      (auto ? '<span class="hc-pm-card-auto">Auto</span>' : guiaBtnHtml(it.id, compact)) +
+      '</article>'
     );
+  }
+
+  function buildPmCardsGrid(cfg, checks, mode) {
+    var items = buildItemsForConfig(cfg);
+    var essential = [];
+    var optional = [];
+    items.forEach(function (it) {
+      if (it.optional) optional.push(it);
+      else essential.push(it);
+    });
+    var html =
+      '<div class="hc-pm-grid' +
+      (mode === 'inline' ? ' hc-pm-grid--inline' : '') +
+      '" role="list">' +
+      essential
+        .map(function (it) {
+          return renderPmCard(it, cfg, checks, mode);
+        })
+        .join('') +
+      '</div>';
+    if (optional.length) {
+      html +=
+        '<details class="hc-pm-optional-block">' +
+        '<summary class="hc-pm-optional-summary">Puntos opcionales (' +
+        optional.length +
+        ')</summary>' +
+        '<div class="hc-pm-grid hc-pm-grid--optional" role="list">' +
+        optional
+          .map(function (it) {
+            return renderPmCard(it, cfg, checks, mode);
+          })
+          .join('') +
+        '</div></details>';
+    }
+    return html;
+  }
+
+  function buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, mode) {
+    var ventanaTxt = bloqueada
+      ? 'Montaje cerrado tras el primer llenado del depósito.'
+      : mode === 'inline'
+        ? 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>. Toca una tarjeta para marcarla.'
+        : 'Editable hasta el <strong>primer llenado del depósito</strong>. Toca cada tarjeta o usa la casilla.';
+    return (
+      '<div class="hc-pm-shell hc-pm-shell--' +
+      mode +
+      '">' +
+      buildPmProgressHtml(prog, verificada, bloqueada) +
+      '<p class="hc-pm-lead">' +
+      ventanaTxt +
+      '</p>' +
+      buildPmEquipRefHtml(cfg) +
+      buildPmCestaRecoHtml(cfg) +
+      buildPmCardsGrid(cfg, checks, mode) +
+      '</div>'
+    );
+  }
+
+  function hcPmCardActivate(ev, id) {
+    if (ev && (ev.target.closest('.hc-pm-guia-btn') || ev.target.closest('.hc-pm-guia-chip'))) return;
+    var card = ev && ev.currentTarget;
+    var inp =
+      (card && card.querySelector('.hc-pm-card-input')) ||
+      document.querySelector('.hc-pm-card-input[data-pm-input="' + id + '"]');
+    if (!inp || inp.disabled) return;
+    inp.checked = !inp.checked;
+    toggleItem(id, inp.checked);
+  }
+
+  function hcPmCardKey(ev, id) {
+    if (!ev || (ev.key !== 'Enter' && ev.key !== ' ')) return;
+    ev.preventDefault();
+    hcPmCardActivate(ev, id);
+  }
+
+  function renderPmChecklistItem(it, cfg, checks) {
+    return renderPmCard(it, cfg, checks, 'modal');
   }
 
   function buildItemsForConfig(cfg) {
@@ -908,89 +1161,31 @@
     var checks = getChecks(cfg);
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
-    var inst = cfg.equipamientoInstalado || {};
-    var equipList = Object.keys(inst)
-      .filter(function (k) { return inst[k] && (inst[k].marca || inst[k].id); })
-      .map(function (k) { return equipLabel(inst[k], k); })
-      .join(', ');
-
     var bloqueada = montajeEdicionBloqueada();
-    var ventanaTxt = bloqueada
-      ? 'Montaje cerrado tras el primer llenado.'
-      : 'Editable hasta el <strong>primer llenado del depósito</strong>.';
 
     host.innerHTML =
-      '<p class="hc-pm-lead">' + ventanaTxt + ' Cada paso tiene <strong>Guía</strong>.</p>' +
+      buildPmShellHtml(cfg, checks, prog, !!checks.completedAt, bloqueada, 'modal') +
       (!bloqueada
         ? '<p class="hc-pm-config-link"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento o sistema (configurador)</button></p>'
-        : '') +
-      (equipList
-        ? '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' + equipList + '</p>'
-        : '<p class="hc-pm-equip-ref hc-pm-equip-ref--warn">Sin equipamiento en catálogo: completa el asistente (Espacio y equipamiento) o la pestaña <strong>Sala</strong>.</p>') +
-      '<p class="hc-pm-prog">' +
-      prog.done +
-      '/' +
-      prog.total +
-      ' puntos esenciales</p>' +
-      '<ul class="hc-pm-list">' +
-      items.map(function (it) { return renderPmChecklistItem(it, cfg, checks); }).join('') +
-      '</ul>';
+        : '');
     refreshPuestaMarchaModalFoot(cfg, checks);
   }
 
   function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items) {
     items = items || buildItemsForConfig(cfg);
-    var inst = cfg.equipamientoInstalado || {};
-    var nEquip = Object.keys(inst).filter(function (k) {
-      return inst[k] && (inst[k].marca || inst[k].id);
-    }).length;
     var bloqueada = montajeEdicionBloqueada();
     var btnLabel = bloqueada
       ? 'Ver montaje (solo lectura)'
       : verificada
         ? 'Revisar montaje'
-        : 'Abrir checklist de montaje';
+        : 'Abrir checklist completo';
     return (
-      '<p class="hc-pm-inline-lead">' +
-      (bloqueada
-        ? 'Montaje cerrado tras el primer llenado.'
-        : 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>' +
-          (nEquip ? ' (' + nEquip + ' equipos)' : '') +
-          '.') +
-      '</p>' +
-      '<p class="hc-pm-prog">' +
-      (verificada ? '✓ Puesta en marcha verificada · ' : '') +
-      prog.done +
-      '/' +
-      prog.total +
-      ' puntos esenciales</p>' +
-      '<ul class="hc-pm-list hc-pm-list--inline">' +
-      items
-        .map(function (it) {
-          if (it.optional) return '';
-          var auto = isAutoDone(it, cfg);
-          var checked = auto || !!checks[it.id];
-          return (
-            '<li class="hc-pm-item hc-pm-item--inline' +
-            (checked ? ' hc-pm-item--done' : '') +
-            '">' +
-            '<span class="hc-pm-inline-mark" aria-hidden="true">' +
-            (checked ? '✓' : '○') +
-            '</span> ' +
-            '<span class="hc-pm-inline-label">' +
-            esc(it.label) +
-            '</span> ' +
-            guiaBtnHtml(it.id, true) +
-            '</li>'
-          );
-        })
-        .join('') +
-      '</ul>' +
+      buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, 'inline') +
       (!bloqueada
         ? '<p class="hc-pm-inline-config"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento (configurador)</button></p>'
         : '') +
       '<p class="hc-pm-inline-actions">' +
-      '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
+      '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
       btnLabel +
       '</button></p>'
     );
@@ -1282,6 +1477,8 @@
   global.hcClosePmGuia = closePmGuia;
   global.hcPmGuiaMarkDone = pmGuiaMarkDone;
   global.hcPuestaMarchaToggle = toggleItem;
+  global.hcPmCardActivate = hcPmCardActivate;
+  global.hcPmCardKey = hcPmCardKey;
   global.hcFinishPuestaMarcha = finishPuestaMarcha;
   global.hcMaybeOfferPuestaMarcha = maybeOfferAfterSetup;
   global.hcRefreshPuestaMarchaUi = refreshPuestaMarchaUi;

@@ -92,6 +92,20 @@ function renderTorreSistemaResumenTabla(cfg) {
         ),
       ]);
     }
+    try {
+      if (typeof hcCultivoCestaRecoCelda === 'function') {
+        const grupo =
+          typeof hcGrupoCultivoDominanteDesdeConfig === 'function'
+            ? hcGrupoCultivoDominanteDesdeConfig(cR)
+            : 'hibrida';
+        const objetivo =
+          typeof hcObjetivoCultivoDesdeConfig === 'function'
+            ? hcObjetivoCultivoDesdeConfig(cR, 'rdwc')
+            : 'final';
+        const reco = hcCultivoCestaRecoCelda(grupo, 'rdwc', objetivo);
+        if (reco && reco.txt) rows.push(['Cesta recomendada por cultivo', escHtmlUi(reco.txt)]);
+      }
+    } catch (_) {}
     const recW = cR.rdwcRecircPumpW != null ? Math.round(Number(cR.rdwcRecircPumpW)) : null;
     const airW = cR.rdwcAirPumpW != null ? Math.round(Number(cR.rdwcAirPumpW)) : null;
     const airLpm = Math.round(Number(cR.rdwcAirLpm) || 20);
@@ -198,6 +212,20 @@ function renderTorreSistemaResumenTabla(cfg) {
         escHtmlUi('Indica Ø en mm en Cultivo e instalación o asistente · ref. 27–50 mm o personalizado'),
       ]);
     }
+    try {
+      if (typeof hcCultivoCestaRecoCelda === 'function') {
+        const grupo =
+          typeof hcGrupoCultivoDominanteDesdeConfig === 'function'
+            ? hcGrupoCultivoDominanteDesdeConfig(cfg)
+            : 'hibrida';
+        const objetivo =
+          typeof hcObjetivoCultivoDesdeConfig === 'function'
+            ? hcObjetivoCultivoDesdeConfig(cfg, 'dwc')
+            : 'final';
+        const reco = hcCultivoCestaRecoCelda(grupo, 'dwc', objetivo);
+        if (reco && reco.txt) rows.push(['Cesta recomendada por cultivo', escHtmlUi(reco.txt)]);
+      }
+    } catch (_) {}
     const mTap = cfg.dwcTapaMarcoPorLadoMm;
     const hTap = cfg.dwcTapaHuecoMm;
     if ((mTap != null && Number.isFinite(Number(mTap))) || (hTap != null && Number.isFinite(Number(hTap)))) {

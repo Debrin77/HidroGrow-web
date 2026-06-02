@@ -951,10 +951,10 @@ function renderListaTorres() {
       </button>
       <div class="torre-list-actions">
         <button type="button" onclick="editarNombreTorre(${i})"
-          class="torre-list-btn-icon" aria-label="Editar nombre de la instalación">✏️</button>
+          class="torre-list-btn-icon" aria-label="Editar nombre de la instalación">${typeof hcIcon === 'function' ? hcIcon('hc-i-pencil', 'hc-ico--btn') : '✏️'}</button>
         ${state.torres.length > 1 && !isActiva ? `
         <button type="button" onclick="borrarTorre(${i})"
-          class="torre-list-btn-del" aria-label="Borrar esta instalación">🗑</button>` : ''}
+          class="torre-list-btn-del" aria-label="Borrar esta instalación">${typeof hcIcon === 'function' ? hcIcon('hc-i-trash', 'hc-ico--btn') : '🗑'}</button>` : ''}
       </div>
     </div>`;
   }).join('');

@@ -18,26 +18,43 @@ function showCompatInfo() {
 
   // Info del cultivo específico
   if (cultivo) {
-    const dif   = { fácil:'🟢 Fácil', media:'🟡 Media', difícil:'🔴 Avanzado' };
+    const difMark = function (k, label) {
+      if (typeof hcStatusIconMarkup === 'function') {
+        const kind = k === 'fácil' ? 'ok' : k === 'difícil' ? 'bad' : 'warn';
+        return hcStatusIconMarkup(kind) + ' ' + label;
+      }
+      const dif = { fácil: '🟢 Fácil', media: '🟡 Media', difícil: '🔴 Avanzado' };
+      return dif[k] || '';
+    };
     html += '<div class="edit-compat-head">';
     html += '<span class="edit-compat-emoji" aria-hidden="true">' + cultivoEmoji(cultivo) + '</span>';
     html += '<div class="edit-compat-main">';
     html += '<div class="edit-compat-title">' +
       escHtmlUi(cultivoNombreLista(cultivo, variedad)) + '</div>';
     html += '<div class="edit-compat-chips">' +
-      '<span class="edit-compat-chip edit-compat-chip--ec">⚡ EC ' + cultivo.ecMin + '–' + cultivo.ecMax + ' µS/cm</span>' +
-      '<span class="edit-compat-chip edit-compat-chip--ph">🧪 pH ' + cultivo.phMin + '–' + cultivo.phMax + '</span>' +
-      '<span class="edit-compat-chip edit-compat-chip--days">⏱ ~' + cultivo.dias + ' días</span>' +
-      '<span class="edit-compat-chip edit-compat-chip--diff">' + (dif[cultivo.dificultad]||'') + '</span>' +
+      '<span class="edit-compat-chip edit-compat-chip--ec">' +
+      (typeof hcIcon === 'function' ? hcIcon('hc-i-bolt', 'hc-ico--chip-inline') : '⚡') +
+      ' EC ' + cultivo.ecMin + '–' + cultivo.ecMax + ' µS/cm</span>' +
+      '<span class="edit-compat-chip edit-compat-chip--ph">' +
+      (typeof hcIcon === 'function' ? hcIcon('hc-i-flask', 'hc-ico--chip-inline') : '🧪') +
+      ' pH ' + cultivo.phMin + '–' + cultivo.phMax + '</span>' +
+      '<span class="edit-compat-chip edit-compat-chip--days">' +
+      (typeof hcIcon === 'function' ? hcIcon('hc-i-clock', 'hc-ico--chip-inline') : '⏱') +
+      ' ~' + cultivo.dias + ' días</span>' +
+      '<span class="edit-compat-chip edit-compat-chip--diff">' + difMark(cultivo.dificultad, cultivo.dificultad === 'fácil' ? 'Fácil' : cultivo.dificultad === 'difícil' ? 'Avanzado' : 'Media') + '</span>' +
     '</div>';
 
     if (cultivo.nota) {
-      html += '<div class="edit-compat-nota">💡 ' + cultivo.nota + '</div>';
+      html += '<div class="edit-compat-nota">' +
+        (typeof hcIcon === 'function' ? hcIcon('hc-i-bulb', 'hc-ico--chip-inline') : '💡') +
+        ' ' + cultivo.nota + '</div>';
     }
 
     // Fases si tiene fructificación
     if (cultivo.fructificacion && cultivo.fases) {
-      html += '<div class="edit-compat-fases-kicker">🌸 Fases de cultivo:</div>';
+      html += '<div class="edit-compat-fases-kicker">' +
+        (typeof hcIcon === 'function' ? hcIcon('hc-i-sparkle', 'hc-ico--chip-inline') : '🌸') +
+        ' Fases de cultivo:</div>';
       Object.entries(cultivo.fases).forEach(([fase, datos]) => {
         const nombres = {plantula:'Plántula',vegetativo:'Vegetativo',floracion:'Floración',fructificacion:'Fructificación'};
         html += '<div class="edit-compat-fase-line">' +
@@ -65,10 +82,12 @@ function showCompatInfo() {
       if (incomp.length > 0) {
         const nombresIncomp = incomp.map(g => GRUPOS_CULTIVO[g]?.nombre || g).join(', ');
         html += '<div class="edit-compat-banner edit-compat-banner--bad">' +
-          '⚠️ Incompatible con ' + nombresIncomp + ' en esta torre — EC diferente</div>';
+          (typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup('warn') : '⚠️') +
+          ' Incompatible con ' + nombresIncomp + ' en esta torre — EC diferente</div>';
       } else {
         html += '<div class="edit-compat-banner edit-compat-banner--ok">' +
-          '✅ Compatible con los cultivos actuales de esta torre</div>';
+          (typeof hcStatusIconMarkup === 'function' ? hcStatusIconMarkup('ok') : '✅') +
+          ' Compatible con los cultivos actuales de esta torre</div>';
       }
     }
   }

@@ -223,7 +223,9 @@ function showToast(msg, error, opts) {
   }
   if (opts.zIndex != null) t.style.zIndex = String(opts.zIndex);
   else t.style.removeProperty('z-index');
-  t.textContent = msg;
+  var toastHtml = opts.html || (typeof hcToastHtml === 'function' ? hcToastHtml(msg, isError) : null);
+  if (toastHtml) t.innerHTML = toastHtml;
+  else t.textContent = msg;
   t.setAttribute('aria-live', isError ? 'assertive' : 'polite');
   t.style.background = isError ? 'var(--red)' : 'var(--green)';
   t.style.color = isError ? 'white' : 'var(--bg)';

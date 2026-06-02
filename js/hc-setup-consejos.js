@@ -1043,7 +1043,10 @@ function toggleConsejoExpand(btn) {
   const lab = btn.querySelector('.consejo-text-toggle-label');
   const ico = btn.querySelector('.consejo-text-toggle-ico');
   if (lab) lab.textContent = open ? 'Ver menos' : 'Ver más';
-  if (ico) ico.textContent = open ? '▲' : '▼';
+  if (ico) {
+    if (typeof hcChevronMarkup === 'function') ico.innerHTML = hcChevronMarkup(open);
+    else ico.textContent = open ? '▲' : '▼';
+  }
 }
 
 window.toggleConsejoExpand = toggleConsejoExpand;
@@ -1057,14 +1060,16 @@ function htmlConsejoCard(cat, c) {
   const toggle = expandable
     ? '<button type="button" class="consejo-text-toggle" onclick="toggleConsejoExpand(this)" aria-expanded="false">' +
       '<span class="consejo-text-toggle-label">Ver más</span>' +
-      '<span class="consejo-text-toggle-ico" aria-hidden="true">▼</span>' +
+      '<span class="consejo-text-toggle-ico" aria-hidden="true">' +
+      (typeof hcChevronMarkup === 'function' ? hcChevronMarkup(false) : '▼') +
+      '</span>' +
       '</button>'
     : '';
   return `
     <div class="consejo-card${cardMod}">
       <div class="consejo-header">
         <div class="consejo-icon" style="--consejo-icon-bg:${cat.bg}">
-          ${c.icono}
+          ${typeof hcConsejoIconMarkup === 'function' ? hcConsejoIconMarkup(c.icono, c.titulo) : c.icono}
         </div>
         <div>
           <div class="consejo-titulo">${c.titulo}</div>
@@ -1076,7 +1081,7 @@ function htmlConsejoCard(cat, c) {
       </div>
       ${c.alerta ? `
         <div class="consejo-alerta ${c.alerta.tipo}">
-          <span>${c.alerta.txt}</span>
+          ${typeof hcConsejoAlertaHtml === 'function' ? hcConsejoAlertaHtml(c.alerta) : '<span>' + c.alerta.txt + '</span>'}
         </div>
       ` : ''}
     </div>
@@ -2402,7 +2407,9 @@ function buildConsejosDwc() {
     '<div class="consejo-header">' +
     '<div class="consejo-icon" style="--consejo-icon-bg:' +
     cat.bg +
-    '">📋</div>' +
+    '">' +
+    (typeof hcConsejoIconMarkup === 'function' ? hcConsejoIconMarkup('📋') : '📋') +
+    '</div>' +
     '<div><div class="consejo-titulo">Tamaños de cesta (referencia)</div></div>' +
     '</div>' +
     '<div class="consejo-texto consejo-texto--pt4">' +
@@ -2422,14 +2429,16 @@ function htmlInnerConsejoCard(cat, c) {
   const toggle = expandable
     ? '<button type="button" class="consejo-text-toggle" onclick="toggleConsejoExpand(this)" aria-expanded="false">' +
       '<span class="consejo-text-toggle-label">Ver más</span>' +
-      '<span class="consejo-text-toggle-ico" aria-hidden="true">▼</span>' +
+      '<span class="consejo-text-toggle-ico" aria-hidden="true">' +
+      (typeof hcChevronMarkup === 'function' ? hcChevronMarkup(false) : '▼') +
+      '</span>' +
       '</button>'
     : '';
   return `
     <div class="consejo-card${cardMod}">
       <div class="consejo-header">
         <div class="consejo-icon" style="--consejo-icon-bg:${cat.bg}">
-          ${c.icono}
+          ${typeof hcConsejoIconMarkup === 'function' ? hcConsejoIconMarkup(c.icono, c.titulo) : c.icono}
         </div>
         <div>
           <div class="consejo-titulo">${c.titulo}</div>
@@ -2441,7 +2450,7 @@ function htmlInnerConsejoCard(cat, c) {
       </div>
       ${c.alerta ? `
         <div class="consejo-alerta ${c.alerta.tipo}">
-          <span>${c.alerta.txt}</span>
+          ${typeof hcConsejoAlertaHtml === 'function' ? hcConsejoAlertaHtml(c.alerta) : '<span>' + c.alerta.txt + '</span>'}
         </div>
       ` : ''}
     </div>
@@ -2461,7 +2470,7 @@ function buildConsejoProblemasCompacto(cat, c) {
     <div class="consejo-card">
       <div class="consejo-header">
         <div class="consejo-icon" style="--consejo-icon-bg:${cat.bg}">
-          ${c.icono}
+          ${typeof hcConsejoIconMarkup === 'function' ? hcConsejoIconMarkup(c.icono, c.titulo) : c.icono}
         </div>
         <div>
           <div class="consejo-titulo">${c.titulo}</div>
@@ -2470,7 +2479,7 @@ function buildConsejoProblemasCompacto(cat, c) {
       <div class="consejo-texto"><p class="consejo-p consejo-p--tight"><strong>Acción rápida:</strong> ${resumen}</p>${detalleWrap}</div>
       ${c.alerta ? `
         <div class="consejo-alerta ${c.alerta.tipo}">
-          <span>${c.alerta.txt}</span>
+          ${typeof hcConsejoAlertaHtml === 'function' ? hcConsejoAlertaHtml(c.alerta) : '<span>' + c.alerta.txt + '</span>'}
         </div>
       ` : ''}
     </div>
@@ -2491,7 +2500,10 @@ function plegarTodosDesplegablesConsejosLista(lista) {
     const lab = btn.querySelector('.consejo-text-toggle-label');
     const ico = btn.querySelector('.consejo-text-toggle-ico');
     if (lab) lab.textContent = 'Ver más';
-    if (ico) ico.textContent = '▼';
+    if (ico) {
+      if (typeof hcChevronMarkup === 'function') ico.innerHTML = hcChevronMarkup(false);
+      else ico.textContent = '▼';
+    }
   });
 }
 
