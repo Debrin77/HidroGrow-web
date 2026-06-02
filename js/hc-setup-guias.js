@@ -14,7 +14,7 @@
     6: { l1: '6 fases en orden hasta el cubo hidro.' },
     7: { l1: 'Resumen; siguiente: geometría del sistema.' },
     8: { l1: 'Filas, cubos y depósito; diagrama en vivo.' },
-    9: { l1: 'Aireador, calentador y medidor del circuito.' },
+    9: { l1: 'Aireador, calentador, medidor y CO₂ (opcional) del circuito.' },
     10: { l1: 'Agua del depósito y medio en net pot.' },
     11: { l1: 'Nutriente para dosis según litros calculados.' },
     12: { l1: 'Exterior: ciudad para meteo (interior salta).' },

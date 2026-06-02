@@ -370,6 +370,14 @@
       return inst.led.marca + ' ' + inst.led.modelo +
         (inst.led.specs?.watts ? ' · ' + inst.led.specs.watts + ' W' : '');
     }
+    if (tipo === 'co2' && inst.co2) {
+      return inst.co2.marca + ' ' + inst.co2.modelo +
+        (inst.co2.specs?.tipo ? ' · ' + inst.co2.specs.tipo : '');
+    }
+    if (tipo === 'co2') {
+      const eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+      if (eq.indexOf('co2') >= 0) return 'Enriquecedor CO₂ (marcado en equipamiento)';
+    }
     return '';
   }
 

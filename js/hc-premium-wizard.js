@@ -188,6 +188,35 @@
     return Number.isFinite(ancho) && ancho > 0 && Number.isFinite(largo) && largo > 0;
   }
 
+  /** Antes de guardar: medidas de sala interior desde catálogo, premium o default 1.2×1.2 m. */
+  function hcAsegurarMedidasSalaInteriorAntesGuardar() {
+    const p = ensurePremiumSetup();
+    if (!p || p.entorno === 'exterior') return;
+    try {
+      if (typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
+        syncSalaMedidasDesdeEquipamientoInstalado();
+      }
+    } catch (_) {}
+    persistPremiumSetupFromUI();
+    const cfgW =
+      typeof getWizardEquipCfg === 'function'
+        ? getWizardEquipCfg()
+        : (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (salaTieneMedidasDesdeEquipamiento(cfgW)) return;
+    const r = calcularPremiumSalaInterno();
+    if (!r.error) return;
+    p.anchoM = 1.2;
+    p.largoM = 1.2;
+    if (!Number.isFinite(p.altoM) || p.altoM <= 0) p.altoM = 2;
+    const setIfEmpty = (id, val) => {
+      const node = el(id);
+      if (node && !String(node.value || '').trim()) node.value = String(val);
+    };
+    setIfEmpty('setupPremiumAnchoM', p.anchoM);
+    setIfEmpty('setupPremiumLargoM', p.largoM);
+    setIfEmpty('setupPremiumAltoM', p.altoM);
+  }
+
   function calcularPremiumSalaInterno() {
     const p = ensurePremiumSetup();
     const cfgTor = typeof getWizardEquipCfg === 'function' ? getWizardEquipCfg() : ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
@@ -576,4 +605,5 @@
   window.validarPlantasVsSalaPremium = validarPlantasVsSalaPremium;
   window.ensurePremiumSetup = ensurePremiumSetup;
   window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
+  window.hcAsegurarMedidasSalaInteriorAntesGuardar = hcAsegurarMedidasSalaInteriorAntesGuardar;
 })();

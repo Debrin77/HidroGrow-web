@@ -3644,7 +3644,7 @@
 
     <div class="setup-page" id="spage2">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg> Equipamiento</div>
-      <div class="setup-subtitle">Aireador, bomba y medidor del circuito hidro.</div>
+      <div class="setup-subtitle">Aireador, bomba, medidor y CO₂ (opcional) del circuito hidro.</div>
 
       <details class="setup-equip-catalog-details setup-mb-16" id="setupEquipCatalogDetails" open>
         <summary class="setup-block-title setup-equip-catalog-summary">Selección marca y modelo (catálogo ES)</summary>
@@ -3683,6 +3683,11 @@
           <div class="equip-icon"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-umbrella"/></svg></div>
           <div class="equip-titulo">Toldo / malla</div>
           <div class="equip-desc">Protección solar en verano</div>
+        </button>
+        <button type="button" class="equip-card" id="eqCo2" onclick="toggleEquip('co2')">
+          <div class="equip-icon" aria-hidden="true">🌬️</div>
+          <div class="equip-titulo">Enriquecedor CO₂</div>
+          <div class="equip-desc">Botella + regulador (opcional)</div>
         </button>
       </div>
       <div class="setup-sensores-box setup-hidden" id="setupCalentadorConsignaWrap">
@@ -4806,7 +4811,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-sem"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-consejos"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-co2-equip"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-origen"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -4846,18 +4851,18 @@
 <script src="js/torre-render-main.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-pm-guias"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-co2-equip"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-equip-crash-fix"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-skip-equip"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-copy-lite"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-rdwc-defaults"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-guardar-fix"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-co2-equip"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-co2-equip"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-guardar-fix"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-plantas-id"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-guardar-toast"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-co2-equip"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-montaje-sala"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-guardar-fix"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=1"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>

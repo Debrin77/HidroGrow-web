@@ -56,11 +56,9 @@
     return skip;
   }
 
-  /** Catálogo marca/modelo ya en paso premium «Espacio y equipamiento» — no repetir en paso hidro. */
+  /** No saltar el paso hidro: el catálogo premium no incluye aireador/CO₂ del circuito. */
   function setupFlowCanSkipEquip() {
-    if (typeof setupEsNuevaTorre === 'undefined' || !setupEsNuevaTorre) return false;
-    if (typeof ensurePremiumSetup !== 'function') return false;
-    return !!ensurePremiumSetup();
+    return false;
   }
 
   function getSetupVisiblePages() {
@@ -222,6 +220,12 @@
       if (typeof seleccionarSustrato === 'function' && setupData.sustrato) {
         seleccionarSustrato(setupData.sustrato, false);
       }
+    }
+
+    if (page === typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 9) {
+      const catDetails = document.getElementById('setupEquipCatalogDetails');
+      if (catDetails && premiumActive) catDetails.classList.add('setup-hidden');
+      else if (catDetails) catDetails.classList.remove('setup-hidden');
     }
 
     if (page === typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 12) {

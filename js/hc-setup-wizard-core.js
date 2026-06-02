@@ -792,6 +792,34 @@ function rdwcSetupFormularioCompleto() {
   );
 }
 
+/** Valida RDWC desde config en memoria (fallback si el formulario no está visible). */
+function rdwcSetupValidFromConfig(cfg) {
+  cfg = cfg && typeof cfg === 'object' ? cfg : {};
+  if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cfg);
+  const sites = Number(cfg.rdwcSites);
+  const rows = Number(cfg.rdwcRows);
+  const bucketVol = Number(cfg.rdwcBucketVolL);
+  const controlVol = Number(cfg.rdwcControlVolL);
+  const controlTrabajo = Number(cfg.volMezclaLitros ?? cfg.rdwcControlTrabajoL);
+  const rim = Number(cfg.rdwcNetPotMm);
+  const potH = Number(cfg.rdwcNetPotHeightMm);
+  const cestaOk =
+    (Number.isFinite(potH) && potH >= 30 && potH <= 200) || (Number.isFinite(rim) && rim >= 40);
+  return (
+    Number.isFinite(sites) &&
+    sites >= 2 &&
+    Number.isFinite(rows) &&
+    rows >= 1 &&
+    Number.isFinite(bucketVol) &&
+    bucketVol >= 5 &&
+    Number.isFinite(controlVol) &&
+    controlVol >= 10 &&
+    Number.isFinite(controlTrabajo) &&
+    controlTrabajo >= 0.5 &&
+    cestaOk
+  );
+}
+
 /** Rellena campos RDWC vacíos con defaults razonables antes de guardar. */
 function hcCompletarRdwcSetupDefaultsAntesGuardar() {
   const defs =

@@ -1541,7 +1541,19 @@ async function detectarCiudadSetup() {
 }
 
 function guardarSetupYContinuar() {
+  let restoreToast = null;
   try {
+    if (typeof showToast === 'function') {
+      restoreToast = showToast;
+      showToast = function (msg, isErr, opts) {
+        if (isErr) {
+          try {
+            window._hcSetupSaveToastShown = true;
+          } catch (_) {}
+        }
+        return restoreToast.call(this, msg, isErr, opts);
+      };
+    }
     return guardarSetupYContinuarCore();
   } catch (err) {
     console.error('guardarSetupYContinuar', err);
@@ -1552,10 +1564,15 @@ function guardarSetupYContinuar() {
       );
     }
     return false;
+  } finally {
+    if (restoreToast) showToast = restoreToast;
   }
 }
 
 function guardarSetupYContinuarCore() {
+  try {
+    window._hcSetupSaveToastShown = false;
+  } catch (_) {}
   try {
     if (!setupEsNuevaTorre && typeof hcApplySalasPlanFirstInstallName === 'function') {
       hcApplySalasPlanFirstInstallName();
@@ -1641,7 +1658,32 @@ function guardarSetupYContinuarCore() {
         hcCompletarRdwcSetupDefaultsAntesGuardar();
       }
     } catch (_) {}
-    if (typeof rdwcSetupFormularioCompleto === 'function' && !rdwcSetupFormularioCompleto()) {
+    let cR =
+      typeof applySetupRdwcDesdeFormulario === 'function' ? applySetupRdwcDesdeFormulario() || {} : {};
+    if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cR);
+    if (
+      typeof rdwcSetupValidFromConfig === 'function' &&
+      !rdwcSetupValidFromConfig(cR) &&
+      typeof rdwcSetupFormularioCompleto === 'function' &&
+      !rdwcSetupFormularioCompleto()
+    ) {
+      try {
+        if (typeof hcFreshRdwcSetupDefaults === 'function') {
+          const defs = hcFreshRdwcSetupDefaults();
+          cR = Object.assign({}, defs, cR);
+          if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cR);
+          if (typeof syncSetupRdwcFieldsDesdeConfig === 'function') syncSetupRdwcFieldsDesdeConfig(cR);
+          if (typeof applySetupRdwcDesdeFormulario === 'function') {
+            cR = applySetupRdwcDesdeFormulario() || cR;
+          }
+        }
+      } catch (_) {}
+    }
+    if (
+      typeof rdwcSetupValidFromConfig === 'function'
+        ? !rdwcSetupValidFromConfig(cR)
+        : typeof rdwcSetupFormularioCompleto === 'function' && !rdwcSetupFormularioCompleto()
+    ) {
       showToast(
         'Completa sitios, filas, litros de cubo y depósito de control, y medidas de cesta en el bloque RDWC.',
         true
@@ -1650,9 +1692,6 @@ function guardarSetupYContinuarCore() {
       renderSetupPage();
       return false;
     }
-    const cR = typeof applySetupRdwcDesdeFormulario === 'function'
-      ? (applySetupRdwcDesdeFormulario() || {})
-      : {};
     niveles = Math.max(1, Math.min(4, Math.round(Number(cR.rdwcRows || 1))));
     cestas = Math.max(1, Math.ceil(Number(cR.rdwcSites || 4) / niveles));
     vol = Math.max(1, Math.round(Number(cR.rdwcControlVolL || 40)));
@@ -1816,6 +1855,9 @@ function guardarSetupYContinuarCore() {
   if (typeof persistConsejosModoSetupToPremium === 'function') persistConsejosModoSetupToPremium();
   if (typeof window.syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
     window.syncSalaMedidasDesdeEquipamientoInstalado();
+  }
+  if (typeof hcAsegurarMedidasSalaInteriorAntesGuardar === 'function') {
+    hcAsegurarMedidasSalaInteriorAntesGuardar();
   }
   const premEntorno =
     typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup().entorno : null;

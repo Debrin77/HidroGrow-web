@@ -1533,6 +1533,11 @@ function renderSetupPage() {
     if (typeof renderEquipamientoPremiumUI === 'function') {
       setTimeout(renderEquipamientoPremiumUI, 0);
     }
+    if (typeof applySetupFlowCondensedUI === 'function') {
+      setTimeout(function () {
+        applySetupFlowCondensedUI(SETUP_PAGE_EQUIP);
+      }, 0);
+    }
   }
   if (setupPagina === SETUP_PAGE_AGUA) {
     setTimeout(function () {
@@ -1714,15 +1719,16 @@ function setupNext() {
     const ok = guardarSetupYContinuar();
     if (ok !== true) {
       if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
-      if (typeof showToast === 'function') {
+      if (typeof showToast === 'function' && !window._hcSetupSaveToastShown) {
         showToast(
-          ok === false
-            ? 'No se pudo guardar. Revisa los pasos marcados arriba (geometría, sala o depósito).'
-            : 'No se completó el guardado. Revisa los datos e inténtalo de nuevo.',
+          'No se pudo guardar. Revisa geometría (paso Hidro), sala (Espacio) o depósito.',
           true,
           { zIndex: 10550, prominent: true, durationMs: 6200 }
         );
       }
+      try {
+        window._hcSetupSaveToastShown = false;
+      } catch (_) {}
     }
   }
 }
@@ -2689,7 +2695,16 @@ function toggleEquip(id) {
   if (id === 'difusor' && typeof setupTipoInstalacion !== 'undefined' && setupTipoInstalacion === 'nft') {
     return;
   }
-  const card = document.getElementById('eq' + id.charAt(0).toUpperCase() + id.slice(1));
+  const cardIds = {
+    difusor: 'eqDifusor',
+    calentador: 'eqCalentador',
+    bomba: 'eqBomba',
+    timer: 'eqTimer',
+    medidorEC: 'eqMedidorEC',
+    toldo: 'eqToldo',
+    co2: 'eqCo2',
+  };
+  const card = document.getElementById(cardIds[id] || 'eq' + id.charAt(0).toUpperCase() + id.slice(1));
   if (setupEquipamiento.has(id)) {
     setupEquipamiento.delete(id);
     card.className = 'equip-card';
@@ -2710,12 +2725,21 @@ function refreshSetupCalentadorConsignaVis() {
   wrap.classList.toggle('setup-hidden', !setupEquipamiento.has('calentador'));
 }
 
-const SETUP_EQUIP_IDS = ['difusor', 'calentador', 'bomba', 'timer', 'medidorEC', 'toldo'];
+const SETUP_EQUIP_IDS = ['difusor', 'calentador', 'bomba', 'timer', 'medidorEC', 'toldo', 'co2'];
 
 function refreshSetupEquipamientoCardsDesdeSet() {
+  const cardIds = {
+    difusor: 'eqDifusor',
+    calentador: 'eqCalentador',
+    bomba: 'eqBomba',
+    timer: 'eqTimer',
+    medidorEC: 'eqMedidorEC',
+    toldo: 'eqToldo',
+    co2: 'eqCo2',
+  };
   for (let j = 0; j < SETUP_EQUIP_IDS.length; j++) {
     const eid = SETUP_EQUIP_IDS[j];
-    const card = document.getElementById('eq' + eid.charAt(0).toUpperCase() + eid.slice(1));
+    const card = document.getElementById(cardIds[eid] || 'eq' + eid.charAt(0).toUpperCase() + eid.slice(1));
     if (card) card.className = 'equip-card' + (setupEquipamiento.has(eid) ? ' selected' : '');
   }
 }

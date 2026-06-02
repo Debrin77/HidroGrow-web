@@ -87,6 +87,14 @@ const EQUIP_CATEGORIAS = {
     ],
     hint: 'RDWC/NFT/torre: caudal y altura manométrica según circuito. Revisa en montaje.',
   },
+  co2: {
+    id: 'co2',
+    label: 'CO₂ / enriquecedor',
+    icon: '🌬️',
+    indispensable: false,
+    campos: [{ key: 'tipo', label: 'Sistema', type: 'text' }],
+    hint: 'Botella + regulador o generador. Opcional; la app sugiere enriquecer si CO₂ bajo en Medir.',
+  },
 };
 
 /** Marcas habituales en growshops españoles — datos orientativos del fabricante. */
@@ -258,6 +266,13 @@ const EQUIPAMIENTO_CATALOG = [
     specs: { lph: 2000, headM: 2.2 }, nota: 'Controllable · salas pro.' },
   { id: 'maxspect_xmp', categoria: 'bomba_recirc', marca: 'Maxspect', modelo: 'XMP 2000', top_es: true, rank: 10,
     specs: { lph: 2000, headM: 2.5 }, nota: 'Variable · RDWC con control fino.' },
+
+  { id: 'autopilot_co2', categoria: 'co2', marca: 'Autopilot', modelo: 'APCECO2', top_es: true, rank: 1,
+    specs: { tipo: 'Botella + regulador digital' }, nota: 'Control ppm · floración · muy habitual en ES.' },
+  { id: 'titan_co2', categoria: 'co2', marca: 'Titan Controls', modelo: 'Atlas 2', top_es: true, rank: 2,
+    specs: { tipo: 'Botella + regulador' }, nota: 'Dosificación por fotoperiodo · armarios cerrados.' },
+  { id: 'gse_co2', categoria: 'co2', marca: 'GSE', modelo: 'CO₂ controller', top_es: true, rank: 3,
+    specs: { tipo: 'Regulador + electroválvula' }, nota: 'Marca europea · growshops españoles.' },
 ];
 
 const EQUIP_TOP_ES_LIMIT = 10;
