@@ -18,17 +18,115 @@ let torreCestasMultiSel = new Set();
 let modoActual = 'vegetativo';
 let state = null; // se inicializa después
 
+/** Elimina copias antiguas (HidroCultivo / v1) — no se importan al estado actual. */
+function hidrogrowPurgarStorageLegacySilencioso() {
+  try {
+    localStorage.removeItem('hidrogrow_v1');
+    localStorage.removeItem('cultiva_v1');
+  } catch (_) {}
+}
+
+/** Sin instalación guardada: no rehidratar borrador de equipamiento/sistema. */
+function hidrogrowLimpiarBorradorSinInstalacion(st) {
+  if (!st || typeof st !== 'object') return false;
+  if (Array.isArray(st.torres) && st.torres.length > 0) return false;
+  let changed = false;
+  if (st.configTorre) {
+    delete st.configTorre;
+    changed = true;
+  }
+  if (Array.isArray(st.mediciones) && st.mediciones.length) {
+    st.mediciones = [];
+    changed = true;
+  }
+  if (Array.isArray(st.registro) && st.registro.length) {
+    st.registro = [];
+    changed = true;
+  }
+  if (st.ultimaMedicion) {
+    st.ultimaMedicion = null;
+    changed = true;
+  }
+  if (st.ultimaRecarga != null) {
+    st.ultimaRecarga = null;
+    changed = true;
+  }
+  if (st.recargaSnoozeHasta != null) {
+    st.recargaSnoozeHasta = null;
+    changed = true;
+  }
+  return changed;
+}
+
+/** Snapshot para localStorage: solo persiste sistema/equipamiento si hay instalación. */
+function hidrogrowPrepararSnapshotPersistencia(st) {
+  if (!st || typeof st !== 'object') return st;
+  const clone = JSON.parse(JSON.stringify(st));
+  if (!Array.isArray(clone.torres) || !clone.torres.length) {
+    hidrogrowLimpiarBorradorSinInstalacion(clone);
+  }
+  return clone;
+}
+
+/** Borra todos los datos de HidroGrow (reset manual). */
+function hidrogrowLimpiarAlmacenamientoCompleto() {
+  const explicitKeys = [
+    STORAGE_KEY,
+    'hidrogrow_v1',
+    'cultiva_v1',
+    AUTO_RESTORE_POINT_KEY,
+    AUTO_RESTORE_POINT_TRANSITION_KEY,
+    AUTH_TS_KEY,
+    AUTH_REMEMBER_MIN_KEY,
+    TUTORIAL_ASIGNAR_LS,
+    TUTORIAL_EDITAR_LS,
+    TUTORIAL_TORRE_TAB_LS,
+    TORRE_SWIPE_HINT_LS,
+    'hc_guia_primer_dia_dismiss',
+    'hc_onboarding_visit_riego',
+    'hc_bienvenida_v2026_5_montaje',
+    'hc_tab_bar_coach_dismiss_v2',
+    'hc_welcome_theme_preview',
+    'hc_hint_ctx_med',
+    'hc_hint_ctx_sala',
+    'hc_hint_ctx_sis',
+    'hc_hint_ctx_riego',
+    'hcMultiSystemCoachDismissed',
+    'hcNuevoSistemaPrimerSeen',
+    'hcSalasPlan',
+    'hcSalasPlanDone',
+    'hcDashRecargaOpen',
+  ];
+  explicitKeys.forEach((k) => {
+    try {
+      localStorage.removeItem(k);
+    } catch (_) {}
+  });
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && k.indexOf('hc_meteo_cache') === 0) {
+        localStorage.removeItem(k);
+      }
+    }
+  } catch (_) {}
+  try {
+    if (typeof indexedDB !== 'undefined' && typeof FOTO_DB_NAME === 'string') {
+      indexedDB.deleteDatabase(FOTO_DB_NAME);
+    }
+  } catch (_) {}
+}
+
 function loadState() {
+  hidrogrowPurgarStorageLegacySilencioso();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const s = JSON.parse(raw);
-      // Validar que tiene estructura correcta
       if (!s.torre || !Array.isArray(s.torre)) {
         console.warn('State corrupto — reiniciando');
         return initState();
       }
-      // Asegurar que torre tiene la estructura correcta (5 niveles x 5 cestas)
       while (s.torre.length < NUM_NIVELES) {
         s.torre.push(
           Array(NUM_CESTAS)
@@ -50,11 +148,13 @@ function loadState() {
         legacyPersist = !!hidrogrowMigrarStateCompleto(s);
       }
       normalizarNotifOpcionesEnState(s);
-      if (legacyPersist) {
+      let borradorPersist = false;
+      if (hidrogrowLimpiarBorradorSinInstalacion(s)) borradorPersist = true;
+      if (legacyPersist || borradorPersist) {
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(hidrogrowPrepararSnapshotPersistencia(s)));
         } catch (e) {
-          console.warn('No se pudo persistir migración DWC/RDWC', e);
+          console.warn('No se pudo persistir saneamiento de estado', e);
         }
       }
       return s;
@@ -240,7 +340,11 @@ function initState() {
   }
   const st = {
     torre,
+    torres: [],
+    torreActiva: 0,
     modo: 'vegetativo',
+    mediciones: [],
+    registro: [],
     ultimaMedicion: null,
     ultimaRecarga: null,
     /** epoch ms — oculta aviso urgente de recarga hasta esa hora */
@@ -262,7 +366,8 @@ function saveState() {
       const okSaveSlot = guardarEstadoTorreActual();
       if (okSaveSlot === false) return false;
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const snapshot = hidrogrowPrepararSnapshotPersistencia(state);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     // Verificar que se guardó correctamente
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) console.error('Error: estado no guardado en localStorage');
@@ -275,7 +380,8 @@ function saveState() {
         // Liberar espacio: eliminar base64 pesados del state (las fotos YA están en IndexedDB)
         compactarStateFotos();
         localStorage.removeItem('hc_auth');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        const snapshotRetry = hidrogrowPrepararSnapshotPersistencia(state);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshotRetry));
         return true;
       } catch(e2) { console.error('No se pudo guardar:', e2); }
     }

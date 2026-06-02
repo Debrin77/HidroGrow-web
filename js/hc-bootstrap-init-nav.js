@@ -9,22 +9,14 @@ function resetApp() {
   if (!confirm('⚠️ ¿Estás seguro? Esta acción borrará TODOS los datos guardados en este dispositivo, incluyendo plantas, mediciones y configuración.')) return;
   if (!confirm('⚠️ Segunda confirmación — esta acción NO se puede deshacer. ¿Continuar?')) return;
 
-  // Borrar estado local (incl. sesión PIN para que vuelva a pedirse tras reset)
   try {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem('hc_auth');
-    localStorage.removeItem(TUTORIAL_ASIGNAR_LS);
-    localStorage.removeItem(TUTORIAL_EDITAR_LS);
-    localStorage.removeItem(TUTORIAL_TORRE_TAB_LS);
-    localStorage.removeItem(TORRE_SWIPE_HINT_LS);
-    localStorage.removeItem(HC_GUIDE_DISMISS_KEY);
-    localStorage.removeItem(HC_ONBOARD_RIEGO_VISIT_KEY);
-    localStorage.removeItem(HC_BIENVENIDA_KEY);
-    try { localStorage.removeItem('hc_tab_bar_coach_dismiss_v2'); } catch (_) {}
-    try {
-      Object.values(HC_HINT_CTX).forEach(k => { try { localStorage.removeItem(k); } catch (_) {} });
-    } catch (_) {}
-  } catch(e) {}
+    if (typeof hidrogrowLimpiarAlmacenamientoCompleto === 'function') {
+      hidrogrowLimpiarAlmacenamientoCompleto();
+    }
+    if (typeof vaciarFotoDBEnArranque === 'function') {
+      void vaciarFotoDBEnArranque();
+    }
+  } catch (_) {}
   try {
     const _tbc = document.getElementById('hcTabBarCoach');
     if (_tbc) _tbc.classList.add('setup-hidden');
@@ -161,7 +153,6 @@ function initApp() {
       }
     } catch (_) {}
   }, 1400);
-  // Migrar fotos antiguas de localStorage a IndexedDB (solo la primera vez)
   abrirFotoDB().then(() => migrarFotosAIDB()).catch(e => console.warn('Migración IDB:', e));
 
   if (!window._a11yEscapeBound) {

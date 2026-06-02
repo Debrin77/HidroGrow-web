@@ -132,10 +132,22 @@ window.onload = () => {
 // ══════════════════════════════════════════════════
 // FOTODB — IndexedDB para fotos (sin límite de tamaño)
 // ══════════════════════════════════════════════════
-const FOTO_DB_NAME    = 'cultivaFotos';
+// FOTO_DB_NAME — hc-bootstrap-config.js
 const FOTO_DB_VERSION = 1;
 const FOTO_STORE      = 'fotos';
 let fotoDB = null;
+
+async function vaciarFotoDBEnArranque() {
+  fotoDB = null;
+  try {
+    await new Promise((resolve) => {
+      const req = indexedDB.deleteDatabase(FOTO_DB_NAME);
+      req.onsuccess = () => resolve();
+      req.onerror = () => resolve();
+      req.onblocked = () => resolve();
+    });
+  } catch (_) {}
+}
 
 function abrirFotoDB() {
   return new Promise((resolve, reject) => {
