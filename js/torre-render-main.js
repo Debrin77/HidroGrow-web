@@ -101,7 +101,15 @@ function renderTorre() {
 
   if (state.configTorre?.torreVistaModo === 'lista') renderTorreLista();
   aplicarVistaTorreUI();
-  renderTorreSistemaResumenTabla(cfg);
+  if (typeof renderTorreSistemaResumenTabla === 'function') {
+    try {
+      renderTorreSistemaResumenTabla(cfg);
+    } catch (eResumen) {
+      try {
+        console.error('renderTorreSistemaResumenTabla', eResumen);
+      } catch (_) {}
+    }
+  }
 
   if (document.getElementById('tab-riego')?.classList.contains('active')) {
     actualizarVistaRiegoPorTipoInstalacion();

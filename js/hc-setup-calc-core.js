@@ -2397,7 +2397,13 @@ function guardarSetupYContinuarCore() {
   try {
     if (typeof renderConsejos === 'function') renderConsejos();
   } catch (_) {}
-  renderTorre();
+  try {
+    renderTorre();
+  } catch (eRenderTorre) {
+    try {
+      console.error('renderTorre (post-guardado asistente)', eRenderTorre);
+    } catch (_) {}
+  }
   updateTorreStats();
   updateDashboard();
   try {
