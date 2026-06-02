@@ -4497,13 +4497,9 @@ body.hc-welcome-open .welcome-overlay {
 body.hc-welcome-open .welcome-card--guide {
   animation: welcomeCardLiftIn 360ms cubic-bezier(.2, .8, .2, 1);
 }
-body.hc-welcome-open .welcome-card--guide .welcome-eyebrow,
-body.hc-welcome-open .welcome-card--guide .welcome-theme-switch,
-body.hc-welcome-open .welcome-card--guide .welcome-title,
-body.hc-welcome-open .welcome-card--guide .welcome-lead,
-body.hc-welcome-open .welcome-card--guide .welcome-block,
-body.hc-welcome-open .welcome-card--guide .welcome-setup-callout,
-body.hc-welcome-open .welcome-card--guide .welcome-legal,
+body.hc-welcome-open .welcome-card--guide .welcome-hero,
+body.hc-welcome-open .welcome-card--guide .welcome-showcase,
+body.hc-welcome-open .welcome-card--guide .welcome-legal-details,
 body.hc-welcome-open .welcome-card--guide .welcome-kpis,
 body.hc-welcome-open .welcome-card--guide .welcome-value-grid,
 body.hc-welcome-open .welcome-card--guide .welcome-foot--guide,
@@ -4513,15 +4509,10 @@ body.hc-welcome-open .welcome-card--guide .welcome-guide-actions {
   transform: translateY(8px);
   animation: welcomeContentIn 280ms ease-out forwards;
 }
-body.hc-welcome-open .welcome-card--guide .welcome-theme-switch { animation-delay: 40ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-title { animation-delay: 70ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-lead { animation-delay: 95ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-block:nth-of-type(1) { animation-delay: 115ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-block:nth-of-type(2) { animation-delay: 135ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-setup-callout { animation-delay: 155ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-legal { animation-delay: 175ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-hero { animation-delay: 60ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-kpis { animation-delay: 120ms; }
-body.hc-welcome-open .welcome-card--guide .welcome-value-grid { animation-delay: 145ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-showcase { animation-delay: 140ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-legal-details { animation-delay: 200ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-foot--guide { animation-delay: 195ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-no-mas-label { animation-delay: 210ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-guide-actions { animation-delay: 225ms; }
@@ -4539,6 +4530,10 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(3) { ani
 body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(4) { animation-delay: 260ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(5) { animation-delay: 290ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(6) { animation-delay: 320ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(7) { animation-delay: 350ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(8) { animation-delay: 380ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(9) { animation-delay: 410ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-value-card:nth-child(10) { animation-delay: 440ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-kpi {
   opacity: 0;
   transform: translateY(8px) scale(0.98);
@@ -4550,6 +4545,122 @@ body.hc-welcome-open .welcome-card--guide .welcome-kpi:nth-child(3) { animation-
 body.hc-welcome-open .welcome-card--guide .welcome-kpi:nth-child(4) { animation-delay: 200ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   animation: welcomeIconFloat 3400ms ease-in-out 700ms infinite;
+}
+.welcome-card--store {
+  max-width: min(520px, calc(100vw - 32px));
+  max-height: min(94vh, 780px);
+  padding: 0 0 18px;
+}
+.welcome-hero {
+  margin: 0 0 12px;
+  padding: 18px 18px 14px;
+  border-radius: 16px 16px 12px 12px;
+  background:
+    radial-gradient(90% 70% at 50% -20%, rgba(34, 197, 94, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 100%);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+.welcome-brand-emblem--lg {
+  width: 3.25rem;
+  height: 3.25rem;
+  filter: drop-shadow(0 4px 14px rgba(21, 128, 61, 0.35));
+}
+.welcome-brand-word {
+  font-size: 1.35rem;
+}
+.welcome-store-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.welcome-store-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+.welcome-store-badge--primary {
+  color: #14532d;
+  background: linear-gradient(135deg, #dcfce7 0%, #ecfdf5 100%);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+.welcome-showcase {
+  padding: 0 16px;
+  margin-bottom: 10px;
+}
+.welcome-showcase-head {
+  margin-bottom: 8px;
+  text-align: center;
+}
+.welcome-showcase-title {
+  margin: 0 0 4px;
+  font-family: var(--font-hero);
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #14532d;
+  letter-spacing: -0.02em;
+}
+.welcome-showcase-sub {
+  margin: 0;
+  font-size: 12px;
+  color: #64748b;
+}
+.welcome-legal-details {
+  margin: 0 16px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(254, 243, 199, 0.45);
+  overflow: hidden;
+}
+.welcome-legal-summary {
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #92400e;
+  cursor: pointer;
+  list-style: none;
+}
+.welcome-legal-summary::-webkit-details-marker {
+  display: none;
+}
+.welcome-legal-summary::after {
+  content: " ▾";
+  font-weight: 400;
+  opacity: 0.7;
+}
+.welcome-legal-details[open] .welcome-legal-summary::after {
+  content: " ▴";
+}
+.welcome-legal-body {
+  padding: 0 12px 10px;
+}
+.welcome-card--store .welcome-foot--guide,
+.welcome-card--store .welcome-no-mas-label,
+.welcome-card--store .welcome-guide-actions {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.welcome-card--store .welcome-guide-actions .welcome-next-btn {
+  order: -1;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.28);
+}
+.welcome-card--store .welcome-kpis {
+  padding: 0 16px;
+}
+.welcome-card--store .welcome-title {
+  font-size: clamp(1.25rem, 4.5vw, 1.55rem);
+  line-height: 1.2;
 }
 .welcome-card--guide {
   position: relative;
@@ -4916,11 +5027,33 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
 #welcomeOverlay[data-welcome-theme="dark"] .welcome-setup-txt {
   color: #dbe3ee;
 }
-#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal {
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-hero {
+  background:
+    radial-gradient(90% 70% at 50% -20%, rgba(52, 211, 153, 0.18) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
+  border-bottom-color: rgba(148, 163, 184, 0.25);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-store-badge {
+  background: rgba(15, 23, 42, 0.72);
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #e2e8f0;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-store-badge--primary {
+  color: #86efac;
+  background: rgba(6, 78, 59, 0.55);
+  border-color: rgba(52, 211, 153, 0.4);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-showcase-title {
+  color: #86efac;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-showcase-sub {
+  color: #94a3b8;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-details {
   background: rgba(120, 53, 15, 0.35);
   border-color: rgba(251, 191, 36, 0.35);
 }
-#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-title {
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-summary {
   color: #fcd34d;
 }
 #welcomeOverlay[data-welcome-theme="dark"] .welcome-legal-txt,

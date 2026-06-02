@@ -3049,71 +3049,123 @@
 </div>
 <!-- FIN APP -->
 
-<!-- ══ BIENVENIDA (primera vez) — cannabis hidro en casa (España) ══ -->
+<!-- ══ BIENVENIDA (primera vez) — ficha tipo App Store / Play Store ══ -->
 <div class="welcome-overlay setup-hidden" id="welcomeOverlay" role="dialog" aria-modal="true"
   data-welcome-theme="light"
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
-  <div class="welcome-card welcome-card--guide">
-    <div class="welcome-brand" aria-hidden="true">
-      <img class="welcome-brand-emblem" alt="" src="icons/splash-brand-gold.png?v=2026-05-31-gold-v2" width="40" height="40" decoding="async">
-      <span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span>
+  <div class="welcome-card welcome-card--guide welcome-card--store">
+    <header class="welcome-hero">
+      <div class="welcome-brand" aria-hidden="true">
+        <img class="welcome-brand-emblem welcome-brand-emblem--lg" alt="" src="icons/splash-brand-gold.png?v=2026-05-31-gold-v2" width="56" height="56" decoding="async">
+        <span class="welcome-brand-word"><span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span></span>
+      </div>
+      <p class="welcome-eyebrow">Cannabis hidro en casa · España · PWA</p>
+      <div class="welcome-theme-switch" role="group" aria-label="Aspecto de la guía">
+        <button type="button" class="welcome-theme-btn is-active" id="welcomeThemeBtnLight"
+          onclick="setWelcomeTheme('light')" aria-pressed="true">Claro</button>
+        <button type="button" class="welcome-theme-btn" id="welcomeThemeBtnDark"
+          onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
+      </div>
+      <h2 id="welcomeGuideTitle" class="welcome-title">Tu instalación DWC/RDWC, medida y bajo control</h2>
+      <p class="welcome-lead">App de <strong>autocultivo hidropónico</strong> para vivienda: <strong>montaje guiado</strong>, <strong>registro EC/pH</strong>, <strong>germinación</strong>, <strong>historial con gráficos</strong>, nutrientes por <strong>litros reales</strong> y meteo local — sin cuentas ni servidores obligatorios.</p>
+      <div class="welcome-store-badges" aria-label="Destacados de la app">
+        <span class="welcome-store-badge welcome-store-badge--primary">DWC · RDWC</span>
+        <span class="welcome-store-badge">EC / pH / VPD</span>
+        <span class="welcome-store-badge">Datos en tu móvil</span>
+        <span class="welcome-store-badge">Catálogo ES</span>
+      </div>
+    </header>
+
+    <div class="welcome-kpis" aria-label="Resumen rápido">
+      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-sys-dwc"/></svg><strong>2</strong> sistemas hidro</span>
+      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-flask"/></svg>Registro diario</span>
+      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-bolt"/></svg><strong>6</strong> fases germinación</span>
+      <span class="welcome-kpi"><svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-check"/></svg>Checklists montaje</span>
     </div>
-    <p class="welcome-eyebrow">Cannabis hidro en casa · España</p>
-    <div class="welcome-theme-switch" role="group" aria-label="Aspecto de la guía">
-      <button type="button" class="welcome-theme-btn is-active" id="welcomeThemeBtnLight"
-        onclick="setWelcomeTheme('light')" aria-pressed="true">Claro</button>
-      <button type="button" class="welcome-theme-btn" id="welcomeThemeBtnDark"
-        onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
-    </div>
-    <h2 id="welcomeGuideTitle" class="welcome-title">Tu cultivo de cannabis en hidro, en casa y con criterio</h2>
-    <p class="welcome-lead">HidroGrow está pensada para <strong>autocultivo hidropónico de cannabis</strong> en vivienda: configura <strong>DWC</strong> o <strong>RDWC</strong>, te orienta en el <strong>montaje completo</strong> (sala, equipamiento, checklist), registras <strong>EC/pH</strong>, dosificas según <strong>litros reales</strong> y sigues rutinas sin perderte entre pantallas.</p>
 
-    <section class="welcome-block" aria-labelledby="welcomeBondadesTitle">
-      <h3 id="welcomeBondadesTitle" class="welcome-block-title">Por qué te conviene</h3>
-      <ul class="welcome-check-list">
-        <li><strong>Fácil de usar:</strong> asistente paso a paso, mediciones rápidas y avisos claros.</li>
-        <li><strong>Menos desperdicio:</strong> nutriente y agua según volumen real del depósito, no a ojo.</li>
-        <li><strong>Más control:</strong> historial, calendario, meteo local y rangos por genética y fase.</li>
-      </ul>
+    <section class="welcome-showcase" aria-labelledby="welcomeShowcaseTitle">
+      <div class="welcome-showcase-head">
+        <h3 id="welcomeShowcaseTitle" class="welcome-showcase-title">Qué puedes hacer</h3>
+        <p class="welcome-showcase-sub">Desliza las tarjetas · última = configurar tu sistema</p>
+      </div>
+      <div class="welcome-value-grid" role="list" aria-label="Funciones principales de HidroGrow">
+        <article class="welcome-value-card welcome-value-card--green" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🏗️</div>
+          <h3>Montaje completo</h3>
+          <p>Sala interior/exterior, LED, extractor, filtro, carpa, hidro DWC/RDWC, agua, nutriente y checklist de puesta en marcha.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--amber" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🌱</div>
+          <h3>Germinación en Inicio</h3>
+          <p>Camino de 6 fases (semilla → cubo hidro), equipamiento del propagador, monitor del domo y traslado a la matriz.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--blue" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">📝</div>
+          <h3>Medir y registrar</h3>
+          <p>EC, pH, temperatura, HR, VPD, volumen del depósito, recargas y apuntes con fecha — todo en Historial.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--violet" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">📈</div>
+          <h3>Seguimiento y gráficos</h3>
+          <p>Evolución EC/pH/VPD frente a bandas teóricas por fase y genética; comparativa cuando tienes varias instalaciones.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--violet welcome-value-card--assistant" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🧭</div>
+          <h3>Asistente de mediciones</h3>
+          <p>Rangos por fase, correcciones accionables, oxígeno del depósito y avisos cuando algo se sale de lo habitual.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--teal welcome-value-card--protools" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🛠️</div>
+          <h3>Herramientas PRO</h3>
+          <p>Conversor EC, dosis al EC objetivo, pH± según litros, comparativa de nutrientes y guía LED para plántulas.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--indigo" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">📊</div>
+          <h3>Cultivo y matriz</h3>
+          <p>SOG/SCROG, foto/auto, variedades del catálogo, fechas por cesta y esquema visual de la instalación activa.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--teal" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🧪</div>
+          <h3>Nutrientes y mezcla</h3>
+          <p>Catálogo habitual, checklist del depósito y dosificación según volumen real — menos desperdicio de abono.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--amber" role="listitem">
+          <div class="welcome-value-icon" aria-hidden="true">🌤️</div>
+          <h3>Meteo y riego</h3>
+          <p>Previsión de tu municipio para anticipar calor, frío o humedad y afinar el contexto del cultivo.</p>
+        </article>
+        <article class="welcome-value-card welcome-value-card--cta" role="listitem" aria-label="Configurar instalación">
+          <div class="welcome-value-icon" aria-hidden="true">🚀</div>
+          <h3>Configura tu sistema</h3>
+          <p>Asistente premium paso a paso: tipo DWC/RDWC, equipamiento, cultivos y primer llenado del depósito.</p>
+          <button type="button" class="btn btn-primary welcome-cta-btn" onclick="welcomeAbrirSetup()"
+            aria-label="Abrir asistente de configuración">
+            Configurar mi instalación
+          </button>
+          <p class="welcome-cta-foot">Recomendado la primera vez · puedes cerrar y hacerlo después</p>
+        </article>
+      </div>
+      <div class="welcome-carousel-dots welcome-value-dots" id="welcomeValueDots" aria-label="Tarjetas de funciones" role="tablist"></div>
     </section>
 
-    <section class="welcome-block" aria-labelledby="welcomeFeaturesTitle">
-      <h3 id="welcomeFeaturesTitle" class="welcome-block-title">Qué incluye la app</h3>
-      <ul class="welcome-feature-grid" role="list">
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">⚙️</span><span><strong>Montaje guiado</strong> — sala, LED, extractor, filtro, hidro y checklist paso a paso.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📝</span><span><strong>Medir y registrar</strong> — EC, pH, temperatura, volumen, ambiente y recargas.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧭</span><span><strong>Correcciones</strong> — rangos por fase, VPD y sugerencias de equipamiento.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">📊</span><span><strong>Cultivo</strong> — genética, SOG/SCROG, fechas por cesta y esquema visual.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🧪</span><span><strong>Nutrientes</strong> — catálogo habitual y checklist de mezcla del depósito.</span></li>
-        <li role="listitem"><span class="welcome-feature-ico" aria-hidden="true">🌤️</span><span><strong>Meteo y riego</strong> — contexto climático de tu municipio.</span></li>
-      </ul>
-    </section>
+    <details class="welcome-legal-details">
+      <summary class="welcome-legal-summary">Nota legal — autocultivo en España</summary>
+      <div class="welcome-legal-body">
+        <p class="welcome-legal-txt">HidroGrow es una <strong>herramienta técnica</strong> (EC, pH, VPD, oxígeno, checklists); no promueve el consumo ni sustituye asesoramiento legal o sanitario.</p>
+        <p class="welcome-legal-txt">El cultivo en el <strong>domicilio habitual</strong> para <strong>autoconsumo</strong> está regulado (p. ej. <strong>LO 4/2023</strong> y <strong>RD 933/2023</strong>) y por tu <strong>comunidad autónoma</strong>: espacio privado, sin menores, sin venta ni tráfico, dentro de los límites vigentes.</p>
+        <p class="welcome-legal-txt welcome-legal-txt--emph"><strong>Consulta la legislación actual</strong> antes de cultivar. Clima, riego y dosis son apoyo; la referencia son tus mediciones y la planta.</p>
+      </div>
+    </details>
 
-    <section class="welcome-setup-callout" aria-label="Configurar primera instalación">
-      <h3 class="welcome-block-title">Configura tu instalación</h3>
-      <p class="welcome-setup-txt">El asistente te guía de punta a punta: tipo DWC/RDWC, entorno interior/exterior, equipamiento (catálogo ES), geometría del hidro, agua, nutriente y cultivos. Después, checklists de montaje y primer llenado del depósito.</p>
-      <button type="button" class="btn btn-primary welcome-cta-btn welcome-cta-btn--block" onclick="welcomeAbrirSetup()"
-        aria-label="Abrir asistente de configuración de instalación hidropónica">
-        Configurar mi sistema
-      </button>
-    </section>
-
-    <aside class="welcome-legal" role="note" aria-labelledby="welcomeLegalTitle">
-      <h3 id="welcomeLegalTitle" class="welcome-legal-title">Nota legal — autocultivo en España</h3>
-      <p class="welcome-legal-txt">HidroGrow es una <strong>herramienta técnica</strong> (EC, pH, VPD, oxígeno, checklists); no promueve el consumo ni sustituye asesoramiento legal o sanitario.</p>
-      <p class="welcome-legal-txt">El cultivo de cannabis en el <strong>domicilio habitual</strong> para <strong>autoconsumo</strong> en España está regulado (entre otras, <strong>Ley Orgánica 4/2023</strong> y <strong>Real Decreto 933/2023</strong>), además de la normativa de tu <strong>comunidad autónoma</strong>. Debe ser en espacio <strong>privado</strong>, sin exposición pública, <strong>sin menores</strong>, sin venta ni tráfico, y dentro de los <strong>límites vigentes</strong> (plantas, conservación, publicidad, etc.).</p>
-      <p class="welcome-legal-txt welcome-legal-txt--emph"><strong>Consulta siempre la legislación actual</strong> antes de cultivar. Las sugerencias de la app (clima, riego, dosis) son apoyo; la referencia final son tus mediciones y la observación directa del cultivo.</p>
-    </aside>
-
-    <p class="welcome-foot welcome-foot--guide">Uso responsable · Solo mayores de edad según la ley aplicable.</p>
+    <p class="welcome-foot welcome-foot--guide">Uso responsable · Solo mayores según la ley aplicable</p>
     <label class="welcome-no-mas-label" for="welcomeChkNoMas">
       <input type="checkbox" id="welcomeChkNoMas" checked>
-      <span>No volver a mostrar esta guía al abrir la app</span>
+      <span>No volver a mostrar al abrir la app</span>
     </label>
     <div class="welcome-guide-actions">
-      <button type="button" class="btn btn-ghost welcome-skip-btn" id="welcomeBtnSkip" onclick="welcomeCarouselSkip()">Cerrar</button>
+      <button type="button" class="btn btn-primary welcome-next-btn" id="welcomeBtnEmpezar" onclick="welcomeEmpezar()">Entrar a Inicio</button>
       <button type="button" class="btn btn-secondary" id="welcomeBtnSetup" onclick="welcomeAbrirSetup()">Asistente de configuración</button>
-      <button type="button" class="btn btn-primary welcome-next-btn" id="welcomeBtnEmpezar" onclick="welcomeEmpezar()">Empezar en Inicio</button>
+      <button type="button" class="btn btn-ghost welcome-skip-btn" id="welcomeBtnSkip" onclick="welcomeCarouselSkip()">Cerrar guía</button>
     </div>
   </div>
 </div>
