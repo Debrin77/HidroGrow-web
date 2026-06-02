@@ -11428,11 +11428,11 @@ html.hc-theme-dark .consejo-text-toggle {
   cursor: pointer;
 }
 .hc-plantas-instalacion-summary-title {
-  color: #e2e8f0;
+  color: var(--green-dim);
 }
 #tab-inicio .hc-plantas-instalacion-details .config-section-collapse-title,
 #tab-sistema .hc-plantas-instalacion-details .config-section-collapse-title {
-  color: #e2e8f0;
+  color: var(--green-dim);
 }
 .hc-plantas-instalacion-summary-sub {
   display: block;
@@ -11452,7 +11452,7 @@ html.hc-theme-dark .consejo-text-toggle {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #cbd5e1;
+  color: var(--muted);
   margin-bottom: 6px;
 }
 .hc-plantas-instalacion-inst {
@@ -12214,7 +12214,7 @@ html.hc-theme-dark .consejo-text-toggle {
   font-family: var(--font-ui);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #cbd5e1;
+  color: var(--muted);
   line-height: 1.4;
 }
 /* Medir → Recargas: subtítulo en cabecera colapsada con contraste legible */
@@ -19011,7 +19011,7 @@ button.hc-monitor-check { cursor: pointer; }
 /* Puesta en marcha */
 .hc-pm-modal { max-width: 480px; }
 .hc-pm-body { padding: 0 4px 8px; }
-.hc-pm-lead { font-size: var(--text-sm); line-height: 1.45; margin: 0 0 10px; }
+.hc-pm-lead { font-size: var(--text-sm); line-height: 1.45; margin: 0 0 10px; color: var(--white); }
 .hc-pm-equip-ref { font-size: var(--text-xs); line-height: 1.4; margin: 0 0 10px; color: var(--muted); }
 .hc-pm-equip-ref--warn { color: #b45309; background: rgba(254, 243, 199, 0.35); padding: 8px 10px; border-radius: 8px; }
 .hc-pm-prog { font-size: var(--text-sm); font-weight: 700; color: var(--green); margin: 0 0 12px; }
@@ -19019,18 +19019,21 @@ button.hc-monitor-check { cursor: pointer; }
 .hc-pm-item { border-top: 1px solid var(--border); padding: 10px 0; }
 .hc-pm-item:first-child { border-top: none; }
 .hc-pm-item--opt { opacity: 0.92; }
-.hc-pm-lbl { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: var(--text-sm); line-height: 1.4; }
+.hc-pm-lbl { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; font-size: var(--text-sm); line-height: 1.4; color: var(--white); }
 .hc-pm-lbl input { margin-top: 3px; flex-shrink: 0; }
 .hc-pm-hint { font-size: var(--text-xs); color: var(--muted); font-weight: 400; }
 .hc-pm-opt { font-size: var(--text-xs); color: var(--muted); font-weight: 600; }
 .hc-pm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
-.hc-pm-foot-hint { flex: 1 1 100%; font-size: 12px; line-height: 1.45; color: #64748b; margin: 0 0 4px; }
+.hc-pm-foot-hint { flex: 1 1 100%; font-size: 12px; line-height: 1.45; color: var(--muted); margin: 0 0 4px; }
 .hc-pm-config-link, .hc-pm-inline-config { margin: 8px 0 0; }
 .hc-pm-item--locked { opacity: 0.85; }
 .torre-btn-puesta-marcha { width: 100%; margin-top: 10px; }
 .hc-btn-puesta-marcha--ok {
   border-color: rgba(34, 197, 94, 0.55);
-  color: #86efac;
+  color: var(--green-dim);
+}
+html.hc-theme-dark .hc-btn-puesta-marcha--ok {
+  color: var(--green);
 }
 .sala-cultivo-equip-mount {
   margin: 0 0 14px;
@@ -19044,10 +19047,14 @@ button.hc-monitor-check { cursor: pointer; }
 }
 .medir-equip-actions { margin: 0 0 12px; }
 .sistema-montaje-details {
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid var(--border);
   border-radius: var(--hc-radius-md, 12px);
-  background: rgba(15, 23, 42, 0.2);
+  background: var(--bg2);
   overflow: hidden;
+}
+html.hc-theme-dark .sistema-montaje-details {
+  border-color: rgba(212, 160, 23, 0.16);
+  background: rgba(20, 28, 23, 0.96);
 }
 .sistema-montaje-summary {
   cursor: pointer;
@@ -19079,10 +19086,7 @@ button.hc-monitor-check { cursor: pointer; }
   font-size: var(--text-sm);
   line-height: 1.45;
   margin: 0 0 8px;
-  color: #334155;
-}
-html.hc-theme-dark .hc-pm-inline-lead {
-  color: #cbd5e1;
+  color: var(--white);
 }
 .hc-pm-list--inline {
   margin: 0 0 10px;
@@ -19091,7 +19095,12 @@ html.hc-theme-dark .hc-pm-inline-lead {
   border: none;
   padding: 4px 0;
   font-size: var(--text-sm);
+  line-height: 1.45;
   color: var(--white);
+}
+.hc-pm-item--inline .hc-pm-inline-label,
+.hc-pm-item--inline .hc-pm-inline-mark {
+  color: inherit;
 }
 .hc-sala-post-setup-banner {
   margin: 0 0 14px;
@@ -19108,7 +19117,10 @@ html.hc-theme-dark .hc-sala-post-setup-banner strong {
   color: #dcfce7;
 }
 .hc-pm-item--inline.hc-pm-item--done {
-  color: #86efac;
+  color: var(--green-dim);
+}
+html.hc-theme-dark .hc-pm-item--inline.hc-pm-item--done {
+  color: var(--green);
 }
 .hc-pm-inline-mark {
   display: inline-block;
@@ -19220,7 +19232,8 @@ html.hc-theme-dark .hc-sala-post-setup-banner strong {
   border: 1px solid rgba(34, 197, 94, 0.25);
   font-size: 12px;
 }
-.hc-pm-guia-checkbox-title { font-weight: 700; margin: 0 0 6px; color: #86efac; }
+.hc-pm-guia-checkbox-title { font-weight: 700; margin: 0 0 6px; color: var(--green-dim); }
+html.hc-theme-dark .hc-pm-guia-checkbox-title { color: var(--green); }
 .hc-pm-guia-checkbox ul { margin: 0; padding-left: 1.1rem; }
 .hc-pm-guia-cuidado {
   font-size: 12px;
@@ -19279,16 +19292,26 @@ html.hc-theme-dark .hc-sala-post-setup-banner strong {
   margin: 10px 0 12px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
+  border: 1px solid var(--border);
+  background: var(--green-pale);
+}
+html.hc-theme-dark .medir-pm-card {
+  border-color: rgba(148, 163, 184, 0.28);
   background: rgba(15, 23, 42, 0.35);
 }
 .medir-pm-card--ok {
   border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(22, 163, 74, 0.12);
+}
+html.hc-theme-dark .medir-pm-card--ok {
   background: rgba(22, 163, 74, 0.08);
 }
 .medir-pm-card--ok .medir-pm-card-kicker {
-  color: #86efac;
+  color: var(--green-dim);
   font-weight: 800;
+}
+html.hc-theme-dark .medir-pm-card--ok .medir-pm-card-kicker {
+  color: var(--green);
 }
 .medir-pm-card-inner {
   display: flex;
@@ -19309,9 +19332,12 @@ html.hc-theme-dark .hc-sala-post-setup-banner strong {
   display: block;
   font-size: 12px;
   line-height: 1.4;
-  color: #e2e8f0;
+  color: var(--white);
   margin-top: 2px;
 }
 .medir-pm-card--ok .medir-pm-card-status {
-  color: #86efac;
+  color: var(--green-dim);
+}
+html.hc-theme-dark .medir-pm-card--ok .medir-pm-card-status {
+  color: var(--green);
 }

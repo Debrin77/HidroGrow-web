@@ -1617,6 +1617,46 @@ html.hc-theme-dark #tab-sistema .medir-equip-foot {
   font-size: 11px;
 }
 
+/* Sala — checklist montaje: contraste legible (tema claro y oscuro) */
+.sistema-montaje-details {
+  border-color: rgba(180, 83, 9, 0.18);
+  box-shadow: var(--card-shadow-soft);
+}
+html.hc-theme-dark .sistema-montaje-details {
+  border-color: rgba(212, 160, 23, 0.16);
+}
+#tab-sala .sistema-montaje-details .config-section-collapse-head,
+#tab-sala .sistema-montaje-details .config-section-collapse-title,
+#tab-inicio .hc-montaje-inicio-details .config-section-collapse-title {
+  color: var(--green-dim);
+}
+#tab-sala .sistema-montaje-body .hc-pm-prog,
+#tab-inicio .hc-montaje-inicio-details .hc-pm-prog {
+  color: var(--green-dim);
+}
+html.hc-theme-dark #tab-sala .sistema-montaje-body .hc-pm-prog,
+html.hc-theme-dark #tab-inicio .hc-montaje-inicio-details .hc-pm-prog {
+  color: var(--green);
+}
+#tab-sala .sistema-montaje-body .hc-pm-inline-lead,
+#tab-sala .sistema-montaje-body .hc-pm-item--inline,
+#tab-inicio .hc-montaje-inicio-details .hc-pm-inline-lead,
+#tab-inicio .hc-montaje-inicio-details .hc-pm-item--inline {
+  color: var(--white);
+}
+#tab-sala .sistema-montaje-body .hc-pm-item--inline.hc-pm-item--done,
+#tab-inicio .hc-montaje-inicio-details .hc-pm-item--inline.hc-pm-item--done {
+  color: var(--green-dim);
+}
+html.hc-theme-dark #tab-sala .sistema-montaje-body .hc-pm-item--inline.hc-pm-item--done,
+html.hc-theme-dark #tab-inicio .hc-montaje-inicio-details .hc-pm-item--inline.hc-pm-item--done {
+  color: var(--green);
+}
+#tab-sala .sistema-montaje-resumen,
+#tab-inicio .hc-montaje-inicio-details .hc-plantas-instalacion-summary-sub {
+  color: var(--muted);
+}
+
 /* ── Scroll vertical: fluidez (evitar blur y animaciones durante desplazamiento) ── */
 .header,
 .tab-bar {
