@@ -17851,8 +17851,11 @@ button.toggle-switch:focus-visible {
   background: linear-gradient(180deg, #fafafa 0%, #fff 100%);
 }
 .setup-overlay .equip-catalog-group {
-  background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-  border-color: rgba(148,163,184,0.25);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  border-color: rgba(148,163,184,0.35);
+}
+.setup-overlay .equip-catalog-group-title {
+  color: #0f172a;
 }
 .equip-catalog-group-head {
   display: flex;

@@ -135,8 +135,11 @@
     return {};
   }
 
-  function renderEquipSelect(catId, selectId, onchangeName) {
-    const sel = el(selectId);
+  function renderEquipSelect(catId, selectIdOrEl, onchangeName) {
+    const sel =
+      selectIdOrEl && typeof selectIdOrEl === 'object' && selectIdOrEl.nodeType === 1
+        ? selectIdOrEl
+        : el(selectIdOrEl);
     if (!sel) return;
     const cfg = getWizardEquipCfg();
     const cur = (ensureEquipInstalado(cfg)[catId] || {}).id || '';
@@ -252,7 +255,7 @@
       card.appendChild(hintP);
     }
     host.appendChild(card);
-    renderEquipSelect(key, selId, 'seleccionarEquipamientoPremium');
+    renderEquipSelect(key, sel, 'seleccionarEquipamientoPremium');
   }
 
   function renderEquipCatalogInto(host, idPrefix) {
@@ -301,6 +304,14 @@
         host.appendChild(section);
       }
     });
+    if (!host.childNodes.length) {
+      const err = document.createElement('p');
+      err.className = 'setup-box-warn';
+      err.setAttribute('role', 'alert');
+      err.textContent =
+        'No se pudo mostrar el catálogo. Recarga con Ctrl+F5 o revisa la conexión.';
+      host.appendChild(err);
+    }
   }
 
   function renderEquipamientoPremiumUI() {
