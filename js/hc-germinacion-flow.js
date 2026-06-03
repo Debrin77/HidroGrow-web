@@ -733,7 +733,15 @@
       subtipo: 'diario',
     });
     if (typeof showToast === 'function') {
-      showToast('Registro del día guardado · día ' + diaN + ' · también en Historial', false);
+      var toastParts = ['Registro del día guardado · día ' + diaN];
+      if (typeof evalGerminacionMedicion === 'function') {
+        var vidR = String(g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '').trim();
+        if (Number.isFinite(t)) toastParts.push(evalGerminacionMedicion('temp', t, vidR, faseId).desfaseTxt);
+        if (Number.isFinite(h)) toastParts.push(evalGerminacionMedicion('hr', h, vidR, faseId).desfaseTxt);
+        if (Number.isFinite(nutEc)) toastParts.push(evalGerminacionMedicion('ec', nutEc, vidR, faseId).desfaseTxt);
+        if (Number.isFinite(nutPh)) toastParts.push(evalGerminacionMedicion('ph', nutPh, vidR, faseId).desfaseTxt);
+      }
+      showToast(toastParts.join(' · '), false);
     }
     refreshDashGerminacionHub();
     if (typeof updateDashboard === 'function') updateDashboard();
@@ -864,7 +872,14 @@
         source: 'germ-domo',
       }).catch(function () {});
     } else if (typeof showToast === 'function') {
-      showToast('Registro del domo guardado', false);
+      var toastDomo = ['Registro del domo guardado'];
+      if (typeof evalGerminacionMedicion === 'function') {
+        var vidD = String(g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '').trim();
+        var faseD = typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+        if (Number.isFinite(t)) toastDomo.push(evalGerminacionMedicion('temp', t, vidD, faseD).desfaseTxt);
+        if (Number.isFinite(h)) toastDomo.push(evalGerminacionMedicion('hr', h, vidD, faseD).desfaseTxt);
+      }
+      showToast(toastDomo.join(' · '), false);
     }
     refreshDashGerminacionHub();
     if (typeof updateDashboard === 'function') updateDashboard();
@@ -1097,6 +1112,44 @@
       );
     }
     var domo = g.ultimaDomo || {};
+    var vidGermHub = String(
+      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+    ).trim();
+    var faseGermHub =
+      typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : paso.id;
+    var rangosGermHub =
+      typeof getGerminacionRangosMonitoreo === 'function'
+        ? getGerminacionRangosMonitoreo(vidGermHub, faseGermHub)
+        : null;
+    var domoHintTxt =
+      modo === 'hidro_directo'
+        ? 'T° y HR del mini domo o sala'
+        : 'T° y HR del propagador (no del depósito)';
+    if (rangosGermHub) {
+      domoHintTxt +=
+        '. Objetivo según genética: <strong>' +
+        rangosGermHub.temp.min +
+        '–' +
+        rangosGermHub.temp.max +
+        ' °C</strong> · HR <strong>' +
+        rangosGermHub.hr.min +
+        '–' +
+        rangosGermHub.hr.max +
+        ' %</strong>';
+      if (faseGermHub !== 'semilla' && faseGermHub !== 'taproot') {
+        domoHintTxt +=
+          ' · EC ~<strong>' +
+          rangosGermHub.ecObjetivo +
+          ' µS</strong> · pH <strong>' +
+          rangosGermHub.phObjetivo +
+          '</strong>';
+      }
+      domoHintTxt += '. Al medir verás el desfase respecto a estos rangos.';
+    } else {
+      domoHintTxt += '. Ideal 22–26 °C · HR 70–80 %.';
+    }
+    var rangosPanelHtml =
+      typeof renderGerminacionRangosPanelHtml === 'function' ? renderGerminacionRangosPanelHtml(cfg) : '';
     var equipAviso = allDone ? '' : avisoEquipFase(paso.id, g, modo);
     var hintVar = allDone ? '' : hintVariedadFase(g.variedadId, paso.id);
     var tareaHoy = allDone ? '' : tareaDiaFase(paso.id, modo, g.variedadId);
@@ -1272,6 +1325,7 @@
       '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
       '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
       '<p class="setup-field-hint hc-germ-nut-hint">Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).</p>' +
+      '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
       '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
       (camGerm === 'semilla_propagador'
         ? '<div class="hc-germ-concluir-block">' +
@@ -1291,10 +1345,9 @@
       '<h4 class="hc-germ-block-lbl">' +
       (modo === 'hidro_directo' ? 'Monitor microclima / agua' : 'Monitor del domo') +
       '</h4>' +
+      rangosPanelHtml +
       '<p class="hc-germ-domo-hint">' +
-      (modo === 'hidro_directo'
-        ? 'T° y HR del mini domo o sala; T° agua del depósito en Medir. Ideal 22–26 °C ambiente · HR 70–80 %.'
-        : 'T° y HR del propagador (no del depósito). Ideal 22–26 °C · HR 70–80 %.') +
+      domoHintTxt +
       '</p>' +
       '<div class="hc-germ-domo-grid">' +
       '<label class="dash-quick-field"><span class="dash-quick-label">T° domo °C</span>' +
@@ -1341,6 +1394,8 @@
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
       else if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     } catch (_) {}
+    if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);
+    if (typeof hcRefreshGerminacionMedEvaluacion === 'function') hcRefreshGerminacionMedEvaluacion(cfg);
   }
 
   function renderRegistroReciente(g) {

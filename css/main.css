@@ -10332,6 +10332,65 @@ html.hc-theme-dark .hc-germ-equip-chip--on {
   font-size: 11px;
   color: var(--muted);
 }
+.hc-germ-rangos-panel {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+html.hc-theme-dark .hc-germ-rangos-panel {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.28);
+}
+.hc-germ-rangos-lead {
+  margin: 0 0 8px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.hc-germ-rangos-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+}
+.hc-germ-rangos-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+}
+.hc-germ-rangos-k { color: var(--muted); }
+.hc-germ-rangos-sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+.hc-germ-med-eval-host { margin: 8px 0 10px; }
+.hc-germ-med-eval { display: flex; flex-direction: column; gap: 8px; }
+.hc-germ-med-eval--empty {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.hc-germ-med-eval-row {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.4;
+}
+.hc-germ-med-eval-row--ok { border-color: rgba(34, 197, 94, 0.35); background: rgba(34, 197, 94, 0.06); }
+.hc-germ-med-eval-row--warn { border-color: rgba(234, 179, 8, 0.4); background: rgba(234, 179, 8, 0.08); }
+.hc-germ-med-eval-row--bad { border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.06); }
+.hc-germ-med-eval-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.hc-germ-med-eval-desfase { color: var(--text); font-weight: 500; }
+.hc-germ-med-eval-corr {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  color: var(--muted);
+}
+.hc-germ-med-eval-corr-k { font-weight: 600; color: var(--text); }
 .hc-germ-domo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -10926,12 +10985,14 @@ html.hc-theme-dark .hc-germ-genetics-card {
   font-size: 12px;
 }
 .hc-germ-genetics-meta,
-.hc-germ-genetics-times {
+.hc-germ-genetics-times,
+.hc-germ-genetics-rangos {
   margin-top: 4px;
   font-size: 11px;
   color: var(--muted);
   line-height: 1.4;
 }
+.hc-germ-genetics-rangos { color: var(--text); font-weight: 500; }
 .hc-germ-genetics-pick {
   margin: 0 0 12px;
   width: 100%;

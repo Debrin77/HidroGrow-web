@@ -311,12 +311,22 @@ function refreshDashTilesGerminacion(cfg) {
           ? 'ok'
           : 'empty';
     const stMap = DASH_TILE_GERM_STATUS[def.key] || DASH_TILE_GERM_STATUS.temp;
+    let statusTxt = stMap[tipo] || stMap.empty;
+    if (typeof evalGerminacionMedicion === 'function' && Number.isFinite(val)) {
+      const ev = evalGerminacionMedicion(def.key, val, plan.variedadId, plan.faseId);
+      if (ev && ev.desfaseTxt && ev.nivel !== 'empty') {
+        statusTxt =
+          ev.nivel === 'ok' && ev.desfaseTxt.indexOf('En rango') === 0
+            ? ev.desfaseTxt
+            : ev.desfaseTxt;
+      }
+    }
 
     tile.className = 'param-tile ' + tipo;
     valEl.className = 'tile-value ' + tipo;
     valEl.textContent = formatMedicionTileValor(def.key, val);
     statusEl.className = 'tile-status ' + tipo;
-    statusEl.textContent = stMap[tipo] || stMap.empty;
+    statusEl.textContent = statusTxt;
     const valTxt = valEl.textContent || '—';
     const stTxt = statusEl.textContent || 'Sin datos';
     tile.setAttribute(

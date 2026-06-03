@@ -461,7 +461,24 @@ function renderGerminacionGeneticsCardHtml(ref) {
     ' d</strong> · EC inicial ~<strong>' +
     spec.ecInicialUs +
     ' µS</strong>' +
-    '</div></div></div>'
+    '</div>' +
+    (function () {
+      const r = getGerminacionRangosMonitoreo(ref, 'domo');
+      return (
+        '<div class="hc-germ-genetics-rangos">T° ' +
+        r.temp.min +
+        '–' +
+        r.temp.max +
+        ' °C · HR ' +
+        r.hr.min +
+        '–' +
+        r.hr.max +
+        '% · pH ~' +
+        r.phObjetivo +
+        '</div>'
+      );
+    })() +
+    '</div></div>'
   );
 }
 
@@ -646,6 +663,7 @@ function getGerminacionDashTilesPlan(cfg) {
   return {
     tiles,
     faseId,
+    variedadId: vid,
     faseLabel: faseMeta ? faseMeta.tituloCorto : faseId,
     spec: r.spec,
     ecObjetivo: r.ecObjetivo,
@@ -715,10 +733,265 @@ function getDashTileClassGerm(key, val, rango) {
   return 'bad';
 }
 
+function germRangoLabel(key, r) {
+  if (!r) return '—';
+  if (key === 'temp') return r.temp.min + '–' + r.temp.max + ' °C';
+  if (key === 'hr') return r.hr.min + '–' + r.hr.max + ' %';
+  if (key === 'ec') return r.ec.min + '–' + r.ec.max + ' µS (obj. ~' + r.ecObjetivo + ')';
+  if (key === 'ph') return r.phObjetivo + ' (' + r.ph.min + '–' + r.ph.max + ')';
+  if (key === 'vpd') return r.vpd.min + '–' + r.vpd.max + ' kPa';
+  return '—';
+}
+
+const GERMIN_CORRECCION = {
+  temp: {
+    low: 'Sube T°: mat térmica, domo más cerrado o acerca calor suave (no LED de floración).',
+    high: 'Baja T°: ventila el domo 3–5 min, aleja corrientes frías o baja extracción cerca.',
+    ok: 'T° en banda orientativa para esta genética.',
+  },
+  hr: {
+    low: 'Sube HR: domo hermético, bandeja con agua, humidificador pequeño cerca.',
+    high: 'Baja HR: ventila 2×/día; evita secar el sustrato.',
+    ok: 'HR en rango bajo domo.',
+  },
+  ec: {
+    low: 'EC baja: añade poco nutriente/enraizador; en germinación suele ir bajo.',
+    high: 'EC alta: diluye el agua del propagador; riesgo de quemar radícula.',
+    ok: 'EC en banda orientativa de la cepa.',
+  },
+  ph: {
+    low: 'pH bajo: alcaliniza suavemente el agua del cubo (objetivo ~5,5).',
+    high: 'pH alto: baja con ácido pH diluido sobre el cubo.',
+    ok: 'pH del cubo en rango.',
+  },
+  vpd: {
+    low: 'VPD bajo: sube T° o baja HR un poco (más humedad).',
+    high: 'VPD alto: baja T° o sube HR (domo más húmedo).',
+    ok: 'VPD coherente con T° y HR.',
+  },
+};
+
+/**
+ * Evalúa una lectura de germinación vs rangos de la variedad: nivel, desfase y corrección.
+ */
+function evalGerminacionMedicion(key, val, variedadId, faseId) {
+  const r = getGerminacionRangosMonitoreo(variedadId, faseId);
+  const rango = r[key];
+  const n = typeof val === 'number' ? val : parseFloat(val);
+  const rangoLabel = germRangoLabel(key, r);
+  if (!Number.isFinite(n) || !rango) {
+    return {
+      key: key,
+      nivel: 'empty',
+      valor: null,
+      desfase: null,
+      desfaseTxt: 'Sin lectura',
+      correccion: '',
+      rangoLabel: rangoLabel,
+      rango: rango,
+    };
+  }
+  const nivel = getDashTileClassGerm(key, n, rango);
+  const unit =
+    key === 'temp' ? ' °C' : key === 'hr' ? ' %' : key === 'ec' ? ' µS' : key === 'vpd' ? ' kPa' : '';
+  let desfase = 0;
+  let desfaseTxt = '';
+  if (n >= rango.min && n <= rango.max) {
+    const center = Math.round(((rango.min + rango.max) / 2) * 10) / 10;
+    desfase = Math.round((n - center) * 10) / 10;
+    desfaseTxt =
+      Math.abs(desfase) < 0.05
+        ? 'En rango · ' + rangoLabel
+        : (desfase > 0 ? '+' + desfase + unit + ' vs centro del rango' : desfase + unit + ' vs centro del rango');
+  } else if (n < rango.min) {
+    desfase = Math.round((n - rango.min) * 10) / 10;
+    desfaseTxt = desfase + unit + ' bajo objetivo (' + rangoLabel + ')';
+  } else {
+    desfase = Math.round((n - rango.max) * 10) / 10;
+    desfaseTxt = '+' + desfase + unit + ' sobre objetivo (' + rangoLabel + ')';
+  }
+  const corr = GERMIN_CORRECCION[key] || {};
+  const correccion =
+    nivel === 'ok' ? corr.ok || '' : n < rango.min ? corr.low || '' : corr.high || '';
+  return {
+    key: key,
+    nivel: nivel,
+    valor: n,
+    desfase: desfase,
+    desfaseTxt: desfaseTxt,
+    correccion: correccion,
+    rangoLabel: rangoLabel,
+    rango: rango,
+  };
+}
+
+function renderGerminacionRangosPanelHtml(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  const vid = String(
+    g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+  ).trim();
+  const faseId =
+    typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+  const r = getGerminacionRangosMonitoreo(vid, faseId);
+  const spec = r.spec || {};
+  const esc =
+    typeof meteoEscHtml === 'function'
+      ? meteoEscHtml
+      : function (s) {
+          return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        };
+  const faseNut = faseId === 'semilla' || faseId === 'taproot';
+  const items =
+    '<li><span class="hc-germ-rangos-k">T° domo</span><strong>' +
+    r.temp.min +
+    '–' +
+    r.temp.max +
+    ' °C</strong></li>' +
+    '<li><span class="hc-germ-rangos-k">HR domo</span><strong>' +
+    r.hr.min +
+    '–' +
+    r.hr.max +
+    ' %</strong></li>' +
+    (faseNut
+      ? ''
+      : '<li><span class="hc-germ-rangos-k">EC agua</span><strong>' +
+        r.ec.min +
+        '–' +
+        r.ec.max +
+        ' µS</strong> <span class="hc-germ-rangos-sub">(centro ~' +
+        r.ecObjetivo +
+        ')</span></li>' +
+        '<li><span class="hc-germ-rangos-k">pH cubo</span><strong>' +
+        r.phObjetivo +
+        '</strong> <span class="hc-germ-rangos-sub">(' +
+        r.ph.min +
+        '–' +
+        r.ph.max +
+        ')</span></li>');
+  return (
+    '<div class="hc-germ-rangos-panel" role="region" aria-label="Rangos de medición según genética">' +
+    '<p class="hc-germ-rangos-lead">Objetivos para <strong>' +
+    esc(spec.nombreGenetica || 'tu variedad') +
+    '</strong> (' +
+    esc(spec.grupoLabel || 'perfil') +
+    ') · fase <strong>' +
+    esc(faseId) +
+    '</strong>. Al medir verás el <strong>desfase</strong> respecto a estos rangos.</p>' +
+    '<ul class="hc-germ-rangos-list">' +
+    items +
+    '</ul></div>'
+  );
+}
+
+function renderGerminacionMedEvalBlockHtml(cfg, lecturas) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  const vid = String(
+    g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+  ).trim();
+  const faseId =
+    typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+  const esc =
+    typeof meteoEscHtml === 'function'
+      ? meteoEscHtml
+      : function (s) {
+          return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        };
+  lecturas = lecturas || {};
+  const keys = [];
+  if (Number.isFinite(lecturas.temp)) keys.push({ key: 'temp', val: lecturas.temp, lbl: 'T° domo' });
+  if (Number.isFinite(lecturas.hr)) keys.push({ key: 'hr', val: lecturas.hr, lbl: 'HR' });
+  if (Number.isFinite(lecturas.vpd)) keys.push({ key: 'vpd', val: lecturas.vpd, lbl: 'VPD' });
+  if (Number.isFinite(lecturas.ec)) keys.push({ key: 'ec', val: lecturas.ec, lbl: 'EC' });
+  if (Number.isFinite(lecturas.ph)) keys.push({ key: 'ph', val: lecturas.ph, lbl: 'pH' });
+  if (!keys.length) {
+    return '<p class="hc-germ-med-eval hc-germ-med-eval--empty">Introduce T° y HR (y EC/pH si aplica) para ver desfase y corrección según tu genética.</p>';
+  }
+  const rows = keys
+    .map(function (item) {
+      const ev = evalGerminacionMedicion(item.key, item.val, vid, faseId);
+      const cls = 'hc-germ-med-eval-row hc-germ-med-eval-row--' + ev.nivel;
+      return (
+        '<div class="' +
+        cls +
+        '">' +
+        '<div class="hc-germ-med-eval-head"><strong>' +
+        esc(item.lbl) +
+        '</strong> <span class="hc-germ-med-eval-val">' +
+        esc(String(item.val)) +
+        '</span></div>' +
+        '<div class="hc-germ-med-eval-desfase">' +
+        esc(ev.desfaseTxt) +
+        '</div>' +
+        (ev.correccion
+          ? '<div class="hc-germ-med-eval-corr"><span class="hc-germ-med-eval-corr-k">Corrección</span> ' +
+            esc(ev.correccion) +
+            '</div>'
+          : '') +
+        '</div>'
+      );
+    })
+    .join('');
+  return '<div class="hc-germ-med-eval" role="status" aria-live="polite">' + rows + '</div>';
+}
+
+function collectGerminacionLecturasDesdeInputs() {
+  const t = parseFloat(String(document.getElementById('hcGermDomoTemp')?.value || '').replace(',', '.'));
+  const h = parseFloat(String(document.getElementById('hcGermDomoHr')?.value || '').replace(',', '.'));
+  const ec = parseFloat(String(document.getElementById('hcGermNutEc')?.value || '').replace(',', '.'));
+  const ph = parseFloat(String(document.getElementById('hcGermNutPh')?.value || '').replace(',', '.'));
+  let vpd = NaN;
+  if (typeof calcVPDkPa === 'function' && Number.isFinite(t) && Number.isFinite(h)) {
+    vpd = calcVPDkPa(t, h);
+  }
+  return {
+    temp: Number.isFinite(t) ? t : null,
+    hr: Number.isFinite(h) ? h : null,
+    vpd: Number.isFinite(vpd) ? vpd : null,
+    ec: Number.isFinite(ec) ? ec : null,
+    ph: Number.isFinite(ph) ? ph : null,
+  };
+}
+
+function hcRefreshGerminacionMedEvaluacion(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const host = document.getElementById('hcGermMedEvalHost');
+  if (!host || typeof renderGerminacionMedEvalBlockHtml !== 'function') return;
+  host.innerHTML = renderGerminacionMedEvalBlockHtml(cfg, collectGerminacionLecturasDesdeInputs());
+}
+
+var _hcGermMedEvalTimer = null;
+function hcRefreshGerminacionMedEvaluacionDebounced(cfg) {
+  if (_hcGermMedEvalTimer) clearTimeout(_hcGermMedEvalTimer);
+  _hcGermMedEvalTimer = setTimeout(function () {
+    hcRefreshGerminacionMedEvaluacion(cfg);
+    if (typeof updateDashboard === 'function') updateDashboard();
+  }, 280);
+}
+
+function hcBindGerminacionMedInputs(cfg) {
+  ['hcGermDomoTemp', 'hcGermDomoHr', 'hcGermNutEc', 'hcGermNutPh'].forEach(function (id) {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.hcGermEvalBound === '1') return;
+    el.dataset.hcGermEvalBound = '1';
+    el.addEventListener('input', function () {
+      hcRefreshGerminacionMedEvaluacionDebounced(cfg);
+    });
+  });
+}
+
 window.getGerminacionRangosMonitoreo = getGerminacionRangosMonitoreo;
 window.getGerminacionDashTilesPlan = getGerminacionDashTilesPlan;
 window.getGerminacionLecturasParaDash = getGerminacionLecturasParaDash;
 window.getDashTileClassGerm = getDashTileClassGerm;
+window.evalGerminacionMedicion = evalGerminacionMedicion;
+window.renderGerminacionRangosPanelHtml = renderGerminacionRangosPanelHtml;
+window.renderGerminacionMedEvalBlockHtml = renderGerminacionMedEvalBlockHtml;
+window.hcRefreshGerminacionMedEvaluacion = hcRefreshGerminacionMedEvaluacion;
+window.hcBindGerminacionMedInputs = hcBindGerminacionMedInputs;
 window.getGerminacionSpecPorVariedad = getGerminacionSpecPorVariedad;
 window.getGerminacionDiasHitos = getGerminacionDiasHitos;
 window.getGerminacionFasesCalendario = getGerminacionFasesCalendario;
