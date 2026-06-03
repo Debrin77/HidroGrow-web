@@ -312,9 +312,18 @@
     }
     var planBlock =
       typeof renderPlanGermModalBlock === 'function' ? renderPlanGermModalBlock(cfg) : '';
+    var sustratoAgua =
+      !esRutaEsqueje(cfg) && typeof renderSustratoGermAguaEcBlockHtml === 'function'
+        ? renderSustratoGermAguaEcBlockHtml(
+            typeof resolveSustratoGermFromCfg === 'function' ? resolveSustratoGermFromCfg(cfg) : 'lana',
+            typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla',
+            { compact: false }
+          )
+        : '';
     return (
       '<div class="hc-pm-shell hc-pm-shell--prop">' +
       planBlock +
+      sustratoAgua +
       '<div class="hc-prop-hero">' +
       '<span class="hc-prop-hero-ico" aria-hidden="true">' +
       (esRutaGermHidro(cfg) ? '💧' : esRutaEsqueje(cfg) ? '🌿' : '🫧') +

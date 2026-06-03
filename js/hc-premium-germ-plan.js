@@ -4,11 +4,33 @@
 (function (global) {
   'use strict';
 
+  function hintSustratoGerm(id) {
+    if (typeof getSustratoGermAguaEc !== 'function') {
+      var fb = {
+        lana: 'Remojo pH 5,5 · bandeja 2–5 mm · EC propagador 0–500 µS.',
+        esponja: 'Pellet tibio pH 5,8 · sin charco · EC 0–400 µS.',
+        papel: 'Papel húmedo sin EC · traslado a cubo con radícula.',
+        coco: 'Plug pH 5,6 · EC remojo 400–600 µS · bandeja ligera.',
+      };
+      return fb[id] || '';
+    }
+    var s = getSustratoGermAguaEc(id);
+    var rm = s.remojo || {};
+    var bd = s.bandeja || {};
+    var pr = s.propagador || {};
+    var bits = [];
+    if (rm.phRango) bits.push('pH ' + rm.phRango);
+    if (rm.ecUs) bits.push('EC ' + rm.ecUs);
+    if (bd.agua) bits.push(bd.agua);
+    if (Array.isArray(pr.ecUs)) bits.push('domo ' + pr.ecUs[0] + '–' + pr.ecUs[1] + ' µS');
+    return bits.join(' · ');
+  }
+
   var SUSTRATO_GERM_OPTS = [
-    { id: 'lana', label: 'Lana de roca 4×4', hint: 'Estándar hidro · bandeja 77 alvéolos típica.' },
-    { id: 'esponja', label: 'Jiffy / esponja', hint: 'Pellets 24–84 celdas según bandeja.' },
-    { id: 'papel', label: 'Papel de germinación', hint: 'Semilla entre servilletas húmedas; traslado a cubo al ver radícula.' },
-    { id: 'coco', label: 'Coco / plug', hint: 'Plugs de coco en bandeja bajo domo.' },
+    { id: 'lana', label: 'Lana de roca 4×4', hint: hintSustratoGerm('lana') },
+    { id: 'esponja', label: 'Jiffy / esponja', hint: hintSustratoGerm('esponja') },
+    { id: 'papel', label: 'Papel de germinación', hint: hintSustratoGerm('papel') },
+    { id: 'coco', label: 'Coco / plug', hint: hintSustratoGerm('coco') },
   ];
 
   var BANDEJA_OPTS = [
@@ -141,12 +163,20 @@
         o.id +
         '" onclick="seleccionarPremiumSustratoGerm(\'' +
         o.id +
-        '\')">' +
+        '\')" title="' +
+        String(o.hint || '').replace(/"/g, '&quot;') +
+        '">' +
         '<div class="setup-option-title-md">' +
         o.label +
-        '</div></button>'
+        '</div>' +
+        (o.hint ? '<div class="setup-field-hint setup-mt-4">' + o.hint + '</div>' : '') +
+        '</button>'
       );
     }).join('');
+    var sustratoAguaHtml =
+      typeof renderSustratoGermAguaEcBlockHtml === 'function'
+        ? renderSustratoGermAguaEcBlockHtml(p.sustratoGerm || 'lana', 'semilla', { compact: false })
+        : '';
     var bandOpts = BANDEJA_OPTS.map(function (o) {
       return (
         '<option value="' +
@@ -173,6 +203,9 @@
       '<label class="setup-field-label setup-mb-4">Sustrato</label>' +
       '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-4 hc-germ-ahora-sustrato">' +
       sustratoBtns +
+      '</div>' +
+      '<div id="setupPremiumGermSustratoAguaHost" class="setup-mb-8">' +
+      sustratoAguaHtml +
       '</div>' +
       '<p id="setupPremiumGermPlanReq" class="setup-field-hint setup-hidden" role="note"></p>';
     refreshPremiumGermPlanReq();

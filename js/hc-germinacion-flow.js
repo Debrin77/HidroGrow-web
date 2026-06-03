@@ -736,10 +736,10 @@
       var toastParts = ['Registro del día guardado · día ' + diaN];
       if (typeof evalGerminacionMedicion === 'function') {
         var vidR = String(g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '').trim();
-        if (Number.isFinite(t)) toastParts.push(evalGerminacionMedicion('temp', t, vidR, faseId).desfaseTxt);
-        if (Number.isFinite(h)) toastParts.push(evalGerminacionMedicion('hr', h, vidR, faseId).desfaseTxt);
-        if (Number.isFinite(nutEc)) toastParts.push(evalGerminacionMedicion('ec', nutEc, vidR, faseId).desfaseTxt);
-        if (Number.isFinite(nutPh)) toastParts.push(evalGerminacionMedicion('ph', nutPh, vidR, faseId).desfaseTxt);
+        if (Number.isFinite(t)) toastParts.push(evalGerminacionMedicion('temp', t, vidR, faseId, cfg).desfaseTxt);
+        if (Number.isFinite(h)) toastParts.push(evalGerminacionMedicion('hr', h, vidR, faseId, cfg).desfaseTxt);
+        if (Number.isFinite(nutEc)) toastParts.push(evalGerminacionMedicion('ec', nutEc, vidR, faseId, cfg).desfaseTxt);
+        if (Number.isFinite(nutPh)) toastParts.push(evalGerminacionMedicion('ph', nutPh, vidR, faseId, cfg).desfaseTxt);
       }
       showToast(toastParts.join(' · '), false);
     }
@@ -876,8 +876,8 @@
       if (typeof evalGerminacionMedicion === 'function') {
         var vidD = String(g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '').trim();
         var faseD = typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
-        if (Number.isFinite(t)) toastDomo.push(evalGerminacionMedicion('temp', t, vidD, faseD).desfaseTxt);
-        if (Number.isFinite(h)) toastDomo.push(evalGerminacionMedicion('hr', h, vidD, faseD).desfaseTxt);
+        if (Number.isFinite(t)) toastDomo.push(evalGerminacionMedicion('temp', t, vidD, faseD, cfg).desfaseTxt);
+        if (Number.isFinite(h)) toastDomo.push(evalGerminacionMedicion('hr', h, vidD, faseD, cfg).desfaseTxt);
       }
       showToast(toastDomo.join(' · '), false);
     }
@@ -1119,7 +1119,7 @@
       typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : paso.id;
     var rangosGermHub =
       typeof getGerminacionRangosMonitoreo === 'function'
-        ? getGerminacionRangosMonitoreo(vidGermHub, faseGermHub)
+        ? getGerminacionRangosMonitoreo(vidGermHub, faseGermHub, cfg)
         : null;
     var domoHintTxt =
       modo === 'hidro_directo'
@@ -1136,13 +1136,21 @@
         '–' +
         rangosGermHub.hr.max +
         ' %</strong>';
-      if (faseGermHub !== 'semilla' && faseGermHub !== 'taproot') {
+      if (
+        faseGermHub !== 'semilla' &&
+        faseGermHub !== 'taproot' &&
+        rangosGermHub.ecAplica &&
+        rangosGermHub.ec &&
+        Number.isFinite(rangosGermHub.ecObjetivo)
+      ) {
         domoHintTxt +=
           ' · EC ~<strong>' +
           rangosGermHub.ecObjetivo +
           ' µS</strong> · pH <strong>' +
           rangosGermHub.phObjetivo +
           '</strong>';
+      } else if (rangosGermHub.sustrato && rangosGermHub.sustrato.id === 'papel') {
+        domoHintTxt += ' · En papel prioriza humedad; mide pH/EC al pasar a cubo.';
       }
       domoHintTxt += '. Al medir verás el desfase respecto a estos rangos.';
     } else {

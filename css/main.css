@@ -10365,6 +10365,46 @@ html.hc-theme-dark .hc-germ-rangos-panel {
 }
 .hc-germ-rangos-k { color: var(--muted); }
 .hc-germ-rangos-sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+
+.hc-germ-sustrato-agua {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+.hc-germ-sustrato-agua--compact {
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+html.hc-theme-dark .hc-germ-sustrato-agua {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+.hc-germ-sustrato-agua-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.hc-germ-sustrato-agua-dl {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.hc-germ-sustrato-agua-dl dt {
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.hc-germ-sustrato-agua-dl dt:first-child { margin-top: 0; }
+.hc-germ-sustrato-agua-dl dd { margin: 2px 0 0; }
+.hc-germ-sustrato-meta {
+  display: inline-block;
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 10px;
+}
 .hc-germ-med-eval-host { margin: 8px 0 10px; }
 .hc-germ-med-eval { display: flex; flex-direction: column; gap: 8px; }
 .hc-germ-med-eval--empty {

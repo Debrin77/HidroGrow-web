@@ -313,7 +313,7 @@ function refreshDashTilesGerminacion(cfg) {
     const stMap = DASH_TILE_GERM_STATUS[def.key] || DASH_TILE_GERM_STATUS.temp;
     let statusTxt = stMap[tipo] || stMap.empty;
     if (typeof evalGerminacionMedicion === 'function' && Number.isFinite(val)) {
-      const ev = evalGerminacionMedicion(def.key, val, plan.variedadId, plan.faseId);
+      const ev = evalGerminacionMedicion(def.key, val, plan.variedadId, plan.faseId, cfg);
       if (ev && ev.desfaseTxt && ev.nivel !== 'empty') {
         statusTxt =
           ev.nivel === 'ok' && ev.desfaseTxt.indexOf('En rango') === 0

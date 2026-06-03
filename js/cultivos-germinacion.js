@@ -80,6 +80,136 @@ function ecInicialGerminacionUs(cultivo) {
   return Math.max(350, Math.min(650, Math.round(ecMin * 0.35)));
 }
 
+/** Agua, remojo y EC/pH en propagador según sustrato (orientativo, no por modelo de domo). */
+const SUSTRATO_GERM_AGUA_EC = {
+  lana: {
+    id: 'lana',
+    label: 'Lana de roca 4×4',
+    remojo: {
+      phObjetivo: 5.5,
+      phRango: '5.3–5.7',
+      ecUs: '0–300 µS',
+      aguaMlCubo: '50–80 ml/cubo',
+      tiempo: '15–60 min',
+      detalle: 'Remoja en agua pH 5,5 (ósmosis/destilada). Escurre sin exprimir; inserta la semilla en el hueco central.',
+    },
+    bandeja: {
+      agua: '2–5 mm en el fondo',
+      detalle: 'Bandeja con agua pH 5,5 bajo cubos. Recambia si se enturbia o huele.',
+    },
+    propagador: {
+      ecUs: [0, 500],
+      phRango: [5.3, 5.8],
+      phObjetivo: 5.5,
+      medir: 'EC del agua de bandeja o del cubo (no del depósito DWC).',
+    },
+  },
+  esponja: {
+    id: 'esponja',
+    label: 'Jiffy / esponja',
+    remojo: {
+      phObjetivo: 5.8,
+      phRango: '5.5–6.2',
+      ecUs: '0–200 µS',
+      aguaMlCubo: 'Agua tibia hasta expandir',
+      tiempo: '5–15 min',
+      detalle: 'Hidrata el pellet con agua tibia pH 5,8. No compactes; deja drenar el exceso antes de sembrar.',
+    },
+    bandeja: {
+      agua: 'Pellets húmedos, sin charco',
+      detalle: 'Riego ligero por arriba o niebla; el pellet no debe nadar en agua.',
+    },
+    propagador: {
+      ecUs: [0, 400],
+      phRango: [5.5, 6.2],
+      phObjetivo: 5.8,
+      medir: 'EC muy baja en germinación; sube solo si añades enraizante diluido.',
+    },
+  },
+  papel: {
+    id: 'papel',
+    label: 'Papel de germinación',
+    remojo: {
+      phObjetivo: null,
+      phRango: '— (no mides EC en papel)',
+      ecUs: 'Sin EC',
+      aguaMlCubo: 'Atomizar o goteo',
+      tiempo: '24–72 h en oscuridad',
+      detalle: 'Servilletas húmedas sin charco entre platos o en domo. Traslada a cubo lana pH 5,5 al ver radícula 5–10 mm.',
+    },
+    bandeja: {
+      agua: 'Humedad superficial',
+      detalle: 'Mantén papel húmedo, no empapado. Ventila el domo 2×/día.',
+    },
+    propagador: {
+      ecUs: null,
+      phRango: null,
+      phObjetivo: null,
+      medir: 'En fase papel prioriza T° y HR; mide pH/EC al pasar a cubo o coco.',
+      ecAplicaFases: ['rockwool', 'domo', 'netpot', 'dwc'],
+    },
+  },
+  coco: {
+    id: 'coco',
+    label: 'Coco / plug',
+    remojo: {
+      phObjetivo: 5.6,
+      phRango: '5.4–5.8',
+      ecUs: '400–600 µS',
+      aguaMlCubo: 'Saturar plug',
+      tiempo: '10–30 min',
+      detalle: 'Remoja plugs en agua pH 5,6 con EC baja de coco enjuagado. Escurre hasta gotear poco.',
+    },
+    bandeja: {
+      agua: '3–8 mm o riego superior ligero',
+      detalle: 'Coco retiene más agua: menos charco que lana, pero no secar del todo.',
+    },
+    propagador: {
+      ecUs: [300, 700],
+      phRango: [5.4, 5.9],
+      phObjetivo: 5.6,
+      medir: 'EC del runoff del plug o agua de bandeja; coco bufferizado sube EC con facilidad.',
+    },
+  },
+};
+
+function getSustratoGermAguaEc(sustratoId) {
+  const id = String(sustratoId || 'lana').trim();
+  return SUSTRATO_GERM_AGUA_EC[id] || SUSTRATO_GERM_AGUA_EC.lana;
+}
+
+function resolveSustratoGermFromCfg(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  return (
+    g.sustratoGerm ||
+    cfg.sustratoGerm ||
+    (cfg.premiumSetup && cfg.premiumSetup.sustratoGerm) ||
+    'lana'
+  );
+}
+
+function ecObjetivoGerminacionSustrato(spec, sub) {
+  const ecGen = spec.ecInicialUs || 500;
+  const p = sub && sub.propagador;
+  if (!p || !Array.isArray(p.ecUs)) return ecGen;
+  const subMax = p.ecUs[1];
+  const subCenter = Math.round((p.ecUs[0] + p.ecUs[1]) / 2);
+  return Math.min(ecGen, subCenter, subMax);
+}
+
+function propagadorEcAplicaSustrato(sub, faseId) {
+  const p = sub && sub.propagador;
+  if (!p) return true;
+  if (p.ecUs == null) return false;
+  const fases = p.ecAplicaFases;
+  if (Array.isArray(fases) && fases.length) {
+    return fases.indexOf(faseId || 'semilla') >= 0;
+  }
+  return true;
+}
+
 function etiquetaGrupoCannabisGerm(grupo) {
   const g = String(grupo || '').toLowerCase();
   const map = {
@@ -593,10 +723,22 @@ function hcGerminacionPanelHtmlCompleto(nombreVariedad) {
     : inner;
 }
 
-function getGerminacionRangosMonitoreo(variedadId, faseId) {
+function getGerminacionRangosMonitoreo(variedadId, faseId, cfgOrSustrato) {
+  let sustratoId;
+  let cfg;
+  if (typeof cfgOrSustrato === 'string') sustratoId = cfgOrSustrato;
+  else if (cfgOrSustrato && typeof cfgOrSustrato === 'object') {
+    if (cfgOrSustrato.sustratoId) sustratoId = cfgOrSustrato.sustratoId;
+    else cfg = cfgOrSustrato;
+  }
+  if (!sustratoId && cfg) sustratoId = resolveSustratoGermFromCfg(cfg);
+  const fid = faseId || 'semilla';
   const spec = getGerminacionSpecPorVariedad(variedadId);
-  const ecT = spec.ecInicialUs || 500;
-  const phT = parseFloat(spec.phCubo) || 5.5;
+  const sub = getSustratoGermAguaEc(sustratoId || 'lana');
+  const ecAplica = propagadorEcAplicaSustrato(sub, fid);
+  const ecT = ecAplica ? ecObjetivoGerminacionSustrato(spec, sub) : null;
+  const phProp = sub.propagador && sub.propagador.phObjetivo;
+  const phT = Number.isFinite(phProp) ? phProp : parseFloat(spec.phCubo) || 5.5;
   const grupo = spec.grupo || 'hibrida';
   let temp = { min: 22, max: 26, warnLow: 20, warnHigh: 28 };
   if (grupo === 'sativa') temp = { min: 22, max: 27, warnLow: 20, warnHigh: 29 };
@@ -609,14 +751,33 @@ function getGerminacionRangosMonitoreo(variedadId, faseId) {
     warnLow: phT - 0.35,
     warnHigh: phT + 0.45,
   };
-  const ec = {
-    min: ecT - 80,
-    max: ecT + 80,
-    warnLow: ecT - 180,
-    warnHigh: ecT + 200,
-  };
+  let ec = null;
+  if (ecAplica && Number.isFinite(ecT)) {
+    const pEc = sub.propagador.ecUs;
+    const bandMin = Math.max(0, (pEc && pEc[0]) != null ? pEc[0] : ecT - 80);
+    const bandMax = Math.min(ecT + 120, (pEc && pEc[1]) != null ? pEc[1] : ecT + 80);
+    ec = {
+      min: Math.max(0, Math.min(bandMin, ecT - 40)),
+      max: Math.max(ecT + 40, bandMax),
+      warnLow: Math.max(0, bandMin - 120),
+      warnHigh: bandMax + 150,
+    };
+  }
   const vpd = { min: 0.45, max: 1.15, warnLow: 0.3, warnHigh: 1.45 };
-  return { spec, ecObjetivo: ecT, phObjetivo: phT, temp, hr, ph, ec, vpd, faseId: faseId || 'semilla' };
+  return {
+    spec,
+    sustrato: sub,
+    sustratoId: sub.id,
+    ecAplica,
+    ecObjetivo: ecT,
+    phObjetivo: phT,
+    temp,
+    hr,
+    ph,
+    ec,
+    vpd,
+    faseId: fid,
+  };
 }
 
 /** Cuadros indispensables en Inicio según fase del camino y genética. */
@@ -631,7 +792,7 @@ function getGerminacionDashTilesPlan(cfg) {
   const vid = String(
     g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
   ).trim();
-  const r = getGerminacionRangosMonitoreo(vid, faseId);
+  const r = getGerminacionRangosMonitoreo(vid, faseId, cfg);
   const tiles = [];
 
   function add(slot, key, label, unit, iconId) {
@@ -737,8 +898,14 @@ function germRangoLabel(key, r) {
   if (!r) return '—';
   if (key === 'temp') return r.temp.min + '–' + r.temp.max + ' °C';
   if (key === 'hr') return r.hr.min + '–' + r.hr.max + ' %';
-  if (key === 'ec') return r.ec.min + '–' + r.ec.max + ' µS (obj. ~' + r.ecObjetivo + ')';
-  if (key === 'ph') return r.phObjetivo + ' (' + r.ph.min + '–' + r.ph.max + ')';
+  if (key === 'ec') {
+    if (!r.ec || !r.ecAplica) return 'No aplica (sustrato/fase)';
+    return r.ec.min + '–' + r.ec.max + ' µS (obj. ~' + r.ecObjetivo + ')';
+  }
+  if (key === 'ph') {
+    if (!r.ph) return '—';
+    return r.phObjetivo + ' (' + r.ph.min + '–' + r.ph.max + ')';
+  }
   if (key === 'vpd') return r.vpd.min + '–' + r.vpd.max + ' kPa';
   return '—';
 }
@@ -774,8 +941,8 @@ const GERMIN_CORRECCION = {
 /**
  * Evalúa una lectura de germinación vs rangos de la variedad: nivel, desfase y corrección.
  */
-function evalGerminacionMedicion(key, val, variedadId, faseId) {
-  const r = getGerminacionRangosMonitoreo(variedadId, faseId);
+function evalGerminacionMedicion(key, val, variedadId, faseId, cfgOrSustrato) {
+  const r = getGerminacionRangosMonitoreo(variedadId, faseId, cfgOrSustrato);
   const rango = r[key];
   const n = typeof val === 'number' ? val : parseFloat(val);
   const rangoLabel = germRangoLabel(key, r);
@@ -835,8 +1002,9 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
   ).trim();
   const faseId =
     typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
-  const r = getGerminacionRangosMonitoreo(vid, faseId);
+  const r = getGerminacionRangosMonitoreo(vid, faseId, cfg);
   const spec = r.spec || {};
+  const sub = r.sustrato || getSustratoGermAguaEc(r.sustratoId);
   const esc =
     typeof meteoEscHtml === 'function'
       ? meteoEscHtml
@@ -844,8 +1012,11 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
           return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
         };
   const faseNut = faseId === 'semilla' || faseId === 'taproot';
-  const showEc = !!opts.forMedir || !faseNut;
-  const showPh = opts.forMedir ? faseId !== 'semilla' : !faseNut;
+  const showEc = r.ecAplica && (!!opts.forMedir || !faseNut) && r.ec;
+  const showPh =
+    r.ecAplica !== false &&
+    sub.id !== 'papel' &&
+    (opts.forMedir ? faseId !== 'semilla' : !faseNut);
   const ecLine = showEc
     ? '<li><span class="hc-germ-rangos-k">EC propagador</span><strong>' +
       r.ec.min +
@@ -853,17 +1024,20 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
       r.ec.max +
       ' µS</strong> <span class="hc-germ-rangos-sub">(centro ~' +
       r.ecObjetivo +
+      ' · ' +
+      esc(sub.label) +
       ')</span></li>'
     : '';
-  const phLine = showPh
-    ? '<li><span class="hc-germ-rangos-k">pH cubo</span><strong>' +
-      r.phObjetivo +
-      '</strong> <span class="hc-germ-rangos-sub">(' +
-      r.ph.min +
-      '–' +
-      r.ph.max +
-      ')</span></li>'
-    : '';
+  const phLine =
+    showPh && r.ph
+      ? '<li><span class="hc-germ-rangos-k">pH sustrato</span><strong>' +
+        r.phObjetivo +
+        '</strong> <span class="hc-germ-rangos-sub">(' +
+        r.ph.min +
+        '–' +
+        r.ph.max +
+        ')</span></li>'
+      : '';
   const items =
     '<li><span class="hc-germ-rangos-k">T° domo</span><strong>' +
     r.temp.min +
@@ -877,18 +1051,79 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
     ' %</strong></li>' +
     ecLine +
     phLine;
+  const aguaBlock = renderSustratoGermAguaEcBlockHtml(sub.id, faseId, { compact: true });
   return (
-    '<div class="hc-germ-rangos-panel" role="region" aria-label="Rangos de medición según genética">' +
+    '<div class="hc-germ-rangos-panel" role="region" aria-label="Rangos de medición según genética y sustrato">' +
     '<p class="hc-germ-rangos-lead">Objetivos para <strong>' +
     esc(spec.nombreGenetica || 'tu variedad') +
     '</strong> (' +
     esc(spec.grupoLabel || 'perfil') +
-    ') · fase <strong>' +
+    ') · <strong>' +
+    esc(sub.label) +
+    '</strong> · fase <strong>' +
     esc(faseId) +
     '</strong>. Al medir verás el <strong>desfase</strong> respecto a estos rangos.</p>' +
+    aguaBlock +
     '<ul class="hc-germ-rangos-list">' +
     items +
     '</ul></div>'
+  );
+}
+
+function renderSustratoGermAguaEcBlockHtml(sustratoId, faseId, opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const sub = getSustratoGermAguaEc(sustratoId);
+  const esc =
+    typeof meteoEscHtml === 'function'
+      ? meteoEscHtml
+      : function (s) {
+          return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        };
+  const rm = sub.remojo || {};
+  const bd = sub.bandeja || {};
+  const pr = sub.propagador || {};
+  const ecAplica = propagadorEcAplicaSustrato(sub, faseId);
+  const compact = !!opts.compact;
+  const remojoLines =
+    '<dt>Remojo / hidratación</dt><dd>' +
+    esc(rm.detalle || '') +
+    (rm.phRango && rm.phRango !== '— (no mides EC en papel)'
+      ? ' <span class="hc-germ-sustrato-meta">pH ' + esc(rm.phRango) + '</span>'
+      : '') +
+    (rm.ecUs ? ' <span class="hc-germ-sustrato-meta">EC ' + esc(rm.ecUs) + '</span>' : '') +
+    (rm.aguaMlCubo ? ' <span class="hc-germ-sustrato-meta">' + esc(rm.aguaMlCubo) + '</span>' : '') +
+    (rm.tiempo ? ' <span class="hc-germ-sustrato-meta">' + esc(rm.tiempo) + '</span>' : '') +
+    '</dd>';
+  const bandejaLines =
+    '<dt>Agua en bandeja</dt><dd>' +
+    esc(bd.agua || '') +
+    (bd.detalle ? ' — ' + esc(bd.detalle) : '') +
+    '</dd>';
+  let propLine = '';
+  if (ecAplica && Array.isArray(pr.ecUs)) {
+    propLine =
+      '<dt>Al medir en domo</dt><dd>EC <strong>' +
+      pr.ecUs[0] +
+      '–' +
+      pr.ecUs[1] +
+      ' µS</strong>' +
+      (Number.isFinite(pr.phObjetivo) ? ' · pH ~' + pr.phObjetivo : '') +
+      (pr.medir ? ' — ' + esc(pr.medir) : '') +
+      '</dd>';
+  } else if (pr.medir) {
+    propLine = '<dt>Al medir en domo</dt><dd>' + esc(pr.medir) + '</dd>';
+  }
+  const cls = compact ? 'hc-germ-sustrato-agua hc-germ-sustrato-agua--compact' : 'hc-germ-sustrato-agua';
+  return (
+    '<div class="' +
+    cls +
+    '" role="region" aria-label="Agua y EC según sustrato">' +
+    (compact ? '' : '<p class="hc-germ-sustrato-agua-title">Agua y EC · ' + esc(sub.label) + '</p>') +
+    '<dl class="hc-germ-sustrato-agua-dl">' +
+    remojoLines +
+    bandejaLines +
+    propLine +
+    '</dl></div>'
   );
 }
 
@@ -919,7 +1154,7 @@ function renderGerminacionMedEvalBlockHtml(cfg, lecturas) {
   }
   const rows = keys
     .map(function (item) {
-      const ev = evalGerminacionMedicion(item.key, item.val, vid, faseId);
+      const ev = evalGerminacionMedicion(item.key, item.val, vid, faseId, cfg);
       const cls = 'hc-germ-med-eval-row hc-germ-med-eval-row--' + ev.nivel;
       return (
         '<div class="' +
@@ -990,6 +1225,10 @@ function hcBindGerminacionMedInputs(cfg) {
   });
 }
 
+window.SUSTRATO_GERM_AGUA_EC = SUSTRATO_GERM_AGUA_EC;
+window.getSustratoGermAguaEc = getSustratoGermAguaEc;
+window.resolveSustratoGermFromCfg = resolveSustratoGermFromCfg;
+window.renderSustratoGermAguaEcBlockHtml = renderSustratoGermAguaEcBlockHtml;
 window.getGerminacionRangosMonitoreo = getGerminacionRangosMonitoreo;
 window.getGerminacionDashTilesPlan = getGerminacionDashTilesPlan;
 window.getGerminacionLecturasParaDash = getGerminacionLecturasParaDash;

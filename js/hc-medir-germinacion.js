@@ -153,12 +153,16 @@
       return;
     }
     var plan = getPlanMedirGerm(cfg);
-    var r = getGerminacionRangosMonitoreo(plan.variedadId, plan.faseId);
+    var r = getGerminacionRangosMonitoreo(plan.variedadId, plan.faseId, cfg);
     var map = {
       temp: r.temp.min + ' – ' + r.temp.max + ' °C',
       hr: r.hr.min + ' – ' + r.hr.max + ' %',
-      ec: r.ec.min + ' – ' + r.ec.max + ' µS (obj. ~' + r.ecObjetivo + ')',
-      ph: r.phObjetivo + ' (' + r.ph.min + ' – ' + r.ph.max + ')',
+      ec: r.ec && r.ecAplica
+        ? r.ec.min + ' – ' + r.ec.max + ' µS (obj. ~' + r.ecObjetivo + ')'
+        : 'Según sustrato (p. ej. papel: sin EC)',
+      ph: r.ph
+        ? r.phObjetivo + ' (' + r.ph.min + ' – ' + r.ph.max + ')'
+        : '—',
       vpd: r.vpd.min + ' – ' + r.vpd.max + ' kPa',
     };
     setMedirParamRange(rangeId, map[key] || '');
@@ -212,7 +216,7 @@
         return;
       }
       if (typeof evalGerminacionMedicion !== 'function') return;
-      var ev = evalGerminacionMedicion(key, val, vid, faseId);
+      var ev = evalGerminacionMedicion(key, val, vid, faseId, cfg);
       setGermStatus(f.statusId, ev.nivel, ev.desfaseTxt);
       if (typeof setCard === 'function') setCard(f.card, ev.nivel);
       var corrHtml = ev.correccion
