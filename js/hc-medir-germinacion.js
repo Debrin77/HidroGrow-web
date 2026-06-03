@@ -40,7 +40,7 @@
     ec: {
       card: 'cardEC',
       input: 'inputEC',
-      label: 'EC agua',
+      label: 'EC propagador',
       icon: 'hc-i-bolt',
       rangeId: 'paramRangeEC',
       statusId: 'statusEC',
@@ -60,7 +60,7 @@
   };
 
   var DEPOSITO_CARDS = ['cardEC', 'cardPH', 'cardTemp', 'cardVol'];
-  var AMBIENTE_EXTRA = ['cardPPFD', 'cardCO2', 'cardTempExt'];
+  var AMBIENTE_SALA_CARDS = ['cardPPFD', 'cardCO2', 'cardTempExt'];
 
   function cfgActiva() {
     return typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
@@ -98,6 +98,26 @@
       k[t.key] = true;
     });
     return k;
+  }
+
+  /**
+   * Campos de sala (PPFD, CO₂, temp. exterior): solo tras configurar sala y checklist de montaje verificado.
+   */
+  function hcMedirSalaAmbienteDisponible(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
+      return typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg);
+    }
+    return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
+  }
+
+  /** Medir propagador: siempre EC del agua del domo; pH según fase del plan. */
+  function getMedirGermActivos(cfg) {
+    var plan = getPlanMedirGerm(cfg);
+    var activos = keysActivos(plan);
+    activos.ec = true;
+    return { plan: plan, activos: activos };
   }
 
   function setLabelSpan(cardId, text) {
@@ -146,8 +166,8 @@
 
   function actualizarRangosParametrosMedirGerm(cfg) {
     cfg = cfg || cfgActiva();
-    var plan = getPlanMedirGerm(cfg);
-    var activos = keysActivos(plan);
+    var mg = getMedirGermActivos(cfg);
+    var activos = mg.activos;
     MEDIR_GERM_KEYS.forEach(function (key) {
       var f = MEDIR_GERM_FIELD[key];
       if (!f) return;
@@ -173,8 +193,9 @@
 
   function evalParamGerminacion() {
     var cfg = cfgActiva();
-    var plan = getPlanMedirGerm(cfg);
-    var activos = keysActivos(plan);
+    var mg = getMedirGermActivos(cfg);
+    var plan = mg.plan;
+    var activos = mg.activos;
     var vid = plan.variedadId;
     var faseId = plan.faseId;
 
@@ -213,64 +234,43 @@
   function refreshMedirGerminacionUi(cfg) {
     cfg = cfg || cfgActiva();
     var activo = hcMedirModoGerminacionPropagador(cfg);
-    var plan = getPlanMedirGerm(cfg);
-    var activos = keysActivos(plan);
+    var mg = getMedirGermActivos(cfg);
+    var activos = mg.activos;
     var tieneSolucion = activos.ec || activos.ph;
 
     var flow = document.getElementById('medirFlow');
     if (flow) {
       flow.classList.toggle('medir-flow--germ-prop', activo);
+      var quickBlock = flow.querySelector('.medir-quick-parse');
+      if (quickBlock) quickBlock.classList.toggle('setup-hidden', activo);
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) {
         if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
         lead.innerHTML = activo
-          ? 'Germinación en <strong>propagador</strong>: mismos parámetros que en Inicio (T°, HR del domo' +
-            (tieneSolucion ? ', EC/pH del agua del propagador' : '') +
+          ? 'Germinación en <strong>propagador</strong>: T°, HR y <strong>EC del agua del propagador</strong>' +
+            (activos.ph ? ', pH del cubo' : '') +
             (activos.vpd ? ', VPD' : '') +
-            '). <strong>No es el depósito DWC</strong> hasta configurar el hidro.'
+            ' — rangos según tu genética. <strong>No es el depósito DWC</strong> hasta configurar el hidro.'
           : lead.dataset.hcMedirLeadDefault;
       }
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
       if (solPanel) solPanel.classList.toggle('setup-hidden', !activo || !tieneSolucion);
       var solHead = solPanel && solPanel.querySelector('.medir-step-kicker--solucion');
       if (solHead) {
-        solHead.textContent = activo ? 'Agua del propagador (orientativo)' : 'Paso 1 · solución';
+        solHead.textContent = activo ? 'Agua del propagador' : 'Paso 1 · solución';
       }
       var solSub = solPanel && solPanel.querySelector('.medir-step-sub');
       if (solSub && activo) {
         if (!solSub.dataset.hcMedirSubDefault) solSub.dataset.hcMedirSubDefault = solSub.textContent;
-        solSub.textContent = 'EC y pH del agua del domo — no del depósito de floración.';
+        solSub.textContent =
+          'EC del agua del domo (µS/cm). En fases tempranas puede ir muy baja; pH del cubo cuando aplique.';
       } else if (solSub && solSub.dataset.hcMedirSubDefault) {
         solSub.textContent = solSub.dataset.hcMedirSubDefault;
-      }
-      var quick = document.getElementById('medirQuickInput');
-      if (quick) {
-        quick.placeholder = activo
-          ? 'T 24 · HR 75 · EC 450 · pH 5.5'
-          : 'EC 1350 · pH 6.0 · T 20 · V 18';
       }
     }
 
     var ambDetails = document.getElementById('medirAmbienteDetails');
-    var ambCard = document.getElementById('medirAmbienteCard');
     if (ambDetails && activo) ambDetails.open = true;
-    if (ambCard) {
-      var ambLead = ambCard.querySelector('.medir-ambiente-lead');
-      if (ambLead) {
-        if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
-        ambLead.textContent = activo
-          ? 'T° y HR bajo el domo del propagador. El VPD se calcula al escribir T° y HR. Rangos según tu genética.'
-          : ambLead.dataset.hcMedirLeadDefault;
-      }
-      var ambTitle = ambCard.querySelector('.card-title');
-      if (ambTitle && activo) {
-        if (!ambTitle.dataset.hcMedirTitleDefault) ambTitle.dataset.hcMedirTitleDefault = ambTitle.innerHTML;
-        ambTitle.innerHTML =
-          '<svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-home"/></svg> Domo / propagador';
-      } else if (ambTitle && ambTitle.dataset.hcMedirTitleDefault) {
-        ambTitle.innerHTML = ambTitle.dataset.hcMedirTitleDefault;
-      }
-    }
 
     DEPOSITO_CARDS.forEach(function (id) {
       var el = document.getElementById(id);
@@ -284,8 +284,12 @@
       var hideDep = id === 'cardTemp' || id === 'cardVol' || (id === 'cardEC' && !activos.ec) || (id === 'cardPH' && !activos.ph);
       el.classList.toggle('setup-hidden', hideDep);
       if (id === 'cardEC' && activos.ec) {
-        setLabelSpan(id, 'EC agua');
+        setLabelSpan(id, 'EC propagador');
         setCardIcon(id, 'hc-i-bolt');
+        var inpEc = document.getElementById('inputEC');
+        if (inpEc && mg.plan && mg.plan.ecObjetivo) {
+          inpEc.placeholder = String(mg.plan.ecObjetivo);
+        }
       }
       if (id === 'cardPH' && activos.ph) {
         setLabelSpan(id, 'pH cubo');
@@ -311,11 +315,6 @@
       }
     });
 
-    AMBIENTE_EXTRA.forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.toggle('setup-hidden', activo);
-    });
-
     var recarga = document.getElementById('recargaCardMediciones');
     if (recarga) recarga.classList.toggle('setup-hidden', activo);
 
@@ -328,13 +327,16 @@
         hostRangos = document.createElement('div');
         hostRangos.id = 'hcMedirGermRangosHost';
         hostRangos.className = 'hc-medir-germ-rangos-host';
-        var quickParse = flow.querySelector('.medir-quick-parse');
-        if (quickParse) quickParse.insertAdjacentElement('afterend', hostRangos);
+        var anchor = flow.querySelector('.medir-flow-lead');
+        if (anchor) anchor.insertAdjacentElement('afterend', hostRangos);
         else flow.insertBefore(hostRangos, flow.firstChild);
       }
       if (hostRangos) {
         hostRangos.classList.remove('setup-hidden');
-        hostRangos.innerHTML = renderGerminacionRangosPanelHtml(cfg);
+        hostRangos.innerHTML =
+          typeof renderGerminacionRangosPanelHtml === 'function'
+            ? renderGerminacionRangosPanelHtml(cfg, { forMedir: true })
+            : '';
       }
     } else if (hostRangos) {
       hostRangos.classList.add('setup-hidden');
@@ -352,6 +354,92 @@
     if (activo && typeof actualizarRangosParametrosMedirGerm === 'function') {
       actualizarRangosParametrosMedirGerm(cfg);
       evalParamGerminacion();
+    }
+
+    refreshMedirSalaAmbienteMedirUi(cfg);
+  }
+
+  function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {
+    if (!ambCard) return;
+    var hint = document.getElementById('hcMedirSalaPendienteHint');
+    if (salaLista) {
+      if (hint) hint.remove();
+      return;
+    }
+    if (!hint) {
+      hint = document.createElement('p');
+      hint.id = 'hcMedirSalaPendienteHint';
+      hint.className = 'medir-sala-pendiente-hint setup-field-hint';
+      hint.setAttribute('role', 'note');
+      var lead = ambCard.querySelector('.medir-ambiente-lead');
+      if (lead) lead.insertAdjacentElement('afterend', hint);
+      else ambCard.insertBefore(hint, ambCard.firstChild);
+    }
+    var cfgBtn =
+      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador'
+        ? '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button> o ' +
+          '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje</button>'
+        : '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
+    hint.innerHTML =
+      (germ
+        ? '<strong>Sala aún no lista.</strong> PPFD, CO₂ y temperatura exterior aparecen cuando la sala esté configurada y el montaje verificado. Arriba puedes registrar el <strong>domo del propagador</strong> (T°, HR, VPD). '
+        : '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras configurar la instalación y completar el checklist de montaje. ') +
+      cfgBtn +
+      '.';
+  }
+
+  function refreshMedirSalaAmbienteMedirUi(cfg) {
+    cfg = cfg || cfgActiva();
+    var germ = hcMedirModoGerminacionPropagador(cfg);
+    var salaLista = hcMedirSalaAmbienteDisponible(cfg);
+
+    AMBIENTE_SALA_CARDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('setup-hidden', !salaLista);
+    });
+
+    var banner = document.getElementById('medirAmbienteImportanteBanner');
+    if (banner) {
+      banner.classList.toggle('setup-hidden', germ || salaLista);
+    }
+
+    var kick = document.querySelector('#medirAmbienteDetails .medir-step-kicker');
+    var sub = document.querySelector('#medirAmbienteDetails .medir-step-sub');
+    if (kick && sub) {
+      if (!kick.dataset.hcMedirKickDefault) kick.dataset.hcMedirKickDefault = kick.textContent;
+      if (!sub.dataset.hcMedirSubDefault) sub.dataset.hcMedirSubDefault = sub.textContent;
+      if (germ) {
+        kick.textContent = salaLista ? 'Paso 2 · domo y sala' : 'Domo propagador';
+        sub.textContent = salaLista
+          ? 'T°, HR y VPD del domo · PPFD, CO₂ y temp. exterior de la sala'
+          : 'T°, HR y VPD del domo (sin sala montada aún)';
+      } else if (!salaLista) {
+        kick.textContent = 'Paso 2 · opcional';
+        sub.textContent = 'Luz, CO₂ y temp. exterior tras montaje de sala verificado';
+      } else {
+        kick.textContent = kick.dataset.hcMedirKickDefault;
+        sub.textContent = sub.dataset.hcMedirSubDefault;
+      }
+    }
+
+    var ambCard = document.getElementById('medirAmbienteCard');
+    ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista);
+
+    if (ambCard) {
+      var ambLead = ambCard.querySelector('.medir-ambiente-lead');
+      if (ambLead) {
+        if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
+        if (germ) {
+          ambLead.textContent = salaLista
+            ? 'T°, HR y VPD del domo. Con la sala montada puedes añadir PPFD, CO₂ y temp. exterior abajo.'
+            : 'T°, HR y VPD del domo del propagador. El VPD se calcula al escribir T° y HR.';
+        } else if (!salaLista) {
+          ambLead.textContent =
+            'Temp. aire y HR para VPD. PPFD, CO₂ y temp. exterior cuando el montaje de sala esté verificado.';
+        } else if (ambLead.dataset.hcMedirLeadDefault) {
+          ambLead.textContent = ambLead.dataset.hcMedirLeadDefault;
+        }
+      }
     }
   }
 
@@ -403,6 +491,7 @@
       var out = prevRefresh();
       try {
         refreshMedirGerminacionUi();
+        refreshMedirSalaAmbienteMedirUi();
       } catch (_) {}
       return out;
     };
@@ -411,6 +500,8 @@
   global.hcMedirModoGerminacionPropagador = hcMedirModoGerminacionPropagador;
   global.hcMedirPermiteRegistroGerminacion = hcMedirModoGerminacionPropagador;
   global.refreshMedirGerminacionUi = refreshMedirGerminacionUi;
+  global.refreshMedirSalaAmbienteMedirUi = refreshMedirSalaAmbienteMedirUi;
+  global.hcMedirSalaAmbienteDisponible = hcMedirSalaAmbienteDisponible;
   global.evalParamGerminacion = evalParamGerminacion;
   global.actualizarRangosParametrosMedirGerm = actualizarRangosParametrosMedirGerm;
 
@@ -420,6 +511,7 @@
   function onReady() {
     try {
       refreshMedirGerminacionUi();
+      refreshMedirSalaAmbienteMedirUi();
     } catch (_) {}
   }
 

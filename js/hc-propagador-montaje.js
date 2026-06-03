@@ -362,7 +362,7 @@
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
-      '<p class="hc-prop-inline-lead">Checklist del propagador. Montaje de sala (opcional) y <strong>hidro DWC</strong> están en <strong>Checklists de montaje</strong> más abajo.</p>' +
+      '<p class="hc-prop-inline-lead">Checklist del propagador. En <strong>Checklists de montaje</strong> (Inicio) conviene ir preparando la <strong>configuración de sala</strong>; el hidro DWC va después de germinar.</p>' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +
@@ -591,7 +591,14 @@
       'Propagador ' +
         (propCh.completedAt ? '✓' : propProg.done + '/' + propProg.total)
     );
-    partes.push('Sala ' + (sala.verificada ? '✓' : sala.done + '/' + sala.total));
+    var salaCfgSub =
+      typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
+    partes.push(
+      'Sala ' +
+        (salaCfgSub ? 'config ✓' : 'config pendiente') +
+        ' · montaje ' +
+        (sala.verificada ? '✓' : sala.done + '/' + sala.total)
+    );
     var concluida =
       typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     partes.push(concluida ? 'Hidro pendiente' : 'Hidro tras germinación');
@@ -606,6 +613,8 @@
     var propProg = countProgress(propCh, propIt);
     var propOk = !!propCh.completedAt;
     var sala = progSalaMontaje(cfg);
+    var salaCfg =
+      typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
     var g =
       typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : {};
     var concluida =
@@ -663,11 +672,31 @@
         '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sistema\')">Ver en Cultivo e instalación</button>';
     }
 
+    var salaCfgStatus = salaCfg
+      ? '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ok">✓ Configuración de sala guardada en el asistente</p>'
+      : '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ready">Pendiente: configurar sala en el asistente</p>';
+    var salaActions = '';
+    if (!salaCfg) {
+      salaActions +=
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala (asistente)</button> ' +
+        '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">Checklist montaje (tras configurar)</button> ';
+    } else {
+      salaActions +=
+        '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
+        (sala.verificada ? 'Revisar checklist sala' : 'Checklist montaje de sala') +
+        '</button> ' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Revisar configuración de sala</button> ';
+    }
+    salaActions +=
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sala\');setTimeout(function(){var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d)d.open=true},300)">Ir a Sala</button>';
+
     return (
       '<div class="hc-montaje-inicio-hub" role="region" aria-label="Checklists del camino semilla con propagador">' +
       '<p class="hc-montaje-inicio-hub-lead" role="note">' +
-      '<strong>Tres checklists distintos.</strong> Ahora: propagador y (si quieres) montaje de sala. ' +
-      'El sistema hidropónico queda para después de la germinación y el traslado.</p>' +
+      '<strong>Tres bloques distintos.</strong> Primero el propagador físico; mientras germinas, ' +
+      '<strong>te conviene ir preparando la sala</strong> en el asistente. Si la configuras y aceptas el resultado, ' +
+      'queda definida la <strong>sala con su equipamiento</strong> y el <strong>propagador con las semillas</strong> dentro hasta que germinen. ' +
+      'El DWC/RDWC del depósito es la Fase 3, tras el traslado.</p>' +
       '<ol class="hc-montaje-inicio-hub-list">' +
       '<li class="hc-montaje-inicio-card hc-montaje-inicio-card--prop">' +
       '<div class="hc-montaje-inicio-card-head">' +
@@ -684,19 +713,23 @@
       '</button></li>' +
       '<li class="hc-montaje-inicio-card hc-montaje-inicio-card--sala">' +
       '<div class="hc-montaje-inicio-card-head">' +
-      '<span class="hc-montaje-inicio-card-badge hc-montaje-inicio-card-badge--opt">2 · Opcional ahora</span>' +
-      '<h4 class="hc-montaje-inicio-card-title">Checklist · Montaje de sala</h4></div>' +
-      '<p class="hc-montaje-inicio-card-desc">Carpa, LED, extractor, medidor… Puedes montarlo durante la germinación. <strong>Sin tuberías ni depósito DWC</strong> (esos puntos no aparecen hasta Fase 2).</p>' +
+      '<span class="hc-montaje-inicio-card-badge hc-montaje-inicio-card-badge--rec">2 · Recomendado</span>' +
+      '<h4 class="hc-montaje-inicio-card-title">Sala · configuración y montaje</h4></div>' +
+      '<p class="hc-montaje-inicio-card-desc">' +
+      'Durante la germinación, prepara la <strong>configuración de la sala</strong> (carpa, LED, extractor, medidor, clima…). ' +
+      'Al <strong>guardar y aceptar</strong> en el asistente, la instalación queda como <strong>sala montada con equipamiento</strong> ' +
+      'y el <strong>propagador con las semillas</strong> en ese entorno hasta que concluyan. Luego el checklist confirma el montaje físico. ' +
+      '<strong>Sin tuberías ni depósito DWC</strong> hasta Fase 3.</p>' +
+      salaCfgStatus +
       '<p class="hc-montaje-inicio-card-status' +
       (sala.verificada ? ' hc-montaje-inicio-card-status--ok' : '') +
       '">' +
-      (sala.verificada ? '✓ Sala verificada' : sala.done + '/' + sala.total + ' puntos esenciales') +
+      (sala.verificada
+        ? '✓ Montaje de sala verificado (checklist completo)'
+        : 'Montaje físico: ' + sala.done + '/' + sala.total + ' puntos esenciales') +
       '</p>' +
       '<div class="hc-montaje-inicio-card-actions">' +
-      '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
-      (sala.verificada ? 'Revisar checklist sala' : 'Abrir checklist sala') +
-      '</button> ' +
-      '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sala\');setTimeout(function(){var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d)d.open=true},300)">Ir a Sala</button>' +
+      salaActions +
       '</div></li>' +
       '<li class="' +
       hidroCls +

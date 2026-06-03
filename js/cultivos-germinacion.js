@@ -825,8 +825,9 @@ function evalGerminacionMedicion(key, val, variedadId, faseId) {
   };
 }
 
-function renderGerminacionRangosPanelHtml(cfg) {
+function renderGerminacionRangosPanelHtml(cfg, opts) {
   cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  opts = opts && typeof opts === 'object' ? opts : {};
   const g =
     typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
   const vid = String(
@@ -843,6 +844,26 @@ function renderGerminacionRangosPanelHtml(cfg) {
           return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
         };
   const faseNut = faseId === 'semilla' || faseId === 'taproot';
+  const showEc = !!opts.forMedir || !faseNut;
+  const showPh = opts.forMedir ? faseId !== 'semilla' : !faseNut;
+  const ecLine = showEc
+    ? '<li><span class="hc-germ-rangos-k">EC propagador</span><strong>' +
+      r.ec.min +
+      '–' +
+      r.ec.max +
+      ' µS</strong> <span class="hc-germ-rangos-sub">(centro ~' +
+      r.ecObjetivo +
+      ')</span></li>'
+    : '';
+  const phLine = showPh
+    ? '<li><span class="hc-germ-rangos-k">pH cubo</span><strong>' +
+      r.phObjetivo +
+      '</strong> <span class="hc-germ-rangos-sub">(' +
+      r.ph.min +
+      '–' +
+      r.ph.max +
+      ')</span></li>'
+    : '';
   const items =
     '<li><span class="hc-germ-rangos-k">T° domo</span><strong>' +
     r.temp.min +
@@ -854,22 +875,8 @@ function renderGerminacionRangosPanelHtml(cfg) {
     '–' +
     r.hr.max +
     ' %</strong></li>' +
-    (faseNut
-      ? ''
-      : '<li><span class="hc-germ-rangos-k">EC agua</span><strong>' +
-        r.ec.min +
-        '–' +
-        r.ec.max +
-        ' µS</strong> <span class="hc-germ-rangos-sub">(centro ~' +
-        r.ecObjetivo +
-        ')</span></li>' +
-        '<li><span class="hc-germ-rangos-k">pH cubo</span><strong>' +
-        r.phObjetivo +
-        '</strong> <span class="hc-germ-rangos-sub">(' +
-        r.ph.min +
-        '–' +
-        r.ph.max +
-        ')</span></li>');
+    ecLine +
+    phLine;
   return (
     '<div class="hc-germ-rangos-panel" role="region" aria-label="Rangos de medición según genética">' +
     '<p class="hc-germ-rangos-lead">Objetivos para <strong>' +
