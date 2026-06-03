@@ -3387,7 +3387,7 @@
       <div id="setupPremiumEquipSection">
         <div id="setupPremiumEquipOrigenBanner" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div id="setupPremiumEquipGermReco" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
-        <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
+        <div class="setup-block-title" id="setupPremium3EquipBlockTitle">Marca y modelo (catálogo ES)</div>
         <p class="setup-field-hint setup-mb-8" id="setupPremium3EquipHint">Top 10 por categoría (growshops ES). Con <strong>semilla en propagador</strong>: domo, mat térmica y bloque <strong>cuántas semillas + sustrato</strong>; la sala va después del propagador.</p>
         <div id="setupPremiumEquipGrid" class="equip-catalog-host setup-mb-8"></div>
         <div id="setupPremiumEquipFaltantes" class="setup-mb-16 setup-hidden" aria-live="polite"></div>
@@ -3486,18 +3486,18 @@
         </button>
       </div>
       <div id="setupPremiumMetodoHint" class="setup-metodo-hint setup-box-info setup-mb-16" role="note" aria-live="polite"></div>
-      <div class="setup-block-title">Preferencia genética</div>
-      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
-        <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumGenFoto" onclick="seleccionarPremiumGenetica('foto')">
-          <div class="setup-option-title-md">Fotoperíodo</div>
-          <div class="setup-option-desc-sm">12/12 en flor · más control</div>
-        </button>
-        <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumGenAuto" onclick="seleccionarPremiumGenetica('auto')">
-          <div class="setup-option-title-md">Autofloreciente</div>
-          <div class="setup-option-desc-sm">Ciclo fijo · compactas</div>
-        </button>
+      <div id="setupPremiumGeneticaPrefBundle">
+        <div class="setup-block-title">Genética</div>
+        <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">
+          <button type="button" class="equip-card equip-card-pad-12 selected" id="setupPremiumGenFoto" onclick="seleccionarPremiumGenetica('foto')">
+            <div class="setup-option-title-md">Fotoperíodo</div>
+          </button>
+          <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumGenAuto" onclick="seleccionarPremiumGenetica('auto')">
+            <div class="setup-option-title-md">Autofloreciente</div>
+          </button>
+        </div>
       </div>
-      <div id="setupPremiumGeneticaHint" class="setup-box-info"></div>
+      <div id="setupPremiumGeneticaHint" class="setup-box-info setup-hidden" aria-hidden="true"></div>
       <div id="setupPremiumMetodoOrigenHint" class="setup-box-info setup-hidden setup-mt-8" role="note" aria-live="polite"></div>
       </div>
     </div>
@@ -3526,21 +3526,16 @@
         <div id="setupPremiumSemilleroPerfil" class="hc-sem-perfil-panel setup-hidden setup-mb-12"></div>
       </div>
       <div id="setupPremiumGeneticaGermSection" class="setup-hidden setup-mb-12">
-        <div class="setup-block-title">¿Qué genética vas a germinar? <span class="setup-required-tag" id="setupPremiumGeneticaGermRequiredTag">obligatorio</span></div>
-        <p class="setup-field-hint setup-mb-8">
-          Elige la cepa del catálogo HidroGrow. Se preconfigura <strong>Inicio → Germinación</strong>
-          (tiempos, tareas diarias y calendario). Coherente con foto/auto del paso «Genética y método».
-        </p>
-        <p id="setupPremiumGeneticaGermFiltro" class="setup-field-hint setup-mb-8" role="note"></p>
-        <div id="setupPremiumGeneticaGermPreview" class="setup-mb-8"></div>
-        <label class="setup-field-label" for="setupPremiumVariedadGermSelect">Genética (semilla) <span class="setup-required-tag">*</span></label>
-        <select id="setupPremiumVariedadGermSelect" class="setup-input-city setup-mb-8"
-          aria-label="Genética a germinar (obligatorio con semilla)"
-          aria-describedby="setupPremiumGeneticaGermReq setupPremiumGeneticaGermFiltro"
-          onchange="seleccionarPremiumVariedadGerminacion(this.value)"></select>
-        <p id="setupPremiumGeneticaGermReq" class="setup-box-warn setup-mb-8 setup-genetica-req--pendiente" role="note">
-          Obligatorio: elige la genética del catálogo para continuar.
-        </p>
+        <label class="setup-field-label" for="setupPremiumVariedadGermSelect">Variedad <span class="setup-required-tag" id="setupPremiumGeneticaGermRequiredTag">*</span></label>
+        <select id="setupPremiumVariedadGermSelect" class="setup-input-city setup-mb-4"
+          aria-label="Variedad a germinar"
+          aria-describedby="setupPremiumGeneticaGermReq"
+          onchange="seleccionarPremiumVariedadGerminacion(this.value)">
+          <option value="">— Elige variedad —</option>
+        </select>
+        <p id="setupPremiumGeneticaGermFiltro" class="setup-hidden" aria-hidden="true"></p>
+        <div id="setupPremiumGeneticaGermPreview" class="setup-hidden" aria-hidden="true"></div>
+        <p id="setupPremiumGeneticaGermReq" class="setup-field-hint setup-hidden" role="note"></p>
       </div>
       <div id="setupPremiumGerminacionPasos" class="setup-mb-8"></div>
       <div id="setupPremiumEsquejesPrep" class="setup-hidden">
@@ -5191,7 +5186,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-propagador-flow"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -5230,19 +5225,19 @@
 <script src="js/torre-render-main.js?v=2026-05-31-prop-svg"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-fases-retraso"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-propagador-flow"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-propagador-montaje.js?v=2026-05-31-germ-plan-gate"></script>
-  <script src="js/hc-premium-germ-plan.js?v=2026-05-31-germ-plan-gate"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-prop-ux"></script>
+  <script src="js/hc-premium-germ-plan.js?v=2026-05-31-germ-ahora-lite"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
-  <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-genetica-oblig"></script>
+  <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-camino-fase.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-camino-cultivo.js?v=2026-05-31-propagador-viz"></script>
   <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prop-svg"></script>
-  <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-prop-ux"></script>
+  <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-clima-camino"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>

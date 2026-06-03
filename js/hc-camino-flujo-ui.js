@@ -29,7 +29,7 @@
       1: '<strong>Camino:</strong> propagador → 6 fases en Inicio → sala → traslado al hidro.',
       2: '<strong>Objetivo:</strong> uso personal; el nivel de Consejos ajusta el detalle técnico.',
       3: '<strong>Entorno:</strong> interior o exterior; en propagador la sala LED va después.',
-      4: '<strong>Germinación ahora:</strong> domo, mat térmica y genética. Sin carpa ni LED en este paso.',
+      4: '',
       5: '<strong>Clima del domo:</strong> horas de luz y fase inicial para el seguimiento diario.',
       7: '<strong>Plan de cultivo:</strong> SOG/SCROG, foto/auto y semillero (opcional). Guardar abre el checklist del propagador.',
     },
@@ -121,26 +121,78 @@
     return null;
   }
 
+  function isGermAhoraPropagadorUi() {
+    return (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm() &&
+      (typeof getPremiumOrigenPlanta === 'function'
+        ? getPremiumOrigenPlanta()
+        : 'semilla') === 'semilla'
+    );
+  }
+
+  function reorderGermAhoraHost(host) {
+    if (!host) return;
+    var plan = el('setupPremiumGermPlanSection');
+    var genPref = el('setupPremiumGeneticaPrefBundle');
+    var genSec = el('setupPremiumGeneticaGermSection');
+    [plan, genPref, genSec].forEach(function (node) {
+      if (node && node.parentNode === host) host.appendChild(node);
+    });
+  }
+
+  function applyGermAhoraMinimalChrome(showGerm) {
+    var page3 = el('spagePremium3');
+    if (page3) page3.classList.toggle('hc-germ-ahora-page', !!showGerm);
+    var sub = el('setupPremium3Subtitle');
+    if (sub) sub.classList.toggle('setup-hidden', !!showGerm);
+    var equipHint = el('setupPremium3EquipHint');
+    if (equipHint) equipHint.classList.toggle('setup-hidden', !!showGerm);
+    var equipTitle = el('setupPremium3EquipBlockTitle');
+    if (equipTitle) {
+      equipTitle.textContent = showGerm ? 'Domo y mat térmica' : 'Marca y modelo (catálogo ES)';
+    }
+    var germReco = el('setupPremiumEquipGermReco');
+    if (germReco) germReco.classList.toggle('setup-hidden', !!showGerm);
+    var origBanner = el('setupPremiumEquipOrigenBanner');
+    if (origBanner) origBanner.classList.toggle('setup-hidden', !!showGerm);
+    var falt = el('setupPremiumEquipFaltantes');
+    if (falt && showGerm) falt.classList.add('setup-hidden');
+    var camBanner = el('setupCaminoStepBanner');
+    if (camBanner && showGerm) {
+      camBanner.classList.add('setup-hidden');
+      camBanner.innerHTML = '';
+    }
+  }
+
   function syncPremiumGermSectionPlacement() {
     var sec = el('setupPremiumGeneticaGermSection');
     var host = el('setupPremiumGermAhoraHost');
     var page6 = el('spagePremium6');
+    var genPref = el('setupPremiumGeneticaPrefBundle');
+    var bundle = el('setupPremiumMetodoGenBundle');
     if (!sec) return;
-    var enGerm =
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm();
-    var orig =
-      typeof getPremiumOrigenPlanta === 'function'
-        ? getPremiumOrigenPlanta()
-        : typeof ensurePremiumSetup === 'function'
-          ? ensurePremiumSetup().origenPlanta
-          : 'semilla';
-    var showGerm = enGerm && orig === 'semilla';
+    var showGerm = isGermAhoraPropagadorUi();
     if (showGerm && host) {
-      if (sec.parentNode !== host) host.appendChild(sec);
       host.classList.remove('setup-hidden');
+      if (genPref && genPref.parentNode !== host) host.appendChild(genPref);
+      if (sec.parentNode !== host) host.appendChild(sec);
+      reorderGermAhoraHost(host);
     } else if (page6) {
       if (host) host.classList.add('setup-hidden');
+      if (genPref && bundle && genPref.parentNode !== bundle) {
+        var metHint = el('setupPremiumGeneticaHint');
+        if (metHint && metHint.parentNode === bundle) {
+          bundle.insertBefore(genPref, metHint);
+        } else {
+          var metodoHint = el('setupPremiumMetodoHint');
+          if (metodoHint && metodoHint.parentNode === bundle) {
+            bundle.insertBefore(genPref, metodoHint);
+          } else {
+            bundle.appendChild(genPref);
+          }
+        }
+      }
       if (sec.parentNode !== page6) {
         var anchor = el('setupPremiumMetodoGenGermHost');
         if (anchor && anchor.parentNode === page6) {
@@ -156,8 +208,10 @@
     if (t3) {
       t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
     }
+    applyGermAhoraMinimalChrome(showGerm);
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
+    if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
   }
 
   function hcNecesitaBannerTrasladoSala(cfg) {

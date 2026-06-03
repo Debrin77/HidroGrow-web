@@ -53,8 +53,9 @@
       if (req) {
         req.classList.remove('setup-hidden');
         req.setAttribute('role', 'alert');
-        req.textContent =
-          'Obligatorio: elige la genética del catálogo para preconfigurar Inicio → Germinación.';
+        req.textContent = isGermAhoraCompactUi()
+          ? 'Elige variedad.'
+          : 'Obligatorio: elige la variedad del catálogo.';
       }
       if (sel) {
         sel.setAttribute('aria-invalid', 'true');
@@ -63,7 +64,7 @@
         } catch (_) {}
       }
       if (typeof showToast === 'function') {
-        showToast('Elige la genética (semilla) antes de continuar', true);
+        showToast('Elige la variedad antes de continuar', true);
       }
       return false;
     }
@@ -113,10 +114,17 @@
     renderSetupPremiumGeneticaGerm();
     if (typeof hcGerminacionRenderSetupPreview === 'function') hcGerminacionRenderSetupPreview();
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-    if (vid && typeof showToast === 'function') {
+    if (vid && typeof showToast === 'function' && !isGermAhoraCompactUi()) {
       const cu = typeof getCultivoDB === 'function' ? getCultivoDB(vid) : null;
-      showToast('Genética: ' + (cu && cu.nombre ? cu.nombre : vid), false);
+      showToast('Variedad: ' + (cu && cu.nombre ? cu.nombre : vid), false);
     }
+  }
+
+  function isGermAhoraCompactUi() {
+    return (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    );
   }
 
   function renderSetupPremiumGeneticaGerm() {
@@ -129,6 +137,7 @@
     const p = ensurePremium();
     const pref = filtroGeneticaPref();
     const vid = p.variedadGerminacion || '';
+    const compact = isGermAhoraCompactUi();
 
     if (sel && typeof listGeneticasGerminacionOptions === 'function') {
       sel.innerHTML = listGeneticasGerminacionOptions(vid, pref);
@@ -136,36 +145,38 @@
     }
 
     if (filtHint) {
-      filtHint.textContent =
-        pref === 'auto'
-          ? 'Lista filtrada: solo autoflorecientes (coherente con el paso «Genética y método»).'
-          : pref === 'foto'
-            ? 'Lista filtrada: fotoperiódicas (sin autos).'
-            : 'Todas las genéticas del catálogo.';
+      filtHint.classList.add('setup-hidden');
+      filtHint.textContent = '';
     }
 
     if (prev) {
-      prev.innerHTML =
-        vid && typeof renderGerminacionGeneticsCardHtml === 'function'
-          ? renderGerminacionGeneticsCardHtml(vid)
-          : '<p class="setup-field-hint">Sin genética elegida: en Inicio podrás elegirla, pero conviene definirla aquí.</p>';
+      prev.classList.add('setup-hidden');
+      prev.innerHTML = '';
     }
 
     const req = el('setupPremiumGeneticaGermReq');
     const oblig = requiereGeneticaGermEnSetup();
     if (req) {
-      if (oblig && !vid) {
+      if (compact) {
+        if (oblig && !vid) {
+          req.classList.remove('setup-hidden', 'setup-genetica-req--pendiente');
+          req.setAttribute('role', 'alert');
+          req.textContent = 'Elige variedad.';
+        } else {
+          req.classList.add('setup-hidden');
+          req.textContent = '';
+        }
+      } else if (oblig && !vid) {
         req.classList.remove('setup-hidden');
         req.classList.add('setup-genetica-req--pendiente');
         req.setAttribute('role', 'note');
         req.textContent =
-          'Obligatorio: elige la genética del catálogo para continuar (coherente con foto/auto).';
+          'Obligatorio: elige la variedad del catálogo (coherente con foto/auto).';
       } else {
         req.classList.remove('setup-genetica-req--pendiente');
         req.classList.toggle('setup-hidden', !!vid || !oblig);
         if (!vid && !oblig) {
-          req.textContent =
-            'Recomendado: elige la genética ahora para no repetirlo en Inicio.';
+          req.textContent = 'Recomendado: elige la variedad ahora.';
           req.classList.remove('setup-hidden');
         }
       }

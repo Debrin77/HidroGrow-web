@@ -347,9 +347,21 @@
     }
   }
 
+  function isGermAhoraPropagadorEquip() {
+    return (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    );
+  }
+
   function renderEquipOrigenGermBanner() {
     const banner = el('setupPremiumEquipGermReco');
     if (!banner) return;
+    if (isGermAhoraPropagadorEquip()) {
+      banner.classList.add('setup-hidden');
+      banner.innerHTML = '';
+      return;
+    }
     const origen =
       typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
     const cfg = getWizardEquipCfg();
@@ -415,6 +427,17 @@
     const origen =
       typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
     const sinPropagador = (origen === 'semilla' || origen === 'clon') && !(inst.propagador && inst.propagador.id);
+    if (isGermAhoraPropagadorEquip()) {
+      if (sinPropagador) {
+        hint.classList.remove('setup-hidden');
+        hint.className = 'setup-field-hint setup-mb-8';
+        hint.textContent = 'Falta elegir domo / propagador.';
+      } else {
+        hint.classList.add('setup-hidden');
+        hint.textContent = '';
+      }
+      return;
+    }
     if (
       (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
         hcCaminoSemillaPropagadorSetupGerm()) &&

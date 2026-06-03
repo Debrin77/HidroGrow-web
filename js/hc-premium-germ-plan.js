@@ -128,21 +128,9 @@
       p.numSemillasGerm = sugerirNumSemillas(cfg, p);
     }
     var capHtml = '';
-    if (cap) {
+    if (!cap) {
       capHtml =
-        '<div class="setup-box-info setup-mb-8" id="setupPremiumGermCapHint">' +
-        '<strong>Tu propagador (catálogo):</strong> ~' +
-        cap.celdas +
-        ' celdas máx. · autocultivo habitual <strong>' +
-        (cap.semillasTip || '4–12') +
-        ' semillas</strong> (no hace falta llenar toda la bandeja).' +
-        (cap.nota ? ' <span class="setup-field-hint">' + cap.nota + '</span>' : '') +
-        '</div>';
-    } else {
-      capHtml =
-        '<div class="setup-box-warn setup-mb-8" id="setupPremiumGermCapHint">' +
-        'Marca el <strong>domo / propagador</strong> en el catálogo de arriba para sugerirte cuántas semillas caben (77 alvéolos es lo más habitual en España).' +
-        '</div>';
+        '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint">Elige domo arriba para sugerir semillas.</p>';
     }
     var sustratoBtns = SUSTRATO_GERM_OPTS.map(function (o) {
       var sel = p.sustratoGerm === o.id ? ' selected' : '';
@@ -156,9 +144,6 @@
         '\')">' +
         '<div class="setup-option-title-md">' +
         o.label +
-        '</div>' +
-        '<div class="setup-loc-desc">' +
-        o.hint +
         '</div></button>'
       );
     }).join('');
@@ -174,23 +159,22 @@
       );
     }).join('');
     sec.innerHTML =
-      '<div class="setup-block-title">¿Cuántas semillas y con qué sustrato? <span class="setup-required-tag">obligatorio</span></div>' +
-      '<p class="setup-field-hint setup-mb-8">Define el plan del domo: la bandeja en <strong>Sistema → Propagador</strong> y el registro diario usarán estos datos.</p>' +
+      '<div class="setup-block-title setup-mb-8">Plan en el propagador</div>' +
       capHtml +
       '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">' +
-      '<div><label class="setup-field-label" for="setupPremiumNumSemillasGerm">Semillas que vas a poner a germinar</label>' +
+      '<div><label class="setup-field-label" for="setupPremiumNumSemillasGerm">Semillas</label>' +
       '<input type="number" id="setupPremiumNumSemillasGerm" class="setup-input-city" min="1" max="72" step="1" value="' +
       p.numSemillasGerm +
       '" onchange="persistPremiumGermPlanFromUI(true)"></div>' +
-      '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Tipo de bandeja</label>' +
+      '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Bandeja</label>' +
       '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermPlanFromUI(false)">' +
       bandOpts +
       '</select></div></div>' +
-      '<div class="setup-block-title setup-mb-8">Sustrato en el propagador</div>' +
-      '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">' +
+      '<label class="setup-field-label setup-mb-4">Sustrato</label>' +
+      '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-4 hc-germ-ahora-sustrato">' +
       sustratoBtns +
       '</div>' +
-      '<p id="setupPremiumGermPlanReq" class="setup-field-hint" role="note"></p>';
+      '<p id="setupPremiumGermPlanReq" class="setup-field-hint setup-hidden" role="note"></p>';
     refreshPremiumGermPlanReq();
   }
 
@@ -200,18 +184,13 @@
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
     var n = Number(p.numSemillasGerm);
     if (!Number.isFinite(n) || n < 1) {
-      req.className = 'setup-box-warn setup-mb-8';
+      req.classList.remove('setup-hidden');
+      req.className = 'setup-field-hint setup-mb-4';
       req.textContent = 'Indica al menos 1 semilla.';
       return;
     }
-    req.className = 'setup-box-info setup-mb-8';
-    req.innerHTML =
-      '<strong>Plan:</strong> ' +
-      n +
-      ' semilla(s) en <strong>' +
-      etiquetaSustratoGerm(p.sustratoGerm) +
-      '</strong>. Regla práctica: pon <strong>1,5–2×</strong> las plantas que quieres en flor (descartes y machos en regular).' +
-      (n > 24 ? ' Muchas semillas: vigila ventilar el domo y no saturar HR.' : '');
+    req.classList.add('setup-hidden');
+    req.textContent = '';
   }
 
   function seleccionarPremiumSustratoGerm(id) {

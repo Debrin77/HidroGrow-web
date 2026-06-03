@@ -558,10 +558,9 @@ function getEquipCatalogGroups(entorno) {
   if (propagadorSoloAhora) {
     return [
       Object.assign({}, EQUIP_GERMINACION_GROUP, {
-        label: 'Germinación en propagador — ahora',
+        label: 'Domo y mat térmica',
         required: true,
-        hint:
-          'Solo domo y mat térmica. La carpa, LED y extractor los configuras después de las 6 fases.',
+        hint: '',
       }),
     ];
   }

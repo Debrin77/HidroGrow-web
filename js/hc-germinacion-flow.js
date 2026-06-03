@@ -1770,6 +1770,13 @@
   function hcGerminacionRenderSetupPreview() {
     var sec = document.getElementById('setupPremiumGerminacionPasos');
     if (!sec) return;
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      sec.innerHTML = '';
+      return;
+    }
     var orig =
       typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup().origenPlanta || 'semilla' : 'semilla';
     if (orig !== 'semilla') {

@@ -10048,6 +10048,18 @@ html.hc-theme-dark .hc-germ-prop-hint {
   background: rgba(52, 211, 153, 0.1);
   border-color: rgba(52, 211, 153, 0.25);
 }
+#spagePremium3.hc-germ-ahora-page .setup-subtitle,
+#spagePremium3.hc-germ-ahora-page #setupCaminoStepBanner,
+#spagePremium3.hc-germ-ahora-page .equip-catalog-group-hint {
+  display: none !important;
+}
+#setupPremiumGermAhoraHost .setup-block-title {
+  font-size: 14px;
+  margin-top: 4px;
+}
+#setupPremiumGermAhoraHost .hc-germ-ahora-sustrato .equip-card {
+  min-height: 44px;
+}
 .hc-germ-rail {
   position: relative;
   display: flex;

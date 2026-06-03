@@ -542,15 +542,18 @@
           hcCaminoSemillaPropagadorSetupGerm()) ||
         (faseGerm && cam === 'semilla_propagador')
       ) {
-        sub.textContent =
-          'Solo domo y mat térmica ahora. Carpa, LED y extractor van en «Configurar sala» tras las 6 fases del propagador.';
+        sub.textContent = '';
+        sub.classList.add('setup-hidden');
       } else if (faseSala && (cam === 'semilla_propagador' || cam === 'semilla_hidro')) {
+        sub.classList.remove('setup-hidden');
         sub.textContent =
           'Configura la sala (carpa, LED, clima, circulación). El propagador ya lo diste en la fase anterior.';
       } else if (int) {
+        sub.classList.remove('setup-hidden');
         sub.textContent =
           'Catálogo agrupado: carpa, LED, filtro carbón, circulación, timer… Luego revisa medidas de sala.';
       } else {
+        sub.classList.remove('setup-hidden');
         sub.textContent =
           'Prioriza medidor, toldo/malla y herramientas. Confirma municipio en Ubicación para meteo.';
       }
@@ -581,8 +584,7 @@
       host.classList.remove('setup-hidden');
       if (sub6) {
         sub6.innerHTML =
-          '<strong>Semilla en propagador:</strong> método SOG/SCROG y foto/auto arriba; luego semillero (opcional) y genética concreta. ' +
-          'Las <strong>6 fases</strong> las harás en <strong>Inicio → Germinación</strong>. La sala y el DWC/RDWC van después.';
+          'SOG/SCROG y semillero (opcional). El seguimiento diario va en <strong>Inicio → Germinación</strong>.';
       }
     } else {
       if (sub6) {
@@ -627,7 +629,14 @@
         'Tras 5–6 sem en veg estable, toma esquejes cada 10–14 d sin volver a sembrar.</div>';
     } else if (typeof hcGerminacionRenderSetupPreview === 'function') {
       if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
-      hcGerminacionRenderSetupPreview();
+      if (
+        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm()
+      ) {
+        sec.innerHTML = '';
+      } else {
+        hcGerminacionRenderSetupPreview();
+      }
       if (typeof hcGerminacionActivarDesdeSetup === 'function') hcGerminacionActivarDesdeSetup();
     } else {
       sec.innerHTML =
