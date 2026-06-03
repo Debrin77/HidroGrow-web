@@ -811,18 +811,27 @@
           hcOpenPropagadorMontajeChecklist();
           checklistYaAbierto = true;
         }
-        if (camGerm !== 'semilla_hidro' && !checklistYaAbierto && !propagadorTrasSetup) {
+        if (
+          camGerm === 'semilla_propagador' &&
+          checklistYaAbierto &&
+          typeof hcIrHubGerminacionOperativa !== 'function'
+        ) {
           try {
             if (typeof goTab === 'function') goTab('inicio');
           } catch (_) {}
         }
         setTimeout(function () {
-          if (!checklistYaAbierto && camGerm !== 'semilla_hidro') {
+          if (camGerm === 'semilla_propagador' && checklistYaAbierto) {
+            /* El usuario cierra el checklist; la navegación la hace hcFinishPropagadorMontaje. */
+          } else if (camGerm === 'semilla_propagador' && typeof hcIrHubGerminacionOperativa === 'function') {
+            hcIrHubGerminacionOperativa({ sinScroll: true });
+          } else if (camGerm !== 'semilla_hidro') {
             try {
+              if (typeof goTab === 'function') goTab('inicio');
               document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             } catch (_) {}
+            if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
           }
-          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
           refreshInstalacionLifecycleUi();
           try {
             if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
@@ -830,10 +839,9 @@
           try {
             if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
           } catch (_) {}
-          if (propagadorTrasSetup || checklistYaAbierto) {
+          if (propagadorTrasSetup && !checklistYaAbierto) {
             try {
               if (typeof updateDashboard === 'function') updateDashboard();
-              if (typeof updateTorreStats === 'function') updateTorreStats();
             } catch (_) {}
           }
           try {

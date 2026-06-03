@@ -497,9 +497,9 @@
           ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
           : esRutaGermHidro(cfg)
             ? '✓ Prep listo. Siguiente: configurar la sala en el asistente.'
-            : '✓ Propagador listo. Sigue las 6 fases en Inicio → Germinación.',
+            : '✓ Propagador listo.',
         false,
-        { durationMs: 5600 }
+        { durationMs: 4200 }
       );
     }
     if (esRutaEsqueje(cfg)) {
@@ -509,17 +509,9 @@
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_propagador') {
-      setTimeout(function () {
-        try {
-          if (typeof goTab === 'function') goTab('inicio');
-        } catch (_) {}
-        setTimeout(function () {
-          try {
-            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } catch (_) {}
-          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-        }, 280);
-      }, 400);
+      if (typeof hcIrHubGerminacionOperativa === 'function') {
+        hcIrHubGerminacionOperativa();
+      }
       return;
     }
     if (typeof hcCaminoRequiereSalaPreGerm === 'function' && hcCaminoRequiereSalaPreGerm(cfg)) {

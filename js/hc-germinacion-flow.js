@@ -1083,6 +1083,17 @@
       var cu = getCultivoDB(g.variedadId);
       if (cu) cultNombre = cu.nombre || g.variedadId;
     }
+    var nSemHub = 0;
+    if (typeof getPlanGermEstado === 'function') {
+      var stHub = getPlanGermEstado(cfg);
+      if (stHub && stHub.numSemillas) nSemHub = stHub.numSemillas;
+    }
+    if (!nSemHub) {
+      nSemHub = Math.min(
+        72,
+        Math.max(0, Math.round(Number(g.numSemillas || (cfg.premiumSetup && cfg.premiumSetup.numSemillasGerm) || 0)))
+      );
+    }
     var domo = g.ultimaDomo || {};
     var equipAviso = allDone ? '' : avisoEquipFase(paso.id, g, modo);
     var hintVar = allDone ? '' : hintVariedadFase(g.variedadId, paso.id);
@@ -1169,7 +1180,14 @@
         : 'Prep + sala + sistema + depósito → <strong>6 fases</strong> en el cubo → traslado al ' +
           esc(tipo || 'DWC/RDWC')) +
       '</p>' +
-      (cultNombre ? '<p class="hc-germ-hub-var">Variedad: ' + esc(cultNombre) + '</p>' : '') +
+      (cultNombre || (camGerm === 'semilla_propagador' && nSemHub >= 1)
+        ? '<p class="hc-germ-hub-var">' +
+          (cultNombre ? 'Variedad: ' + esc(cultNombre) : '') +
+          (camGerm === 'semilla_propagador' && nSemHub >= 1
+            ? (cultNombre ? ' · ' : '') + '<strong>' + nSemHub + ' semilla' + (nSemHub === 1 ? '' : 's') + '</strong>'
+            : '') +
+          '</p>'
+        : '') +
       '<p class="hc-germ-hub-modo"><span class="hc-germ-modo-pill hc-germ-modo-pill--' +
       esc(modo) +
       '">' +

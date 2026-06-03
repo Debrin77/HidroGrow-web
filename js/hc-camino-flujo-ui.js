@@ -308,8 +308,9 @@
     if (!f) return '';
     if (f === 'propagador' || f === 'germ_cubo') {
       return (
-        '<strong>Seguimiento activo.</strong> Domo/cubo en <button type="button" class="btn btn-link btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Inicio → Germinación</button>. ' +
-        (f === 'germ_cubo' ? 'Medir también el depósito del cubo.' : 'Sin medir el depósito DWC aún.')
+        '<strong>Germinación activa.</strong> Registro del domo en ' +
+        '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>.' +
+        (f === 'germ_cubo' ? ' Medir también el cubo.' : '')
       );
     }
     if (f === 'prep_hidro') {
@@ -374,9 +375,41 @@
       return '';
     }
     return (
-      '<strong>Sala aún no en la barra.</strong> En propagador configuras carpa y LED cuando la germinación esté concluida ' +
-      '(días según genética o botón en Germinación abajo). La pestaña Sala aparecerá entonces.'
+      '<strong>Sala más adelante.</strong> Aparece en la barra cuando concluyas la germinación (días o botón abajo).'
     );
+  }
+
+  /** Tras checklist propagador o al entrar en operativa: Inicio + hub sincronizado. */
+  function hcIrHubGerminacionOperativa(opts) {
+    opts = opts || {};
+    var cfg =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    try {
+      if (typeof hcSyncGerminacionPlanCultivo === 'function') {
+        hcSyncGerminacionPlanCultivo(cfg);
+      }
+      if (typeof hcGerminacionSyncDesdePremium === 'function') {
+        hcGerminacionSyncDesdePremium(cfg);
+      }
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof goTab === 'function') goTab('inicio');
+      var run = function () {
+        try {
+          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+          if (typeof refreshInstalacionLifecycleUi === 'function') {
+            refreshInstalacionLifecycleUi();
+          }
+          if (typeof updateDashboard === 'function') updateDashboard();
+          if (!opts.sinScroll) {
+            document
+              .getElementById('dashGerminacionHub')
+              ?.scrollIntoView({ behavior: opts.scrollSmooth === false ? 'auto' : 'smooth', block: 'start' });
+          }
+        } catch (_) {}
+      };
+      if (opts.inmediato) run();
+      else requestAnimationFrame(run);
+    } catch (_) {}
   }
 
   function refreshTabsOperativaCamino() {
@@ -433,6 +466,7 @@
   global.refreshTabsOperativaCamino = refreshTabsOperativaCamino;
   global.renderTrasladoSalaBannerHtml = renderTrasladoSalaBannerHtml;
   global.hcNecesitaBannerTrasladoSala = hcNecesitaBannerTrasladoSala;
+  global.hcIrHubGerminacionOperativa = hcIrHubGerminacionOperativa;
 
   function hookGoTabCamino() {
     if (global._hcGoTabCaminoHooked) return;
