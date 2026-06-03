@@ -113,6 +113,13 @@
     }
     renderEquipamientoPremiumUI();
     renderMedirEquipamientoPanel();
+    if (catId === 'propagador' || catId === 'mat_termica_germ') {
+      try {
+        if (typeof hcGerminacionSyncEquipDesdeInstalado === 'function') hcGerminacionSyncEquipDesdeInstalado(cfg);
+        if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        if (typeof saveState === 'function') saveState();
+      } catch (_) {}
+    }
     try {
       if (typeof renderSetupDiagramEquipLegendForPreviews === 'function') {
         renderSetupDiagramEquipLegendForPreviews();

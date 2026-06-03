@@ -58,6 +58,10 @@ function getDiasPreHidroPorOrigen(cultivo, origen) {
   }
   const g = hcGrupoCannabisDefault(cultivo);
   if (o === 'germinacion') {
+    if (typeof getGerminacionDiasHitos === 'function' && cultivo) {
+      const hitos = getGerminacionDiasHitos(cultivo.id || cultivo.nombre);
+      if (hitos && Number.isFinite(hitos.preHidro) && hitos.preHidro > 0) return Math.round(hitos.preHidro);
+    }
     const d = HC_DIAS_PRE_HIDRO_GERMINACION[g];
     return Number.isFinite(d) && d > 0 ? Math.round(d) : 17;
   }

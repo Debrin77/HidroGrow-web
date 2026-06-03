@@ -10113,6 +10113,163 @@ html.hc-theme-dark .hc-germ-equip-chip--on {
   font-size: 11px;
   color: var(--muted);
 }
+.hc-germ-hub-modo {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.hc-germ-modo-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #047857;
+}
+.hc-germ-modo-pill--hidro_directo {
+  background: rgba(14, 165, 233, 0.15);
+  color: #0369a1;
+}
+.hc-germ-modo-toggle {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+.hc-germ-modo-btn {
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--muted);
+  cursor: pointer;
+}
+.hc-germ-modo-btn--on {
+  border-color: #22c55e;
+  background: #ecfdf5;
+  color: #166534;
+  font-weight: 700;
+}
+.hc-germ-tarea-hoy,
+.hc-germ-var-hint {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.hc-germ-var-hint {
+  font-size: 11px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+.hc-germ-registro-block {
+  padding: 10px 0;
+  border-top: 1px solid var(--border);
+}
+.hc-germ-reg-lbl {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.hc-germ-reg-textarea {
+  width: 100%;
+  margin-bottom: 8px;
+  min-height: 52px;
+  resize: vertical;
+}
+.hc-germ-reg-ok { color: #047857; font-size: 11px; margin: 0 0 6px; }
+.hc-germ-reg-pend { color: #b45309; font-size: 11px; margin: 0 0 6px; }
+.hc-germ-reg-list {
+  margin: 8px 0 0;
+  padding-left: 1rem;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.hc-germ-reg-meta { font-weight: 700; color: var(--white); }
+.hc-germ-checklist-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0;
+  text-align: left;
+}
+.hc-germ-check-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.evento-tipo-germinacion .evento-icono { filter: none; }
+.hc-germ-genetics-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(109, 40, 217, 0.08);
+  border: 1px solid rgba(109, 40, 217, 0.22);
+}
+html.hc-theme-dark .hc-germ-genetics-card {
+  background: rgba(167, 139, 250, 0.1);
+  border-color: rgba(167, 139, 250, 0.25);
+}
+.hc-germ-genetics-emoji {
+  font-size: 28px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.hc-germ-genetics-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--white);
+  letter-spacing: -0.02em;
+}
+.hc-germ-genetics-abrev {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 12px;
+}
+.hc-germ-genetics-meta,
+.hc-germ-genetics-times {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.hc-germ-genetics-pick {
+  margin: 0 0 12px;
+  width: 100%;
+}
+.hc-germ-genetics-pick-lbl {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.hc-germ-var-select {
+  width: 100%;
+  max-width: 100%;
+}
+.hc-germ-genetics-pick-hint {
+  margin: 6px 0 0;
+  font-size: 11px;
+  color: #b45309;
+}
+.hc-germ-spec-medio {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
 .hc-germ-setup-ol {
   margin: 8px 0 0;
   padding-left: 1.2rem;

@@ -3472,6 +3472,22 @@
         <div id="setupPremiumSemillerosGrid" class="hc-semilleros-grid setup-mb-12"></div>
         <div id="setupPremiumSemilleroPerfil" class="hc-sem-perfil-panel setup-hidden setup-mb-12"></div>
       </div>
+      <div id="setupPremiumGeneticaGermSection" class="setup-hidden setup-mb-12">
+        <div class="setup-block-title">¿Qué genética vas a germinar?</div>
+        <p class="setup-field-hint setup-mb-8">
+          Elige la cepa del catálogo HidroGrow. Se preconfigura <strong>Inicio → Germinación</strong>
+          (tiempos, tareas diarias y calendario). Coherente con foto/auto del paso «Genética y método».
+        </p>
+        <p id="setupPremiumGeneticaGermFiltro" class="setup-field-hint setup-mb-8" role="note"></p>
+        <div id="setupPremiumGeneticaGermPreview" class="setup-mb-8"></div>
+        <label class="setup-field-label" for="setupPremiumVariedadGermSelect">Genética (semilla)</label>
+        <select id="setupPremiumVariedadGermSelect" class="setup-input-city setup-mb-8"
+          aria-label="Genética a germinar"
+          onchange="seleccionarPremiumVariedadGerminacion(this.value)"></select>
+        <p id="setupPremiumGeneticaGermReq" class="setup-box-warn setup-mb-8" role="note">
+          Recomendado: elige la genética ahora para no repetirlo en Inicio.
+        </p>
+      </div>
       <div id="setupPremiumGerminacionPasos" class="setup-mb-8"></div>
       <div id="setupPremiumEsquejesPrep" class="setup-hidden">
         <div class="setup-block-title">1 · Preparar madre (antes del corte)</div>
@@ -5087,7 +5103,7 @@
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip-full"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
-  <script src="js/hc-origen-planta-dias.js?v=2026-05-31-origen"></script>
+  <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-grow-room.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/state-torre-logic.js"></script>
@@ -5123,12 +5139,13 @@
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
   <script src="js/torre-render-build.js?v=2026-06-02-dwc-rdwc-only"></script>
 <script src="js/torre-render-main.js?v=2026-06-02-dwc-rdwc-only"></script>
-  <script src="js/cultivos-germinacion.js?v=2026-05-31-origen"></script>
+  <script src="js/cultivos-germinacion.js?v=2026-05-31-setup-genetics"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-select-fix"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-flow"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-reco"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-setup-genetics"></script>
+  <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-setup-genetics"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-06-02-dwc-rdwc-only"></script>
@@ -5159,7 +5176,7 @@
   <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>
-  <script src="js/calendario-logic.js?v=2026-05-31-ui-plantas-pm"></script>
+  <script src="js/calendario-logic.js?v=2026-05-31-germ-cal"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>

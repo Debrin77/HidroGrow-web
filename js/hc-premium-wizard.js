@@ -30,6 +30,7 @@
         intensidadLuz: 'media',
         geneticaPref: 'foto',
         origenPlanta: 'semilla',
+        variedadGerminacion: '',
         germinacionChecklist: {},
         metodoCultivo: 'scrog',
         metodoManual: false,
@@ -89,6 +90,7 @@
     refreshPremiumGerminacionUI();
     refreshPremiumMetodoOrigenHint();
     if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+    if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
   }
 
@@ -197,6 +199,7 @@
     el('setupPremiumGenFoto')?.classList.toggle('selected', pref !== 'auto');
     el('setupPremiumGenAuto')?.classList.toggle('selected', pref === 'auto');
     refreshPremiumGeneticaHint();
+    if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
   }
 
   function togglePremiumCarpaReflectante() {
@@ -437,6 +440,7 @@
         '<div class="setup-box-info">Cubo dedicado en DWC/RDWC · <strong>18/6</strong> permanente. ' +
         'Tras 5–6 sem en veg estable, toma esquejes cada 10–14 d sin volver a sembrar.</div>';
     } else if (typeof hcGerminacionRenderSetupPreview === 'function') {
+      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
       hcGerminacionRenderSetupPreview();
       if (typeof hcGerminacionActivarDesdeSetup === 'function') hcGerminacionActivarDesdeSetup();
     } else {
@@ -541,6 +545,7 @@
     if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
     if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
     if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+    if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
@@ -550,6 +555,7 @@
       if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
       if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
       if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     }
     if (pagina === SETUP_PAGE_PREMIUM_3) {
       if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
@@ -593,6 +599,9 @@
     if (typeof persistEsquejesToConfig === 'function') persistEsquejesToConfig(cfg);
     if (typeof persistEquipamientoToConfig === 'function') persistEquipamientoToConfig(cfg);
     if (typeof persistSemilleroToConfig === 'function') persistSemilleroToConfig(cfg);
+    if (typeof syncVariedadGermATorre === 'function') {
+      syncVariedadGermATorre(p.variedadGerminacion || '');
+    }
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;

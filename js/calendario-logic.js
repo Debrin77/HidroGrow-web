@@ -573,6 +573,13 @@ function generarEventos(fecha) {
     });
   }
 
+  if (typeof hcGerminacionEventosCalendario === 'function') {
+    try {
+      const evGerm = hcGerminacionEventosCalendario(d, hoy);
+      if (Array.isArray(evGerm) && evGerm.length) eventos.push.apply(eventos, evGerm);
+    } catch (_) {}
+  }
+
   if (typeof generarEventosEsquejesDia === 'function') {
     try {
       const evEs = generarEventosEsquejesDia(d, hoy);
@@ -780,6 +787,12 @@ function renderCalendario() {
     });
   });
 
+  if (typeof hcGerminacionMarcarCalendarioGrid === 'function') {
+    try {
+      hcGerminacionMarcarCalendarioGrid(addEvento, mes, año);
+    } catch (_) {}
+  }
+
   if (typeof marcarEsquejesCalendarioGrid === 'function') {
     try {
       marcarEsquejesCalendarioGrid(addEvento, mes, año);
@@ -918,6 +931,17 @@ function irAMedicionesDesdeCalendario() {
   } catch (_) {}
 }
 
+function irAGerminacionDesdeCalendario() {
+  try {
+    if (typeof goTab === 'function') goTab('inicio');
+    setTimeout(function () {
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      var hub = document.getElementById('dashGerminacionHub');
+      if (hub) hub.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 120);
+  } catch (_) {}
+}
+
 
 function seleccionarDiaCal(fecha) {
   calDiaSeleccionado = fecha;
@@ -953,6 +977,8 @@ function mostrarEventosDia(fecha) {
           ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irChecklistDesdeCalendario()">Ir a Historial → Checklist</button>'
           : e.action === 'medicion'
             ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAMedicionesDesdeCalendario()">Ir a Mediciones</button>'
+            : e.action === 'inicio' || e.tipo === 'germinacion'
+              ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAGerminacionDesdeCalendario()">Ir a Germinación (Inicio)</button>'
           : ''}
       </div>
     </div>
