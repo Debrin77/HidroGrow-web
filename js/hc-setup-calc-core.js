@@ -1724,8 +1724,8 @@ function guardarSetupYContinuarCore() {
     return false;
     }
     if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
-      showToast('Elige DWC o RDWC en el primer paso del asistente', true);
-      setupPagina = 0;
+      showToast('Elige DWC o RDWC en el paso «DWC o RDWC» del asistente', true);
+      setupPagina = typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
       renderSetupPage();
       return false;
     }

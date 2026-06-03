@@ -2084,7 +2084,7 @@ function abrirSetup() {
     hcSetSetupSlidersBlankMode(false);
   } catch (_) {}
   setupEsNuevaTorre = false;
-  setupPagina = 0;
+  setupPagina = SETUP_PAGE_ORIGEN;
   const sh = (state.configTorre && state.configTorre.sensoresHardware) || {};
   setupData.sensoresHardware = {
     ec: !!sh.ec,
@@ -2291,7 +2291,20 @@ function seleccionarTipoInstalacionSetup(tipo) {
 }
 
 function refrescarSetupTipoInstalacionUI() {
-  if (setupTipoInstalacion !== 'rdwc') setupTipoInstalacion = 'dwc';
+  const esDwc = setupTipoInstalacion === 'dwc';
+  const esRdwc = setupTipoInstalacion === 'rdwc';
+  const sinElegir = !esDwc && !esRdwc;
+  if (sinElegir && setupEsNuevaTorre) {
+    ['setupCardTipoDwc', 'setupCardTipoRdwc', 'setupInlineTipoDwc', 'setupInlineTipoRdwc'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('selected');
+      el.setAttribute('aria-pressed', 'false');
+    });
+    if (setupPagina !== SETUP_PAGE_GEOMETRY) return;
+  } else if (!sinElegir && !esRdwc) {
+    setupTipoInstalacion = 'dwc';
+  }
   ['setupCardTipoTorre', 'setupCardTipoNft', 'setupCardTipoSrf', 'setupInlineTipoTorre', 'setupInlineTipoNft', 'setupInlineTipoSrf'].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
@@ -2306,7 +2319,7 @@ function refrescarSetupTipoInstalacionUI() {
   if (setupTipoInstalacion === 'rdwc' && rdwcCard) {
     rdwcCard.classList.add('selected');
     rdwcCard.setAttribute('aria-pressed', 'true');
-  } else if (dwcCard) {
+  } else if (setupTipoInstalacion === 'dwc' && dwcCard) {
     dwcCard.classList.add('selected');
     dwcCard.setAttribute('aria-pressed', 'true');
   }
@@ -2320,7 +2333,7 @@ function refrescarSetupTipoInstalacionUI() {
   if (setupTipoInstalacion === 'rdwc' && inlRdwc) {
     inlRdwc.classList.add('selected');
     inlRdwc.setAttribute('aria-pressed', 'true');
-  } else if (inlDwc) {
+  } else if (setupTipoInstalacion === 'dwc' && inlDwc) {
     inlDwc.classList.add('selected');
     inlDwc.setAttribute('aria-pressed', 'true');
   }

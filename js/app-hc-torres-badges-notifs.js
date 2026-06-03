@@ -967,7 +967,7 @@ function abrirSetupNuevaTorre() {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession({ keepNuevaFlag: true });
   } catch (_) {}
   setupEsNuevaTorre = true;
-  setupPagina = 0;
+  setupPagina = typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
   setupTipoInstalacion = '';
   setupTipoTorre = 'custom';
   setupEquipamiento = new Set(['difusor']);

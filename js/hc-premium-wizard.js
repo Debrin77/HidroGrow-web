@@ -628,6 +628,21 @@
 
   function validarPremiumSetupPaso(pagina) {
     persistPremiumSetupFromUI();
+    if (pagina === SETUP_PAGE_ORIGEN) {
+      const o = ensurePremiumSetup().origenPlanta;
+      if (o !== 'semilla' && o !== 'clon' && o !== 'madre') {
+        if (typeof showToast === 'function') showToast('Elige cómo empiezas el cultivo (semilla, clon o madre)', true);
+        return false;
+      }
+    }
+    if (pagina === SETUP_PAGE_PREMIUM_END) {
+      if (typeof setupTipoInstalacion !== 'undefined' &&
+          setupTipoInstalacion !== 'dwc' &&
+          setupTipoInstalacion !== 'rdwc') {
+        if (typeof showToast === 'function') showToast('Elige DWC o RDWC antes de continuar', true);
+        return false;
+      }
+    }
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
       if (typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
           window.salaTieneMedidasDesdeEquipamiento()) {

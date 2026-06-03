@@ -31,7 +31,11 @@ function renderSetupPage() {
   }
 
   // Acciones específicas por página
-  if (setupPagina === SETUP_PAGE_WELCOME || setupPagina === SETUP_PAGE_GEOMETRY) {
+  if (
+    setupPagina === SETUP_PAGE_WELCOME ||
+    setupPagina === SETUP_PAGE_PREMIUM_END ||
+    setupPagina === SETUP_PAGE_GEOMETRY
+  ) {
     refrescarSetupTipoInstalacionUI();
   }
   if (setupPagina === SETUP_PAGE_GEOMETRY) {
@@ -162,7 +166,12 @@ function renderSetupPage() {
   // Botones navegación
   const back = document.getElementById('setupBtnBack');
   const next = document.getElementById('setupBtnNext');
-  if (back) back.style.display = setupPagina > 0 ? 'block' : 'none';
+  if (back) {
+    back.style.display =
+      setupPagina > (typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1)
+        ? 'block'
+        : 'none';
+  }
   const ultimoPaso = setupEsNuevaTorre ? SETUP_TOTAL_PAGES - 2 : SETUP_TOTAL_PAGES - 1;
   if (next) {
     if (setupPagina === 0) {
@@ -203,9 +212,17 @@ function hcScrollSetupWizardAlFalloGuardado() {
 }
 
 function setupNext() {
-  if (setupPagina === 0) {
-    iniciarConfiguracionTorre();
+  if (setupPagina === SETUP_PAGE_WELCOME) {
+    setupPagina =
+      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : SETUP_PAGE_ORIGEN;
+    renderSetupPage();
     return;
+  }
+  if (setupPagina === SETUP_PAGE_PREMIUM_END) {
+    if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
+      showToast('Elige DWC o RDWC antes de continuar a geometría', true);
+      return;
+    }
   }
   if (setupEsNuevaTorre && setupPagina === SETUP_PAGE_GEOMETRY) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
@@ -270,11 +287,9 @@ function setupBack() {
   } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
     setupPagina = SETUP_PAGE_PREMIUM_END;
     renderSetupPage();
-  } else if (setupPagina > SETUP_PAGE_WELCOME && setupPagina <= SETUP_PAGE_PREMIUM_END) {
-    setupPagina--;
-    renderSetupPage();
-  } else if (setupPagina === SETUP_PAGE_PREMIUM_START) {
-    setupPagina = SETUP_PAGE_WELCOME;
+  } else if (setupPagina > SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+    setupPagina =
+      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;
     renderSetupPage();
   }
 }

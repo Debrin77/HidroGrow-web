@@ -44,6 +44,8 @@
 
   function getSetupSkippedPages() {
     const skip = new Set();
+    // La bienvenida DWC/RDWC ya no es el primer paso: origen de planta → premium → tipo → geometría.
+    skip.add(typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0);
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) {
       skip.add(typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15);
     }
@@ -197,15 +199,22 @@
     const p = ensurePremium();
     const premiumActive = !!p;
 
-    if (page === typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9) {
+    const pagePuente =
+      typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+    const pageGeom =
+      typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+    if (page === pagePuente || page === pageGeom) {
       const hint = document.getElementById('setupFlowTipoHint');
       const inline = document.getElementById('setupTipoInstalacionInline');
       const tipoOk =
         typeof setupTipoInstalacion !== 'undefined' &&
         (setupTipoInstalacion === 'dwc' || setupTipoInstalacion === 'rdwc');
-      if (inline && tipoOk && typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) {
+      if (page === pageGeom && inline && tipoOk) {
         inline.classList.add('setup-flow-tipo-done');
-        if (hint) hint.classList.remove('setup-hidden');
+        if (hint) {
+          hint.textContent = 'DWC/RDWC ya elegido en el paso anterior — cambia aquí solo si te equivocaste.';
+          hint.classList.remove('setup-hidden');
+        }
       } else {
         if (inline) inline.classList.remove('setup-flow-tipo-done');
         if (hint) hint.classList.add('setup-hidden');

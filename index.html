@@ -3238,38 +3238,16 @@
 
   <div class="setup-content">
 
-    <div class="setup-page active" id="spage0">
-      <div class="setup-title">Configura tu instalación</div>
+    <div class="setup-page" id="spage0">
+      <div class="setup-title">Asistente de instalación</div>
       <div class="setup-subtitle">
-        <strong>DWC</strong> (cubos aireados) o <strong>RDWC</strong> (recirculación). Litros, oxígeno y EC/pH calculados paso a paso.
+        Primero defines <strong>cómo empiezas el cultivo</strong> (semilla, clon o madre). El tipo de sistema DWC/RDWC lo eliges más adelante.
       </div>
-
-      <div id="setupTipoInstalacionPanel" class="setup-tipo-panel">
-        <div class="setup-tipo-label">Tipo de sistema</div>
-        <div class="setup-tipo-grid setup-tipo-grid--dual">
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoDwc"
-            onclick="seleccionarTipoInstalacionSetup('dwc')"
-            aria-pressed="false" aria-label="DWC: cubos con solución y aireador">
-            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-dwc"/></svg></div>
-            <div class="setup-tipo-name">DWC</div>
-            <div class="setup-tipo-hint">1–8 cubos · piedra de aire 24 h</div>
-          </button>
-          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoRdwc"
-            onclick="seleccionarTipoInstalacionSetup('rdwc')"
-            aria-pressed="false" aria-label="RDWC: depósito de control y cubos en serie">
-            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></div>
-            <div class="setup-tipo-name">RDWC</div>
-            <div class="setup-tipo-hint">Recirculación · escala sala</div>
-          </button>
-        </div>
-      </div>
-
       <div class="welcome-hero" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-droplet"/></svg></div>
       <button type="button" class="welcome-start-btn" onclick="iniciarConfiguracionTorre()"
         aria-label="Empezar asistente de configuración paso a paso">
         Empezar asistente
       </button>
-      <p class="welcome-hint setup-hidden" aria-hidden="true">Tras guardar: montaje en Sala, cultivos en el esquema, checklist del depósito.</p>
     </div>
 
     <div class="setup-page" id="spagePremiumOrigen">
@@ -3533,18 +3511,38 @@
     </div>
 
     <div class="setup-page" id="spagePremium7">
-      <div class="setup-title">Puente al montaje</div>
-      <div class="setup-subtitle">Resumen de contexto. Siguiente: geometría del sistema.</div>
+      <div class="setup-title">¿DWC o RDWC?</div>
+      <div class="setup-subtitle">
+        Elige el <strong>sistema hidropónico</strong> que montarás. Siguiente: medidas del cubo o circuito RDWC.
+      </div>
+      <div id="setupTipoInstalacionPanel" class="setup-tipo-panel setup-mb-12">
+        <div class="setup-tipo-label">Tipo de sistema</div>
+        <div class="setup-tipo-grid setup-tipo-grid--dual">
+          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoDwc"
+            onclick="seleccionarTipoInstalacionSetup('dwc')"
+            aria-pressed="false" aria-label="DWC: cubos con solución y aireador">
+            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-dwc"/></svg></div>
+            <div class="setup-tipo-name">DWC</div>
+            <div class="setup-tipo-hint">1–8 cubos · piedra de aire 24 h</div>
+          </button>
+          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoRdwc"
+            onclick="seleccionarTipoInstalacionSetup('rdwc')"
+            aria-pressed="false" aria-label="RDWC: depósito de control y cubos en serie">
+            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></div>
+            <div class="setup-tipo-name">RDWC</div>
+            <div class="setup-tipo-hint">Recirculación · escala sala</div>
+          </button>
+        </div>
+      </div>
       <div class="setup-box-info setup-mb-12">
-        <strong>Siguiente:</strong> geometría del sistema (filas×cestas o cubos RDWC), equipamiento hidro, agua de mezcla y nutriente.
+        <strong>Ya definido:</strong> origen de planta, entorno, sala, genética y equipamiento según tu camino.
       </div>
       <ul class="setup-checklist-preview setup-mb-12">
-        <li>Tipo DWC/RDWC confirmado en bienvenida</li>
-        <li>Entorno, luz y fotoperiodo ya definidos</li>
-        <li>Origen (paso 1) y detalle genética / germinación / esquejes</li>
-        <li>Checklist de compra: aire, EC/pH, net pots, nutriente</li>
+        <li>Origen (semilla, clon o madre) y detalle de genética / germinación / esquejes</li>
+        <li>Entorno, luz y fotoperiodo</li>
+        <li>Siguiente paso: geometría (litros, cestas, oxígeno)</li>
       </ul>
-      <p class="setup-field-hint">El diagrama nítido del sistema aparece en el paso Geometría.</p>
+      <p class="setup-field-hint">El diagrama del montaje aparece en el paso Geometría.</p>
     </div>
 
     <div class="setup-page" id="spage1">
@@ -3558,7 +3556,7 @@
         <div class="setup-tipo-inline-label">
           Tipo de sistema
         </div>
-        <p id="setupFlowTipoHint" class="setup-flow-tipo-hint setup-hidden">DWC/RDWC ya elegido en bienvenida — cambia aquí solo si te equivocaste.</p>
+        <p id="setupFlowTipoHint" class="setup-flow-tipo-hint setup-hidden">DWC/RDWC ya elegido en el paso anterior — cambia aquí solo si te equivocaste.</p>
         <div class="setup-tipo-inline-grid setup-tipo-inline-grid--dual">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
@@ -5163,18 +5161,18 @@
   <script src="js/hc-germinacion-flow.js?v=2026-05-31-setup-genetics"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-origen-primero"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero2"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-06-02-dwc-rdwc-only"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
   <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
   <script src="js/hc-cultivo-cesta-matrix.js?v=2026-06-02-dwc-rdwc-only"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-origen-primero"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-06-02-dwc-rdwc-only2"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=2026-06-02-icons-full"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -5204,7 +5202,7 @@
   <script src="js/hc-dash-operativa.js?v=2026-05-31-operativa"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
-  <script src="js/app-hc-torres-badges-notifs.js?v=2026-06-02-dwc-rdwc-only"></script>
+  <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>
   <script src="js/hc-salas-plan.js?v=2026-05-31-salas"></script>
   <script src="js/hc-puesta-marcha.js?v=2026-06-02-icons-full"></script>
