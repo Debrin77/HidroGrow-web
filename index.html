@@ -3382,7 +3382,7 @@
       <div id="setupPremiumEntornoMeteoWrap" class="setup-hidden setup-mt-12">
         <div class="setup-block-title setup-mb-8"><svg class="hc-ico hc-ico--ubicacion-mapa" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> Ubicación (meteorología)</div>
         <p class="setup-field-hint setup-mb-8">Municipio de esta instalación para previsión, avisos y riego con clima exterior. Puedes cambiarlo después en Medir.</p>
-        <input type="text" id="setupPremiumCiudadMeteo" placeholder="Busca tu municipio (castellano o valencià)"
+        <input type="text" id="setupPremiumCiudadMeteo" placeholder="Busca tu municipio"
           aria-label="Municipio para datos meteorológicos"
           class="setup-input-city"
           oninput="onBuscarCiudadPremiumEntorno(this.value)">
@@ -4307,7 +4307,7 @@
       <div id="seccionCiudadUbicacion" class="setup-mt-12">
         <div class="setup-block-title setup-mb-8"><svg class="hc-ico hc-ico--ubicacion-mapa" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> Ciudad de esta instalación (meteorología)</div>
         <p class="setup-note-ubic-torre">Cada instalación puede estar en un sitio distinto: aquí defines el clima y coordenadas <strong>solo para la instalación</strong> que estás configurando. Cambia de activa en Inicio o en Cultivo e instalación y podrás tener otro municipio.</p>
-        <input type="text" id="setupCiudad2" placeholder="Ciudad para meteo (nombre en castellano o valencià)"
+        <input type="text" id="setupCiudad2" placeholder="Busca tu municipio"
           aria-label="Ciudad para datos meteorológicos"
           class="setup-input-city"
           oninput="onBuscarCiudadSetup(this.value)">
@@ -5245,18 +5245,18 @@
   <script src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-camino-fase.js?v=2026-05-31-caminos-fase"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-sin-cajas-origen"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-skip-detalle-blanco"></script>
   <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-skip-detalle"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-cajas-origen"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-entorno-meteo"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-clima-sin-sub"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
   <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
   <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-propagador-cultivo"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-header-compact"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-skip-detalle-blanco"></script>
 
 
 
@@ -5288,7 +5288,7 @@
   <script src="js/meteo-alarm-app.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/app-hc-medicion-toast.js?v=2026-05-31-flujo-cristalino"></script>
   <script src="js/hc-dash-operativa.js?v=2026-05-31-operativa"></script>
-  <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-entorno-meteo"></script>
+  <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-meteo-lang"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>

@@ -410,8 +410,7 @@
       faseSala: 'esqueje',
       horasLuz: 18,
       intensidadLuz: 'baja',
-      subtitle:
-        'Preconfigurado para <strong>propagador / domo</strong> (Fase 1). La sala LED la afinarás tras las 6 fases.',
+      subtitle: '',
       resumenExtra:
         'Domo: HR <strong>70–80 %</strong>, ventilar <strong>2×/día</strong> (5 min), luz <strong>suave 18/6</strong> (no saturar plántulas).',
     },
@@ -489,9 +488,20 @@
     const preset = getPremiumClimaPresetForCamino(cam);
     const sub = el('setupPremiumClimaSubtitle');
     if (sub) {
-      sub.innerHTML = preset
+      var ocultarSubClima =
+        cam === 'semilla_propagador' &&
+        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm();
+      var textoSub = preset && preset.subtitle
         ? preset.subtitle
         : 'Fase y horas de luz → objetivos VPD y EC.';
+      if (ocultarSubClima || !textoSub) {
+        sub.innerHTML = '';
+        sub.classList.add('setup-hidden');
+      } else {
+        sub.innerHTML = textoSub;
+        sub.classList.remove('setup-hidden');
+      }
     }
     const hint = el('setupPremiumClimaCaminoHint');
     if (hint) {

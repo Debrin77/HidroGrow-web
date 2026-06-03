@@ -791,6 +791,106 @@ const CIUDAD_SETUP_UI = {
   },
 };
 
+/** Idioma de búsqueda geográfica según el navegador (sin selector en UI). */
+function getGeocodingSearchLanguages() {
+  var langs = ['es'];
+  try {
+    var raw = String(
+      navigator.language ||
+        (navigator.languages && navigator.languages[0]) ||
+        'es'
+    ).toLowerCase();
+    if (
+      raw.indexOf('ca') === 0 ||
+      raw.indexOf('va') === 0 ||
+      raw.indexOf('valencia') >= 0 ||
+      raw.indexOf('-es-valencia') >= 0
+    ) {
+      langs = ['ca', 'es'];
+    }
+  } catch (_) {}
+  return langs;
+}
+
+function getNominatimAcceptLanguage() {
+  var langs = getGeocodingSearchLanguages();
+  return langs.indexOf('ca') === 0 ? 'ca,es' : 'es,ca';
+}
+
+function renderCiudadSetupResultados(ui, data) {
+  if (!ui.res) return;
+  if (!data.results || data.results.length === 0) {
+    ui.res.classList.add('setup-hidden');
+    return;
+  }
+  ui.res.classList.remove('setup-hidden');
+  ui.res.innerHTML = data.results
+    .map(function (c) {
+      return (
+        '<div class="crs-item" ' +
+        'data-lat="' +
+        c.latitude +
+        '" data-lon="' +
+        c.longitude +
+        '" ' +
+        'data-nombre="' +
+        (c.name + (c.admin1 ? ', ' + c.admin1 : '') + ', ' + c.country).replace(/"/g, "'") +
+        '" ' +
+        '>' +
+        c.name +
+        (c.admin1 ? ', ' + c.admin1 : '') +
+        ', ' +
+        c.country +
+        '</div>'
+      );
+    })
+    .join('');
+  ui.res.querySelectorAll('.crs-item').forEach(function (el) {
+    el.addEventListener('click', function () {
+      selCiudadSetup(
+        this.getAttribute('data-nombre'),
+        parseFloat(this.getAttribute('data-lat')),
+        parseFloat(this.getAttribute('data-lon')),
+        ui._mode
+      );
+    });
+    el.addEventListener('touchstart', function () {
+      this.classList.add('crs-item--active');
+    }, { passive: true });
+    el.addEventListener('touchend', function () {
+      this.classList.remove('crs-item--active');
+    }, { passive: true });
+  });
+}
+
+function buscarCiudadGeocode(val, ui, langIndex) {
+  var langs = getGeocodingSearchLanguages();
+  var idx = langIndex || 0;
+  if (idx >= langs.length) {
+    if (ui.res) ui.res.classList.add('setup-hidden');
+    return;
+  }
+  var lang = langs[idx];
+  fetch(
+    'https://geocoding-api.open-meteo.com/v1/search?name=' +
+      encodeURIComponent(val) +
+      '&count=5&language=' +
+      encodeURIComponent(lang) +
+      '&format=json'
+  )
+    .then(function (r) {
+      return r.json();
+    })
+    .then(function (data) {
+      if (!data.results || data.results.length === 0) {
+        buscarCiudadGeocode(val, ui, idx + 1);
+        return;
+      }
+      renderCiudadSetupResultados(ui, data);
+    })
+    .catch(function () {});
+}
+
 function getCiudadSetupUi(mode) {
   const key = mode === 'premium' ? 'premium' : 'setup';
   const ids = CIUDAD_SETUP_UI[key];
@@ -821,40 +921,12 @@ function renderCiudadSetupConfirmado(ui, nombre, lat, lon, opts) {
 
 function onBuscarCiudadSetup(val, mode) {
   const ui = getCiudadSetupUi(mode);
+  ui._mode = mode;
   if (!ui.res || val.length < 2) {
     if (ui.res) ui.res.classList.add('setup-hidden');
     return;
   }
-  fetch('https://geocoding-api.open-meteo.com/v1/search?name=' +
-    encodeURIComponent(val) + '&count=5&language=es&format=json')
-    .then(r => r.json())
-    .then(data => {
-      if (!data.results || data.results.length === 0) {
-        ui.res.classList.add('setup-hidden');
-        return;
-      }
-      ui.res.classList.remove('setup-hidden');
-      ui.res.innerHTML = data.results.map(c =>
-        '<div class="crs-item" ' +
-        'data-lat="' + c.latitude + '" data-lon="' + c.longitude + '" ' +
-        'data-nombre="' + (c.name + (c.admin1?', '+c.admin1:'') + ', '+c.country).replace(/"/g,"'") + '" ' +
-        '>' +
-        c.name + (c.admin1 ? ', ' + c.admin1 : '') + ', ' + c.country +
-        '</div>'
-      ).join('');
-      ui.res.querySelectorAll('.crs-item').forEach(el => {
-        el.addEventListener('click', function() {
-          selCiudadSetup(
-            this.getAttribute('data-nombre'),
-            parseFloat(this.getAttribute('data-lat')),
-            parseFloat(this.getAttribute('data-lon')),
-            mode
-          );
-        });
-        el.addEventListener('touchstart', function(){ this.classList.add('crs-item--active'); }, {passive:true});
-        el.addEventListener('touchend',   function(){ this.classList.remove('crs-item--active'); }, {passive:true});
-      });
-    }).catch(() => {});
+  buscarCiudadGeocode(val, ui, 0);
 }
 
 function onBuscarCiudadPremiumEntorno(val) {
@@ -902,7 +974,8 @@ async function detectarCiudadPremiumEntorno() {
       navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 }));
     const { latitude, longitude } = pos.coords;
     const url = 'https://nominatim.openstreetmap.org/reverse?lat=' + latitude +
-      '&lon=' + longitude + '&format=json&accept-language=es';
+      '&lon=' + longitude + '&format=json&accept-language=' +
+      encodeURIComponent(getNominatimAcceptLanguage());
     const data = await (await fetch(url, { headers: { 'User-Agent': 'HidroGrow/1.0' } })).json();
     const ad = data.address || {};
     const ciudad = ad.city || ad.town || ad.village || ad.municipality || '';

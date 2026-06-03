@@ -4,7 +4,31 @@ function updateNftSetupPreview() {}
 function buildNftDraftConfigFromSetupUi() { return { tipoInstalacion: 'dwc' }; }
 function refrescarNftCanalesSliderEtiqueta() {}
 
+function hcSetupRedirectSiPaginaOmitida() {
+  if (typeof getSetupSkippedPages !== 'function' || typeof getSetupVisiblePages !== 'function') {
+    return false;
+  }
+  const skip = getSetupSkippedPages();
+  if (!skip.has(setupPagina)) return false;
+  const vis = getSetupVisiblePages();
+  if (!vis.length) return false;
+  const mayor = vis.filter(function (p) {
+    return p < setupPagina;
+  });
+  const menor = vis.filter(function (p) {
+    return p > setupPagina;
+  });
+  if (menor.length) setupPagina = menor[0];
+  else if (mayor.length) setupPagina = mayor[mayor.length - 1];
+  else setupPagina = vis[vis.length - 1];
+  return true;
+}
+
 function renderSetupPage() {
+  if (hcSetupRedirectSiPaginaOmitida()) {
+    renderSetupPage();
+    return;
+  }
   // Instalación nueva: el último paso es cultivos (6); nunca mostrar spage7 (resumen/«varias torres»).
   const ultimoPasoRender =
     typeof getSetupUltimoPasoIndice === 'function'
@@ -14,6 +38,10 @@ function renderSetupPage() {
         : SETUP_TOTAL_PAGES - 1;
   if (setupEsNuevaTorre && setupPagina > ultimoPasoRender) {
     setupPagina = ultimoPasoRender;
+    if (hcSetupRedirectSiPaginaOmitida()) {
+      renderSetupPage();
+      return;
+    }
   }
 
   // Ocultar todas las páginas
