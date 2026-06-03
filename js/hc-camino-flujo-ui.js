@@ -52,7 +52,7 @@
       2: 'Objetivo',
       3: 'Entorno',
       4: 'Germinación ahora',
-      5: 'Clima domo',
+      5: 'Nutriente y domo',
       7: 'Plan cultivo',
     },
     semilla_hidro: {
@@ -215,10 +215,26 @@
       t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
     }
     applyGermAhoraMinimalChrome(showGerm);
+    if (typeof applyPremiumPropagadorPaso4Chrome === 'function') applyPremiumPropagadorPaso4Chrome();
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
     applyPremiumDetalleOrigChrome(showGerm);
+  }
+
+  function applyPremiumPropagadorPaso4Chrome() {
+    var show = isGermAhoraPropagadorUi();
+    var page4 = el('spagePremium4');
+    if (page4) page4.classList.toggle('hc-prop-nutriente-page', !!show);
+    var t4 = page4 ? page4.querySelector('.setup-title') : null;
+    if (t4) {
+      t4.textContent = show ? 'Nutriente y clima domo' : 'Clima, luz y fotoperiodo';
+    }
+    var sub = el('setupPremiumClimaSubtitle');
+    if (sub && show) {
+      sub.textContent = 'Fotoperiodo bajo domo; la EC de la bandeja la defines arriba con tu abono.';
+    }
+    if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
 
   function applyPremiumDetalleOrigChrome(showGerm) {
@@ -465,6 +481,7 @@
   global.refreshSetupCaminoStepBanner = refreshSetupCaminoStepBanner;
   global.getSetupStepLabelForPage = getSetupStepLabelForPage;
   global.syncPremiumGermSectionPlacement = syncPremiumGermSectionPlacement;
+  global.applyPremiumPropagadorPaso4Chrome = applyPremiumPropagadorPaso4Chrome;
   global.refreshTabsOperativaCamino = refreshTabsOperativaCamino;
   global.renderTrasladoSalaBannerHtml = renderTrasladoSalaBannerHtml;
   global.hcNecesitaBannerTrasladoSala = hcNecesitaBannerTrasladoSala;

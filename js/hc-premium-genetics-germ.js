@@ -92,6 +92,7 @@
       if (typeof saveState === 'function') saveState();
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     } catch (_) {}
+    if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
 
   function seleccionarPremiumVariedadGerminacion(variedadId) {

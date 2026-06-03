@@ -3453,6 +3453,19 @@
 
     <div class="setup-page" id="spagePremium4">
       <div class="setup-title">Clima, luz y fotoperiodo</div>
+      <div id="setupPremiumNutrienteGermSection" class="setup-hidden setup-mb-16">
+        <div class="setup-block-title">Nutriente · bandeja propagador</div>
+        <p id="setupPremiumNutrienteGermHint" class="setup-field-hint setup-mb-8"></p>
+        <div id="setupPremiumNutrienteGermEcBanner" class="setup-box-info setup-mb-8" role="status"></div>
+        <div class="setup-mb-8">
+          <label class="setup-field-label" for="setupPremiumNutrienteGermVolL">Volumen de solución en bandeja (L)</label>
+          <input type="number" id="setupPremiumNutrienteGermVolL" class="setup-input-city" min="0.5" max="10" step="0.5" value="2" onchange="typeof onPremiumNutrienteGermVolChange==='function'&&onPremiumNutrienteGermVolChange()">
+          <p class="setup-field-hint">Orientativo: 2 L en bandeja estándar; ajusta si tu domo lleva más agua.</p>
+        </div>
+        <div class="nutrientes-grid" id="nutrientesGridPremiumGerm"></div>
+        <button type="button" class="btn btn-link setup-mt-8" id="nutrientesToggleCatalogoPremiumGerm" onclick="typeof toggleNutrientesCatalogoPremiumGerm==='function'&&toggleNutrientesCatalogoPremiumGerm()">Ver catálogo completo</button>
+        <div id="nutProtocoloPreviewPremiumGerm" class="setup-hidden setup-mt-12"></div>
+      </div>
       <div class="setup-subtitle" id="setupPremiumClimaSubtitle">Fase y horas de luz → objetivos VPD y EC.</div>
       <p id="setupPremiumClimaCaminoHint" class="setup-box-info setup-mb-8 setup-hidden" role="status"></p>
       <div class="setup-mb-8">
@@ -5237,9 +5250,9 @@
   <script src="js/hc-camino-fase.js?v=2026-06-03-icon-propagador"></script>
   <script src="js/hc-camino-cultivo.js?v=2026-05-31-skip-detalle-blanco"></script>
   <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prop-svg"></script>
-  <script src="js/hc-camino-flujo-ui.js?v=2026-06-03-medir-sin-banner"></script>
+  <script src="js/hc-camino-flujo-ui.js?v=2026-06-03-nutriente-propagador"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-cajas-origen"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-clima-sin-sub"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-06-03-nutriente-propagador"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>
@@ -5271,6 +5284,7 @@
   <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-setup-consejos.js?v=2026-05-31-plantas-sub-germ"></script>
+  <script src="js/hc-premium-nutriente-germ.js?v=2026-06-03-nutriente-propagador"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-06-03-pin-fix"></script>

@@ -1589,13 +1589,17 @@ function renderDosisSetup() {
 
 function selNutriente(id) {
   setupNutriente = id;
-  document.querySelectorAll('.nutriente-card').forEach(c => {
-    c.classList.remove('selected');
-    c.setAttribute('aria-pressed', c.id === 'nut-' + id ? 'true' : 'false');
+  document.querySelectorAll('.nutriente-card[data-nut-id]').forEach(c => {
+    const match = c.getAttribute('data-nut-id') === id;
+    c.classList.toggle('selected', match);
+    c.setAttribute('aria-pressed', match ? 'true' : 'false');
   });
-  document.getElementById('nut-' + id)?.classList.add('selected');
-  // Recalcular dosis con volumen actual y cultivos seleccionados
+  if (typeof ensurePremiumSetup === 'function') {
+    const p = ensurePremiumSetup();
+    if (p) p.nutrienteGerm = id;
+  }
   renderDosisSetup();
+  if (typeof renderPremiumNutrienteGermDosis === 'function') renderPremiumNutrienteGermDosis();
 }
 
 function buscarCiudadSetup(query) {

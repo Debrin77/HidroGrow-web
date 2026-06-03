@@ -755,6 +755,7 @@
       setupData.consejosModoUi = p.consejosModoUi;
     }
     if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+    if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
   }
 
   function cargarPremiumSetupUI(pagina) {
@@ -849,6 +850,13 @@
       calcularPremiumSala();
     }
     if (typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' && pagina === SETUP_PAGE_PREMIUM_4) {
+      if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+        syncPremiumNutrienteGermFromConfig(
+          typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
+        );
+      }
+      if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
+      if (typeof applyPremiumPropagadorPaso4Chrome === 'function') applyPremiumPropagadorPaso4Chrome();
       var camP4 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
       if (camP4 && needsPremiumClimaPresetApply(camP4, p)) {
         aplicarPremiumClimaPorCamino(camP4, { force: true });
@@ -856,6 +864,11 @@
         refreshPremiumClimaCaminoUI();
         refreshPremiumClimaResumen();
       }
+    }
+    if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+      syncPremiumNutrienteGermFromConfig(
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
+      );
     }
   }
 
@@ -896,6 +909,7 @@
       syncVariedadGermATorre(p.variedadGerminacion || '');
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
+    if (typeof persistPremiumNutrienteGermToConfig === 'function') persistPremiumNutrienteGermToConfig(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (typeof setupData !== 'undefined' && setupData.ciudad) {
       cfg.ciudad = setupData.ciudad;
@@ -989,6 +1003,14 @@
         if (typeof showToast === 'function') showToast(r.error, true);
         return false;
       }
+    }
+    if (
+      typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
+      pagina === SETUP_PAGE_PREMIUM_4 &&
+      typeof validarPremiumNutrienteGerm === 'function' &&
+      !validarPremiumNutrienteGerm()
+    ) {
+      return false;
     }
     return true;
   }

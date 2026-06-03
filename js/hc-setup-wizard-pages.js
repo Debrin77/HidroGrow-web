@@ -1007,7 +1007,11 @@ function toggleNutrientesCatalogoCompleto() {
   renderNutrientesGrid();
 }
 
-function renderNutrienteCardHtml(n) {
+function renderNutrienteCardHtml(n, opts) {
+  opts = opts || {};
+  const selectedId = opts.selectedId != null ? opts.selectedId : setupNutriente;
+  const onSelect = opts.onSelect || 'selNutriente';
+  const cardId = (opts.idPrefix || 'nut-') + n.id;
   const parNote = n.par_flores && typeof getNutrienteById === 'function'
     ? getNutrienteById(n.par_flores)
     : null;
@@ -1021,9 +1025,9 @@ function renderNutrienteCardHtml(n) {
     ? '<span class="nutriente-icon" aria-hidden="true">' + hcVisualIconSvg('nutriente') + '</span>'
     : '';
   return (
-    '<button type="button" class="nutriente-card ' + (n.id === setupNutriente ? 'selected' : '') + '"' +
-    ' id="nut-' + n.id + '" onclick="selNutriente(\'' + n.id + '\')" aria-pressed="' +
-    (n.id === setupNutriente ? 'true' : 'false') + '"' +
+    '<button type="button" class="nutriente-card ' + (n.id === selectedId ? 'selected' : '') + '"' +
+    ' id="' + cardId + '" data-nut-id="' + n.id + '" onclick="' + onSelect + '(\'' + n.id + '\')" aria-pressed="' +
+    (n.id === selectedId ? 'true' : 'false') + '"' +
     ' aria-label="Nutriente ' + n.nombre + (n.buffer ? ', con buffer de pH' : '') + '">' +
     rankBadge +
     iconHtml +
@@ -1039,13 +1043,14 @@ function renderNutrienteCardHtml(n) {
   );
 }
 
-function renderNutrientesGrid() {
-  const grid = document.getElementById('nutrientesGrid');
+function renderNutrientesGrid(opts) {
+  opts = opts || {};
+  const grid = document.getElementById(opts.gridId || 'nutrientesGrid');
   if (!grid) return;
   if (typeof window !== 'undefined' && window._nutrientesMostrarCatalogoCompleto != null) {
     _nutrientesMostrarCatalogoCompleto = !!window._nutrientesMostrarCatalogoCompleto;
   }
-  const toggleBtn = document.getElementById('nutrientesToggleCatalogo');
+  const toggleBtn = document.getElementById(opts.toggleId || 'nutrientesToggleCatalogo');
   let list;
   if (_nutrientesMostrarCatalogoCompleto) {
     list = NUTRIENTES_DB.filter(function (n) {
@@ -1061,6 +1066,8 @@ function renderNutrientesGrid() {
       : NUTRIENTES_DB.filter(function (n) { return n.top_es; });
     if (toggleBtn) toggleBtn.textContent = 'Ver catálogo completo';
   }
-  grid.innerHTML = list.map(renderNutrienteCardHtml).join('');
+  grid.innerHTML = list.map(function (n) {
+    return renderNutrienteCardHtml(n, opts);
+  }).join('');
 }
 

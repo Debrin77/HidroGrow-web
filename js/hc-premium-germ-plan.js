@@ -235,6 +235,7 @@
     p.sustratoGerm = ok ? id : 'lana';
     renderPremiumGermPlanUI();
     syncGermPlanATorreDraft();
+    if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
 
   function persistPremiumGermPlanFromUI(manualSemillas) {

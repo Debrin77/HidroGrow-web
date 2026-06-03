@@ -1,0 +1,423 @@
+/**
+ * HidroGrow — nutriente en asistente premium (camino semilla + propagador).
+ * EC objetivo según variedad y sustrato; dosis orientativa en bandeja del domo.
+ */
+(function (global) {
+  'use strict';
+
+  var VOL_BANDEJA_DEFAULT = 2;
+  var _nutrientesCatalogoCompletoGerm = false;
+
+  function el(id) {
+    return document.getElementById(id);
+  }
+
+  function esc(t) {
+    return String(t || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function isPremiumNutrienteGermActivo() {
+    return (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    );
+  }
+
+  function ensurePremiumNutrienteGermFields() {
+    if (typeof ensurePremiumSetup !== 'function') return {};
+    var p = ensurePremiumSetup();
+    if (p.nutrienteGermVolL == null || !Number.isFinite(Number(p.nutrienteGermVolL))) {
+      p.nutrienteGermVolL = VOL_BANDEJA_DEFAULT;
+    }
+    return p;
+  }
+
+  function getPremiumGermVariedadId() {
+    var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+    return String(p.variedadGerminacion || '').trim();
+  }
+
+  function getPremiumGermSustratoId() {
+    var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+    return String(p.sustratoGerm || 'lana').trim() || 'lana';
+  }
+
+  function getEcObjetivoGermPropagador(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var p = cfg.premiumSetup || (typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {});
+    var vid = String(p.variedadGerminacion || cfg.variedadGerminacion || '').trim();
+    var sustrato = String(p.sustratoGerm || cfg.sustratoGerm || 'lana').trim() || 'lana';
+    var fakeCfg = { premiumSetup: p, sustratoGerm: sustrato };
+    if (typeof getGerminacionRangosMonitoreo !== 'function') {
+      return { min: 400, max: 550, fuente: 'default', ecCentro: 475, ecAplica: true };
+    }
+    var r = getGerminacionRangosMonitoreo(vid, 'domo', fakeCfg);
+    if (r.ecAplica && r.ec && Number.isFinite(r.ecObjetivo)) {
+      return {
+        min: r.ec.min,
+        max: r.ec.max,
+        fuente: 'germinacion',
+        ecCentro: r.ecObjetivo,
+        ecAplica: true,
+        rangos: r,
+      };
+    }
+    var ecC = Number.isFinite(r.ecObjetivo) ? r.ecObjetivo : 450;
+    return {
+      min: Math.max(0, ecC - 80),
+      max: ecC + 80,
+      fuente: 'germinacion',
+      ecCentro: ecC,
+      ecAplica: !!r.ecAplica,
+      rangos: r,
+    };
+  }
+
+  function filtrarNutrientesGermLista(list) {
+    if (!Array.isArray(list)) return [];
+    return list.filter(function (n) {
+      return n && (n.faseUso === 'veg' || n.faseUso === 'both');
+    });
+  }
+
+  function getListaNutrientesPremiumGerm() {
+    if (!Array.isArray(NUTRIENTES_DB)) return [];
+    var list;
+    if (_nutrientesCatalogoCompletoGerm) {
+      list = NUTRIENTES_DB.filter(function (n) {
+        return (
+          n.faseUso !== 'bloom' ||
+          !NUTRIENTES_TOP10_ES.some(function (id) {
+            var top = NUTRIENTES_DB.find(function (t) {
+              return t.id === id;
+            });
+            return top && top.par_flores === n.id;
+          })
+        );
+      });
+    } else {
+      list =
+        typeof getNutrientesTop10ES === 'function'
+          ? getNutrientesTop10ES()
+          : NUTRIENTES_DB.filter(function (n) {
+              return n.top_es;
+            });
+    }
+    return filtrarNutrientesGermLista(list);
+  }
+
+  function getPremiumNutrienteGermVolL() {
+    var inp = el('setupPremiumNutrienteGermVolL');
+    var raw = inp ? String(inp.value || '').replace(',', '.').trim() : '';
+    var n = Number(raw);
+    if (Number.isFinite(n) && n >= 0.5 && n <= 10) return Math.round(n * 10) / 10;
+    var p = ensurePremiumNutrienteGermFields();
+    var pv = Number(p.nutrienteGermVolL);
+    return Number.isFinite(pv) && pv > 0 ? pv : VOL_BANDEJA_DEFAULT;
+  }
+
+  function persistPremiumNutrienteGermFromUI() {
+    if (!isPremiumNutrienteGermActivo()) return;
+    var p = ensurePremiumNutrienteGermFields();
+    var vol = getPremiumNutrienteGermVolL();
+    p.nutrienteGermVolL = vol;
+    if (typeof setupNutriente !== 'undefined' && setupNutriente) {
+      p.nutrienteGerm = setupNutriente;
+    }
+  }
+
+  function syncPremiumNutrienteGermFromConfig(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var p = ensurePremiumNutrienteGermFields();
+    var nid = String(p.nutrienteGerm || cfg.nutriente || '').trim();
+    if (!nid && typeof setupNutriente !== 'undefined') nid = setupNutriente;
+    if (!nid) nid = 'canna_aqua';
+    p.nutrienteGerm = nid;
+    if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
+    var vol = Number(p.nutrienteGermVolL);
+    if (!Number.isFinite(vol) || vol <= 0) p.nutrienteGermVolL = VOL_BANDEJA_DEFAULT;
+    var inp = el('setupPremiumNutrienteGermVolL');
+    if (inp) inp.value = String(p.nutrienteGermVolL);
+  }
+
+  function renderNutrientesGridPremiumGerm() {
+    var grid = el('nutrientesGridPremiumGerm');
+    if (!grid || typeof renderNutrienteCardHtml !== 'function') return;
+    var list = getListaNutrientesPremiumGerm();
+    var sel =
+      typeof setupNutriente !== 'undefined' && setupNutriente
+        ? setupNutriente
+        : ensurePremiumNutrienteGermFields().nutrienteGerm || 'canna_aqua';
+    grid.innerHTML = list
+      .map(function (n) {
+        return renderNutrienteCardHtml(n, {
+          selectedId: sel,
+          idPrefix: 'nut-prem-',
+          onSelect: 'selNutrientePremiumGerm',
+        });
+      })
+      .join('');
+    var toggle = el('nutrientesToggleCatalogoPremiumGerm');
+    if (toggle) {
+      toggle.textContent = _nutrientesCatalogoCompletoGerm
+        ? 'Ver top 10 España'
+        : 'Ver catálogo completo';
+    }
+  }
+
+  function renderPremiumNutrienteGermEcBanner() {
+    var box = el('setupPremiumNutrienteGermEcBanner');
+    if (!box) return;
+    var ec = getEcObjetivoGermPropagador();
+    var sub =
+      typeof getSustratoGermAguaEc === 'function'
+        ? getSustratoGermAguaEc(getPremiumGermSustratoId())
+        : null;
+    var subLbl = sub && sub.label ? sub.label : getPremiumGermSustratoId();
+    var vid = getPremiumGermVariedadId();
+    var varLbl = vid;
+    if (vid && typeof getGerminacionSpecPorVariedad === 'function') {
+      var spec = getGerminacionSpecPorVariedad(vid);
+      if (spec && spec.nombreGenetica) varLbl = spec.nombreGenetica;
+    }
+    var html =
+      '<p><strong>EC objetivo en bandeja:</strong> ' +
+      ec.min +
+      '–' +
+      ec.max +
+      ' µS/cm</p>';
+    if (Number.isFinite(ec.ecCentro)) {
+      html += '<p class="setup-field-hint">Centro orientativo ~' + ec.ecCentro + ' µS/cm (domo · ' + esc(subLbl) + ').</p>';
+    }
+    if (varLbl) {
+      html += '<p class="setup-field-hint">Variedad: <strong>' + esc(varLbl) + '</strong>.</p>';
+    }
+    if (ec.ecAplica === false) {
+      html +=
+        '<p class="setup-field-hint">En este sustrato la EC en bandeja puede no aplicarse al inicio; elige nutriente igualmente para cuando subas la solución en el domo.</p>';
+    }
+    box.innerHTML = html;
+    box.classList.remove('setup-hidden');
+  }
+
+  function renderPremiumNutrienteGermDosis() {
+    var preview = el('nutProtocoloPreviewPremiumGerm');
+    if (!preview) return;
+    var nutId =
+      typeof setupNutriente !== 'undefined' && setupNutriente
+        ? setupNutriente
+        : ensurePremiumNutrienteGermFields().nutrienteGerm;
+    if (!nutId || !Array.isArray(NUTRIENTES_DB)) {
+      preview.classList.add('setup-hidden');
+      return;
+    }
+    var nut = NUTRIENTES_DB.find(function (n) {
+      return n.id === nutId;
+    });
+    if (!nut) {
+      preview.classList.add('setup-hidden');
+      return;
+    }
+    var vol = getPremiumNutrienteGermVolL();
+    var ecObj = getEcObjetivoGermPropagador();
+    var ecMeta = Math.round((ecObj.min + ecObj.max) / 2);
+    var aguaGrifo =
+      typeof setupData !== 'undefined' && setupData.agua === 'grifo';
+    var usarCalMag =
+      typeof usarCalMagEnRecarga === 'function' ? usarCalMagEnRecarga() : false;
+    var ctx = { modoSoft: !aguaGrifo, usarCalMag: !!(nut.calmagNecesario && usarCalMag) };
+    var mlCalMag = 0;
+    if (usarCalMag && nut.calmagNecesario && typeof mlCalMagParaAguaBlanda === 'function') {
+      mlCalMag = Math.round(mlCalMagParaAguaBlanda(vol) * 10) / 10;
+    } else if (usarCalMag && nut.calmagMl) {
+      mlCalMag = Math.round(nut.calmagMl * (vol / 18) * 10) / 10;
+    }
+    var partes = nut.partes || 1;
+    var orden =
+      nut.orden && nut.orden.length >= partes
+        ? nut.orden
+        : ['Parte A', 'Parte B', 'Parte C'];
+    var mlPorParte = [];
+    for (var i = 0; i < partes; i++) {
+      mlPorParte.push(
+        typeof mlAbonoParteDinamica === 'function'
+          ? mlAbonoParteDinamica(nut, i, vol, ecMeta, ctx)
+          : typeof mlNutrientePorParte === 'function'
+            ? mlNutrientePorParte(nut.id, i, vol)
+            : 0
+      );
+    }
+    var pHR =
+      typeof torreGetPhRangoObjetivo === 'function'
+        ? torreGetPhRangoObjetivo(nut, {})
+        : nut.pHRango || [5.5, 6.5];
+
+    var html = '<div class="nut-dosis-titulo">Dosis orientativa · bandeja propagador</div>';
+    html +=
+      '<div class="nut-dosis-ctx">Bandeja <strong>' +
+      vol +
+      ' L</strong> · EC objetivo <strong>' +
+      ecObj.min +
+      '–' +
+      ecObj.max +
+      ' µS/cm</strong> <span class="nut-dosis-ctx-tag--ok">(germinación)</span></div>';
+    var paso = 1;
+    if (mlCalMag > 0) {
+      html +=
+        '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+        paso++ +
+        '.</strong> CalMag</span><span class="nut-dosis-val-green">' +
+        mlCalMag +
+        ' ml</span></div>';
+    }
+    if (partes === 1) {
+      html +=
+        '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+        paso++ +
+        '.</strong> ' +
+        esc(orden[0]) +
+        '</span><span class="nut-dosis-val-green">' +
+        mlPorParte[0] +
+        ' ml</span></div>';
+    } else if (partes === 2) {
+      html +=
+        '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+        paso++ +
+        '.</strong> ' +
+        esc(orden[0]) +
+        '</span><span class="nut-dosis-val-green">' +
+        mlPorParte[0] +
+        ' ml</span></div>';
+      html +=
+        '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+        paso++ +
+        '.</strong> ' +
+        esc(orden[1]) +
+        '</span><span class="nut-dosis-val-green">' +
+        mlPorParte[1] +
+        ' ml</span></div>';
+    } else {
+      for (var j = 0; j < partes; j++) {
+        html +=
+          '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+          paso++ +
+          '.</strong> ' +
+          esc(orden[j] || 'Parte ' + (j + 1)) +
+          '</span><span class="nut-dosis-val-green">' +
+          (mlPorParte[j] || 0) +
+          ' ml</span></div>';
+      }
+    }
+    html +=
+      '<div class="nut-dosis-row nut-dosis-row--ph"><span class="nut-dosis-lab"><strong>' +
+      paso +
+      '.</strong> pH objetivo</span><span class="nut-dosis-val-blue">' +
+      pHR[0] +
+      '–' +
+      pHR[1] +
+      '</span></div>';
+    if (nut.id === 'ghe_flora') {
+      html +=
+        '<div class="nut-dosis-ghe">GHE: FloraMicro siempre primero. No mezclar Micro con Bloom en concentrado.</div>';
+    }
+    html +=
+      '<div class="nut-dosis-foot">Ajusta al medir EC en Medir (domo). Empieza por la mitad si la cepa es sensible.</div>';
+    preview.classList.remove('setup-hidden');
+    preview.innerHTML = html;
+  }
+
+  function refreshPremiumNutrienteGermSection() {
+    var sec = el('setupPremiumNutrienteGermSection');
+    var show = isPremiumNutrienteGermActivo();
+    if (sec) sec.classList.toggle('setup-hidden', !show);
+    if (!show) return;
+    syncPremiumNutrienteGermFromConfig();
+    renderPremiumNutrienteGermEcBanner();
+    renderNutrientesGridPremiumGerm();
+    renderPremiumNutrienteGermDosis();
+    var hint = el('setupPremiumNutrienteGermHint');
+    if (hint) {
+      hint.textContent =
+        'Elige el abono (líneas veg / A+B) para preparar la solución de la bandeja y acercar la EC al rango del propagador.';
+    }
+  }
+
+  function selNutrientePremiumGerm(id) {
+    if (typeof setupNutriente !== 'undefined') setupNutriente = id;
+    var p = ensurePremiumNutrienteGermFields();
+    p.nutrienteGerm = id;
+    document.querySelectorAll('.nutriente-card[data-nut-id]').forEach(function (c) {
+      var match = c.getAttribute('data-nut-id') === id;
+      c.classList.toggle('selected', match);
+      c.setAttribute('aria-pressed', match ? 'true' : 'false');
+    });
+    renderPremiumNutrienteGermDosis();
+  }
+
+  function toggleNutrientesCatalogoPremiumGerm() {
+    _nutrientesCatalogoCompletoGerm = !_nutrientesCatalogoCompletoGerm;
+    renderNutrientesGridPremiumGerm();
+  }
+
+  function onPremiumNutrienteGermVolChange() {
+    persistPremiumNutrienteGermFromUI();
+    renderPremiumNutrienteGermDosis();
+  }
+
+  function validarPremiumNutrienteGerm() {
+    if (!isPremiumNutrienteGermActivo()) return true;
+    persistPremiumNutrienteGermFromUI();
+    var nid =
+      typeof setupNutriente !== 'undefined' && setupNutriente
+        ? setupNutriente
+        : ensurePremiumNutrienteGermFields().nutrienteGerm;
+    if (!nid || !Array.isArray(NUTRIENTES_DB) || !NUTRIENTES_DB.some(function (n) { return n.id === nid; })) {
+      if (typeof showToast === 'function') {
+        showToast('Elige un nutriente para la solución del propagador', true);
+      }
+      return false;
+    }
+    var vol = getPremiumNutrienteGermVolL();
+    if (!Number.isFinite(vol) || vol < 0.5) {
+      if (typeof showToast === 'function') {
+        showToast('Indica el volumen de la bandeja (litros)', true);
+      }
+      return false;
+    }
+    if (!getPremiumGermVariedadId()) {
+      if (typeof showToast === 'function') {
+        showToast('Vuelve al paso Germinación y elige la variedad (EC depende de la cepa)', true);
+      }
+      return false;
+    }
+    return true;
+  }
+
+  function persistPremiumNutrienteGermToConfig(cfg) {
+    if (!cfg || !isPremiumNutrienteGermActivo()) return;
+    persistPremiumNutrienteGermFromUI();
+    var p = ensurePremiumNutrienteGermFields();
+    if (p.nutrienteGerm) {
+      cfg.nutriente = p.nutrienteGerm;
+      if (typeof setupNutriente !== 'undefined') setupNutriente = p.nutrienteGerm;
+    }
+    cfg.premiumSetup = cfg.premiumSetup || {};
+    cfg.premiumSetup.nutrienteGerm = p.nutrienteGerm;
+    cfg.premiumSetup.nutrienteGermVolL = p.nutrienteGermVolL;
+  }
+
+  global.isPremiumNutrienteGermActivo = isPremiumNutrienteGermActivo;
+  global.getEcObjetivoGermPropagador = getEcObjetivoGermPropagador;
+  global.refreshPremiumNutrienteGermSection = refreshPremiumNutrienteGermSection;
+  global.syncPremiumNutrienteGermFromConfig = syncPremiumNutrienteGermFromConfig;
+  global.persistPremiumNutrienteGermFromUI = persistPremiumNutrienteGermFromUI;
+  global.persistPremiumNutrienteGermToConfig = persistPremiumNutrienteGermToConfig;
+  global.validarPremiumNutrienteGerm = validarPremiumNutrienteGerm;
+  global.selNutrientePremiumGerm = selNutrientePremiumGerm;
+  global.toggleNutrientesCatalogoPremiumGerm = toggleNutrientesCatalogoPremiumGerm;
+  global.onPremiumNutrienteGermVolChange = onPremiumNutrienteGermVolChange;
+  global.renderPremiumNutrienteGermDosis = renderPremiumNutrienteGermDosis;
+})();
