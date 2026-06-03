@@ -576,7 +576,6 @@ function updateRecargaBar() {
   // Depósito visual: mismo objetivo que Medir — litros de mezcla si los configuraste;
   // si no, tope seguro / depósito (getVolumenMezclaLitros ya hace ese fallback).
   const vol = state.ultimaMedicion?.vol ? parseFloat(state.ultimaMedicion.vol) : 0;
-  const cfgRec = state.configTorre || {};
   const volObjetivo =
     typeof getVolumenMezclaLitros === 'function'
       ? Math.max(0.5, Number(getVolumenMezclaLitros(cfgRec)) || 20)
