@@ -58,41 +58,22 @@
     return 'inicio';
   }
 
-  function renderSetupRoadmapMini(page) {
+  /** Roadmap y guía superior desactivados (ahorran altura en móvil). */
+  function renderSetupRoadmapMini() {
     var el = document.getElementById('setupRoadmapMini');
     if (!el) return;
-    var active = roadmapPhaseForPage(page);
-    var activeIdx = -1;
-    for (var a = 0; a < SETUP_ROADMAP.length; a++) {
-      if (SETUP_ROADMAP[a].id === active) {
-        activeIdx = a;
-        break;
-      }
-    }
-    var html = '';
-    for (var i = 0; i < SETUP_ROADMAP.length; i++) {
-      var ph = SETUP_ROADMAP[i];
-      var cls = 'setup-roadmap-chip';
-      if (ph.id === active) cls += ' setup-roadmap-chip--active';
-      else if (activeIdx >= 0 && i < activeIdx) cls += ' setup-roadmap-chip--done';
-      html += '<span class="' + cls + '">' + esc(ph.label) + '</span>';
-    }
-    el.innerHTML = html;
-    el.classList.remove('setup-hidden');
+    el.innerHTML = '';
+    el.classList.add('setup-hidden');
+    el.setAttribute('aria-hidden', 'true');
   }
 
-  function renderSetupGuiaPanel(page) {
+  function renderSetupGuiaPanel() {
+    renderSetupRoadmapMini();
     var panel = document.getElementById('setupGuiaPanel');
     if (!panel) return;
-    var g = SETUP_GUIAS[page];
-    if (!g) {
-      panel.classList.add('setup-hidden');
-      panel.innerHTML = '';
-      return;
-    }
-    panel.classList.remove('setup-hidden');
-    panel.innerHTML = '<p class="setup-guia-l1">' + esc(g.l1) + '</p>';
-    renderSetupRoadmapMini(page);
+    panel.classList.add('setup-hidden');
+    panel.innerHTML = '';
+    panel.setAttribute('aria-hidden', 'true');
   }
 
   function getEquipInstaladoCfg() {

@@ -1318,49 +1318,170 @@
     );
   }
 
-  function renderGermTrayViz(g) {
-    var total = Math.min(72, Math.max(1, Math.round(Number(g.numSemillas) || 1)));
+  function sustratoGermKey(cfg, g) {
+    return (
+      (g && g.sustratoGerm) ||
+      (cfg && cfg.sustratoGerm) ||
+      (cfg && cfg.premiumSetup && cfg.premiumSetup.sustratoGerm) ||
+      'lana'
+    );
+  }
+
+  function etiquetaSustratoGermLocal(key) {
+    if (typeof etiquetaSustratoGerm === 'function') return etiquetaSustratoGerm(key);
+    var map = { lana: 'Lana de roca', esponja: 'Jiffy / esponja', papel: 'Papel húmedo', coco: 'Coco / plug' };
+    return map[key] || key || '—';
+  }
+
+  function dimsBandejaPropagador(cfg, g, semillas) {
+    var prem = (cfg && cfg.premiumSetup) || {};
+    var bandeja = prem.bandejaGerm || 'auto';
+    var cap = 77;
+    if (bandeja === '24') cap = 24;
+    else if (bandeja === '84') cap = 84;
+    else if (bandeja === '77') cap = 77;
+    else if (typeof PROPAGADOR_CAPACIDAD_ES === 'object' && cfg) {
+      var inst = cfg.equipamientoInstalado || {};
+      var prop = inst.propagador;
+      if (prop && prop.id && PROPAGADOR_CAPACIDAD_ES[prop.id]) {
+        cap = PROPAGADOR_CAPACIDAD_ES[prop.id].celdas || cap;
+      }
+    }
+    cap = Math.min(84, Math.max(semillas, cap));
+    var cols = 11;
+    var rows = 7;
+    if (cap <= 12) {
+      cols = cap;
+      rows = 1;
+    } else if (cap <= 24) {
+      cols = 6;
+      rows = 4;
+    } else if (cap <= 48) {
+      cols = 8;
+      rows = 6;
+    }
+    return { cols: cols, rows: rows, cap: cap };
+  }
+
+  function htmlDomoPropagadorSvg() {
+    return (
+      '<div class="hc-prop-dome-viz" aria-hidden="true">' +
+      '<svg class="hc-prop-dome-svg" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><linearGradient id="hcPropDomeGl" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="rgba(186,230,253,0.55)"/>' +
+      '<stop offset="100%" stop-color="rgba(34,197,94,0.12)"/></linearGradient></defs>' +
+      '<ellipse cx="110" cy="88" rx="92" ry="10" fill="rgba(15,23,42,0.08)"/>' +
+      '<rect x="28" y="52" width="164" height="36" rx="6" fill="#a8a29e" stroke="#78716c" stroke-width="1.2"/>' +
+      '<path d="M36 52 Q110 8 184 52 Z" fill="url(#hcPropDomeGl)" stroke="rgba(34,197,94,0.45)" stroke-width="1.5"/>' +
+      '<path d="M44 52 Q110 18 176 52" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>' +
+      '</svg></div>'
+    );
+  }
+
+  function renderGermTrayViz(g, cfgOrOpts, optsIn) {
+    var cfg =
+      cfgOrOpts && (cfgOrOpts.premiumSetup || cfgOrOpts.germinacionFlow || cfgOrOpts.equipamientoInstalado)
+        ? cfgOrOpts
+        : cfgActiva();
+    var opts = optsIn || (cfgOrOpts && cfgOrOpts.idPrefix ? cfgOrOpts : {});
+    var idPre = opts.idPrefix || 'hcGerm';
+    var enSistema = idPre.indexOf('hcSis') === 0;
+    var sinDomo = !!opts.sinDomo;
+
+    var planN =
+      cfg.premiumSetup && Number.isFinite(cfg.premiumSetup.numSemillasGerm)
+        ? Math.round(cfg.premiumSetup.numSemillasGerm)
+        : 0;
+    var total = Math.min(
+      72,
+      Math.max(1, Math.round(Number(g.numSemillas) || planN || 1))
+    );
     var activas = Math.min(total, Math.max(0, Math.round(Number(g.semillasActivas) || total)));
+    var subKey = sustratoGermKey(cfg, g);
+    var subSafe = String(subKey || 'lana').replace(/[^a-z0-9_-]/gi, '') || 'lana';
+    var subLbl = etiquetaSustratoGermLocal(subKey);
     var germinadas = 0;
     var pasoIdx = indiceFaseActual(g);
-    if (pasoIdx >= 1) germinadas = Math.min(activas, Math.max(1, Math.round(activas * (pasoIdx / PASOS.length))));
-    var cols = total <= 12 ? total : total <= 24 ? 6 : total <= 48 ? 8 : 9;
+    if (pasoIdx >= 1) {
+      germinadas = Math.min(activas, Math.max(1, Math.round(activas * (pasoIdx / PASOS.length))));
+    }
+    var dims = dimsBandejaPropagador(cfg, g, total);
+    var slots = dims.cap;
+    var cols = dims.cols;
     var cells = '';
-    for (var i = 0; i < total; i++) {
+    for (var i = 0; i < slots; i++) {
       var cls = 'hc-germ-tray-cell';
-      if (i < germinadas) cls += ' hc-germ-tray-cell--germ';
-      else if (i < activas) cls += ' hc-germ-tray-cell--sem';
-      else cls += ' hc-germ-tray-cell--empty';
-      cells += '<span class="' + cls + '" title="Célula ' + (i + 1) + '"></span>';
+      if (i < activas) {
+        cls += ' hc-germ-tray-cell--sub hc-germ-tray-cell--sub-' + subSafe;
+        if (i < germinadas) cls += ' hc-germ-tray-cell--germ';
+        else cls += ' hc-germ-tray-cell--sem';
+      } else {
+        cls += ' hc-germ-tray-cell--empty';
+      }
+      var title =
+        i < activas
+          ? 'Alvéolo ' + (i + 1) + ' · ' + subLbl + (i < germinadas ? ' · germinando' : '')
+          : 'Alvéolo ' + (i + 1) + ' · vacío';
+      cells += '<span class="' + cls + '" title="' + title + '"></span>';
+    }
+    var cultNombre = '';
+    var vid = g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '';
+    if (vid && typeof getCultivoDB === 'function') {
+      var cu = getCultivoDB(vid);
+      if (cu && cu.nombre) cultNombre = cu.nombre;
     }
     return (
-      '<div class="hc-germ-tray-block">' +
-      '<h4 class="hc-germ-block-lbl">Bandeja / domo · semillas en curso</h4>' +
+      '<div class="hc-germ-tray-block' +
+      (enSistema ? ' hc-germ-tray-block--sistema' : '') +
+      '">' +
+      '<h4 class="hc-germ-block-lbl">Domo y bandeja · ' +
+      esc(subLbl) +
+      '</h4>' +
+      (enSistema && !sinDomo ? htmlDomoPropagadorSvg() : '') +
+      (cultNombre
+        ? '<p class="hc-germ-tray-variedad"><strong>' + esc(cultNombre) + '</strong></p>'
+        : '') +
       '<div class="hc-germ-tray-meta">' +
       '<label class="hc-germ-tray-field"><span>Semillas puestas</span>' +
-      '<input type="number" id="hcGermNumSemillas" class="param-input" min="1" max="72" step="1" value="' +
+      '<input type="number" id="' +
+      idPre +
+      'NumSemillas" class="param-input" min="1" max="72" step="1" value="' +
       total +
       '" onchange="hcGermActualizarNumSemillas(this.value)"></label>' +
       '<label class="hc-germ-tray-field"><span>Activas ahora</span>' +
-      '<input type="number" id="hcGermSemillasActivas" class="param-input" min="0" max="' +
+      '<input type="number" id="' +
+      idPre +
+      'SemillasActivas" class="param-input" min="0" max="' +
       total +
       '" step="1" value="' +
       activas +
-      '" onchange="hcGermActualizarSemillasActivas(this.value)"></label></div>' +
+      '" onchange="hcGermActualizarSemillasActivas(this.value)"></label>' +
+      '<span class="hc-germ-tray-sustrato-pill hc-germ-tray-sustrato-pill--' +
+      subSafe +
+      '">' +
+      esc(subLbl) +
+      '</span></div>' +
       '<div class="hc-germ-tray-legend">' +
+      '<span><i class="hc-germ-tray-dot hc-germ-tray-dot--sub-' +
+      subSafe +
+      '"></i> ' +
+      esc(subLbl) +
+      '</span>' +
       '<span><i class="hc-germ-tray-dot hc-germ-tray-dot--sem"></i> En curso</span>' +
       '<span><i class="hc-germ-tray-dot hc-germ-tray-dot--germ"></i> Germinando</span>' +
-      '<span><i class="hc-germ-tray-dot hc-germ-tray-dot--empty"></i> Vacía</span></div>' +
+      '<span><i class="hc-germ-tray-dot hc-germ-tray-dot--empty"></i> Vacío</span></div>' +
       '<div class="hc-germ-tray-grid" style="--hc-tray-cols:' +
       cols +
-      '" role="img" aria-label="Bandeja con ' +
+      '" role="img" aria-label="Bandeja ' +
+      slots +
+      ' alvéolos, ' +
       activas +
-      ' semillas activas de ' +
-      total +
+      ' con ' +
+      subLbl +
       '">' +
       cells +
       '</div>' +
-      renderGermRegistroChart(g) +
+      (enSistema ? '' : renderGermRegistroChart(g)) +
       '</div>'
     );
   }
@@ -1425,6 +1546,10 @@
     if (g.semillasActivas > n) g.semillasActivas = n;
     persistirGerminacion();
     refreshDashGerminacionHub();
+    try {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+      if (typeof hcRenderPropagadorSvg === 'function') hcRenderPropagadorSvg(cfg);
+    } catch (_) {}
   }
 
   function hcGermActualizarSemillasActivas(val) {
@@ -1435,6 +1560,10 @@
     g.semillasActivas = n;
     persistirGerminacion();
     refreshDashGerminacionHub();
+    try {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+      if (typeof hcRenderPropagadorSvg === 'function') hcRenderPropagadorSvg(cfg);
+    } catch (_) {}
   }
 
   function hcGerminacionRefrescarCalendario() {

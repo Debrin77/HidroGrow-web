@@ -193,6 +193,13 @@
           : 'DWC';
 
     if (fase === 'propagador') {
+      var planSt =
+        typeof getPlanGermEstado === 'function' ? getPlanGermEstado(cfg) : {};
+      var numSem =
+        planSt.numSemillas >= 1
+          ? planSt.numSemillas
+          : Math.min(72, Math.max(1, Math.round(Number(g.numSemillas) || 1)));
+      var nombreGen = planSt.nombreVar || '—';
       var concl =
         typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
       var aviso = '';
@@ -209,7 +216,9 @@
           '<button type="button" class="btn btn-primary btn-sm" style="margin-left:8px" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar</button></div>';
       }
       var tray =
-        typeof renderGermTrayViz === 'function' ? renderGermTrayViz(g) : '';
+        typeof renderGermTrayViz === 'function'
+          ? renderGermTrayViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true, sinDomo: true })
+          : '';
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -217,11 +226,14 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">Modo <strong>propagador</strong>: sin esquema de cestas hasta configurar el hidro.</p>' +
+        '<p class="hc-sis-prop-lead">Esquema del <strong>domo y bandeja</strong> arriba (SVG). Ajusta semillas aquí; el color de cada alvéolo es tu <strong>sustrato</strong>.</p>' +
         aviso +
         '<div class="hc-sis-prop-grid">' +
+        '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Genética</span><strong>' +
+        esc(nombreGen) +
+        '</strong></div>' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Semillas</span><strong>' +
-        esc(String(g.numSemillas || 1)) +
+        esc(String(numSem)) +
         '</strong></div>' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Sustrato</span><strong>' +
         esc(etiquetaSustrato(cfg)) +
@@ -315,27 +327,54 @@
     return '';
   }
 
-  function toggleTorreChrome(mostrarFase) {
+  function toggleTorreChrome(mostrarFase, cfg, fase) {
     var torreWrap = document.getElementById('torreSVGWrap');
     var torreCard = document.getElementById('torreNombreCard');
     var resumenSup = document.querySelector('#tab-sistema .torre-tab-resumen-superior');
     var dwcCard = document.getElementById('sistemaDwcAyudaCard');
+    var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
+    var cultivoExtras = document.getElementById('sistemaCultivoExtras');
+    var esPropagador = fase === 'propagador';
     if (mostrarFase) {
-      if (torreWrap) torreWrap.classList.add('setup-hidden');
+      if (torreWrap) {
+        if (esPropagador) {
+          torreWrap.classList.remove('setup-hidden');
+          torreWrap.hidden = false;
+          torreWrap.style.display = '';
+          if (typeof hcRenderPropagadorSvg === 'function') {
+            hcRenderPropagadorSvg(cfg || cfgActiva());
+          }
+        } else {
+          torreWrap.classList.add('setup-hidden');
+          if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
+        }
+      }
       if (torreCard) torreCard.classList.add('setup-hidden');
       if (resumenSup) resumenSup.classList.add('setup-hidden');
       if (dwcCard) {
         dwcCard.style.display = 'none';
         dwcCard.hidden = true;
+        dwcCard.classList.add('setup-hidden');
       }
+      if (ecphCard) {
+        ecphCard.style.display = 'none';
+        ecphCard.hidden = true;
+        ecphCard.classList.add('setup-hidden');
+      }
+      if (cultivoExtras) cultivoExtras.classList.add('setup-hidden');
     } else {
       if (torreWrap) torreWrap.classList.remove('setup-hidden');
       if (torreCard) torreCard.classList.remove('setup-hidden');
       if (resumenSup) resumenSup.classList.remove('setup-hidden');
       if (dwcCard) {
-        dwcCard.style.display = '';
-        dwcCard.hidden = false;
+        dwcCard.classList.remove('setup-hidden');
       }
+      if (cultivoExtras) cultivoExtras.classList.remove('setup-hidden');
+      try {
+        if (typeof sincronizarSistemaNftMontajeUI === 'function') {
+          sincronizarSistemaNftMontajeUI();
+        }
+      } catch (_) {}
     }
   }
 
@@ -360,7 +399,8 @@
     if (!fase) {
       panel.classList.add('setup-hidden');
       panel.innerHTML = '';
-      toggleTorreChrome(false);
+      toggleTorreChrome(false, cfg, null);
+      if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
       return;
     }
 
@@ -369,8 +409,19 @@
     document.body.classList.add('hc-modo-propagador-sistema');
 
     panel.classList.remove('setup-hidden');
+    panel.hidden = false;
+    panel.style.display = '';
     panel.innerHTML = buildPanelHtml(cfg, fase);
-    toggleTorreChrome(true);
+    toggleTorreChrome(true, cfg, fase);
+    if (fase === 'propagador' && typeof hcRenderPropagadorSvg === 'function') {
+      hcRenderPropagadorSvg(cfg);
+    }
+    try {
+      if (typeof renderTorreInstalacionPicker === 'function') renderTorreInstalacionPicker();
+    } catch (_) {}
+    try {
+      if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+    } catch (_) {}
   }
 
   global.hcRefreshSistemaFasePanel = hcRefreshSistemaFasePanel;

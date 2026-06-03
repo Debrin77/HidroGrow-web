@@ -467,6 +467,78 @@
     return true;
   }
 
+  /** Matriz 1×N en propagador: genética + sustrato visibles en Cultivo / plantas en instalación. */
+  function hcInicializarTorreGerminacionPropagador(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg);
+    } else if (typeof syncGermPlanATorreDraft === 'function') {
+      syncGermPlanATorreDraft();
+    }
+    if (typeof ensureGerminacionFlow === 'function') ensureGerminacionFlow(cfg);
+    var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
+    if (!sug) return false;
+    var n = sug.numPlantas;
+    var vid = String(sug.variedadId || '').trim();
+    var hoy =
+      typeof hoyIso === 'function'
+        ? hoyIso()
+        : new Date().toISOString().slice(0, 10);
+    var suKey =
+      cfg.sustratoGerm ||
+      (cfg.premiumSetup && cfg.premiumSetup.sustratoGerm) ||
+      (cfg.germinacionFlow && cfg.germinacionFlow.sustratoGerm) ||
+      '';
+    var suLbl =
+      typeof etiquetaSustratoGerm === 'function' ? etiquetaSustratoGerm(suKey) : suKey;
+    var notasBase = suLbl ? 'Sustrato: ' + suLbl : '';
+    if (typeof state === 'undefined' || !state) return false;
+    state.torre = [[]];
+    for (var i = 0; i < n; i++) {
+      state.torre[0].push({
+        variedad: vid,
+        fecha: vid ? hoy : '',
+        notas: notasBase,
+        origenPlanta: 'germinacion',
+        fotos: [],
+        fotoKeys: [],
+      });
+    }
+    cfg.numNiveles = 1;
+    cfg.numCestas = n;
+    cfg.germinacionEnPropagador = true;
+    return true;
+  }
+
+  /** Repara torre vacía o sin genética cuando el modo Sistema es propagador. */
+  function hcSyncGerminacionPlanCultivo(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof getSistemaFaseCamino !== 'function' || getSistemaFaseCamino(cfg) !== 'propagador') {
+      return;
+    }
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg);
+    }
+    var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
+    if (!sug || !sug.variedadId) return;
+    var torre = typeof state !== 'undefined' && state && state.torre ? state.torre : [];
+    var conVar = false;
+    for (var ni = 0; ni < torre.length; ni++) {
+      var row = torre[ni];
+      if (!row) continue;
+      for (var ci = 0; ci < row.length; ci++) {
+        if (row[ci] && row[ci].variedad && String(row[ci].variedad).trim()) {
+          conVar = true;
+          break;
+        }
+      }
+      if (conVar) break;
+    }
+    if (!conVar || !torre.length || !(torre[0] && torre[0].length)) {
+      hcInicializarTorreGerminacionPropagador(cfg);
+    }
+  }
+
   /** Tras cerrar DWC/RDWC: variedad y origen «germinación» en cestas vacías (camino semilla). */
   function hcAplicarGerminacionATorreTrasHidro(cfg, torreArr) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
@@ -674,8 +746,17 @@
 
   function hidroInstalacionCerrada(cfg) {
     cfg = cfg || {};
-    if (cfg.checklistInstalacionConfirmada === true) return true;
-    if (cfg.tipoInstalacion !== 'dwc' && cfg.tipoInstalacion !== 'rdwc') return false;
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var tipo = String(cfg.tipoInstalacion || '').trim();
+    if (cam === 'semilla_propagador' && tipo !== 'dwc' && tipo !== 'rdwc') {
+      return false;
+    }
+    if (cfg.checklistInstalacionConfirmada === true) {
+      if (tipo === 'dwc' || tipo === 'rdwc') return true;
+      if (cam === 'semilla_propagador') return false;
+      return true;
+    }
+    if (tipo !== 'dwc' && tipo !== 'rdwc') return false;
     if (typeof hcCaminoRequiereConfigHidroPendiente === 'function' && hcCaminoRequiereConfigHidroPendiente(cfg)) {
       return false;
     }
@@ -1007,6 +1088,8 @@
   global.cultivoMatrizListo = cultivoMatrizListo;
   global.hcSugerirGeometriaDesdeGerminacion = hcSugerirGeometriaDesdeGerminacion;
   global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
+  global.hcInicializarTorreGerminacionPropagador = hcInicializarTorreGerminacionPropagador;
+  global.hcSyncGerminacionPlanCultivo = hcSyncGerminacionPlanCultivo;
   global.hcAplicarGerminacionATorreTrasHidro = hcAplicarGerminacionATorreTrasHidro;
   global.getCaminoResumenPasos = getCaminoResumenPasos;
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;

@@ -157,17 +157,30 @@ const HC_FASE_PLANTA_LABELS = {
 /** Etiqueta de posición (maceta, módulo, hueco…) según tipo de instalación activa. */
 function hcLabelUbicacionCultivo(nivel, cesta, cfg) {
   const c = cfg || (typeof state !== 'undefined' ? state.configTorre : null) || {};
+  const ci = Number(cesta) + 1;
+  const enPropagador =
+    c.germinacionEnPropagador ||
+    (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(c) === 'propagador');
+  if (enPropagador) return 'Alvéolo ' + ci;
   const tipo =
     typeof tipoInstalacionNormalizado === 'function'
       ? tipoInstalacionNormalizado(c)
       : String(c.tipoInstalacion || 'dwc').toLowerCase();
   const n = Number(nivel) + 1;
-  const ci = Number(cesta) + 1;
   if (tipo === 'rdwc') return 'Módulo ' + n + '-' + ci;
   return 'Maceta ' + n + '-' + ci;
 }
 
 function hcFasePlantaLabelTexto(cultivo, cesta) {
+  if (cesta && String(cesta.origenPlanta || '').toLowerCase() === 'germinacion') {
+    const cfg = typeof state !== 'undefined' ? state.configTorre || {} : {};
+    if (
+      cfg.germinacionEnPropagador ||
+      (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'propagador')
+    ) {
+      return 'Germinación';
+    }
+  }
   if (!cultivo || !cesta || !cesta.fecha) return 'Sin fecha';
   const ms = new Date(cesta.fecha).getTime();
   if (!Number.isFinite(ms)) return 'Sin fecha';

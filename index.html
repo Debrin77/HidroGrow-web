@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <meta name="theme-color" content="#faf6ef">
 
@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-a11y-genetica">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-prop-svg">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-montaje-a11y">
   <link rel="stylesheet" href="css/hc-pm-checklist.css?v=2026-05-31-prop-premium">
 </head>
@@ -3276,7 +3276,7 @@
       <div class="setup-step-dot" id="sdot14"></div>
       <div class="setup-step-dot" id="sdot15"></div>
     </div>
-    <div class="setup-steps-label" id="setupStepLabel">Paso 1 de 8</div>
+    <div class="setup-steps-label setup-hidden" id="setupStepLabel" aria-hidden="true"></div>
     <div id="setupCaminoStepBanner" class="setup-box-info setup-camino-step-banner setup-hidden setup-mb-8" role="status" aria-live="polite"></div>
     <div id="setupRoadmapMini" class="setup-roadmap-mini setup-hidden" aria-hidden="true"></div>
     <div id="setupGuiaPanel" class="setup-guia-panel setup-hidden" role="note" aria-live="polite"></div>
@@ -5209,7 +5209,8 @@
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-flujo-cristalino"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-caminos-fase"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-mobile-ui"></script>
+  <script src="js/hc-mobile-ui.js?v=2026-05-31-mobile-ui"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -5224,36 +5225,35 @@
   <script src="js/diagrams/rdwc/rdwc-presets.js?v=2026-05-27-rdwc-36"></script>
   <script src="js/diagrams/rdwc/rdwc-diagram.js?v=2026-05-27-rdwc-chrome"></script>
   <script src="js/diagrams/rdwc/rdwc-plan-diagram.js?v=2026-05-28-rdwc-air-pump-match"></script>
-
-
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
   <script src="js/torre-render-build.js?v=2026-06-02-dwc-rdwc-only"></script>
-<script src="js/torre-render-main.js?v=2026-06-02-dwc-rdwc-only"></script>
+<script src="js/torre-render-main.js?v=2026-05-31-prop-svg"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-fases-retraso"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-propagador-montaje.js?v=2026-05-31-germ-plan-gate"></script>
   <script src="js/hc-premium-germ-plan.js?v=2026-05-31-germ-plan-gate"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-plan-gate"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-prop-svg"></script>
+  <script src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-genetica-oblig"></script>
   <script src="js/hc-camino-fase.js?v=2026-05-31-caminos-fase"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-germ-plan-gate"></script>
-  <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-caminos-fase"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-propagador-viz"></script>
+  <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-clima-camino"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
-  <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-flow"></script>
+  <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
   <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
-  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-06-02-dwc-rdwc-only"></script>
-  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-flujo-logico"></script>
+  <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-propagador-cultivo"></script>
+  <script src="js/hc-setup-wizard-pages.js?v=2026-05-31-header-compact"></script>
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-flujo-logico"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-propagador-cultivo"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=2026-06-02-icons-full"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -5272,7 +5272,7 @@
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-germ-historial"></script>
   <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
-  <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>
+  <script src="js/hc-setup-consejos.js?v=2026-05-31-propagador-cultivo"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-sin-instalacion"></script>

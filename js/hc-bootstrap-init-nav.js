@@ -381,6 +381,7 @@ function scrollTabBarToActive(btn) {
 }
 
 function goTab(tab) {
+  if (tab === currentTab) return;
   if (
     (tab === 'riego' || tab === 'meteo') &&
     typeof medicionesOperativasPermitidas === 'function' &&
@@ -395,9 +396,12 @@ function goTab(tab) {
     }
     tab = 'inicio';
   }
-  // Guardar estado torre antes de navegar
-  guardarEstadoTorreActual();
-  saveState();
+  // Guardar slot de torre en memoria; localStorage en diferido (móvil más fluido)
+  try {
+    guardarEstadoTorreActual();
+  } catch (_) {}
+  if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
+  else saveState();
   document.querySelectorAll('.tab-panel').forEach(p => {
     p.classList.remove('active');
     p.setAttribute('aria-hidden', 'true');
@@ -474,13 +478,15 @@ function goTab(tab) {
     } catch (_) {}
   }
   if (tab === 'riego') {
-    // Sincronizar inputs con la torre activa y calcular
     sincronizarInputsRiego();
     initDiaRiego();
     actualizarVistaRiegoPorTipoInstalacion();
     try { refreshUbicacionInstalacionUI(); } catch (_) {}
-    /* Siempre pedir datos nuevos al abrir la pestaña: el nocturno depende de la serie horaria; sin forceRefresh se reutilizaba caché ~1 min y podía parecer “valor fijo”. */
-    calcularRiego({ forceRefresh: true });
+    var riegoNow = Date.now();
+    var riegoStale =
+      !window._hcRiegoTabCalcAt || riegoNow - window._hcRiegoTabCalcAt > 45000;
+    calcularRiego({ forceRefresh: !!riegoStale });
+    window._hcRiegoTabCalcAt = riegoNow;
     window._riegoObsoleto = false;
   }
   if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();

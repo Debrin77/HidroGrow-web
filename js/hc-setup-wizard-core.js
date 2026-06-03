@@ -24,8 +24,15 @@ function hcSetupClonePlain(value, fallback = null) {
 
 /** Normaliza tipo de instalación guardado en config (solo DWC / RDWC). */
 function tipoInstalacionNormalizado(cfg) {
-  if (typeof hidrogrowTipoInstalacionRaw === 'function') return hidrogrowTipoInstalacionRaw(cfg);
+  if (typeof hidrogrowTipoInstalacionRaw === 'function') {
+    const raw = hidrogrowTipoInstalacionRaw(cfg);
+    if (raw) return raw;
+  }
   const t = cfg && cfg.tipoInstalacion;
+  if (!t || String(t).trim() === '') {
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) return '';
+    return 'dwc';
+  }
   return t === 'rdwc' ? 'rdwc' : 'dwc';
 }
 
@@ -153,9 +160,19 @@ function seleccionarSistemaRdwcMontajeOrigen(_mode) {
 
 /** Etiqueta corta para avisos (recarga, calendario, notificaciones). */
 function etiquetaSistemaHidroponicoBreve(cfg) {
-  const t = tipoInstalacionNormalizado(cfg || {});
+  const c = cfg || {};
+  if (typeof getSistemaFaseCamino === 'function') {
+    const f = getSistemaFaseCamino(c);
+    if (f === 'propagador') return 'Propagador / germinación';
+    if (f === 'prep_hidro') return 'Prep. hidro';
+    if (f === 'germ_cubo') return 'Germinación en cubo';
+    if (f === 'enraizado') return 'Enraizado (domo)';
+    if (f === 'madre') return 'Cubo madre';
+  }
+  const t = tipoInstalacionNormalizado(c);
+  if (!t) return 'Sin hidro (propagador)';
   if (t === 'rdwc') return 'RDWC';
-  if (typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(cfg || {}) === 'kratky') return 'Kratky';
+  if (typeof dwcGetModoCultivo === 'function' && dwcGetModoCultivo(c) === 'kratky') return 'Kratky';
   return 'DWC';
 }
 

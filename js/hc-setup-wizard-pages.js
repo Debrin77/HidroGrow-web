@@ -125,59 +125,11 @@ function renderSetupPage() {
     else if (i === setupPagina) dot.classList.add('active');
   }
 
-  // Labels de cada paso
-  const labels = [
-    'Bienvenida',           // 0
-    'Origen planta',        // 1
-    'Objetivo',             // 2
-    'Entorno',              // 3
-    'Espacio',              // 4
-    'Clima y luz',          // 5
-    'Genética',             // 6
-    'Detalle origen',       // 7
-    'Sistema hidro',        // 8
-    'Geometría',            // 9
-    'Equipamiento',         // 10
-    'Agua y fijación',      // 11
-    'Nutrientes',           // 12
-    'Meteo',                // 13
-    'Cultivos',             // 14
-    'Resumen',              // 15
-  ];
   const labelEl = document.getElementById('setupStepLabel');
   if (labelEl) {
-    const flowInfo =
-      typeof getSetupDisplayStepInfo === 'function'
-        ? getSetupDisplayStepInfo(setupPagina)
-        : { step: setupPagina + 1, total: SETUP_TOTAL_PAGES };
-    const camLbl =
-      typeof getSetupStepLabelForPage === 'function'
-        ? getSetupStepLabelForPage(setupPagina)
-        : null;
-    const stepName = camLbl || labels[setupPagina] || '';
-    if (setupEsNuevaTorre) {
-      const nomLbl = (setupNombreNuevaTorre || '').trim() || 'Nueva instalación';
-      labelEl.textContent =
-        setupPagina === 0
-          ? '🌿 ' + nomLbl + ' — configuración'
-          : nomLbl +
-            ' · Paso ' +
-            flowInfo.step +
-            ' de ' +
-            flowInfo.total +
-            ' — ' +
-            stepName;
-    } else {
-      labelEl.textContent =
-        setupPagina === 0
-          ? 'Bienvenido'
-          : 'Paso ' +
-            flowInfo.step +
-            ' de ' +
-            flowInfo.total +
-            ' — ' +
-            stepName;
-    }
+    labelEl.textContent = '';
+    labelEl.classList.add('setup-hidden');
+    labelEl.setAttribute('aria-hidden', 'true');
   }
 
   // Botones navegación

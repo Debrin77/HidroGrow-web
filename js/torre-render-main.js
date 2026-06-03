@@ -4,10 +4,31 @@
  */
 function renderTorre() {
   const cfg = state.configTorre || {};
+  if (typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino(cfg)) {
+    try {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+    } catch (_) {}
+    try {
+      if (
+        typeof getSistemaFaseCamino === 'function' &&
+        getSistemaFaseCamino(cfg) === 'propagador' &&
+        typeof hcRenderPropagadorSvg === 'function'
+      ) {
+        hcRenderPropagadorSvg(cfg);
+      }
+    } catch (_) {}
+    try {
+      if (typeof renderTorreInstalacionPicker === 'function') renderTorreInstalacionPicker();
+    } catch (_) {}
+    try {
+      if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+    } catch (_) {}
+    return;
+  }
   const tipo =
     typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   const esRdwc = tipo === 'rdwc';
-  const esDwc = !esRdwc;
+  const esDwc = tipo !== 'rdwc' && tipo !== '';
 
   const chk = document.getElementById('torreChkAnimSuaves');
   if (chk) chk.checked = state.configTorre?.torreAnimSvg !== false;

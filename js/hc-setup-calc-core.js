@@ -2063,6 +2063,33 @@ function guardarSetupYContinuarCore() {
     renderSetupPage();
     return false;
   }
+  if (faseGermSetup) {
+    try {
+      if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+      if (typeof persistPremiumGermPlanToConfig === 'function') {
+        persistPremiumGermPlanToConfig(state.configTorre);
+      }
+      if (typeof validarPlanGerminacionCompleto === 'function') {
+        const vPlan = validarPlanGerminacionCompleto(state.configTorre, { requierePropagador: true });
+        if (!vPlan.ok) {
+          showToast(vPlan.message || 'Completa genética, semillas y sustrato del propagador', true);
+          setupPagina =
+            typeof SETUP_PAGE_PREMIUM_4 !== 'undefined'
+              ? SETUP_PAGE_PREMIUM_4
+              : typeof SETUP_PAGE_PREMIUM_3 !== 'undefined'
+                ? SETUP_PAGE_PREMIUM_3
+                : setupPagina;
+          renderSetupPage();
+          if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') {
+            hcScrollSetupWizardAlFalloGuardado();
+          }
+          return false;
+        }
+      }
+    } catch (errGermPlan) {
+      console.error('persistPremiumGermPlan', errGermPlan);
+    }
+  }
   try {
     delete state.configTorre.hcPlantillaAutogenerada;
   } catch (_) {}
@@ -2195,7 +2222,13 @@ function guardarSetupYContinuarCore() {
   // Las constantes se usarán dinámicamente en evalEC y checklist
 
   // Reinicializar matriz de plantas (instalación nueva = vacía; reconfiguración conserva fichas)
-  if (setupEsNuevaTorre && typeof initTorreMatrizVacia === 'function') {
+  if (
+    setupEsNuevaTorre &&
+    faseGermSetup &&
+    typeof hcInicializarTorreGerminacionPropagador === 'function'
+  ) {
+    hcInicializarTorreGerminacionPropagador(state.configTorre);
+  } else if (setupEsNuevaTorre && typeof initTorreMatrizVacia === 'function') {
     initTorreMatrizVacia(niveles, cestas);
     state.configTorre.numNiveles = niveles;
     state.configTorre.numCestas = cestas;
@@ -2252,11 +2285,13 @@ function guardarSetupYContinuarCore() {
       id: Date.now(),
       nombre: setupNombreNuevaTorre,
       emoji:
-        typeof emojiSistemaPorTipo === 'function'
-          ? emojiSistemaPorTipo(isRdwc ? 'rdwc' : 'dwc')
-          : isRdwc
-            ? '♻️'
-            : '🫧',
+        faseGermSetup && camPersist === 'semilla_propagador'
+          ? '🫧'
+          : typeof emojiSistemaPorTipo === 'function'
+            ? emojiSistemaPorTipo(isRdwc ? 'rdwc' : 'dwc')
+            : isRdwc
+              ? '♻️'
+              : '🫧',
       config: JSON.parse(JSON.stringify(state.configTorre)),
       torre: JSON.parse(JSON.stringify(state.torre)),
       modoActual: 'vegetativo',
@@ -2324,12 +2359,16 @@ function guardarSetupYContinuarCore() {
     if (typeof renderConsejos === 'function') renderConsejos();
   } catch (_) {}
   try {
-    renderTorre();
+    if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+    else renderTorre();
   } catch (eRenderTorre) {
     try {
       console.error('renderTorre (post-guardado asistente)', eRenderTorre);
     } catch (_) {}
   }
+  try {
+    if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+  } catch (_) {}
   updateTorreStats();
   updateDashboard();
   try {
@@ -2664,7 +2703,16 @@ function aplicarConfigTorre() {
       hcPlantillaAutogenerada: true,
     };
   }
-  if (!state.configTorre.tipoInstalacion) state.configTorre.tipoInstalacion = 'dwc';
+  if (!state.configTorre.tipoInstalacion) {
+    const enFaseCamino =
+      typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(state.configTorre);
+    if (!enFaseCamino) state.configTorre.tipoInstalacion = 'dwc';
+  }
+  try {
+    if (typeof hcSyncGerminacionPlanCultivo === 'function') {
+      hcSyncGerminacionPlanCultivo(state.configTorre);
+    }
+  } catch (_) {}
   if (!state.configTorre.torreObjetivoCultivo) state.configTorre.torreObjetivoCultivo = 'final';
   const cfg = state.configTorre;
   if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(cfg);

@@ -1492,12 +1492,34 @@ function buildHtmlPlantasInstalacionResumen(opts) {
       : [];
 
   if (!plantas.length) {
+    const faseSis =
+      typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+    const planSt =
+      faseSis === 'propagador' && typeof getPlanGermEstado === 'function'
+        ? getPlanGermEstado(cfg)
+        : null;
+    const emptyMsg =
+      planSt && planSt.variedad
+        ? 'Germinación en propagador: <strong>' +
+          esc(planSt.nombreVar) +
+          '</strong> · ' +
+          esc(String(planSt.numSemillas || '—')) +
+          ' semilla(s) · sustrato <strong>' +
+          esc(
+            typeof etiquetaSustratoGerm === 'function'
+              ? etiquetaSustratoGerm(planSt.sustrato)
+              : planSt.sustrato || '—'
+          ) +
+          '</strong>. Tras el traslado al hidro podrás editar cada alvéolo en el esquema.'
+        : faseSis === 'propagador'
+          ? 'Completa genética, número de semillas y sustrato en el asistente o en el checklist del propagador.'
+          : 'Aún no hay variedad asignada en macetas o módulos. En <strong>Cultivo e instalación</strong> elige genética y fecha en cada posición; los consejos de EC, luz y riego se alinearán con esas fichas.';
     return (
       '<div class="hc-plantas-instalacion-inner">' +
       (nombreInst
         ? '<p class="hc-plantas-instalacion-inst"><strong>' + esc(nombreInst) + '</strong> · ' + esc(sysBreve) + '</p>'
         : '<p class="hc-plantas-instalacion-inst">' + esc(sysBreve) + '</p>') +
-      '<p class="hc-plantas-instalacion-empty">Aún no hay variedad asignada en macetas o módulos. En <strong>Cultivo e instalación</strong> elige genética y fecha en cada posición; los consejos de EC, luz y riego se alinearán con esas fichas.</p>' +
+      '<p class="hc-plantas-instalacion-empty">' + emptyMsg + '</p>' +
       (o.linkSistema !== false
         ? '<p class="hc-plantas-instalacion-cta"><button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sistema\')">Ir a Cultivo e instalación</button></p>'
         : '') +
