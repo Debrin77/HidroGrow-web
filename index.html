@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-06-02-icons-full">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-welcome-ui">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-montaje-a11y">
   <link rel="stylesheet" href="css/hc-pm-checklist.css?v=2026-05-31-montaje-visual">
 </head>
@@ -3064,16 +3064,18 @@
   aria-labelledby="welcomeGuideTitle" aria-hidden="true">
   <div class="welcome-card welcome-card--guide welcome-card--store">
     <header class="welcome-hero">
-      <div class="welcome-brand" aria-hidden="true">
-        <img class="welcome-brand-emblem welcome-brand-emblem--lg" alt="" src="icons/splash-brand-gold.png?v=2026-05-31-gold-v2" width="56" height="56" decoding="async">
-        <span class="welcome-brand-word"><span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span></span>
-      </div>
-      <p class="welcome-eyebrow">Cannabis hidro en casa · España · PWA</p>
       <div class="welcome-theme-switch" role="group" aria-label="Aspecto de la guía">
         <button type="button" class="welcome-theme-btn is-active" id="welcomeThemeBtnLight"
           onclick="setWelcomeTheme('light')" aria-pressed="true">Claro</button>
         <button type="button" class="welcome-theme-btn" id="welcomeThemeBtnDark"
           onclick="setWelcomeTheme('dark')" aria-pressed="false">Dark</button>
+      </div>
+      <div class="welcome-hero-main">
+        <div class="welcome-brand" aria-hidden="true">
+          <img class="welcome-brand-emblem welcome-brand-emblem--lg" alt="" src="icons/splash-brand-gold.png?v=2026-05-31-gold-v2" width="56" height="56" decoding="async">
+          <span class="welcome-brand-word"><span class="t-hydro">HIDRO</span><span class="t-caru">Grow</span></span>
+        </div>
+        <p class="welcome-eyebrow">Cannabis hidro en casa · España · PWA</p>
       </div>
       <h2 id="welcomeGuideTitle" class="welcome-title">Tu instalación DWC/RDWC, medida y bajo control</h2>
       <p class="welcome-lead">App de <strong>autocultivo hidropónico</strong> para vivienda: <strong>montaje guiado</strong>, <strong>registro EC/pH</strong>, <strong>germinación</strong>, <strong>historial con gráficos</strong>, nutrientes por <strong>litros reales</strong> y meteo local — sin cuentas ni servidores obligatorios.</p>
@@ -3094,11 +3096,15 @@
 
     <section class="welcome-showcase" aria-labelledby="welcomeShowcaseTitle">
       <div class="welcome-showcase-head">
-        <h3 id="welcomeShowcaseTitle" class="welcome-showcase-title">Qué puedes hacer</h3>
-        <p class="welcome-showcase-sub">Desliza las tarjetas · última = configurar tu sistema</p>
+        <h3 id="welcomeShowcaseTitle" class="welcome-showcase-title">
+          <span class="welcome-showcase-title-ico" aria-hidden="true">✨</span>
+          Qué puedes hacer
+        </h3>
+        <p class="welcome-showcase-sub"><span class="welcome-scroll-hint" aria-hidden="true">← Desliza →</span> · última tarjeta = configurar tu sistema</p>
       </div>
       <div class="welcome-value-grid" role="list" aria-label="Funciones principales de HidroGrow">
         <article class="welcome-value-card welcome-value-card--green" role="listitem">
+          <span class="welcome-value-tag">Montaje</span>
           <div class="welcome-value-icon" aria-hidden="true">🏗️</div>
           <h3>Montaje completo</h3>
           <p>Sala interior/exterior, LED, extractor, filtro, carpa, hidro DWC/RDWC, agua, nutriente y checklist de puesta en marcha.</p>
@@ -3109,41 +3115,49 @@
           <p>Camino de 6 fases (semilla → cubo hidro), equipamiento del propagador, monitor del domo y traslado a la matriz.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--blue" role="listitem">
+          <span class="welcome-value-tag">Medición</span>
           <div class="welcome-value-icon" aria-hidden="true">📝</div>
           <h3>Medir y registrar</h3>
           <p>EC, pH, temperatura, HR, VPD, volumen del depósito, recargas y apuntes con fecha — todo en Historial.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--violet" role="listitem">
+          <span class="welcome-value-tag">Historial</span>
           <div class="welcome-value-icon" aria-hidden="true">📈</div>
           <h3>Seguimiento y gráficos</h3>
           <p>Evolución EC/pH/VPD frente a bandas teóricas por fase y genética; comparativa cuando tienes varias instalaciones.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--violet welcome-value-card--assistant" role="listitem">
+          <span class="welcome-value-tag">Guía</span>
           <div class="welcome-value-icon" aria-hidden="true">🧭</div>
           <h3>Asistente de mediciones</h3>
           <p>Rangos por fase, correcciones accionables, oxígeno del depósito y avisos cuando algo se sale de lo habitual.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--teal welcome-value-card--protools" role="listitem">
+          <span class="welcome-value-tag">PRO</span>
           <div class="welcome-value-icon" aria-hidden="true">🛠️</div>
           <h3>Herramientas PRO</h3>
           <p>Conversor EC, dosis al EC objetivo, pH± según litros, comparativa de nutrientes y guía LED para plántulas.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--indigo" role="listitem">
+          <span class="welcome-value-tag">Cultivo</span>
           <div class="welcome-value-icon" aria-hidden="true">📊</div>
           <h3>Cultivo y matriz</h3>
           <p>SOG/SCROG, foto/auto, variedades del catálogo, fechas por cesta y esquema visual de la instalación activa.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--teal" role="listitem">
+          <span class="welcome-value-tag">Nutrientes</span>
           <div class="welcome-value-icon" aria-hidden="true">🧪</div>
           <h3>Nutrientes y mezcla</h3>
           <p>Catálogo habitual, checklist del depósito y dosificación según volumen real — menos desperdicio de abono.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--amber" role="listitem">
+          <span class="welcome-value-tag">Clima</span>
           <div class="welcome-value-icon" aria-hidden="true">🌤️</div>
           <h3>Meteo y riego</h3>
           <p>Previsión de tu municipio para anticipar calor, frío o humedad y afinar el contexto del cultivo.</p>
         </article>
         <article class="welcome-value-card welcome-value-card--cta" role="listitem" aria-label="Configurar instalación">
+          <span class="welcome-value-tag welcome-value-tag--cta">Empezar</span>
           <div class="welcome-value-icon" aria-hidden="true">🚀</div>
           <h3>Configura tu sistema</h3>
           <p>Asistente premium paso a paso: tipo DWC/RDWC, equipamiento, cultivos y primer llenado del depósito.</p>
