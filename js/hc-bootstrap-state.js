@@ -85,6 +85,7 @@ function hidrogrowLimpiarAlmacenamientoCompleto() {
     'hc_guia_primer_dia_dismiss',
     'hc_onboarding_visit_riego',
     'hc_bienvenida_v2026_6_store',
+    'hc_bienvenida_v2026_7_camino',
     'hc_tab_bar_coach_dismiss_v2',
     'hc_welcome_theme_preview',
     'hc_hint_ctx_med',
