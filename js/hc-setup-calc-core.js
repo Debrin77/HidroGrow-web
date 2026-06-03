@@ -1715,6 +1715,7 @@ function guardarSetupYContinuarCore() {
     typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
   const caminoSave =
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+  let camPersist = caminoSave;
   const wizardHidroGermCompleto =
     caminoSave === 'semilla_hidro' &&
     typeof setupPagina !== 'undefined' &&
@@ -2053,8 +2054,8 @@ function guardarSetupYContinuarCore() {
     if (typeof persistEquipamientoToConfig === 'function') {
       persistEquipamientoToConfig(state.configTorre);
     }
-    const camPersist =
-      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
+    camPersist =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : caminoSave;
     if (camPersist) state.configTorre.caminoCultivo = camPersist;
   } catch (errPremium) {
     console.error('persistPremiumSetupToConfig', errPremium);
