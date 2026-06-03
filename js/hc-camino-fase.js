@@ -173,9 +173,131 @@
     return false;
   }
 
+  function numSemillasCaminoGerm(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof getPlanGermEstado === 'function') {
+      var st = getPlanGermEstado(cfg);
+      if (st.numSemillas >= 1) return Math.round(st.numSemillas);
+    }
+    var g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+    if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) return Math.round(g.numSemillas);
+    var prem = cfg.premiumSetup || {};
+    if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+      return Math.round(prem.numSemillasGerm);
+    }
+    return 0;
+  }
+
+  function etiquetaFaseGermCorta(cfg) {
+    var faseId =
+      typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+    var map = {
+      semilla: 'Fase semilla',
+      taproot: 'Radícula',
+      rockwool: 'Cubo lana',
+      domo: 'Domo + luz',
+      netpot: 'Net pot',
+      dwc: 'Traslado hidro',
+    };
+    return map[faseId] || faseId;
+  }
+
+  /**
+   * Resumen para «Mis instalaciones» y picker (no mostrar DWC/filas×cubos en propagador).
+   * @returns {null|{ tipoLabel, plantasLabel, geomLabel, iconEmoji }}
+   */
+  function hcMetaListaInstalacionTorre(cfg, torreSlot) {
+    cfg = cfg || (torreSlot && torreSlot.config) || cfgActiva();
+    var c = cam(cfg);
+    var def = typeof getCaminoDef === 'function' ? getCaminoDef(c) : null;
+    var fase = typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+
+    if (fase === 'propagador') {
+      var nSem = numSemillasCaminoGerm(cfg);
+      var geom = [];
+      if (nSem >= 1) {
+        geom.push(nSem + (nSem === 1 ? ' semilla' : ' semillas'));
+      } else {
+        geom.push('Plan de semillas pendiente');
+      }
+      if (typeof getPlanGermEstado === 'function') {
+        var st = getPlanGermEstado(cfg);
+        if (st.nombreVar) geom.push(st.nombreVar);
+        if (st.sustrato) {
+          var subLbl =
+            typeof etiquetaSustratoGerm === 'function'
+              ? etiquetaSustratoGerm(st.sustrato)
+              : st.sustrato;
+          if (subLbl) geom.push(subLbl);
+        }
+      }
+      geom.push(etiquetaFaseGermCorta(cfg));
+      return {
+        tipoLabel: (def && def.short) || 'Propagador',
+        plantasLabel: nSem >= 1 ? nSem + (nSem === 1 ? ' semilla' : ' semillas') : 'Sin semillas en plan',
+        geomLabel: geom.join(' · '),
+        iconEmoji: (def && def.icon) || '🫧',
+      };
+    }
+
+    if (fase === 'germ_cubo') {
+      var nCubo = numSemillasCaminoGerm(cfg) || 1;
+      return {
+        tipoLabel: 'Germinación en cubo',
+        plantasLabel: nCubo + (nCubo === 1 ? ' cubo' : ' cubos'),
+        geomLabel: 'Semilla en hidro · ' + etiquetaFaseGermCorta(cfg),
+        iconEmoji: '🌱',
+      };
+    }
+
+    if (fase === 'prep_hidro') {
+      var pend = [];
+      if (!prepGermHidroListo(cfg)) pend.push('checklist propagador');
+      if (!salaLista(cfg)) pend.push('sala');
+      if (!hidroCerrado(cfg)) pend.push('DWC/RDWC');
+      return {
+        tipoLabel: (def && def.short) || 'Prep hidro',
+        plantasLabel: numSemillasCaminoGerm(cfg) >= 1 ? numSemillasCaminoGerm(cfg) + ' semillas' : 'Germinación',
+        geomLabel: pend.length ? 'Pendiente: ' + pend.join(', ') : 'Preparación',
+        iconEmoji: '💧',
+      };
+    }
+
+    if (fase === 'enraizado') {
+      return {
+        tipoLabel: 'Enraizado',
+        plantasLabel: 'Esquejes',
+        geomLabel: 'Domo de clones · checklist en curso',
+        iconEmoji: '🌿',
+      };
+    }
+
+    if (fase === 'madre') {
+      return {
+        tipoLabel: 'Madre',
+        plantasLabel: '1 madre',
+        geomLabel: hidroCerrado(cfg) ? 'Cubo madre en sistema' : 'Configuración en curso',
+        iconEmoji: '👑',
+      };
+    }
+
+    return null;
+  }
+
   function hcDashTorreInfoPropagador(cfg) {
     cfg = cfg || cfgActiva();
     if (!hcMostrarSistemaPropagador(cfg)) return null;
+    var meta = hcMetaListaInstalacionTorre(cfg);
+    if (meta) {
+      var parts = [meta.geomLabel];
+      var op =
+        typeof sistemaEstaOperativa === 'function' && sistemaEstaOperativa(cfg)
+          ? 'operativa'
+          : 'stand-by';
+      parts.push(op);
+      return parts.join(' · ');
+    }
     var parts = ['Germinación en propagador'];
     if (typeof getPlanGermEstado === 'function') {
       var st = getPlanGermEstado(cfg);
@@ -270,6 +392,7 @@
   global.hcOperativaFaseCamino = hcOperativaFaseCamino;
   global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
   global.hcDashTorreInfoPropagador = hcDashTorreInfoPropagador;
+  global.hcMetaListaInstalacionTorre = hcMetaListaInstalacionTorre;
   global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
   global.hcRecargaCompletaAplicaEnCamino = hcRecargaCompletaAplicaEnCamino;
   global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;

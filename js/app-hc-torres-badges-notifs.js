@@ -865,6 +865,10 @@ function toggleSistemaOperativa() {
 }
 
 function textoTipoInstalacionTorre(cfg) {
+  if (typeof hcMetaListaInstalacionTorre === 'function') {
+    const meta = hcMetaListaInstalacionTorre(cfg);
+    if (meta && meta.tipoLabel) return meta.tipoLabel;
+  }
   return typeof etiquetaSistemaHidroponicoBreve === 'function'
     ? etiquetaSistemaHidroponicoBreve(cfg)
     : cfg && cfg.tipoInstalacion === 'rdwc'
@@ -921,30 +925,48 @@ function renderListaTorres() {
 
   lista.innerHTML = state.torres.map((t, i) => {
     const isActiva = i === activa;
-    const plantasCount = (t.torre || []).reduce((sum, nivel) =>
-      sum + (nivel || []).filter(c => c && c.variedad).length, 0);
     const cfgT = t.config || {};
-    const tipoNorm = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'dwc';
-    const geomTxt =
-      tipoNorm === 'rdwc'
-        ? ((cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' cubos')
-        : ((cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' cubos');
-    const tipoTag = tipoNorm === 'rdwc' ? 'RDWC' : 'DWC';
-    const listIco =
-      typeof hcSistemaIconMarkup === 'function'
-        ? hcSistemaIconMarkup(tipoNorm, 'hc-ico--torre-list')
+    const metaInst =
+      typeof hcMetaListaInstalacionTorre === 'function' ? hcMetaListaInstalacionTorre(cfgT, t) : null;
+    let tipoTag;
+    let plantasLine;
+    let geomTxt;
+    let listIco;
+    if (metaInst) {
+      tipoTag = metaInst.tipoLabel || 'Propagador';
+      plantasLine = metaInst.plantasLabel || '—';
+      geomTxt = metaInst.geomLabel || '';
+      listIco = metaInst.iconEmoji
+        ? String(metaInst.iconEmoji)
         : emojiSistemaUiPorTorre(t);
+    } else {
+      const plantasCount = (t.torre || []).reduce((sum, nivel) =>
+        sum + (nivel || []).filter(c => c && c.variedad).length, 0);
+      const tipoNorm =
+        typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'dwc';
+      geomTxt =
+        tipoNorm === 'rdwc'
+          ? (cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' cubos'
+          : (cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' cubos';
+      tipoTag = tipoNorm === 'rdwc' ? 'RDWC' : 'DWC';
+      plantasLine = plantasCount + (plantasCount === 1 ? ' planta' : ' plantas');
+      listIco =
+        typeof hcSistemaIconMarkup === 'function'
+          ? hcSistemaIconMarkup(tipoNorm, 'hc-ico--torre-list')
+          : emojiSistemaUiPorTorre(t);
+    }
+    const listIcoHtml = listIco;
 
     return `<div class="torre-list-row${isActiva ? ' torre-list-row--active' : ''}">
       <button type="button" class="torre-list-main"
         onclick="cambiarTorreActiva(${i})"
         aria-pressed="${isActiva ? 'true' : 'false'}"
         aria-label="Activar ${String((t.nombre || '').trim() || 'instalación').replace(/"/g, '&quot;')}${isActiva ? ', instalación actual' : ''}">
-      <span class="torre-list-emoji" aria-hidden="true">${listIco}</span>
+      <span class="torre-list-emoji" aria-hidden="true">${listIcoHtml}</span>
       <span class="torre-list-body">
         <span class="torre-list-name">${(t.nombre || '').trim() || 'Instalación'}</span>
         <span class="torre-list-meta">
-          ${tipoTag} · ${plantasCount} plantas · ${t.config ? geomTxt : '5N × 5C'}
+          ${tipoTag} · ${plantasLine}${geomTxt ? ' · ' + geomTxt : ''}
           ${isActiva ? ' · <strong class="torre-list-active-tag">Activa</strong>' : ''}
         </span>
       </span>
