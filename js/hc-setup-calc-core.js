@@ -9,16 +9,20 @@
 // ── Nutriente de la torre activa ─────────────────────────────────────────
 function getNutrienteTorre() {
   const cfg = state.configTorre || {};
+  const tieneInst =
+    typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+  if (!tieneInst) return null;
   const tIdx = state.torreActiva || 0;
   const tCfg = state.torres && state.torres[tIdx] && state.torres[tIdx].config;
   const raw = tCfg ? (tCfg.nutriente || cfg.nutriente) : cfg.nutriente;
   const idNorm = raw && String(raw).trim() ? String(raw).trim() : null;
   if (!idNorm) {
     if (cfg.hcPlantillaAutogenerada) return null;
+    if (cfg.checklistInstalacionConfirmada !== true) return null;
     const fb = 'canna_aqua';
     return NUTRIENTES_DB.find(n => n.id === fb) || NUTRIENTES_DB[0];
   }
-  return NUTRIENTES_DB.find(n => n.id === idNorm) || NUTRIENTES_DB[0];
+  return NUTRIENTES_DB.find(n => n.id === idNorm) || null;
 }
 
 function aplicarAjusteEcObjetivoPorInstalacion(ecRange, cfg) {

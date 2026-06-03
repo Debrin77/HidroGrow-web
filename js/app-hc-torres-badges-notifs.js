@@ -1051,7 +1051,9 @@ function borrarTorre(idx) {
 // ══════════════════════════════════════════════════
 
 function actualizarBadgesNutriente() {
-  const nut = getNutrienteTorre();
+  const hayInst =
+    typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+  const nut = hayInst ? getNutrienteTorre() : null;
   const cfg = state.configTorre || {};
 
   if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
@@ -1087,9 +1089,28 @@ function actualizarBadgesNutriente() {
   const dashFuente = document.getElementById('dashNutrienteFuente');
   const dashRazon = document.getElementById('dashNutrienteRazon');
   const dashAviso   = document.getElementById('dashNutrienteAviso');
-  if (dashNombre) dashNombre.textContent = nut ? nut.nombre : 'Nutriente sin elegir';
-  if (dashDetalle) dashDetalle.textContent = nut ? nut.detalle : 'Elige marca en Cultivo e instalación o Medir';
+  if (dashNombre) {
+    dashNombre.textContent = nut
+      ? nut.nombre
+      : hayInst
+        ? 'Nutriente sin elegir'
+        : 'Sin nutriente';
+  }
+  if (dashDetalle) {
+    dashDetalle.textContent = nut
+      ? nut.detalle
+      : hayInst
+        ? 'Elige marca en Cultivo e instalación o Medir'
+        : 'Configura tu instalación en el asistente';
+  }
   if (dashEstado || dashRecomendado || dashRazon || dashFuente) {
+    if (!hayInst) {
+      if (dashEstado) dashEstado.textContent = 'Actual: —';
+      if (dashRecomendado) dashRecomendado.textContent = 'Recomendado ahora: —';
+      if (dashTagEstado) dashTagEstado.classList.remove('is-match', 'is-mismatch');
+      if (dashFuente) dashFuente.textContent = 'Fuente: —';
+      if (dashRazon) dashRazon.textContent = 'Motivo: aún no hay instalación configurada.';
+    } else {
     const usoRaw =
       nut && typeof hcNutrienteFaseUso === 'function'
         ? hcNutrienteFaseUso(nut)
@@ -1143,6 +1164,7 @@ function actualizarBadgesNutriente() {
     }
     if (dashFuente) dashFuente.textContent = fuente;
     if (dashRazon) dashRazon.textContent = motivo;
+    }
   }
   if (dashAviso) {
     const msg =
