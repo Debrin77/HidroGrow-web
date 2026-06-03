@@ -452,6 +452,7 @@
     if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
   }
 
   function migrateChecklistLegacy(cfg, g) {
@@ -712,6 +713,7 @@
     }
     refreshDashGerminacionHub();
     if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
+    if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
   }
 
@@ -1275,6 +1277,7 @@
     } catch (_) {}
     try {
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      else if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     } catch (_) {}
   }
 

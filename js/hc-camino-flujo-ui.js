@@ -236,9 +236,56 @@
     ban.innerHTML = html;
   }
 
+  /** Sala oculta en barra hasta concluir germinación (menos ruido en modo propagador). */
+  function hcOcultarTabSalaDuranteGerm(cfg) {
+    cfg = cfg || cfgActiva();
+    if (getCam(cfg) !== 'semilla_propagador') return false;
+    if (typeof hcGerminacionActiva !== 'function' || !hcGerminacionActiva(cfg)) return false;
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
+    return true;
+  }
+
+  function aplicarVisibilidadTabsCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    var ocultarSala = hcOcultarTabSalaDuranteGerm(cfg);
+    var modoPropagadorSistema =
+      typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg);
+
+    var btnSala = el('btn-sala');
+    if (btnSala) {
+      btnSala.classList.toggle('hc-tab-camino-oculta', ocultarSala);
+      btnSala.disabled = !!ocultarSala;
+      btnSala.setAttribute('aria-hidden', ocultarSala ? 'true' : 'false');
+      btnSala.tabIndex = ocultarSala ? -1 : 0;
+    }
+
+    var btnSistema = el('btn-sistema');
+    if (btnSistema) {
+      if (modoPropagadorSistema) {
+        btnSistema.setAttribute('title', 'Propagador');
+        btnSistema.setAttribute('aria-label', 'Ir a Propagador');
+      } else {
+        btnSistema.setAttribute('title', 'Cultivo e instalación');
+        btnSistema.setAttribute('aria-label', 'Ir a Cultivo e instalación');
+      }
+    }
+
+    var tituloAccent = document.querySelector('#tab-sistema .section-title .accent');
+    if (tituloAccent) {
+      tituloAccent.textContent = modoPropagadorSistema ? 'Propagador' : 'Cultivo e instalación';
+    }
+    var hintSistema = el('tabContextHintSistema');
+    if (hintSistema) {
+      hintSistema.classList.toggle('setup-hidden', !!modoPropagadorSistema);
+    }
+    document.body.classList.toggle('hc-modo-propagador-sistema', !!modoPropagadorSistema);
+    document.body.classList.toggle('hc-modo-propagador-sin-sala', !!ocultarSala);
+  }
+
   function refreshTabsOperativaCamino() {
     var cfg = cfgActiva();
     var prop = hcOperativaFasePropagadorGerm(cfg);
+    aplicarVisibilidadTabsCamino(cfg);
 
     ensureOperativaBanner(
       'medirPropagadorFaseBanner',
@@ -247,15 +294,6 @@
         : '',
       'tab-mediciones',
       'medirTorreBanner'
-    );
-
-    ensureOperativaBanner(
-      'salaPropagadorResumenBanner',
-      prop
-        ? '<strong>Sala (opcional).</strong> Puedes configurar carpa y LED cuando la germinación esté concluida y vayas al hidro. No es obligatorio durante el propagador.'
-        : '',
-      'tab-sala',
-      null
     );
 
     if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
@@ -294,10 +332,48 @@
   global.renderTrasladoSalaBannerHtml = renderTrasladoSalaBannerHtml;
   global.hcNecesitaBannerTrasladoSala = hcNecesitaBannerTrasladoSala;
 
+  function hookGoTabCamino() {
+    if (global._hcGoTabCaminoHooked) return;
+    global._hcGoTabCaminoHooked = true;
+    var prev = global.goTab;
+    if (typeof prev !== 'function') return;
+    global.goTab = function (tab) {
+      if (
+        tab === 'sala' &&
+        typeof hcOcultarTabSalaDuranteGerm === 'function' &&
+        hcOcultarTabSalaDuranteGerm()
+      ) {
+        if (typeof showToast === 'function') {
+          showToast(
+            'Sala se activa al concluir la germinación (botón en Inicio → Germinación).',
+            false,
+            { durationMs: 5200 }
+          );
+        }
+        tab = 'inicio';
+        var r = prev(tab);
+        setTimeout(function () {
+          try {
+            document
+              .getElementById('dashGerminacionHub')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 280);
+        return r;
+      }
+      return prev(tab);
+    };
+  }
+
   hookTabsOperativaRefresh();
+  hookGoTabCamino();
   document.addEventListener('DOMContentLoaded', function () {
     try {
+      hookGoTabCamino();
       refreshTabsOperativaCamino();
     } catch (_) {}
   });
+
+  global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
+  global.aplicarVisibilidadTabsCamino = aplicarVisibilidadTabsCamino;
 })(typeof window !== 'undefined' ? window : globalThis);

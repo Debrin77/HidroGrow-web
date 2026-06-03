@@ -438,20 +438,26 @@ function goTab(tab) {
   if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
   if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
   if (tab === 'sistema') {
-    renderTorre();
-    if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
-    requestAnimationFrame(() => {
-      try {
-        const w = document.getElementById('torreSVGWrap');
-        if (w && w.querySelector('.torre-loading-placeholder')) renderTorre();
-      } catch (_) {}
-    });
-    renderCompatGrid();
-    calcularRotacion();
-    const postSetupCultivos =
-      typeof state !== 'undefined' && state && state.hcPostSetupChecklistPendiente;
-    if (!postSetupCultivos) {
-      setTimeout(() => abrirTutorialTorrePestanaSiPrimeraVez(), 520);
+    const modoPropagador =
+      typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador();
+    if (modoPropagador) {
+      if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
+    } else {
+      renderTorre();
+      if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
+      requestAnimationFrame(() => {
+        try {
+          const w = document.getElementById('torreSVGWrap');
+          if (w && w.querySelector('.torre-loading-placeholder')) renderTorre();
+        } catch (_) {}
+      });
+      renderCompatGrid();
+      calcularRotacion();
+      const postSetupCultivos =
+        typeof state !== 'undefined' && state && state.hcPostSetupChecklistPendiente;
+      if (!postSetupCultivos) {
+        setTimeout(() => abrirTutorialTorrePestanaSiPrimeraVez(), 520);
+      }
     }
   }
   if (tab === 'historial') { histDatos = null; cargarHistorial(); }

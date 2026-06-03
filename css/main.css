@@ -10348,6 +10348,15 @@ html.hc-theme-dark .hc-germ-equip-chip--on {
 .hc-sis-prop-alerta { margin-bottom: 12px; }
 .hc-sis-prop-alerta--hidro { border-color: rgba(34, 197, 94, 0.45); }
 .hc-sis-prop-foot { margin-top: 12px; }
+.tab-btn.hc-tab-camino-oculta {
+  display: none !important;
+  pointer-events: none;
+}
+body.hc-modo-propagador-sistema #tab-sistema .torre-btn-puesta-marcha,
+body.hc-modo-propagador-sistema #tab-sistema #torreNombreCard,
+body.hc-modo-propagador-sistema #tab-sistema .torre-tab-resumen-superior {
+  display: none !important;
+}
 .hc-germ-hub-modo {
   margin: 6px 0 0;
   font-size: 12px;

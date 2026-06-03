@@ -20,7 +20,7 @@ Tras **Guardar**: solo **checklist propagador** → la app funciona como **propa
 
 ### Modo propagador (operativa)
 
-- Pestañas: **Inicio** (hub + registro diario), **Medir** (domo, no depósito), **Sala** (opcional), **Sistema** (propagador + resumen semillas/sustrato/**nutrientes en agua**).
+- Pestañas visibles: **Inicio**, **Medir**, **Sistema** (renombrado «Propagador»). **Sala** oculta hasta concluir germinación; luego reaparece (opcional).
 - **Calendario**: alertas de control (registro pendiente, T°/HR, cierre por días, configurar hidro).
 - Conclusión por **días** (genética) o botón «Dar por concluida» → **solo entonces** aviso de **DWC/RDWC**.
 
