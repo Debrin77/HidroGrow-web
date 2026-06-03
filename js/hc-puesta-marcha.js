@@ -1513,6 +1513,7 @@
     refreshPuestaMarchaUi();
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     if (typeof showToast === 'function') {
       var cam =
         cfg.caminoCultivo ||
@@ -1542,6 +1543,14 @@
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
         } catch (_) {}
       }, 500);
+    } else if (
+      cfg.caminoCultivo === 'esqueje_hidro' &&
+      typeof enraizadoMontajeCompleto === 'function' &&
+      !enraizadoMontajeCompleto(cfg)
+    ) {
+      setTimeout(function () {
+        if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
+      }, 600);
     }
   }
 

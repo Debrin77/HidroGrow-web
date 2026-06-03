@@ -688,49 +688,57 @@ function actualizarPostSetupChecklistRail() {
   const cfg = state.configTorre || {};
   const cam =
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
-  const germCamino = cam === 'semilla_propagador' || cam === 'semilla_hidro';
-  const germAct =
-    typeof hcGerminacionActiva === 'function' ? hcGerminacionActiva(cfg) : false;
-
-  if (germCamino && germAct) {
-    if (
-      typeof propagadorMontajeCompleto === 'function' &&
-      !propagadorMontajeCompleto(cfg)
-    ) {
-      title = cam === 'semilla_hidro' ? 'Paso 1 · Prep en hidro' : 'Paso 1 · Propagador';
-      text =
-        'Checklist de montaje del ' +
+  const pasoUnico =
+    typeof hcSiguientePasoInstalacion === 'function'
+      ? hcSiguientePasoInstalacion(cfg, fase)
+      : null;
+  const railGuiado = {
+    propagador: {
+      title: cam === 'semilla_hidro' ? 'Paso 1 · Prep en hidro' : 'Paso 1 · Propagador',
+      text:
+        'Checklist del ' +
         (cam === 'semilla_hidro' ? '<strong>prep en hidro</strong>' : '<strong>propagador/domo</strong>') +
-        ' antes de configurar la sala.';
-      btnLabel = cam === 'semilla_hidro' ? 'Prep hidro' : 'Checklist propagador';
-      railAction = 'irPropagadorMontaje';
-    } else if (
-      typeof salaPreGermConfigurada === 'function' &&
-      !salaPreGermConfigurada(cfg)
-    ) {
-      title = 'Paso 2 · Configurar sala';
-      text =
-        'Asistente: carpa, LED, extractor y ubicación. <strong>Sin DWC/RDWC</strong> todavía — eso va tras las 6 fases.';
-      btnLabel = 'Configurar sala';
-      railAction = 'abrirSetupFaseSala';
-    } else if (
-      typeof montajeSalaPreGermOk === 'function' &&
-      !montajeSalaPreGermOk(cfg)
-    ) {
-      title = 'Paso 3 · Montaje de sala';
-      text =
-        'Checklist físico en Sala (carpa, luz, aire). Los puntos del <strong>sistema hidro</strong> aparecen después del asistente DWC/RDWC.';
-      btnLabel = 'Montaje de sala';
-      railAction = 'irMontaje';
-    } else if (
-      typeof germinacionListaParaConfigHidro === 'function' &&
-      !germinacionListaParaConfigHidro(cfg)
-    ) {
-      title = 'Paso 4 · Germinación (6 fases)';
-      text =
-        'Control día a día en <strong>Inicio</strong>. Al terminar: asistente DWC/RDWC — <strong>sin repetir</strong> germinación en el depósito.';
-      btnLabel = 'Ir a las 6 fases';
-      railAction = 'irGerminacion';
+        ' antes de configurar la sala.',
+    },
+    sala_config: {
+      title: 'Paso 2 · Configurar sala',
+      text:
+        'Asistente: carpa, LED, extractor y ubicación. <strong>Sin DWC/RDWC</strong> todavía — eso va tras las 6 fases.',
+    },
+    sala_montaje: {
+      title: 'Paso 3 · Montaje de sala',
+      text:
+        'Checklist físico en Sala (carpa, luz, aire). Los puntos del <strong>sistema hidro</strong> aparecen después del asistente DWC/RDWC.',
+    },
+    germinacion: {
+      title: 'Paso 4 · Germinación (6 fases)',
+      text:
+        'Control día a día en <strong>Inicio</strong>. Incluye checklist de traslado antes del depósito.',
+    },
+    hidro_config: {
+      title: 'Paso 5 · Sistema DWC/RDWC',
+      text:
+        cam === 'semilla_hidro'
+          ? 'Cierra el asistente hidro. La germinación en el depósito <strong>ya está hecha</strong>.'
+          : 'Configura DWC/RDWC y circuito; luego puntos hidro en montaje de sala.',
+    },
+    enraizado: {
+      title: 'Enraizado de esquejes',
+      text:
+        'Checklist de domo, rockwool e higiene antes de asignar clones y el primer llenado del depósito.',
+    },
+    montaje_hidro: {
+      title: 'Montaje · sistema hidro',
+      text: 'Completa tuberías, aireación y puntos de sistema en el checklist de Sala.',
+    },
+  };
+
+  if (pasoUnico && railGuiado[pasoUnico.etapa]) {
+    title = railGuiado[pasoUnico.etapa].title;
+    text = railGuiado[pasoUnico.etapa].text;
+    btnLabel = pasoUnico.label;
+    railAction = pasoUnico.action;
+    if (pasoUnico.etapa === 'germinacion') {
       try {
         const g = cfg.germinacionFlow;
         const pasos = g && g.pasos ? g.pasos : {};
@@ -739,23 +747,16 @@ function actualizarPostSetupChecklistRail() {
         ids.forEach((id) => {
           if (pasos[id] && pasos[id].doneAt) done++;
         });
-        statusTxt = 'Camino: ' + done + '/6 fases completadas.';
+        statusTxt = 'Camino: ' + done + '/6 fases · traslado: ' + (g && g.checklistTrasladoOk ? '✓' : 'pendiente');
       } catch (_) {}
-    } else if (
-      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
-      hcCaminoRequiereConfigHidroPendiente(cfg)
-    ) {
-      title = 'Paso 5 · Sistema DWC/RDWC';
-      text =
-        cam === 'semilla_hidro'
-          ? 'Cierra el asistente hidro (tipo, geometría, nutrientes). La germinación en el depósito <strong>ya está hecha</strong>.'
-          : 'Configura DWC/RDWC y circuito. Luego completa los puntos hidro en montaje de sala.';
-      btnLabel = 'Configurar DWC/RDWC';
-      railAction = 'abrirSetupFaseHidro';
     }
   }
 
-  if (fase === 'cultivo_pendiente' && !(germCamino && germAct && railAction)) {
+  const germCamino = cam === 'semilla_propagador' || cam === 'semilla_hidro';
+  const germAct =
+    typeof hcGerminacionActiva === 'function' ? hcGerminacionActiva(cfg) : false;
+
+  if (fase === 'cultivo_pendiente' && !(pasoUnico && railGuiado[pasoUnico.etapa])) {
     title = 'Cultivo en el esquema';
     text =
       'Asigna <strong>variedad</strong> y <strong>fecha</strong> en cada cesta con planta.';
@@ -770,7 +771,7 @@ function actualizarPostSetupChecklistRail() {
     } else if (bloqueado) {
       statusTxt = 'Revisa fechas u origen en las cestas con cultivo.';
     }
-  } else if (fase === 'deposito_pendiente' && !(germCamino && germAct && railAction)) {
+  } else if (fase === 'deposito_pendiente' && !(pasoUnico && railGuiado[pasoUnico.etapa])) {
     title = 'Checklist del depósito (nutrientes)';
     text =
       'Abre el <strong>checklist del depósito</strong> para el primer llenado.';
@@ -814,7 +815,12 @@ function actualizarPostSetupChecklistRail() {
     btn.textContent = btnLabel;
     btn.disabled = !!btnDisabled;
     btn.setAttribute('aria-disabled', btnDisabled ? 'true' : 'false');
+    if (railAction) btn.dataset.railAction = railAction;
+    else delete btn.dataset.railAction;
   }
+  try {
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+  } catch (_) {}
 }
 
 /** Tras el asistente: al menos un cultivo y sin bloqueo de checklist (en automático: fechas/origen; en manual: siempre listo). */

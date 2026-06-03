@@ -31,9 +31,10 @@
       faseInicial: 'germinacion',
       icon: '💧',
       orden: [
-        'Equipamiento mínimo: cubos, net pot, medidor (sin sala LED obligatoria al día 1).',
-        'Las 6 fases en Inicio con tareas adaptadas al depósito.',
-        'Al terminar: elige y configura DWC/RDWC + sala + checklist del sistema.',
+        'Prep en hidro (checklist): net pot, cubo, medidor, aireación suave.',
+        'Configura la <strong>sala</strong> (asistente + montaje), igual que en propagador.',
+        'Las <strong>6 fases</strong> en Inicio (germinación en el cubo, no en el depósito suelto).',
+        'Checklist de traslado → cierra DWC/RDWC (sin repetir germinación en el depósito).',
       ],
     },
     esqueje_hidro: {
@@ -45,9 +46,10 @@
       faseInicial: 'hidro',
       icon: '🌿',
       orden: [
-        'Propagador / domo de enraizado (imprescindible).',
-        'Configura DWC/RDWC, sala y equipamiento en este asistente.',
-        'Checklist de enraizado y traslado al net pot.',
+        'Asistente: propagador, DWC/RDWC, sala y equipamiento.',
+        'Montaje de sala verificado en checklist.',
+        '<strong>Checklist de enraizado</strong> (domo, rockwool, higiene) antes de la matriz.',
+        'Asigna clones en Cultivo → primer llenado del depósito.',
       ],
     },
     madre_hidro: {
@@ -242,12 +244,27 @@
   }
 
   function hcGerminacionBloqueada(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (typeof hcGerminacionBloqueadaPorMontaje === 'function' && hcGerminacionBloqueadaPorMontaje(cfg)) {
       return 'propagador';
     }
     if (hcGerminacionBloqueadaPorSala(cfg)) {
       if (!salaPreGermConfigurada(cfg)) return 'sala_config';
       return 'sala_montaje';
+    }
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+      var g = cfg.germinacionFlow;
+      if (g && g.pasos) {
+        var ids = ['semilla', 'taproot', 'rockwool', 'domo', 'netpot', 'dwc'];
+        var allDone = true;
+        for (var i = 0; i < ids.length; i++) {
+          if (!g.pasos[ids[i]] || !g.pasos[ids[i]].doneAt) {
+            allDone = false;
+            break;
+          }
+        }
+        if (allDone && !g.checklistTrasladoOk) return 'traslado';
+      }
     }
     return '';
   }
@@ -268,7 +285,7 @@
     for (var i = 0; i < ids.length; i++) {
       if (!pasos[ids[i]] || !pasos[ids[i]].doneAt) return false;
     }
-    return true;
+    return !!g.checklistTrasladoOk;
   }
 
   function hcCaminoRequiereConfigHidroPendiente(cfg) {
@@ -417,6 +434,282 @@
     return skip;
   }
 
+  function escResumen(t) {
+    return String(t || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function contarFasesGermHechas(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var g = cfg.germinacionFlow;
+    if (!g || !g.pasos) return 0;
+    var ids = ['semilla', 'taproot', 'rockwool', 'domo', 'netpot', 'dwc'];
+    var n = 0;
+    for (var i = 0; i < ids.length; i++) {
+      if (g.pasos[ids[i]] && g.pasos[ids[i]].doneAt) n++;
+    }
+    return n;
+  }
+
+  function hidroInstalacionCerrada(cfg) {
+    cfg = cfg || {};
+    if (cfg.checklistInstalacionConfirmada === true) return true;
+    if (cfg.tipoInstalacion !== 'dwc' && cfg.tipoInstalacion !== 'rdwc') return false;
+    if (typeof hcCaminoRequiereConfigHidroPendiente === 'function' && hcCaminoRequiereConfigHidroPendiente(cfg)) {
+      return false;
+    }
+    return true;
+  }
+
+  function depositoListo(cfg) {
+    if (typeof depositoPrimerLlenadoOk === 'function') {
+      return depositoPrimerLlenadoOk(cfg, typeof state !== 'undefined' ? state : {});
+    }
+    return !!(cfg && cfg.instalacionPrimerLlenadoAt);
+  }
+
+  function cultivoMatrizListo() {
+    if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) {
+      return false;
+    }
+    if (typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' && torreBloqueaChecklistPorFaltaDatosCultivo()) {
+      return false;
+    }
+    return true;
+  }
+
+  function getCaminoResumenPasos(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    var pasos = [];
+
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
+      var fasesN = contarFasesGermHechas(cfg);
+      var g = cfg.germinacionFlow || {};
+      pasos = [
+        {
+          id: 'prep',
+          label: cam === 'semilla_hidro' ? 'Prep en hidro' : 'Propagador / domo',
+          done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
+          action: 'irPropagadorMontaje',
+        },
+        {
+          id: 'sala_cfg',
+          label: 'Sala configurada',
+          done: salaPreGermConfigurada(cfg),
+          action: 'abrirSetupFaseSala',
+        },
+        {
+          id: 'sala_mont',
+          label: 'Montaje de sala',
+          done: montajeSalaPreGermOk(cfg),
+          action: 'irMontaje',
+        },
+        {
+          id: 'fases6',
+          label: '6 fases (' + fasesN + '/6)',
+          done: fasesN >= 6,
+          action: 'irGerminacion',
+          hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
+        },
+        {
+          id: 'traslado',
+          label: 'Checklist traslado',
+          done: !!g.checklistTrasladoOk,
+          action: 'irGerminacion',
+        },
+        {
+          id: 'hidro',
+          label: 'DWC/RDWC cerrado',
+          done: hidroInstalacionCerrada(cfg),
+          action: 'abrirSetupFaseHidro',
+        },
+        {
+          id: 'cultivo',
+          label: 'Cultivo en matriz',
+          done: cultivoMatrizListo(),
+          action: 'irCultivo',
+        },
+        {
+          id: 'deposito',
+          label: 'Primer llenado depósito',
+          done: depositoListo(cfg),
+          action: 'abrirChecklist',
+        },
+      ];
+    } else if (cam === 'esqueje_hidro') {
+      pasos = [
+        {
+          id: 'config',
+          label: 'Instalación (asistente)',
+          done:
+            !!(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada),
+          action: 'abrirSetup',
+        },
+        {
+          id: 'montaje',
+          label: 'Montaje de sala',
+          done: !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt),
+          action: 'irMontaje',
+        },
+        {
+          id: 'enraizado',
+          label: 'Checklist enraizado',
+          done: typeof enraizadoMontajeCompleto === 'function' && enraizadoMontajeCompleto(cfg),
+          action: 'irPropagadorMontaje',
+        },
+        {
+          id: 'cultivo',
+          label: 'Esquejes en matriz',
+          done: cultivoMatrizListo(),
+          action: 'irCultivo',
+        },
+        {
+          id: 'deposito',
+          label: 'Primer llenado depósito',
+          done: depositoListo(cfg),
+          action: 'abrirChecklist',
+        },
+      ];
+    } else if (cam === 'madre_hidro') {
+      pasos = [
+        {
+          id: 'config',
+          label: 'Sala y depósito madre',
+          done:
+            !!(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada),
+          action: 'abrirSetup',
+        },
+        {
+          id: 'montaje',
+          label: 'Montaje de sala',
+          done: !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt),
+          action: 'irMontaje',
+        },
+        {
+          id: 'cultivo',
+          label: 'Madre en matriz',
+          done: cultivoMatrizListo(),
+          action: 'irCultivo',
+        },
+        {
+          id: 'operativa',
+          label: 'Rutina diaria (Medir)',
+          done: depositoListo(cfg),
+          action: 'irMedir',
+        },
+      ];
+    }
+    return pasos;
+  }
+
+  function caminoResumenDebeMostrarse(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    if (!cam || !CAMINOS[cam]) return false;
+    if (depositoListo(cfg)) return false;
+    try {
+      if (typeof getInstalacionLifecycle === 'function') {
+        var lc = getInstalacionLifecycle(cfg);
+        if (lc.operativaDiaria) return false;
+      }
+    } catch (_) {}
+    return true;
+  }
+
+  function renderCaminoResumenHtml(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    var def = getCaminoDef(cam);
+    var pasos = getCaminoResumenPasos(cfg);
+    if (!pasos.length) return '';
+
+    var doneN = pasos.filter(function (p) {
+      return p.done;
+    }).length;
+    var currentIdx = -1;
+    for (var i = 0; i < pasos.length; i++) {
+      if (!pasos[i].done) {
+        currentIdx = i;
+        break;
+      }
+    }
+    var pasoUnico =
+      typeof hcSiguientePasoInstalacion === 'function' ? hcSiguientePasoInstalacion(cfg) : null;
+
+    var items = pasos
+      .map(function (p, i) {
+        var cls = 'hc-camino-resumen-item';
+        if (p.done) cls += ' hc-camino-resumen-item--done';
+        else if (i === currentIdx) cls += ' hc-camino-resumen-item--current';
+        var icon = p.done ? '✓' : i === currentIdx ? '→' : '○';
+        var hint = p.hint ? ' <span class="hc-camino-resumen-hint">' + escResumen(p.hint) + '</span>' : '';
+        return (
+          '<li class="' +
+          cls +
+          '">' +
+          '<span class="hc-camino-resumen-ico" aria-hidden="true">' +
+          icon +
+          '</span>' +
+          '<span class="hc-camino-resumen-lbl">' +
+          escResumen(p.label) +
+          hint +
+          '</span></li>'
+        );
+      })
+      .join('');
+
+    var cta =
+      pasoUnico && pasoUnico.action
+        ? '<button type="button" class="btn btn-primary btn-sm hc-camino-resumen-cta" data-camino-action="' +
+          escResumen(pasoUnico.action) +
+          '">' +
+          escResumen(pasoUnico.label) +
+          '</button>'
+        : '';
+
+    return (
+      '<div class="hc-camino-resumen-card">' +
+      '<div class="hc-camino-resumen-head">' +
+      '<h2 class="hc-camino-resumen-title">' +
+      escResumen((def.icon || '') + ' ' + def.label) +
+      '</h2>' +
+      '<span class="hc-camino-resumen-pct">' +
+      doneN +
+      '/' +
+      pasos.length +
+      ' listos</span></div>' +
+      '<p class="hc-camino-resumen-lead">Orden recomendado hasta el primer llenado del depósito y la rutina en Medir.</p>' +
+      '<ul class="hc-camino-resumen-list" role="list">' +
+      items +
+      '</ul>' +
+      (cta ? '<div class="hc-camino-resumen-actions">' + cta + '</div>' : '') +
+      '</div>'
+    );
+  }
+
+  function refreshDashCaminoResumen() {
+    var host = document.getElementById('dashCaminoResumen');
+    if (!host) return;
+    var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (!caminoResumenDebeMostrarse(cfg)) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
+    host.classList.remove('setup-hidden');
+    host.innerHTML = renderCaminoResumenHtml(cfg);
+    var btn = host.querySelector('.hc-camino-resumen-cta');
+    if (btn) {
+      btn.addEventListener('click', function () {
+        var act = btn.getAttribute('data-camino-action');
+        if (act && typeof hcEjecutarAccionInstalacion === 'function') hcEjecutarAccionInstalacion(act);
+      });
+    }
+  }
+
   global.HC_CAMINOS_CULTIVO = CAMINOS;
   global.ensurePremiumCamino = ensurePremiumCamino;
   global.getCaminoCultivo = getCaminoCultivo;
@@ -440,5 +733,8 @@
   global.getSetupUltimoPasoIndice = getSetupUltimoPasoIndice;
   global.getSetupSkippedPagesForCamino = getSetupSkippedPagesForCamino;
   global.getSetupSkippedPagesForSalaPreGerm = getSetupSkippedPagesForSalaPreGerm;
+  global.getCaminoResumenPasos = getCaminoResumenPasos;
+  global.renderCaminoResumenHtml = renderCaminoResumenHtml;
+  global.refreshDashCaminoResumen = refreshDashCaminoResumen;
   global.inferCaminoFromOrigen = inferCaminoFromOrigen;
 })(typeof window !== 'undefined' ? window : this);

@@ -133,22 +133,30 @@
     };
   }
 
-  function getSiguientePaso(fase) {
+  /**
+   * Paso único para rail, hub germ, Medir y bloqueos — evita CTAs divergentes.
+   */
+  function hcSiguientePasoInstalacion(cfgOpt, faseOpt) {
+    var cfg = cfgOpt || cfgActiva();
+    var fase =
+      faseOpt ||
+      (typeof getInstalacionLifecycle === 'function'
+        ? getInstalacionLifecycle(cfg).fase
+        : 'montaje_pendiente');
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+
     try {
-      var cfg = cfgActiva();
       if (
         typeof propagadorMontajeCompleto === 'function' &&
         typeof hcGerminacionActiva === 'function' &&
         hcGerminacionActiva(cfg) &&
         !propagadorMontajeCompleto(cfg)
       ) {
-        var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
         return {
           label:
-            cam === 'semilla_hidro'
-              ? 'Preparar germinación en hidro'
-              : 'Montaje del propagador',
+            cam === 'semilla_hidro' ? 'Preparar germinación en hidro' : 'Montaje del propagador',
           action: 'irPropagadorMontaje',
+          etapa: 'propagador',
         };
       }
       if (
@@ -159,49 +167,79 @@
         typeof propagadorMontajeCompleto === 'function' &&
         propagadorMontajeCompleto(cfg)
       ) {
-        if (
-          typeof salaPreGermConfigurada === 'function' &&
-          !salaPreGermConfigurada(cfg)
-        ) {
-          return { label: 'Configurar sala (antes de las 6 fases)', action: 'abrirSetupFaseSala' };
+        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+          return {
+            label: 'Configurar sala (antes de las 6 fases)',
+            action: 'abrirSetupFaseSala',
+            etapa: 'sala_config',
+          };
         }
-        if (
-          typeof montajeSalaPreGermOk === 'function' &&
-          !montajeSalaPreGermOk(cfg)
-        ) {
-          return { label: 'Montaje de sala (checklist)', action: 'irMontaje' };
+        if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+          return {
+            label: 'Montaje de sala (checklist)',
+            action: 'irMontaje',
+            etapa: 'sala_montaje',
+          };
         }
       }
-      if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva()) {
-        return { label: 'Control germinación (6 fases)', action: 'irGerminacion' };
+      if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+        return {
+          label: 'Control germinación (6 fases)',
+          action: 'irGerminacion',
+          etapa: 'germinacion',
+        };
       }
       if (
         typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
         hcCaminoRequiereConfigHidroPendiente(cfg)
       ) {
-        return { label: 'Configurar DWC/RDWC (Fase 2)', action: 'abrirSetupFaseHidro' };
+        return {
+          label: 'Configurar DWC/RDWC (Fase 2)',
+          action: 'abrirSetupFaseHidro',
+          etapa: 'hidro_config',
+        };
+      }
+      if (
+        typeof enraizadoMontajeCompleto === 'function' &&
+        cam === 'esqueje_hidro' &&
+        !enraizadoMontajeCompleto(cfg) &&
+        montajeEstaVerificado(cfg)
+      ) {
+        return {
+          label: 'Checklist de enraizado (esquejes)',
+          action: 'irPropagadorMontaje',
+          etapa: 'enraizado',
+        };
       }
       if (
         typeof hcCaminoEsSemilla === 'function' &&
-        hcCaminoEsSemilla(getCaminoCultivo(cfg)) &&
+        hcCaminoEsSemilla(cam) &&
         !montajeEstaVerificado(cfg) &&
         (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc')
       ) {
-        return { label: 'Montaje de sala completa', action: 'irMontaje' };
+        return { label: 'Montaje de sala (sistema hidro)', action: 'irMontaje', etapa: 'montaje_hidro' };
       }
     } catch (_) {}
+
     switch (fase) {
       case 'sin_config':
-        return { label: 'Configurar instalación', action: 'abrirSetup' };
+        return { label: 'Configurar instalación', action: 'abrirSetup', etapa: 'config' };
       case 'montaje_pendiente':
-        return { label: 'Montaje de sala', action: 'irMontaje' };
+        if (cam === 'esqueje_hidro' && typeof enraizadoMontajeCompleto === 'function' && !enraizadoMontajeCompleto(cfg)) {
+          return { label: 'Checklist de enraizado', action: 'irPropagadorMontaje', etapa: 'enraizado' };
+        }
+        return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'montaje' };
       case 'cultivo_pendiente':
-        return { label: 'Asignar cultivos en el esquema', action: 'irCultivo' };
+        return { label: 'Asignar cultivos en el esquema', action: 'irCultivo', etapa: 'cultivo' };
       case 'deposito_pendiente':
-        return { label: 'Checklist del depósito (nutrientes)', action: 'abrirChecklist' };
+        return { label: 'Checklist del depósito (nutrientes)', action: 'abrirChecklist', etapa: 'deposito' };
       default:
-        return { label: 'Rutina del día — Medir', action: 'irMedir' };
+        return { label: 'Rutina del día — Medir', action: 'irMedir', etapa: 'operativa' };
     }
+  }
+
+  function getSiguientePaso(fase) {
+    return hcSiguientePasoInstalacion(cfgActiva(), fase);
   }
 
   function esc(t) {
@@ -216,17 +254,34 @@
     if (!lc.esPrimeraInstalacion || lc.operativaDiaria) return null;
     var cfg = cfgActiva();
     if (
+      typeof enraizadoMontajeCompleto === 'function' &&
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(cfg) === 'esqueje_hidro' &&
+      !enraizadoMontajeCompleto(cfg)
+    ) {
+      return {
+        titulo: 'Primero: enraizado de esquejes',
+        texto:
+          'Verifica el <strong>checklist de enraizado</strong> (domo, rockwool, higiene) antes del primer llenado del depósito.',
+        cta: 'Checklist de enraizado',
+        action: 'irPropagadorMontaje',
+      };
+    }
+    if (
       typeof hcGerminacionActiva === 'function' &&
       hcGerminacionActiva(cfg) &&
       typeof germinacionListaParaConfigHidro === 'function' &&
       !germinacionListaParaConfigHidro(cfg)
     ) {
+      var g = cfg.germinacionFlow;
+      var faltaTraslado = g && !g.checklistTrasladoOk;
       return {
-        titulo: 'Primero: germinación (6 fases)',
-        texto:
-          'Completa el camino en <strong>Inicio</strong> (propagador → sala → 6 fases). ' +
-          'El <strong>checklist del depósito</strong> va después de cerrar DWC/RDWC.',
-        cta: 'Ir a germinación',
+        titulo: faltaTraslado ? 'Checklist de traslado pendiente' : 'Primero: germinación (6 fases)',
+        texto: faltaTraslado
+          ? 'Marca el <strong>checklist de traslado</strong> en Inicio antes del depósito y del asistente DWC/RDWC.'
+          : 'Completa el camino en <strong>Inicio</strong> (propagador → sala → 6 fases). ' +
+            'El <strong>checklist del depósito</strong> va después de cerrar DWC/RDWC.',
+        cta: faltaTraslado ? 'Ir a germinación' : 'Ir a germinación',
         action: 'irGerminacion',
       };
     }
@@ -465,6 +520,7 @@
       germAct = typeof hcGerminacionActiva === 'function' && hcGerminacionActiva();
     } catch (_) {}
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     var rutina = document.getElementById('dashRutinaDia');
     var pctEl = document.getElementById('dashInstLifecyclePct');
     var trackEl = document.getElementById('dashInstLifecycleTrack');
@@ -472,21 +528,30 @@
     var ctaEl = document.getElementById('dashInstLifecycleCta');
 
     if (box) {
-      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config' && !germAct;
+      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config';
       box.classList.toggle('setup-hidden', !showInst);
       if (showInst) {
+        var pasoUnico =
+          typeof hcSiguientePasoInstalacion === 'function'
+            ? hcSiguientePasoInstalacion(cfgActiva(), lc.fase)
+            : lc.siguientePaso;
         if (pctEl) pctEl.textContent = lc.porcentaje + '%';
         if (trackEl) trackEl.innerHTML = renderLifecycleTrack(lc.pasos);
         if (nextEl) {
           nextEl.innerHTML =
-            'Siguiente: <strong>' + esc(lc.siguientePaso.label) + '</strong>';
+            'Siguiente: <strong>' + esc(pasoUnico.label) + '</strong>' +
+            (germAct ? ' <span class="dash-inst-lifecycle-germ-hint">(también en el hub de germinación)</span>' : '');
         }
         if (ctaEl) {
-          ctaEl.textContent = lc.siguientePaso.label;
-          ctaEl.onclick = function () { hcEjecutarAccionInstalacion(lc.siguientePaso.action); };
+          ctaEl.textContent = pasoUnico.label;
+          ctaEl.onclick = function () {
+            hcEjecutarAccionInstalacion(pasoUnico.action);
+          };
         }
       }
     }
+
+    refreshLegacyInstalacionBanner(lc);
 
     if (rutina) {
       var showRut = lc.operativaDiaria;
@@ -520,6 +585,31 @@
     try {
       if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
     } catch (_) {}
+  }
+
+  function refreshLegacyInstalacionBanner(lc) {
+    lc = lc || getInstalacionLifecycle();
+    var host = document.getElementById('tab-inicio');
+    if (!host) return;
+    var prev = document.getElementById('hcLegacyInstalacionBanner');
+    if (!lc.legacyOperativa) {
+      if (prev) prev.remove();
+      return;
+    }
+    if (prev) return;
+    var ban = document.createElement('div');
+    ban.id = 'hcLegacyInstalacionBanner';
+    ban.className = 'setup-field-hint setup-field-hint--banner hc-legacy-inst-banner';
+    ban.setAttribute('role', 'status');
+    ban.innerHTML =
+      '<strong>Instalación con historial previo.</strong> Detectamos recargas o datos guardados: el progreso guiado puede estar al 100 %. ' +
+      'Revisa montaje y cultivos si acabas de reconfigurar.';
+    var hub = document.getElementById('dashGerminacionHub');
+    if (hub && !hub.classList.contains('setup-hidden')) {
+      hub.insertAdjacentElement('beforebegin', ban);
+    } else {
+      host.insertBefore(ban, host.firstChild);
+    }
   }
 
   function hcMostrarBannerSalaPostSetup(nombre) {
@@ -618,6 +708,7 @@
     }, 300);
   }
 
+  global.hcSiguientePasoInstalacion = hcSiguientePasoInstalacion;
   global.getInstalacionLifecycle = getInstalacionLifecycle;
   global.instalacionGuidadaActiva = instalacionGuidadaActiva;
   global.hcGateChecklistDeposito = hcGateChecklistDeposito;

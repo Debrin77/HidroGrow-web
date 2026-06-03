@@ -15,6 +15,15 @@
     { id: 'prop_vent', label: 'Ventilación del domo probada', hint: 'Abre 2× al día 3–5 min; sin corrientes frías directas.' },
   ];
 
+  var ITEMS_ENRAIZADO = [
+    { id: 'enr_domo', label: 'Domo de enraizado montado', hint: 'HR 70–80 %, 22–26 °C; ventilar 2×/día.' },
+    { id: 'enr_rockwool', label: 'Cubos rockwool pH 5,5 listos', hint: 'Humedecidos, no encharcados; gel/polvo de enraizante a mano.' },
+    { id: 'enr_higiene', label: 'Tijeras y superficie esterilizadas', hint: 'Alcohol 70 %; corte 45° por la mañana si puedes.' },
+    { id: 'enr_luz', label: 'Luz tenue 18/6 sobre el domo', hint: 'Sin LED de floración directo sobre esquejes tiernos.' },
+    { id: 'enr_termo', label: 'Termo-higrómetro en la zona de clones', hint: 'Anota T° y HR en el protocolo de esquejes.' },
+    { id: 'enr_aire', label: 'Aireación del depósito/clonador comprobada', hint: 'Burbujeo suave; EC 0–400 µS las primeras 48 h si usas mini DWC.' },
+  ];
+
   var ITEMS_PREP_HIDRO = [
     { id: 'ph_netpot', label: 'Net pot y cubo de lana en el sistema', hint: 'Semilla nunca suelta en el depósito; solo en cubo dentro de la maceta.' },
     { id: 'ph_nivel', label: 'Nivel de agua mínimo / niebla de raíz', hint: 'EC 200–400 µS hasta enraizar; T° agua 20–24 °C.' },
@@ -73,12 +82,23 @@
     return getCamino(cfg) === 'semilla_hidro';
   }
 
+  function esRutaEsqueje(cfg) {
+    return getCamino(cfg) === 'esqueje_hidro';
+  }
+
   function aplicaChecklistGerm(cfg) {
     cfg = cfg || getCfg();
     return esRutaPropagador(cfg) || esRutaGermHidro(cfg);
   }
 
+  function aplicaChecklistEnraizado(cfg) {
+    cfg = cfg || getCfg();
+    return esRutaEsqueje(cfg);
+  }
+
   function getChecksKey(cfg) {
+    cfg = cfg || getCfg();
+    if (esRutaEsqueje(cfg)) return 'enraizadoMontajeChecks';
     return esRutaGermHidro(cfg) ? 'preparacionGermHidroChecks' : 'propagadorMontajeChecks';
   }
 
@@ -106,16 +126,26 @@
     return !!ch.completedAt;
   }
 
+  function enraizadoMontajeCompleto(cfg) {
+    cfg = cfg || getCfg();
+    if (!aplicaChecklistEnraizado(cfg)) return true;
+    var ch = getChecks(cfg);
+    return !!ch.completedAt;
+  }
+
   function hcGerminacionBloqueadaPorMontaje(cfg) {
     cfg = cfg || getCfg();
     if (!aplicaChecklistGerm(cfg)) return false;
-    if (cfg.hcSetupFase === 'hidro' && cfg.tipoInstalacion) return false;
     return !propagadorMontajeCompleto(cfg);
   }
 
   function buildItems(cfg) {
     cfg = cfg || getCfg();
-    var base = esRutaGermHidro(cfg) ? ITEMS_PREP_HIDRO.slice() : ITEMS_PROPAGADOR.slice();
+    var base = esRutaEsqueje(cfg)
+      ? ITEMS_ENRAIZADO.slice()
+      : esRutaGermHidro(cfg)
+        ? ITEMS_PREP_HIDRO.slice()
+        : ITEMS_PROPAGADOR.slice();
     var inst = cfg.equipamientoInstalado || {};
     return base.map(function (it) {
       var copy = Object.assign({}, it);
@@ -244,6 +274,9 @@
     try {
       if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     } catch (_) {}
+    try {
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
   }
 
   function hcPropagadorToggleItem(id, checked) {
@@ -273,9 +306,11 @@
     var title = document.getElementById('propagadorMontajeTitle');
     var cfg = getCfg();
     if (title) {
-      title.textContent = esRutaGermHidro(cfg)
-        ? 'Preparación germinación en hidro'
-        : 'Montaje del propagador';
+      title.textContent = esRutaEsqueje(cfg)
+        ? 'Checklist de enraizado'
+        : esRutaGermHidro(cfg)
+          ? 'Preparación germinación en hidro'
+          : 'Montaje del propagador';
     }
     modal.classList.add('open');
     try {
@@ -300,13 +335,12 @@
       }
       return;
     }
-    if (
-      !confirm(
-        '¿Confirmas que el ' +
-          (esRutaGermHidro(cfg) ? 'preparativo en hidro' : 'propagador/domo') +
-          ' está listo?\n\nSiguiente paso: configurar la sala (carpa, LED, extractor) antes de las 6 fases.'
-      )
-    ) {
+    var msgConfirm = esRutaEsqueje(cfg)
+      ? '¿Confirmas que el domo de enraizado está listo?\n\nSiguiente: asignar esquejes en la matriz y primer llenado.'
+      : esRutaGermHidro(cfg)
+        ? '¿Confirmas el preparativo en hidro?\n\nSiguiente: configurar la sala antes de las 6 fases.'
+        : '¿Confirmas el propagador/domo?\n\nSiguiente: configurar la sala (carpa, LED, extractor) antes de las 6 fases.';
+    if (!confirm(msgConfirm)) {
       return;
     }
     checks.completedAt = new Date().toISOString();
@@ -314,7 +348,17 @@
     hcClosePropagadorMontajeChecklist();
     refreshPropagadorMontajeUi();
     if (typeof showToast === 'function') {
-      showToast('✓ Listo. Ahora configura la sala completa en el asistente.', false, { durationMs: 5600 });
+      showToast(
+        esRutaEsqueje(cfg)
+          ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
+          : '✓ Listo. Ahora configura la sala completa en el asistente.',
+        false,
+        { durationMs: 5600 }
+      );
+    }
+    if (esRutaEsqueje(cfg)) {
+      refreshPropagadorMontajeUi();
+      return;
     }
     if (typeof hcCaminoRequiereSalaPreGerm === 'function' && hcCaminoRequiereSalaPreGerm(cfg)) {
       setTimeout(function () {
@@ -341,6 +385,8 @@
   }
 
   global.propagadorMontajeCompleto = propagadorMontajeCompleto;
+  global.enraizadoMontajeCompleto = enraizadoMontajeCompleto;
+  global.aplicaChecklistEnraizado = aplicaChecklistEnraizado;
   global.hcGerminacionBloqueadaPorMontaje = hcGerminacionBloqueadaPorMontaje;
   global.hcOpenPropagadorMontajeChecklist = hcOpenPropagadorMontajeChecklist;
   global.hcClosePropagadorMontajeChecklist = hcClosePropagadorMontajeChecklist;

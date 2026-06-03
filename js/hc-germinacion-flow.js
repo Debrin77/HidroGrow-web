@@ -124,31 +124,62 @@
     { id: 'temp', label: 'T° agua 20–24 °C estable antes de sumergir más la raíz' },
   ];
 
-  function getModoGerminacion(cfg, g) {
+  function getCaminoGermModoFijo(cfg) {
     cfg = cfg || cfgActiva();
-    g = g || ensureGerminacionFlow(cfg);
-    if (g.modo === 'propagador' || g.modo === 'hidro_directo') return g.modo;
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_hidro') return 'hidro_directo';
     if (cam === 'semilla_propagador') return 'propagador';
+    return null;
+  }
+
+  function modoGerminacionFijadoPorCamino(cfg) {
+    return !!getCaminoGermModoFijo(cfg);
+  }
+
+  function getModoGerminacion(cfg, g) {
+    cfg = cfg || cfgActiva();
+    g = g || ensureGerminacionFlow(cfg);
+    var fijo = getCaminoGermModoFijo(cfg);
+    if (fijo) return fijo;
+    if (g.modo === 'propagador' || g.modo === 'hidro_directo') return g.modo;
     var pref =
       cfg.premiumSetup && cfg.premiumSetup.germinacionModoPreferido
         ? String(cfg.premiumSetup.germinacionModoPreferido)
         : '';
     if (pref === 'hidro_directo' || pref === 'hidro') return 'hidro_directo';
     if (pref === 'propagador') return 'propagador';
-    var inst = cfg.equipamientoInstalado || {};
-    if (inst.propagador && inst.propagador.id) return 'propagador';
-    return 'hidro_directo';
+    return 'propagador';
   }
 
   function setModoGerminacion(modo) {
     var cfg = cfgActiva();
+    if (modoGerminacionFijadoPorCamino(cfg)) {
+      if (typeof showToast === 'function') {
+        showToast('El modo viene del camino elegido en el asistente (no se puede cambiar aquí).', false);
+      }
+      refreshDashGerminacionHub();
+      return;
+    }
     var g = ensureGerminacionFlow(cfg);
     g.modo = modo === 'hidro_directo' ? 'hidro_directo' : 'propagador';
     persistirGerminacion();
     refreshDashGerminacionHub();
+  }
+
+  function pasoDisplay(paso, modo) {
+    if (!paso || paso.id !== 'dwc') return paso;
+    if (modo === 'hidro_directo') {
+      return {
+        id: paso.id,
+        paso: paso.paso,
+        titulo: 'Cerrar germinación · lista para matriz',
+        desc:
+          'Plántula estable en net pot. Confirma checklist de traslado y asigna la cesta; luego cierra DWC/RDWC en el asistente.',
+        icon: '✅',
+      };
+    }
+    return paso;
   }
 
   function descPaso(paso, modo) {
@@ -389,6 +420,9 @@
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       if (typeof saveState === 'function') saveState();
     } catch (_) {}
+    try {
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
   }
 
   function mostrarCelebracionFase(paso, siguiente) {
@@ -441,6 +475,9 @@
         } else if (bloqueo === 'sala_montaje') {
           showToast('Completa el checklist de montaje de sala en la pestaña Sala.', true);
           if (typeof hcIrMontajeSala === 'function') setTimeout(hcIrMontajeSala, 400);
+        } else if (bloqueo === 'traslado') {
+          showToast('Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.', true);
+          if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
         } else {
           showToast('Primero completa el checklist del propagador o prep hidro (arriba).', true);
           if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
@@ -456,7 +493,15 @@
       if (typeof showToast === 'function') showToast('Todas las fases están completadas', false);
       return;
     }
+    const modoAct = getModoGerminacion(cfg, g);
     const paso = PASOS[idx];
+    if (paso.id === 'dwc' && !g.checklistTrasladoOk) {
+      if (typeof showToast === 'function') {
+        showToast('Marca el checklist de traslado antes de cerrar la fase 6.', true);
+      }
+      if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
+      return;
+    }
     g.pasos[paso.id] = { doneAt: hoyIso(), fecha: hoyDisplay(), hora: horaDisplay() };
     if (!g.startedAt) g.startedAt = hoyIso();
     persistirGerminacion();
@@ -780,10 +825,12 @@
     });
   }
 
-  function renderTimeline(g, idxActual) {
+  function renderTimeline(g, idxActual, modo) {
+    modo = modo || 'propagador';
     return (
       '<div class="hc-germ-rail" role="list" aria-label="Camino semilla a cubo hidro">' +
       PASOS.map(function (p, i) {
+        var pd = pasoDisplay(p, modo);
         var done = !!(g.pasos[p.id] && g.pasos[p.id].doneAt);
         var cur = i === idxActual && !done;
         var cls = 'hc-germ-rail-step';
@@ -793,7 +840,7 @@
           '<div class="' +
           cls +
           '" role="listitem" title="' +
-          esc(p.titulo) +
+          esc(pd.titulo) +
           '">' +
           '<span class="hc-germ-rail-dot" aria-hidden="true">' +
           (done ? '✓' : p.paso) +
@@ -822,7 +869,8 @@
     var g = ensureGerminacionFlow(cfg);
     var idx = indiceFaseActual(g);
     var pct = pctProgreso(g);
-    var paso = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
+    var pasoRaw = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
+    var paso = pasoDisplay(pasoRaw, modo);
     var allDone = fasesCompletadas(g);
     var tipo =
       typeof etiquetaTipoInstalacion === 'function'
@@ -872,6 +920,11 @@
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>Montaje de sala.</strong> Verifica el checklist en la pestaña Sala. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Ir a montaje</button></div>';
+    } else if (bloqueoSala === 'traslado') {
+      salaCtaHtml =
+        '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+        '<strong>Checklist de traslado.</strong> Obligatorio antes del asistente DWC/RDWC y el depósito. ' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcGerminacionAbrirChecklistTraslado===\'function\'&&hcGerminacionAbrirChecklistTraslado()">Abrir checklist</button></div>';
     }
 
     hub.innerHTML =
@@ -898,16 +951,18 @@
       '</span> · día <strong>' +
       diaN +
       '</strong> del seguimiento</p>' +
-      '<div class="hc-germ-modo-toggle" role="group" aria-label="Modo de germinación">' +
-      '<button type="button" class="hc-germ-modo-btn' +
-      (modo === 'propagador' ? ' hc-germ-modo-btn--on' : '') +
-      '" onclick="setModoGerminacion(\'propagador\')">Propagador</button>' +
-      '<button type="button" class="hc-germ-modo-btn' +
-      (modo === 'hidro_directo' ? ' hc-germ-modo-btn--on' : '') +
-      '" onclick="setModoGerminacion(\'hidro_directo\')">En el hidro</button></div>' +
+      (modoGerminacionFijadoPorCamino(cfg)
+        ? '<p class="hc-germ-modo-fijo setup-field-hint">Modo fijado por tu camino en el asistente.</p>'
+        : '<div class="hc-germ-modo-toggle" role="group" aria-label="Modo de germinación">' +
+          '<button type="button" class="hc-germ-modo-btn' +
+          (modo === 'propagador' ? ' hc-germ-modo-btn--on' : '') +
+          '" onclick="setModoGerminacion(\'propagador\')">Propagador</button>' +
+          '<button type="button" class="hc-germ-modo-btn' +
+          (modo === 'hidro_directo' ? ' hc-germ-modo-btn--on' : '') +
+          '" onclick="setModoGerminacion(\'hidro_directo\')">En el hidro</button></div>') +
       semMarca +
       '</div></div>' +
-      renderTimeline(g, idx) +
+      renderTimeline(g, idx, modo) +
       '<div class="hc-germ-focus' +
       (allDone ? ' hc-germ-focus--done' : '') +
       '">' +
@@ -991,6 +1046,9 @@
           '<p class="hc-germ-traslado-foot">Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.</p></div>'
         : '') +
       '</div>';
+    try {
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
   }
 
   function renderRegistroReciente(g) {
