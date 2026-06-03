@@ -164,6 +164,29 @@ const EQUIP_CATEGORIAS = {
     campos: [{ key: 'aumento', label: 'Aumento', type: 'text' }],
     hint: '30×–60× para confirmar cosecha (lechoso → ámbar).',
   },
+  propagador: {
+    id: 'propagador',
+    label: 'Domo / propagador',
+    icon: '🫧',
+    entorno: 'both',
+    indispensable: false,
+    recommended: true,
+    campos: [
+      { key: 'tipo', label: 'Tipo', type: 'text' },
+      { key: 'bandejas', label: 'Bandejas / celdas', type: 'number' },
+    ],
+    hint: 'Bandeja con domo: 22–26 °C, HR 70–80 %, ventilar 2×/día. Imprescindible para germinar semilla antes del cubo rockwool.',
+  },
+  mat_termica_germ: {
+    id: 'mat_termica_germ',
+    label: 'Mat térmica (germinador)',
+    icon: '🔥',
+    entorno: 'interior',
+    indispensable: false,
+    recommended: true,
+    campos: [{ key: 'watts', label: 'Potencia (W)', type: 'number' }],
+    hint: 'Recomendada con semilla en invierno o estancia fría. También útil en esquejes bajo domo.',
+  },
 };
 
 /** Marcas habituales en growshops españoles — datos orientativos del fabricante. */
@@ -402,6 +425,36 @@ const EQUIPAMIENTO_CATALOG = [
     specs: { aumento: '60×' }, nota: 'Detalle fino · confirmar cosecha.' },
   { id: 'jeweler_40x', categoria: 'lupa', marca: 'Generic', modelo: '40× jeweler', top_es: true, rank: 4,
     specs: { aumento: '40×' }, nota: 'Intermedio 30–60× · buena relación calidad/precio.' },
+
+  { id: 'sj_propagator_l', categoria: 'propagador', marca: 'Secret Jardin', modelo: 'Propagator L', top_es: true, rank: 1,
+    specs: { tipo: 'domo rígido', bandejas: 1 }, nota: 'Domo + bandeja · muy habitual en growshops ES.' },
+  { id: 'garland_prop_large', categoria: 'propagador', marca: 'Garland', modelo: 'Large High Dome', top_es: true, rank: 2,
+    specs: { tipo: 'domo alto', bandejas: 1 }, nota: 'Domo alto · más espacio para plántulas altas.' },
+  { id: 'garland_prop_std', categoria: 'propagador', marca: 'Garland', modelo: 'Standard Propagator', top_es: true, rank: 3,
+    specs: { tipo: 'domo estándar', bandejas: 1 }, nota: 'Económico · germinación y esquejes.' },
+  { id: 'platinium_prop', categoria: 'propagador', marca: 'Platinium', modelo: 'Propagator', top_es: true, rank: 4,
+    specs: { tipo: 'domo', bandejas: 1 }, nota: 'Línea Platinium / Secret Jardin en tiendas ES.' },
+  { id: 'biogreen_prop', categoria: 'propagador', marca: 'Biogreen', modelo: 'Propagator S', top_es: true, rank: 5,
+    specs: { tipo: 'domo', bandejas: 1 }, nota: 'Compacto · 1 bandeja semilla o clones.' },
+  { id: 'hydropony_prop', categoria: 'propagador', marca: 'Hydropony', modelo: 'Propagador 24', top_es: true, rank: 6,
+    specs: { tipo: 'domo', bandejas: 24 }, nota: 'Marca española · celdas para semillas.' },
+  { id: 'dome_flexible', categoria: 'propagador', marca: 'Generic', modelo: 'Domo flexible', top_es: true, rank: 7,
+    specs: { tipo: 'domo PVC', bandejas: 1 }, nota: 'Domo sobre bandeja estándar · bajo coste.' },
+  { id: 'propagator_xl', categoria: 'propagador', marca: 'Garland', modelo: 'XL High Dome', top_es: true, rank: 8,
+    specs: { tipo: 'domo XL', bandejas: 1 }, nota: 'Varias decenas de semillas / clones.' },
+  { id: 'heated_prop', categoria: 'propagador', marca: 'Garland', modelo: 'Heated Propagator', top_es: true, rank: 9,
+    specs: { tipo: 'domo + calor', bandejas: 1 }, nota: 'Base calefactora integrada · invierno.' },
+  { id: 'sj_dark_prop', categoria: 'propagador', marca: 'Secret Jardin', modelo: 'Dark Propagator', top_es: true, rank: 10,
+    specs: { tipo: 'domo opaco', bandejas: 1 }, nota: 'Opacidad · raíz más sana en germinación.' },
+
+  { id: 'garland_mat_25', categoria: 'mat_termica_germ', marca: 'Garland', modelo: 'Heat Mat 25W', top_es: true, rank: 1,
+    specs: { watts: 25 }, nota: '25 W · bandeja pequeña / domo.' },
+  { id: 'garland_mat_45', categoria: 'mat_termica_germ', marca: 'Garland', modelo: 'Heat Mat 45W', top_es: true, rank: 2,
+    specs: { watts: 45 }, nota: '45 W · propagador mediano.' },
+  { id: 'biogreen_mat', categoria: 'mat_termica_germ', marca: 'Biogreen', modelo: 'Heat Mat 25W', top_es: true, rank: 3,
+    specs: { watts: 25 }, nota: 'Muy usada bajo domo en ES.' },
+  { id: 'hydropony_mat', categoria: 'mat_termica_germ', marca: 'Hydropony', modelo: 'Manta 21W', top_es: true, rank: 4,
+    specs: { watts: 21 }, nota: 'Entrada de gama · germinador doméstico.' },
 ];
 
 const EQUIP_TOP_ES_LIMIT = 10;
@@ -419,8 +472,46 @@ const EQUIP_CATALOG_GROUPS = {
   ],
 };
 
+const EQUIP_GERMINACION_GROUP = {
+  id: 'germinacion',
+  label: 'Germinación (semilla)',
+  icon: '🌱',
+  keys: ['propagador', 'mat_termica_germ'],
+};
+
+const EQUIP_ENRAIZADO_GROUP = {
+  id: 'enraizado',
+  label: 'Enraizado (esqueje)',
+  icon: '💧',
+  keys: ['propagador', 'mat_termica_germ'],
+};
+
+function getPremiumOrigenPlanta() {
+  try {
+    if (typeof ensurePremiumSetup === 'function') {
+      const p = ensurePremiumSetup();
+      const o = String(p.origenPlanta || 'semilla').toLowerCase();
+      if (o === 'semilla' || o === 'clon' || o === 'madre') return o;
+    }
+  } catch (_) {}
+  try {
+    const cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    const o2 = String(cfg.origenPlanta || (cfg.premiumSetup && cfg.premiumSetup.origenPlanta) || 'semilla').toLowerCase();
+    if (o2 === 'semilla' || o2 === 'clon' || o2 === 'madre') return o2;
+  } catch (_) {}
+  return 'semilla';
+}
+
 function getEquipCatalogGroups(entorno) {
-  return entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior : EQUIP_CATALOG_GROUPS.interior;
+  const origen = getPremiumOrigenPlanta();
+  const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
+  if (origen === 'semilla') {
+    return [Object.assign({}, EQUIP_GERMINACION_GROUP, { label: 'Germinación (semilla) — recomendado' }),].concat(base);
+  }
+  if (origen === 'clon') {
+    return [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — recomendado' }),].concat(base);
+  }
+  return base;
 }
 
 function getEquipCategorias() {
@@ -459,3 +550,4 @@ window.getEquipCategorias = getEquipCategorias;
 window.getEquipamientoByCategoria = getEquipamientoByCategoria;
 window.getEquipamientoById = getEquipamientoById;
 window.getEquipTopPorCategoria = getEquipTopPorCategoria;
+window.getPremiumOrigenPlanta = getPremiumOrigenPlanta;

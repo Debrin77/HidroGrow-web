@@ -4674,19 +4674,31 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   padding: 0 8px;
   box-sizing: border-box;
 }
-.welcome-brand-medallion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 5.5rem;
-  height: 5.5rem;
-  margin: 0 auto 10px;
-  border-radius: 22px;
+#welcomeOverlay .welcome-brand-medallion {
+  display: block;
+  width: min(7.75rem, 34vw);
+  height: min(7.75rem, 34vw);
+  margin: 0 auto 12px;
+  padding: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  flex-shrink: 0;
   background: linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%);
-  border: 2px solid rgba(34, 197, 94, 0.35);
+  border: 2px solid rgba(34, 197, 94, 0.4);
   box-shadow:
-    0 12px 28px rgba(22, 163, 74, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 14px 32px rgba(22, 163, 74, 0.22),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.85);
+}
+#welcomeOverlay .welcome-brand-medallion .welcome-brand-emblem--lg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center;
+  border-radius: inherit;
+  filter: none;
 }
 .welcome-card--store .welcome-brand-word {
   display: block;
@@ -4776,6 +4788,7 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   height: 3.5rem;
   filter: drop-shadow(0 4px 14px rgba(21, 128, 61, 0.35));
 }
+/* Bienvenida: reglas del medallón arriba (#welcomeOverlay .welcome-brand-medallion) */
 .welcome-brand-word {
   font-size: 1.35rem;
 }
@@ -5626,9 +5639,9 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
     padding-left: 10px;
     padding-right: 10px;
   }
-  .welcome-brand-medallion {
-    width: 5rem;
-    height: 5rem;
+  #welcomeOverlay .welcome-brand-medallion {
+    width: min(7rem, 36vw);
+    height: min(7rem, 36vw);
   }
   .welcome-card--guide {
     max-height: none;
@@ -19370,6 +19383,22 @@ button.toggle-switch:focus-visible {
   color: #059669;
   font-weight: 700;
   text-transform: uppercase;
+}
+.equip-catalog-card--reco-origen {
+  border-color: rgba(234, 179, 8, 0.55);
+  background: linear-gradient(165deg, rgba(254, 243, 199, 0.35) 0%, rgba(255, 255, 255, 0.95) 100%);
+  box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.2);
+}
+.equip-catalog-group[data-equip-group="germinacion"],
+.equip-catalog-group[data-equip-group="enraizado"] {
+  border: 1.5px solid rgba(34, 197, 94, 0.35);
+  border-radius: 14px;
+  padding: 10px 10px 4px;
+  background: linear-gradient(180deg, rgba(236, 253, 245, 0.65) 0%, rgba(255, 255, 255, 0.4) 100%);
+}
+.equip-catalog-group[data-equip-group="germinacion"] .equip-catalog-group-head,
+.equip-catalog-group[data-equip-group="enraizado"] .equip-catalog-group-head {
+  color: #14532d;
 }
 .equip-pick-section {
   margin-bottom: 14px;

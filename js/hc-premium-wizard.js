@@ -89,6 +89,7 @@
     refreshPremiumGerminacionUI();
     refreshPremiumMetodoOrigenHint();
     if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+    if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
   }
 
   const ORIGEN_RECOMENDACIONES = {
@@ -104,10 +105,10 @@
     },
     semilla: {
       recoPaso6:
-        'Con <strong>semilla</strong>, el camino de 6 fases va en <strong>Inicio</strong>. ' +
-        'Abajo puedes indicar la <strong>marca de semillas</strong> (opcional): no sustituye domo, cubos ni pH del germinador.',
+        'Con <strong>semilla</strong>, registra un <strong>domo / propagador</strong> en el paso <strong>Espacio y equipamiento</strong> (grupo Germinación). ' +
+        'Aquí solo va la <strong>marca de semillas</strong> (opcional). El seguimiento día a día va en <strong>Inicio → Germinación</strong>.',
       recoPaso5:
-        'SOG/SCROG y foto/auto quedan aquí. La <strong>marca de semillas</strong> (Dinafem, RQS…) va en el siguiente paso, solo si compras semilla — no confundir con el equipamiento del propagador.',
+        'SOG/SCROG y foto/auto quedan aquí. Si vienes de semilla, vuelve a <strong>Espacio y equipamiento</strong> si aún no marcaste propagador.',
     },
     madre: {
       geneticaPref: 'foto',

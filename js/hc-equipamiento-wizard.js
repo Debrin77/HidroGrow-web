@@ -233,7 +233,20 @@
       head.appendChild(document.createTextNode(' '));
       const rec = document.createElement('span');
       rec.className = 'equip-catalog-rec';
-      rec.textContent = 'recomendado';
+      var origRec =
+        typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
+      if (key === 'propagador' && origRec === 'semilla') {
+        rec.textContent = 'recomendado con semilla';
+        card.classList.add('equip-catalog-card--reco-origen');
+      } else if (key === 'propagador' && origRec === 'clon') {
+        rec.textContent = 'recomendado con esqueje';
+        card.classList.add('equip-catalog-card--reco-origen');
+      } else if (key === 'mat_termica_germ' && (origRec === 'semilla' || origRec === 'clon')) {
+        rec.textContent = 'recomendado';
+        card.classList.add('equip-catalog-card--reco-origen');
+      } else {
+        rec.textContent = 'recomendado';
+      }
       head.appendChild(rec);
     }
     card.appendChild(head);
@@ -314,7 +327,35 @@
     }
   }
 
+  function renderEquipOrigenGermBanner() {
+    const banner = el('setupPremiumEquipGermReco');
+    if (!banner) return;
+    const origen =
+      typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
+    const cfg = getWizardEquipCfg();
+    const inst = ensureEquipInstalado(cfg);
+    if (origen === 'semilla') {
+      banner.classList.remove('setup-hidden');
+      const tieneProp = !!(inst.propagador && inst.propagador.id);
+      banner.className = tieneProp ? 'setup-box-info setup-mb-8' : 'setup-box-warn setup-mb-8';
+      banner.innerHTML = tieneProp
+        ? '<strong>Semilla:</strong> propagador registrado en catálogo. El seguimiento día a día (domo, cubos rockwool) va en <strong>Inicio → Germinación</strong>.'
+        : '<strong>Semilla elegida:</strong> marca un <strong>domo / propagador</strong> en el grupo <strong>Germinación</strong> de arriba (recomendado). Sin domo: germina a 22–26 °C en bandeja húmeda.';
+      return;
+    }
+    if (origen === 'clon') {
+      banner.classList.remove('setup-hidden');
+      banner.className = 'setup-box-info setup-mb-8';
+      banner.innerHTML =
+        '<strong>Esqueje/clon:</strong> recomendado <strong>propagador con domo</strong> en el grupo de enraizado. El calendario día a día está en este mismo paso (bloques de domo).';
+      return;
+    }
+    banner.classList.add('setup-hidden');
+    banner.innerHTML = '';
+  }
+
   function renderEquipamientoPremiumUI() {
+    renderEquipOrigenGermBanner();
     renderEquipCatalogInto(el('setupPremiumEquipGrid'), 'setupPremiumEquip_');
     renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
     renderEquipFaltantesHint();
@@ -325,9 +366,22 @@
     if (!hint) return;
     const falt = getCamposEquipamientoFaltantes();
     hint.classList.remove('setup-box-warn', 'setup-box-info', 'setup-hidden');
-    if (!falt.length) {
+    const origen =
+      typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
+    const sinPropagador = (origen === 'semilla' || origen === 'clon') && !(inst.propagador && inst.propagador.id);
+    if (!falt.length && !sinPropagador) {
       hint.classList.add('setup-box-info');
       hint.innerHTML = '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado para monitorización.</span>';
+      return;
+    }
+    if (!falt.length && sinPropagador) {
+      hint.classList.remove('setup-hidden');
+      hint.classList.add('setup-box-warn');
+      hint.innerHTML =
+        (origen === 'semilla'
+          ? 'Con <strong>semilla</strong> conviene registrar un <strong>propagador / domo</strong> en el grupo Germinación (arriba). '
+          : 'Con <strong>esqueje</strong> conviene registrar un <strong>propagador / domo</strong> en el grupo Enraizado. ') +
+        'Puedes seguir sin marcarlo si ya lo tienes.';
       return;
     }
     const p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
