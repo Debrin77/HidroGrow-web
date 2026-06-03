@@ -10391,6 +10391,15 @@ html.hc-theme-dark .hc-germ-rangos-panel {
   color: var(--muted);
 }
 .hc-germ-med-eval-corr-k { font-weight: 600; color: var(--text); }
+.hc-medir-germ-rangos-host {
+  margin: 0 0 12px;
+}
+.medir-flow--germ-prop .medir-step-panel--solucion.setup-hidden + .medir-flow-ambiente-mount {
+  margin-top: 0;
+}
+.medir-flow--germ-prop .medir-ambiente-details[open] .medir-ambiente-summary {
+  border-bottom-color: rgba(34, 197, 94, 0.25);
+}
 .hc-germ-domo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

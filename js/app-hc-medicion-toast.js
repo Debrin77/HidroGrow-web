@@ -5,7 +5,15 @@
 async function guardarMedicion(payloadOverride) {
   const fromPayload = payloadOverride && typeof payloadOverride === 'object';
   if (!fromPayload) {
-    if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
+    var cfgMed = state && state.configTorre ? state.configTorre : {};
+    var medirGerm =
+      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+      hcMedirPermiteRegistroGerminacion(cfgMed);
+    if (
+      typeof medicionesOperativasPermitidas === 'function' &&
+      !medicionesOperativasPermitidas() &&
+      !medirGerm
+    ) {
       showToast(
         'Completa montaje, cultivo y primer llenado antes del seguimiento diario en Medir.',
         true
@@ -22,7 +30,15 @@ async function guardarMedicion(payloadOverride) {
       return;
     }
   } else {
-    if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) {
+    var cfgMedP = state && state.configTorre ? state.configTorre : {};
+    var medirGermP =
+      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+      hcMedirPermiteRegistroGerminacion(cfgMedP);
+    if (
+      typeof medicionesOperativasPermitidas === 'function' &&
+      !medicionesOperativasPermitidas() &&
+      !medirGermP
+    ) {
       showToast(
         'Completa montaje, cultivo y primer llenado antes del seguimiento diario.',
         true
@@ -87,9 +103,17 @@ async function guardarMedicion(payloadOverride) {
     };
   }
 
+  var medirGermSave =
+    typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+    hcMedirPermiteRegistroGerminacion(state.configTorre || {});
   if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
-    showToast('⚠️ Introduce al menos un valor (depósito o ambiente)', true);
-    const firstInput = document.getElementById('inputEC');
+    showToast(
+      medirGermSave
+        ? '⚠️ Introduce al menos T° domo, HR o EC/pH del propagador'
+        : '⚠️ Introduce al menos un valor (depósito o ambiente)',
+      true
+    );
+    const firstInput = document.getElementById(medirGermSave ? 'inputTempAire' : 'inputEC');
     if (firstInput) {
       firstInput.focus();
       firstInput.setAttribute('aria-invalid', 'true');
