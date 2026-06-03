@@ -152,29 +152,14 @@
     );
     var flow = document.getElementById('setupPremiumOrigenFlow');
     if (flow) {
-      var esc =
-        typeof escHtmlUi === 'function'
-          ? escHtmlUi
-          : function (t) {
-              return String(t || '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;');
-            };
-      var tituloCamino =
-        cam === 'semilla_propagador'
-          ? ''
-          : '<div class="hc-origen-ruta-title">' + esc(def.icon + ' ' + def.label) + '</div>';
-      flow.innerHTML =
-        '<div class="hc-origen-ruta-card hc-camino-ruta-card" role="region" aria-label="Tu camino">' +
-        tituloCamino +
-        '<ol class="hc-origen-ruta-ol">' +
-        def.orden
-          .map(function (s) {
-            return '<li>' + esc(s) + '</li>';
-          })
-          .join('') +
-        '</ol></div>';
+      flow.classList.add('setup-hidden');
+      flow.innerHTML = '';
     }
+    if (typeof refreshPremiumOrigenRecoUI === 'function') {
+      refreshPremiumOrigenRecoUI();
+    }
+    var foot = document.getElementById('setupPremiumOrigenFootHint');
+    if (foot) foot.classList.add('setup-hidden');
     var fase = document.getElementById('setupCaminoFaseBanner');
     if (fase) {
       fase.classList.add('setup-hidden');

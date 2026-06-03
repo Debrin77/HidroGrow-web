@@ -778,18 +778,63 @@ window.getConsejosModoSetupActivo = getConsejosModoSetupActivo;
 window.persistConsejosModoSetupToPremium = persistConsejosModoSetupToPremium;
 window.seleccionarConsejosModoSetup = seleccionarConsejosModoSetup;
 
-function onBuscarCiudadSetup(val) {
-  // Reusar la función de búsqueda de ciudad del setup original
-  const res = document.getElementById('ciudadResultadosSetup');
-  if (!res || val.length < 2) { if(res) res.classList.add('setup-hidden'); return; }
-  // Usar la misma API de geocodificación
+const CIUDAD_SETUP_UI = {
+  setup: {
+    input: 'setupCiudad2',
+    res: 'ciudadResultadosSetup',
+    sel: 'ciudadSeleccionadaSetup',
+  },
+  premium: {
+    input: 'setupPremiumCiudadMeteo',
+    res: 'setupPremiumCiudadMeteoResultados',
+    sel: 'setupPremiumCiudadMeteoSeleccionada',
+  },
+};
+
+function getCiudadSetupUi(mode) {
+  const key = mode === 'premium' ? 'premium' : 'setup';
+  const ids = CIUDAD_SETUP_UI[key];
+  return {
+    input: document.getElementById(ids.input),
+    res: document.getElementById(ids.res),
+    sel: document.getElementById(ids.sel),
+  };
+}
+
+function renderCiudadSetupConfirmado(ui, nombre, lat, lon, opts) {
+  opts = opts || {};
+  if (!ui || !ui.sel) return;
+  ui.sel.classList.remove('setup-hidden');
+  const gpsNote = opts.gps
+    ? '<span class="setup-city-confirm-coords">Detectado por GPS · coordenadas guardadas.</span>'
+    : Number.isFinite(lat) && Number.isFinite(lon)
+      ? '<span class="setup-city-confirm-coords">Coordenadas guardadas para meteo y avisos.</span>'
+      : '';
+  ui.sel.innerHTML =
+    '<span class="setup-city-confirm-ico" aria-hidden="true">✓</span>' +
+    '<span class="setup-city-confirm-body">' +
+    '<strong>Municipio confirmado</strong><br>' +
+    '<span class="setup-city-confirm-name">' + (opts.gps ? '📍 ' : '') + nombre + '</span>' +
+    gpsNote +
+    '</span></span>';
+}
+
+function onBuscarCiudadSetup(val, mode) {
+  const ui = getCiudadSetupUi(mode);
+  if (!ui.res || val.length < 2) {
+    if (ui.res) ui.res.classList.add('setup-hidden');
+    return;
+  }
   fetch('https://geocoding-api.open-meteo.com/v1/search?name=' +
     encodeURIComponent(val) + '&count=5&language=es&format=json')
     .then(r => r.json())
     .then(data => {
-      if (!data.results || data.results.length === 0) { res.classList.add('setup-hidden'); return; }
-      res.classList.remove('setup-hidden');
-      res.innerHTML = data.results.map(c =>
+      if (!data.results || data.results.length === 0) {
+        ui.res.classList.add('setup-hidden');
+        return;
+      }
+      ui.res.classList.remove('setup-hidden');
+      ui.res.innerHTML = data.results.map(c =>
         '<div class="crs-item" ' +
         'data-lat="' + c.latitude + '" data-lon="' + c.longitude + '" ' +
         'data-nombre="' + (c.name + (c.admin1?', '+c.admin1:'') + ', '+c.country).replace(/"/g,"'") + '" ' +
@@ -797,12 +842,13 @@ function onBuscarCiudadSetup(val) {
         c.name + (c.admin1 ? ', ' + c.admin1 : '') + ', ' + c.country +
         '</div>'
       ).join('');
-      res.querySelectorAll('.crs-item').forEach(el => {
+      ui.res.querySelectorAll('.crs-item').forEach(el => {
         el.addEventListener('click', function() {
           selCiudadSetup(
             this.getAttribute('data-nombre'),
             parseFloat(this.getAttribute('data-lat')),
-            parseFloat(this.getAttribute('data-lon'))
+            parseFloat(this.getAttribute('data-lon')),
+            mode
           );
         });
         el.addEventListener('touchstart', function(){ this.classList.add('crs-item--active'); }, {passive:true});
@@ -811,31 +857,25 @@ function onBuscarCiudadSetup(val) {
     }).catch(() => {});
 }
 
+function onBuscarCiudadPremiumEntorno(val) {
+  onBuscarCiudadSetup(val, 'premium');
+}
+
 function selCiudadSetup2(nombre, lat, lon) { selCiudadSetup(nombre, lat, lon); }
-function selCiudadSetup(nombre, lat, lon) {
+function selCiudadSetup(nombre, lat, lon, mode) {
   setupData.ciudad = nombre;
   setupData.lat = lat;
   setupData.lon = lon;
   setupCoordenadas.ciudad = nombre;
   setupCoordenadas.lat = lat;
   setupCoordenadas.lon = lon;
-  const res = document.getElementById('ciudadResultadosSetup');
-  const sel = document.getElementById('ciudadSeleccionadaSetup');
-  if (res) res.classList.add('setup-hidden');
-  if (sel) {
-    sel.classList.remove('setup-hidden');
-    sel.innerHTML =
-      '<span class="setup-city-confirm-ico" aria-hidden="true">✓</span>' +
-      '<span class="setup-city-confirm-body">' +
-      '<strong>Municipio confirmado</strong><br>' +
-      '<span class="setup-city-confirm-name">' + nombre + '</span>' +
-      (Number.isFinite(lat) && Number.isFinite(lon)
-        ? '<span class="setup-city-confirm-coords">Coordenadas guardadas para meteo y avisos.</span>'
-        : '') +
-      '</span></span>';
-  }
-  const input2 = document.getElementById('setupCiudad2');
-  if (input2) input2.value = nombre;
+  ['setup', 'premium'].forEach(function (m) {
+    const ui = getCiudadSetupUi(m);
+    if (ui.res) ui.res.classList.add('setup-hidden');
+    if (ui.input) ui.input.value = nombre;
+    if (nombre) renderCiudadSetupConfirmado(ui, nombre, lat, lon);
+    else if (ui.sel) ui.sel.classList.add('setup-hidden');
+  });
   try {
     if (typeof state !== 'undefined' && state) {
       if (!state.configTorre) state.configTorre = {};
@@ -851,6 +891,40 @@ function selCiudadSetup(nombre, lat, lon) {
     showToast('✓ Municipio confirmado: ' + String(nombre).split(',')[0].trim(), false);
   }
 }
+
+async function detectarCiudadPremiumEntorno() {
+  if (!navigator.geolocation) {
+    if (typeof showToast === 'function') showToast('Tu navegador no permite geolocalización', true);
+    return;
+  }
+  try {
+    const pos = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 }));
+    const { latitude, longitude } = pos.coords;
+    const url = 'https://nominatim.openstreetmap.org/reverse?lat=' + latitude +
+      '&lon=' + longitude + '&format=json&accept-language=es';
+    const data = await (await fetch(url, { headers: { 'User-Agent': 'HidroGrow/1.0' } })).json();
+    const ad = data.address || {};
+    const ciudad = ad.city || ad.town || ad.village || ad.municipality || '';
+    const prov = ad.state || ad.region || '';
+    const country = ad.country || '';
+    if (ciudad) {
+      const nombre = [ciudad, prov, country].filter(Boolean).join(', ');
+      selCiudadSetup(nombre, latitude, longitude, 'premium');
+      const ui = getCiudadSetupUi('premium');
+      renderCiudadSetupConfirmado(ui, nombre, latitude, longitude, { gps: true });
+    } else if (typeof showToast === 'function') {
+      showToast('No se pudo obtener el municipio desde el GPS', true);
+    }
+  } catch (_) {
+    if (typeof showToast === 'function') showToast('No se pudo detectar la ubicación', true);
+  }
+}
+
+window.onBuscarCiudadPremiumEntorno = onBuscarCiudadPremiumEntorno;
+window.detectarCiudadPremiumEntorno = detectarCiudadPremiumEntorno;
+window.renderCiudadSetupConfirmado = renderCiudadSetupConfirmado;
+window.getCiudadSetupUi = getCiudadSetupUi;
 
 // Guardar setupData en la configuración de la torre al finalizar
 function aplicarSetupDataATorre() {

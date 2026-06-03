@@ -36,7 +36,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-prop-svg">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-sin-cajas-origen">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-montaje-a11y">
   <link rel="stylesheet" href="css/hc-pm-checklist.css?v=2026-05-31-prop-premium">
 </head>
@@ -3329,9 +3329,9 @@
           <div class="setup-option-desc-sm">18/6 · esquejes después</div>
         </button>
       </div>
-      <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
-      <div id="setupPremiumOrigenReco" class="setup-box-info setup-mb-12 setup-hidden" role="status" aria-live="polite" aria-hidden="true"></div>
-      <p class="setup-field-hint">Siguiente: objetivo y equipamiento según tu ruta (germinación imprescindible o hidro completo).</p>
+      <div id="setupPremiumOrigenFlow" class="setup-mb-12 setup-hidden" aria-hidden="true" hidden></div>
+      <div id="setupPremiumOrigenReco" class="setup-box-info setup-mb-12 setup-hidden" role="status" aria-live="polite" aria-hidden="true" hidden></div>
+      <p class="setup-field-hint setup-hidden" id="setupPremiumOrigenFootHint" aria-hidden="true" hidden>Siguiente: objetivo y equipamiento según tu ruta (germinación imprescindible o hidro completo).</p>
     </div>
 
     <div class="setup-page" id="spagePremium1">
@@ -3379,6 +3379,18 @@
           <div class="setup-loc-desc">Terraza, jardín · sol natural · más VPD en verano</div>
         </button>
       </div>
+      <div id="setupPremiumEntornoMeteoWrap" class="setup-hidden setup-mt-12">
+        <div class="setup-block-title setup-mb-8"><svg class="hc-ico hc-ico--ubicacion-mapa" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> Ubicación (meteorología)</div>
+        <p class="setup-field-hint setup-mb-8">Municipio de esta instalación para previsión, avisos y riego con clima exterior. Puedes cambiarlo después en Medir.</p>
+        <input type="text" id="setupPremiumCiudadMeteo" placeholder="Busca tu municipio (castellano o valencià)"
+          aria-label="Municipio para datos meteorológicos"
+          class="setup-input-city"
+          oninput="onBuscarCiudadPremiumEntorno(this.value)">
+        <div id="setupPremiumCiudadMeteoResultados" class="setup-hidden setup-city-results"></div>
+        <div id="setupPremiumCiudadMeteoSeleccionada" class="setup-hidden setup-city-selected" role="status" aria-live="polite"></div>
+        <button type="button" class="btn btn-ghost btn-sm setup-mt-8" onclick="detectarCiudadPremiumEntorno()">Detectar con GPS</button>
+      </div>
+      <p id="setupPremiumEntornoMeteoHintInt" class="setup-field-hint setup-hidden setup-mt-8">En interior la meteo exterior es opcional; puedes indicar municipio más adelante en Medir si lo necesitas.</p>
     </div>
 
     <div class="setup-page" id="spagePremium3">
@@ -3434,7 +3446,7 @@
         <div id="setupPremiumSalaResult" class="setup-box-info setup-mb-16"></div>
       </div>
       <div id="setupPremiumExteriorHint" class="setup-box-warn setup-hidden setup-mb-12">
-        En exterior usa el municipio para meteo y registra temp. exterior en Medir. Prioriza sombrear el depósito en verano.
+        Si elegiste exterior, confirma el municipio en el paso Entorno de cultivo. Registra temp. exterior en Medir y sombrea el depósito en verano.
       </div>
     </div>
 
@@ -5182,7 +5194,7 @@
   <script src="js/hc-icon-registry.js?v=2026-06-02-icons-full"></script>
   <script src="js/genetics-db.js?v=2026-05-31-breeder"></script>
   <script src="js/hc-genetics-breeder.js?v=2026-05-31-breeder"></script>
-  <script src="js/hc-visual-flow.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-visual-flow.js?v=2026-05-31-sin-cajas-origen"></script>
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-skip-detalle"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
@@ -5233,11 +5245,11 @@
   <script src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-germ-ahora-lite"></script>
   <script src="js/hc-camino-fase.js?v=2026-05-31-caminos-fase"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-skip-detalle"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-sin-cajas-origen"></script>
   <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-skip-detalle"></script>
-  <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-ruta-banner"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-skip-detalle"></script>
+  <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-cajas-origen"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-entorno-meteo"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>
@@ -5276,7 +5288,7 @@
   <script src="js/meteo-alarm-app.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/app-hc-medicion-toast.js?v=2026-05-31-flujo-cristalino"></script>
   <script src="js/hc-dash-operativa.js?v=2026-05-31-operativa"></script>
-  <script src="js/app-hc-setup-onboarding.js?v=2026-06-02-dwc-rdwc-only"></script>
+  <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-entorno-meteo"></script>
   <script src="js/hc-sistema-icons.js?v=2026-05-15-sistema-ico"></script>
   <script src="js/app-hc-torres-badges-notifs.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-multi-system-ux.js?v=2026-05-31-multi"></script>

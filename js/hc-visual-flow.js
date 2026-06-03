@@ -105,8 +105,8 @@
   function refreshPremiumOrigenFlow(origen) {
     var host = document.getElementById('setupPremiumOrigenFlow');
     if (!host) return;
-    var o = String(origen || 'semilla').toLowerCase();
-    host.innerHTML = (o === 'madre' || o === 'clon') ? esquejeFlowHtml() : semillaFlowHtml();
+    host.classList.add('setup-hidden');
+    host.innerHTML = '';
   }
 
   function enhancePremiumVisualUI(origen) {

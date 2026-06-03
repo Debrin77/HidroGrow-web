@@ -10054,6 +10054,10 @@ html.hc-theme-dark .hc-germ-prop-hint {
 #spagePremium6.hc-prop-detalle-lite #setupPremiumGerminacionPasos {
   display: none !important;
 }
+#spagePremiumOrigen #setupPremiumOrigenFlow,
+#spagePremiumOrigen #setupPremiumOrigenReco {
+  display: none !important;
+}
 #spagePremium3.hc-germ-ahora-page .setup-subtitle,
 #spagePremium3.hc-germ-ahora-page #setupCaminoStepBanner,
 #spagePremium3.hc-germ-ahora-page .equip-catalog-group-hint {

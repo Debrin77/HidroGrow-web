@@ -51,43 +51,8 @@
   function renderOrigenFlowDiagram(origen) {
     var host = el('setupPremiumOrigenFlow');
     if (!host) return;
-    if (typeof getCaminoCultivo === 'function' && typeof getCaminoDef === 'function') {
-      var cam = getCaminoCultivo();
-      var def = getCaminoDef(cam);
-      if (def && def.orden && def.orden.length) {
-        var tituloCamino =
-          cam === 'semilla_propagador'
-            ? ''
-            : '<div class="hc-origen-ruta-title">' + esc((def.icon || '') + ' ' + def.label) + '</div>';
-        host.innerHTML =
-          '<div class="hc-origen-ruta-card hc-camino-ruta-card" role="region" aria-label="Tu camino">' +
-          tituloCamino +
-          '<ol class="hc-origen-ruta-ol">' +
-          def.orden
-            .map(function (s) {
-              return '<li>' + s + '</li>';
-            })
-            .join('') +
-          '</ol></div>';
-        return;
-      }
-    }
-    var r = RUTAS[origen] || RUTAS.semilla;
-    host.innerHTML =
-      '<div class="hc-origen-ruta-card" role="region" aria-label="Ruta de cultivo">' +
-      '<div class="hc-origen-ruta-title">' +
-      esc(r.titulo) +
-      '</div>' +
-      '<ol class="hc-origen-ruta-ol">' +
-      r.pasos
-        .map(function (s) {
-          return '<li>' + esc(s) + '</li>';
-        })
-        .join('') +
-      '</ol>' +
-      '<p class="hc-origen-ruta-equip">' +
-      esc(r.equip) +
-      '</p></div>';
+    host.classList.add('setup-hidden');
+    host.innerHTML = '';
   }
 
   function persistOrigenASetupData(origen) {

@@ -79,6 +79,48 @@
     el('setupPremiumObjExperimento')?.classList.toggle('selected', obj === 'experimento');
   }
 
+  function refreshPremiumEntornoMeteoUI() {
+    const p = ensurePremiumSetup();
+    const int = p.entorno !== 'exterior';
+    el('setupPremiumEntornoMeteoWrap')?.classList.toggle('setup-hidden', int);
+    el('setupPremiumEntornoMeteoHintInt')?.classList.toggle('setup-hidden', !int);
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    if (typeof setupData !== 'undefined' && !setupData.ciudad && cfg.ciudad) {
+      setupData.ciudad = cfg.ciudad;
+      setupData.lat = cfg.lat;
+      setupData.lon = cfg.lon;
+    }
+    const nombre =
+      (typeof setupData !== 'undefined' && setupData.ciudad) || cfg.ciudad || '';
+    const lat =
+      typeof setupData !== 'undefined' && setupData.lat != null
+        ? setupData.lat
+        : cfg.lat;
+    const lon =
+      typeof setupData !== 'undefined' && setupData.lon != null
+        ? setupData.lon
+        : cfg.lon;
+    const input = el('setupPremiumCiudadMeteo');
+    if (input && nombre) input.value = nombre;
+    const uiSel = el('setupPremiumCiudadMeteoSeleccionada');
+    const uiRes = el('setupPremiumCiudadMeteoResultados');
+    if (uiRes) uiRes.classList.add('setup-hidden');
+    if (nombre && uiSel) {
+      if (typeof renderCiudadSetupConfirmado === 'function') {
+        renderCiudadSetupConfirmado(
+          { sel: uiSel, res: uiRes, input: input },
+          nombre,
+          lat,
+          lon
+        );
+      } else {
+        uiSel.classList.remove('setup-hidden');
+      }
+    } else if (uiSel) {
+      uiSel.classList.add('setup-hidden');
+    }
+  }
+
   function seleccionarPremiumEntorno(entorno) {
     const p = ensurePremiumSetup();
     p.entorno = entorno === 'exterior' ? 'exterior' : 'interior';
@@ -164,15 +206,8 @@
   function refreshPremiumOrigenRecoUI(origen, cambios) {
     const box = el('setupPremiumOrigenReco');
     if (!box) return;
-    const rec = ORIGEN_RECOMENDACIONES[origen || 'semilla'] || {};
-    const txt = rec.recoOrigen || rec.recoPaso6 || '';
-    if (!txt) {
-      box.classList.add('setup-hidden');
-      box.innerHTML = '';
-      return;
-    }
-    box.classList.remove('setup-hidden');
-    box.innerHTML = txt;
+    box.classList.add('setup-hidden');
+    box.innerHTML = '';
   }
 
   function refreshPremiumMetodoOrigenHint() {
@@ -575,11 +610,12 @@
       } else {
         sub.classList.remove('setup-hidden');
         sub.textContent =
-          'Prioriza medidor, toldo/malla y herramientas. Confirma municipio en Ubicación para meteo.';
+          'Prioriza medidor, toldo/malla y herramientas. El municipio para meteo lo indicas en Entorno de cultivo.';
       }
     }
     const chk = el('setupPremiumCarpaReflectante');
     if (chk) chk.checked = !!p.carpaReflectante;
+    refreshPremiumEntornoMeteoUI();
   }
 
   function refreshPremiumMetodoUI() {
@@ -851,6 +887,13 @@
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
+    if (typeof setupData !== 'undefined' && setupData.ciudad) {
+      cfg.ciudad = setupData.ciudad;
+      cfg.lat = setupData.lat;
+      cfg.lon = setupData.lon;
+      const firstM = String(setupData.ciudad).split(',')[0].trim();
+      if (firstM) cfg.localidadMeteo = firstM;
+    }
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
     if (typeof inferLuzFromPremium === 'function') cfg.luz = inferLuzFromPremium(p);
@@ -879,6 +922,21 @@
           setupTipoInstalacion !== 'rdwc') {
         if (typeof showToast === 'function') showToast('Elige DWC o RDWC antes de continuar', true);
         return false;
+      }
+    }
+    if (pagina === SETUP_PAGE_PREMIUM_2) {
+      if (ensurePremiumSetup().entorno === 'exterior') {
+        const sd = typeof setupData !== 'undefined' ? setupData : {};
+        const hasCity =
+          sd.ciudad &&
+          Number.isFinite(sd.lat) &&
+          Number.isFinite(sd.lon);
+        if (!hasCity) {
+          if (typeof showToast === 'function') {
+            showToast('Indica y confirma el municipio para datos meteorológicos', true);
+          }
+          return false;
+        }
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_3) {
