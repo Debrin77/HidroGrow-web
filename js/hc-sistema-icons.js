@@ -16,28 +16,20 @@ function hcSistemaTipoDesdeTorreOCfg(x) {
   return 'dwc';
 }
 
-/** ID del símbolo SVG en el sprite (#hc-i-sys-*). */
+/** ID del símbolo SVG en el sprite (#hc-i-sys-* o icono genérico). */
 function hcSistemaSvgSymbolId(tipo) {
-  const t = hcSistemaTipoDesdeTorreOCfg({ tipoInstalacion: tipo });
+  const t = String(tipo || '').trim();
   if (t === 'rdwc') return 'hc-i-sys-rdwc';
+  if (t === 'propagador') return 'hc-i-sys-propagador';
+  if (t === 'germ_cubo' || t === 'enraizado') return 'hc-i-sprout';
+  if (t === 'prep_hidro') return 'hc-i-droplet';
+  if (t === 'madre') return 'hc-i-plant';
+  if (t === 'dwc') return 'hc-i-sys-dwc';
   return 'hc-i-sys-dwc';
 }
 
-const HC_SISTEMA_FASE_EMOJI = {
-  propagador: '🫧',
-  germ_cubo: '🌱',
-  prep_hidro: '💧',
-  enraizado: '🌿',
-  madre: '👑',
-};
-
 /** Markup SVG reutilizable (asistente, inicio, selector de torres). */
 function hcSistemaIconMarkup(tipo, extraClass) {
-  const em = HC_SISTEMA_FASE_EMOJI[tipo];
-  if (em) {
-    const cls = ('hc-ico hc-ico--sistema-emoji' + (extraClass ? ' ' + extraClass : '')).trim();
-    return '<span class="' + cls + '" aria-hidden="true">' + em + '</span>';
-  }
   const id = hcSistemaSvgSymbolId(tipo);
   const cls = ('hc-ico hc-ico--sistema' + (extraClass ? ' ' + extraClass : '')).trim();
   return '<svg class="' + cls + '" aria-hidden="true" focusable="false"><use href="#' + id + '"/></svg>';
@@ -49,9 +41,13 @@ function hcPintarSistemaIconoEnElemento(el, torreOCfg, extraClass) {
   el.innerHTML = hcSistemaIconMarkup(tipo, extraClass || '');
 }
 
-/** Emoji solo donde hace falta texto plano (checklist, historial). */
+/** Emoji solo donde hace falta texto plano (checklist, historial sin SVG). */
 function emojiSistemaPorTipo(tipo) {
   const t = hcSistemaTipoDesdeTorreOCfg({ tipoInstalacion: tipo });
   if (t === 'rdwc') return '♻️';
+  if (t === 'propagador') return '🫧';
+  if (t === 'germ_cubo' || t === 'enraizado') return '🌱';
+  if (t === 'prep_hidro') return '💧';
+  if (t === 'madre') return '👑';
   return '🫧';
 }

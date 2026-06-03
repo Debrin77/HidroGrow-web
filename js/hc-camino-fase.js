@@ -237,7 +237,7 @@
         tipoLabel: (def && def.short) || 'Propagador',
         plantasLabel: nSem >= 1 ? nSem + (nSem === 1 ? ' semilla' : ' semillas') : 'Sin semillas en plan',
         geomLabel: geom.join(' · '),
-        iconEmoji: (def && def.icon) || '🫧',
+        iconTipo: 'propagador',
       };
     }
 
@@ -247,7 +247,7 @@
         tipoLabel: 'Germinación en cubo',
         plantasLabel: nCubo + (nCubo === 1 ? ' cubo' : ' cubos'),
         geomLabel: 'Semilla en hidro · ' + etiquetaFaseGermCorta(cfg),
-        iconEmoji: '🌱',
+        iconTipo: 'germ_cubo',
       };
     }
 
@@ -260,7 +260,7 @@
         tipoLabel: (def && def.short) || 'Prep hidro',
         plantasLabel: numSemillasCaminoGerm(cfg) >= 1 ? numSemillasCaminoGerm(cfg) + ' semillas' : 'Germinación',
         geomLabel: pend.length ? 'Pendiente: ' + pend.join(', ') : 'Preparación',
-        iconEmoji: '💧',
+        iconTipo: 'prep_hidro',
       };
     }
 
@@ -278,7 +278,7 @@
         tipoLabel: 'Madre',
         plantasLabel: '1 madre',
         geomLabel: hidroCerrado(cfg) ? 'Cubo madre en sistema' : 'Configuración en curso',
-        iconEmoji: '👑',
+        iconTipo: 'madre',
       };
     }
 

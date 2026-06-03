@@ -251,10 +251,11 @@
       if (lead) {
         if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
         lead.innerHTML = activo
-          ? 'Germinación en <strong>propagador</strong>: T°, HR y <strong>EC del agua del propagador</strong>' +
-            (activos.ph ? ', pH del cubo' : '') +
-            (activos.vpd ? ', VPD' : '') +
-            ' — rangos según tu genética. <strong>No es el depósito DWC</strong> hasta configurar el hidro.'
+          ? 'Comprueba T°, HR' +
+            (activos.ec ? ', EC' : '') +
+            (activos.ph ? ', pH' : '') +
+            (activos.vpd ? ' y VPD' : '') +
+            ' del propagador. Los recuadros indican si estás en rango.'
           : lead.dataset.hcMedirLeadDefault;
       }
       var solPanel = flow.querySelector('.medir-step-panel--solucion');

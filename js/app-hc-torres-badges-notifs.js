@@ -936,9 +936,10 @@ function renderListaTorres() {
       tipoTag = metaInst.tipoLabel || 'Propagador';
       plantasLine = metaInst.plantasLabel || '—';
       geomTxt = metaInst.geomLabel || '';
-      listIco = metaInst.iconEmoji
-        ? String(metaInst.iconEmoji)
-        : emojiSistemaUiPorTorre(t);
+      listIco =
+        typeof hcSistemaIconMarkup === 'function' && metaInst.iconTipo
+          ? hcSistemaIconMarkup(metaInst.iconTipo, 'hc-ico--torre-list')
+          : emojiSistemaUiPorTorre(t);
     } else {
       const plantasCount = (t.torre || []).reduce((sum, nivel) =>
         sum + (nivel || []).filter(c => c && c.variedad).length, 0);

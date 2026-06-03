@@ -10332,6 +10332,12 @@ html.hc-theme-dark .hc-germ-equip-chip--on {
   font-size: 11px;
   color: var(--muted);
 }
+.hc-germ-rangos-panel--medir {
+  margin-top: 8px;
+}
+.hc-germ-rangos-panel--medir .hc-germ-rangos-list li {
+  padding: 4px 0;
+}
 .hc-germ-rangos-panel {
   margin: 0 0 10px;
   padding: 10px 12px;

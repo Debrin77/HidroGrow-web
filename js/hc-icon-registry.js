@@ -288,7 +288,9 @@ function hcInstalacionChipHtml(info, torreId, chipClass) {
   if (torreId != null && typeof state !== 'undefined' && state.torres) {
     for (var i = 0; i < state.torres.length; i++) {
       if (state.torres[i].id === torreId) {
-        if (typeof tipoInstalacionNormalizado === 'function' && state.torres[i].config) {
+        if (typeof hcSistemaTipoDesdeTorreOCfg === 'function') {
+          tipo = hcSistemaTipoDesdeTorreOCfg(state.torres[i]);
+        } else if (typeof tipoInstalacionNormalizado === 'function' && state.torres[i].config) {
           tipo = tipoInstalacionNormalizado(state.torres[i].config);
         }
         break;
@@ -315,8 +317,8 @@ function hcFiltroTorreBtnIcon(torre) {
   if (!torre || torre.id == null) {
     return typeof hcIcon === 'function' ? hcIcon('hc-i-chart', 'hc-ico--chip') : '📊';
   }
-  if (torre.config && typeof hcSistemaIconMarkup === 'function' && typeof tipoInstalacionNormalizado === 'function') {
-    return hcSistemaIconMarkup(tipoInstalacionNormalizado(torre.config), 'hc-ico--chip');
+  if (torre.config && typeof hcSistemaIconMarkup === 'function' && typeof hcSistemaTipoDesdeTorreOCfg === 'function') {
+    return hcSistemaIconMarkup(hcSistemaTipoDesdeTorreOCfg(torre), 'hc-ico--chip');
   }
   return hcConsejoIconMarkup(torre.emoji || '🌿', torre.nombre);
 }

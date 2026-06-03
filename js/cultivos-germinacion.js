@@ -1022,11 +1022,15 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
       r.ec.min +
       '–' +
       r.ec.max +
-      ' µS</strong> <span class="hc-germ-rangos-sub">(centro ~' +
-      r.ecObjetivo +
-      ' · ' +
-      esc(sub.label) +
-      ')</span></li>'
+      ' µS</strong>' +
+      (opts.forMedir
+        ? ''
+        : ' <span class="hc-germ-rangos-sub">(centro ~' +
+          r.ecObjetivo +
+          ' · ' +
+          esc(sub.label) +
+          ')</span>') +
+      '</li>'
     : '';
   const phLine =
     showPh && r.ph
@@ -1051,6 +1055,14 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
     ' %</strong></li>' +
     ecLine +
     phLine;
+  if (opts.forMedir) {
+    return (
+      '<div class="hc-germ-rangos-panel hc-germ-rangos-panel--medir" role="region" aria-label="Rangos objetivo de medición">' +
+      '<ul class="hc-germ-rangos-list">' +
+      items +
+      '</ul></div>'
+    );
+  }
   const aguaBlock = renderSustratoGermAguaEcBlockHtml(sub.id, faseId, { compact: true });
   return (
     '<div class="hc-germ-rangos-panel" role="region" aria-label="Rangos de medición según genética y sustrato">' +
