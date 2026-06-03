@@ -55,6 +55,13 @@
 
   function refreshPremiumSemilleroVis() {
     const sec = el('setupPremiumSemilleroSection');
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      if (sec) sec.classList.add('setup-hidden');
+      return;
+    }
     const orig = getPremiumOrigenActivo();
     const show = origenUsaSemillero(orig);
     if (sec) sec.classList.toggle('setup-hidden', !show);

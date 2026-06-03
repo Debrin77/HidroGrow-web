@@ -712,6 +712,7 @@
     ];
     if (cam === 'semilla_propagador') {
       pages.push(typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6);
+      pages.push(typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7);
     }
     pages.forEach(function (p) {
       skip.add(p);

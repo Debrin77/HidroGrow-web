@@ -25,14 +25,7 @@
   }
 
   var STEP_BANNERS = {
-    semilla_propagador: {
-      1: '<strong>Camino:</strong> propagador → 6 fases en Inicio → sala → traslado al hidro.',
-      2: '<strong>Objetivo:</strong> uso personal; el nivel de Consejos ajusta el detalle técnico.',
-      3: '<strong>Entorno:</strong> interior o exterior; en propagador la sala LED va después.',
-      4: '',
-      5: '<strong>Clima del domo:</strong> horas de luz y fase inicial para el seguimiento diario.',
-      7: '<strong>Plan de cultivo:</strong> SOG/SCROG, foto/auto y semillero (opcional). Guardar abre el checklist del propagador.',
-    },
+    semilla_propagador: {},
     semilla_hidro: {
       1: '<strong>Camino:</strong> prep hidro → sala y montaje → DWC/RDWC → 6 fases en el cubo.',
       2: '<strong>Objetivo:</strong> semilla en net pot desde el inicio; el depósito se cierra antes de las 6 fases.',
@@ -73,12 +66,18 @@
     },
   };
 
+  function ocultarBannerSuperiorPropagadorSetup() {
+    return (
+      getCam() === 'semilla_propagador' &&
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    );
+  }
+
   function refreshSetupCaminoStepBanner(pagina) {
     var box = el('setupCaminoStepBanner');
     if (!box) return;
-    var pageGerm =
-      typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
-    if (isGermAhoraPropagadorUi() && pagina === pageGerm) {
+    if (ocultarBannerSuperiorPropagadorSetup()) {
       box.classList.add('setup-hidden');
       box.innerHTML = '';
       return;
@@ -166,7 +165,7 @@
     var falt = el('setupPremiumEquipFaltantes');
     if (falt && showGerm) falt.classList.add('setup-hidden');
     var camBanner = el('setupCaminoStepBanner');
-    if (camBanner && showGerm) {
+    if (camBanner && (showGerm || ocultarBannerSuperiorPropagadorSetup())) {
       camBanner.classList.add('setup-hidden');
       camBanner.innerHTML = '';
     }
@@ -219,6 +218,22 @@
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+    applyPremiumDetalleOrigChrome(showGerm);
+  }
+
+  function applyPremiumDetalleOrigChrome(showGerm) {
+    var page6 = el('spagePremium6');
+    if (page6) page6.classList.toggle('hc-prop-detalle-lite', !!showGerm);
+    var sub6 = el('setupPremium6Subtitle');
+    if (sub6) sub6.classList.toggle('setup-hidden', !!showGerm);
+    var hostMet = el('setupPremiumMetodoGenGermHost');
+    if (hostMet && showGerm) {
+      hostMet.classList.add('setup-hidden');
+      hostMet.innerHTML = '';
+    }
+    if (showGerm && typeof refreshPremiumSemilleroVis === 'function') {
+      refreshPremiumSemilleroVis();
+    }
   }
 
   function hcNecesitaBannerTrasladoSala(cfg) {

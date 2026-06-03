@@ -178,6 +178,14 @@
   function refreshPremiumMetodoOrigenHint() {
     const hint = el('setupPremiumMetodoOrigenHint');
     if (!hint) return;
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      hint.classList.add('setup-hidden');
+      hint.innerHTML = '';
+      return;
+    }
     const p = ensurePremiumSetup();
     const orig = p.origenPlanta || 'semilla';
     const rec = ORIGEN_RECOMENDACIONES[orig] || {};
@@ -452,12 +460,16 @@
     }
     const hint = el('setupPremiumClimaCaminoHint');
     if (hint) {
-      if (preset && preset.resumenExtra) {
-        hint.classList.remove('setup-hidden');
-        hint.innerHTML = preset.resumenExtra;
-      } else {
+      var ocultarClimaHint =
+        cam === 'semilla_propagador' &&
+        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm();
+      if (ocultarClimaHint || !preset || !preset.resumenExtra) {
         hint.classList.add('setup-hidden');
         hint.innerHTML = '';
+      } else {
+        hint.classList.remove('setup-hidden');
+        hint.innerHTML = preset.resumenExtra;
       }
     }
   }
@@ -490,6 +502,14 @@
   function refreshPremiumMetodoHint() {
     const out = el('setupPremiumMetodoHint');
     if (!out) return;
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      out.classList.add('setup-hidden');
+      out.innerHTML = '';
+      return;
+    }
     const m = ensurePremiumSetup().metodoCultivo || 'scrog';
     const h = METODO_HINTS[m] || METODO_HINTS.scrog;
     out.innerHTML = '<p class="setup-metodo-hint-l1">' + h.l1 + '</p><p class="setup-metodo-hint-l2">' + h.l2 + '</p>';
@@ -580,13 +600,16 @@
       hcCaminoSemillaPropagadorSetupGerm();
     const sub6 = el('setupPremium6Subtitle');
     if (enGerm) {
-      if (bundle.parentNode !== host) host.appendChild(bundle);
-      host.classList.remove('setup-hidden');
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
       if (sub6) {
-        sub6.innerHTML =
-          'SOG/SCROG y semillero (opcional). El seguimiento diario va en <strong>Inicio → Germinación</strong>.';
+        sub6.classList.add('setup-hidden');
+        sub6.textContent = '';
       }
+      if (typeof refreshPremiumMetodoHint === 'function') refreshPremiumMetodoHint();
+      if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
     } else {
+      host.classList.add('setup-hidden');
       if (sub6) {
         sub6.innerHTML =
           'Ya elegiste el camino en el <strong>paso 1</strong>. Aquí: genética, semillero (semilla) o checklist de esquejes/madre. ' +
