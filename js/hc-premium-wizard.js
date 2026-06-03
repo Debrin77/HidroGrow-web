@@ -653,6 +653,7 @@
     const p = ensurePremiumSetup();
     persistPremiumSetupFromUI();
     cfg.premiumSetup = JSON.parse(JSON.stringify(p));
+    if (p.caminoCultivo) cfg.caminoCultivo = p.caminoCultivo;
     cfg.faseCultivoAmbiental = p.faseSala;
     if (p.entorno === 'interior') {
       cfg.growRoomAnchoM = p.anchoM;

@@ -207,9 +207,9 @@ function renderSetupPage() {
       if (setupPagina === ultimoPaso) {
         next.textContent =
           typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()
-            ? '✅ Guardar sala e ir a montaje'
+            ? '✅ Guardar sala → checklist montaje'
             : typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion()
-              ? '✅ Guardar e ir a germinación'
+              ? '✅ Guardar → checklist propagador'
               : '✅ Guardar y empezar';
         next.setAttribute('aria-label', 'Guardar configuración y empezar');
       } else {

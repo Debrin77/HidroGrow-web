@@ -15,10 +15,10 @@
       faseInicial: 'germinacion',
       icon: '🫧',
       orden: [
-        'Fase 1: solo equipamiento de <strong>germinación</strong> (domo, mat térmica) — sin sala.',
-        'Checklist del propagador → <strong>6 fases</strong> en Inicio con registro diario.',
-        'Tras las 6 fases: <strong>configura la sala</strong> (asistente + montaje).',
-        'Checklist traslado → cierra DWC/RDWC (Fase 2) → depósito y cultivo.',
+        'Fase 1: <strong>propagador</strong> (marca, semillas, sustrato, accesorios) — sala opcional.',
+        'Checklist montaje → app en modo propagador (Inicio, Medir, Sala, Sistema con gráfico del domo).',
+        'Registro diario (T°, HR, nutrientes en agua) y alertas en calendario.',
+        'Al concluir por días → <strong>DWC/RDWC</strong> → sala/montaje → traslado → depósito.',
       ],
     },
     semilla_hidro: {
@@ -270,7 +270,7 @@
       return false;
     }
     if (cam === 'semilla_propagador') {
-      if (!germinacionSeisFasesCompletas(cfg)) return false;
+      if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) return false;
       return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
     }
     return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
@@ -303,6 +303,7 @@
     }
     if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
       var g = cfg.germinacionFlow;
+      var camGerm = getCaminoCultivo(cfg);
       if (g && g.pasos) {
         var ids = ['semilla', 'taproot', 'rockwool', 'domo', 'netpot', 'dwc'];
         var allDone = true;
@@ -312,7 +313,25 @@
             break;
           }
         }
-        if (allDone && !g.checklistTrasladoOk) return 'traslado';
+        if (camGerm === 'semilla_propagador') {
+          if (
+            typeof germinacionConcluida === 'function' &&
+            germinacionConcluida(cfg) &&
+            typeof hidroInstalacionCerrada === 'function' &&
+            !hidroInstalacionCerrada(cfg)
+          ) {
+            return 'hidro_config';
+          }
+          if (
+            typeof germinacionConcluida === 'function' &&
+            germinacionConcluida(cfg) &&
+            !g.checklistTrasladoOk
+          ) {
+            return 'traslado';
+          }
+        } else if (allDone && !g.checklistTrasladoOk) {
+          return 'traslado';
+        }
       }
     }
     return '';
@@ -325,6 +344,10 @@
 
   function germinacionListaParaConfigHidro(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    if (cam === 'semilla_propagador') {
+      return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    }
     var g = cfg.germinacionFlow;
     if (!g || typeof g !== 'object') return false;
     if (g.trasladoAt) return true;
@@ -367,7 +390,118 @@
     }
   }
 
+  function hcSalaPreGermPermitida(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    if (cam === 'semilla_propagador') {
+      return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    }
+    return true;
+  }
+
+  /** DWC/RDWC y matriz aún no cerrados (solo montaje de equipamiento de sala). */
+  function hcMontajeEsSoloEquipamientoSala(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof hcCaminoEsSemilla === 'function' && !hcCaminoEsSemilla(getCaminoCultivo(cfg))) {
+      return false;
+    }
+    return cfg.tipoInstalacion !== 'dwc' && cfg.tipoInstalacion !== 'rdwc';
+  }
+
+  /** Asignar cestas en el esquema solo tras cerrar el asistente hidro. */
+  function hcCultivoMatrizDisponible(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (!hcMontajeEsSoloEquipamientoSala(cfg)) return true;
+    return cfg.checklistInstalacionConfirmada === true;
+  }
+
+  function hcSugerirGeometriaDesdeGerminacion(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var g = cfg.germinacionFlow;
+    if (!g) return null;
+    var n = Math.min(72, Math.max(1, Math.round(Number(g.numSemillas) || 1)));
+    var vid = g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '';
+    return { numPlantas: n, variedadId: vid };
+  }
+
+  /** Pre-rellena cubos/cestas del asistente hidro según semillas en germinación. */
+  function hcAplicarGeometriaSugeridaGerminacion(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
+    if (!sug) return false;
+    var n = sug.numPlantas;
+    try {
+      if (typeof setupData !== 'undefined' && setupData) {
+        setupData.dwcNumCubos = n;
+      }
+      if (typeof state !== 'undefined' && state && state.configTorre) {
+        state.configTorre.dwcNumCubos = n;
+        if (typeof dwcAplicarMatrizCultivoMulticuboEnCfg === 'function') {
+          dwcAplicarMatrizCultivoMulticuboEnCfg(state.configTorre, { numCubos: 'setupDwcNumCubos' });
+        } else {
+          state.configTorre.numNiveles = 1;
+          state.configTorre.numCestas = n;
+        }
+        var rs = state.configTorre.rdwcSites;
+        if (!rs || rs < n) state.configTorre.rdwcSites = n;
+      }
+      var elCub = document.getElementById('setupDwcNumCubos');
+      if (elCub) elCub.value = String(n);
+      var elSites = document.getElementById('setupRdwcSites');
+      if (elSites && (!elSites.value || parseInt(elSites.value, 10) < n)) elSites.value = String(n);
+      var slC = document.getElementById('sliderCestas');
+      if (slC) slC.value = String(n);
+      var slN = document.getElementById('sliderNiveles');
+      if (slN && parseInt(slN.value, 10) > 1) slN.value = '1';
+    } catch (_) {}
+    return true;
+  }
+
+  /** Tras cerrar DWC/RDWC: variedad y origen «germinación» en cestas vacías (camino semilla). */
+  function hcAplicarGerminacionATorreTrasHidro(cfg, torreArr) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof hcCaminoEsSemilla === 'function' && !hcCaminoEsSemilla(getCaminoCultivo(cfg))) {
+      return;
+    }
+    var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
+    if (!sug || !sug.variedadId || !torreArr || !torreArr.length) return;
+    var hoy =
+      typeof hoyIso === 'function'
+        ? hoyIso()
+        : new Date().toISOString().slice(0, 10);
+    for (var ni = 0; ni < torreArr.length; ni++) {
+      var row = torreArr[ni];
+      if (!row) continue;
+      for (var ci = 0; ci < row.length; ci++) {
+        var cell = row[ci];
+        if (!cell) continue;
+        if (cell.variedad && String(cell.variedad).trim()) continue;
+        cell.variedad = sug.variedadId;
+        cell.origenPlanta = 'germinacion';
+        if (!cell.fecha) cell.fecha = hoy;
+      }
+    }
+  }
+
   function abrirSetupFaseSala() {
+    var cfg =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (!hcSalaPreGermPermitida(cfg)) {
+      if (typeof showToast === 'function') {
+        showToast(
+          'Completa las 6 fases en Inicio → Germinación antes de configurar la sala.',
+          true,
+          { durationMs: 6200 }
+        );
+      }
+      try {
+        if (typeof goTab === 'function') goTab('inicio');
+        setTimeout(function () {
+          document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+      } catch (_) {}
+      return;
+    }
     try {
       if (typeof hcResetSetupWizardSession === 'function') {
         hcResetSetupWizardSession({ keepNuevaFlag: true, keepPagina: true });
@@ -389,7 +523,11 @@
       abrirSetup();
     }
     if (typeof showToast === 'function') {
-      showToast('Configura la sala (carpa, LED, extractor…) antes de las 6 fases', false, { durationMs: 5600 });
+      showToast(
+        'Solo equipamiento de sala (carpa, LED, extractor). El fotoperiodo y el DWC/RDWC ya los definiste o irán después.',
+        false,
+        { durationMs: 6800 }
+      );
     }
   }
 
@@ -417,10 +555,18 @@
     } else if (typeof abrirSetup === 'function') {
       abrirSetup();
     }
+    hcAplicarGeometriaSugeridaGerminacion(state && state.configTorre);
+    var sug = hcSugerirGeometriaDesdeGerminacion(state && state.configTorre);
     if (typeof showToast === 'function') {
-      showToast('Fase 2: DWC/RDWC y circuito hidro (la germinación en depósito ya está hecha)', false, {
-        durationMs: 6200,
-      });
+      showToast(
+        sug
+          ? 'Fase 2: DWC/RDWC · orientativo ' +
+            sug.numPlantas +
+            ' planta(s) según germinación (ajusta cestas al guardar)'
+          : 'Fase 2: DWC/RDWC y circuito hidro',
+        false,
+        { durationMs: 6200 }
+      );
     }
   }
 
@@ -430,10 +576,17 @@
     [
       typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0,
       typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1,
+      typeof SETUP_PAGE_PREMIUM_1 !== 'undefined' ? SETUP_PAGE_PREMIUM_1 : 2,
+      typeof SETUP_PAGE_PREMIUM_2 !== 'undefined' ? SETUP_PAGE_PREMIUM_2 : 3,
+      typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5,
+      typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
+      typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7,
       typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8,
       typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9,
+      typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
       typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
       typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
+      typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
       typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
       typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
     ].forEach(function (p) {
@@ -444,13 +597,7 @@
 
   function getSetupUltimoPasoIndice() {
     if (hcSetupEnFaseSalaPreGerm()) {
-      if (
-        typeof setupFlowCanSkipUbicacion === 'function' &&
-        setupFlowCanSkipUbicacion()
-      ) {
-        return typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10;
-      }
-      return typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13;
+      return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
     }
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && hcSetupEnFaseGerminacion()) {
       return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
@@ -844,6 +991,12 @@
   global.getSetupUltimoPasoIndice = getSetupUltimoPasoIndice;
   global.getSetupSkippedPagesForCamino = getSetupSkippedPagesForCamino;
   global.getSetupSkippedPagesForSalaPreGerm = getSetupSkippedPagesForSalaPreGerm;
+  global.hcSalaPreGermPermitida = hcSalaPreGermPermitida;
+  global.hcMontajeEsSoloEquipamientoSala = hcMontajeEsSoloEquipamientoSala;
+  global.hcCultivoMatrizDisponible = hcCultivoMatrizDisponible;
+  global.hcSugerirGeometriaDesdeGerminacion = hcSugerirGeometriaDesdeGerminacion;
+  global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
+  global.hcAplicarGerminacionATorreTrasHidro = hcAplicarGerminacionATorreTrasHidro;
   global.getCaminoResumenPasos = getCaminoResumenPasos;
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;
   global.refreshDashCaminoResumen = refreshDashCaminoResumen;

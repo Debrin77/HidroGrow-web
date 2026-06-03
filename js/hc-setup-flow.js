@@ -65,6 +65,9 @@
 
   /** Sondas en spage2: omitir si el camino propagador ya cerró equipamiento en premium. */
   function setupFlowCanSkipEquip() {
+    if (typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return true;
+    }
     if (
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()

@@ -1587,7 +1587,7 @@ function getCLPasos() {
           sp.cicloTxt +
           '. Puedes cambiarlo con el desplegable de este paso (o al reconfigurar en el asistente). ' +
           'Para alinear EC/pH de <strong>Medir</strong> con cada cesta, indica <strong>variedad</strong>, ' +
-          '<strong>fecha de trasplante al hidro</strong> (día 0 en el sistema) y <strong>procedencia</strong> (vivero vs germinación propia).'
+          '<strong>fecha de trasplante al hidro</strong> (día 0 en el sistema) y <strong>procedencia</strong> (trasplante desde germinación, esqueje, rockwool de vivero, etc.).'
         );
       })(),
       campos: [
@@ -2076,6 +2076,31 @@ function intentarAbrirChecklistDesdeInicio(esPrimeraVez) {
 function mostrarChecklistBloqueadoCultivoSistema(opts) {
   const desdeWizard = !!(opts && opts.desdeWizard);
   const desdePostSetupRail = !!(opts && opts.desdePostSetupRail);
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  if (
+    typeof hcCultivoMatrizDisponible === 'function' &&
+    !hcCultivoMatrizDisponible(cfg)
+  ) {
+    const o = document.createElement('div');
+    o.id = 'checklistBloqueoCultivoOverlay';
+    o.className = 'checklist-pregunta-overlay';
+    o.setAttribute('role', 'dialog');
+    o.setAttribute('aria-modal', 'true');
+    o.setAttribute('aria-label', 'Sistema hidro pendiente');
+    o.innerHTML =
+      '<div class="checklist-pregunta-sheet">' +
+      '<div class="checklist-pregunta-handle"></div>' +
+      '<div class="checklist-pregunta-head">' +
+      '<div class="checklist-pregunta-emoji">🫧</div>' +
+      '<div><div class="checklist-pregunta-title">Primero el sistema DWC/RDWC</div></div></div>' +
+      '<p class="checklist-pregunta-nota-pasos">Las cestas del esquema se asignan <strong>después</strong> de cerrar el asistente hidro. ' +
+      'La genética y el número de plantas vienen de <strong>Inicio → Germinación</strong>.</p>' +
+      '<button type="button" class="checklist-pregunta-btn-main" onclick="document.getElementById(\'checklistBloqueoCultivoOverlay\')?.remove();typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Abrir asistente DWC/RDWC</button>' +
+      '<button type="button" class="checklist-pregunta-btn-ghost" onclick="document.getElementById(\'checklistBloqueoCultivoOverlay\')?.remove()">Cerrar</button>' +
+      '</div>';
+    document.body.appendChild(o);
+    return;
+  }
   const sinVariedades =
     typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
   const faltanFechas =

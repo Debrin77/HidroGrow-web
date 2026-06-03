@@ -2053,6 +2053,9 @@ function guardarSetupYContinuarCore() {
     if (typeof persistEquipamientoToConfig === 'function') {
       persistEquipamientoToConfig(state.configTorre);
     }
+    const camPersist =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
+    if (camPersist) state.configTorre.caminoCultivo = camPersist;
   } catch (errPremium) {
     console.error('persistPremiumSetupToConfig', errPremium);
     showToast('Error al guardar equipamiento o sala. Revisa el paso «Espacio y equipamiento».', true);
@@ -2212,6 +2215,16 @@ function guardarSetupYContinuarCore() {
       aplicarSetupCestaVariedadDraftATorre(state.torre, niveles, cestas);
     }
   } catch (_) {}
+  if (
+    !faseGermSetup &&
+    !faseSalaPreGerm &&
+    (isDwc || isRdwc) &&
+    typeof hcAplicarGerminacionATorreTrasHidro === 'function'
+  ) {
+    try {
+      hcAplicarGerminacionATorreTrasHidro(state.configTorre, state.torre);
+    } catch (_) {}
+  }
   try {
     aplicarFechaDefectoTrasplanteEnCestasConVariedadSinFecha(state.torre);
   } catch (_) {}
@@ -2277,8 +2290,13 @@ function guardarSetupYContinuarCore() {
   }
 
   try {
-    state.hcPostSetupChecklistPendiente = true;
-    if (typeof activarInstalacionGuidadaPostSetup === 'function') activarInstalacionGuidadaPostSetup();
+    if (faseGermSetup && !faseSalaPreGerm) {
+      state.hcPostSetupChecklistPendiente = false;
+      state.hcInstalacionGuidadaActiva = true;
+    } else {
+      state.hcPostSetupChecklistPendiente = true;
+      if (typeof activarInstalacionGuidadaPostSetup === 'function') activarInstalacionGuidadaPostSetup();
+    }
   } catch (_) {}
   try {
     window._hcPostSetupPrevListo = false;

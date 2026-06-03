@@ -711,9 +711,11 @@ function actualizarPostSetupChecklistRail() {
         'Checklist físico en Sala (carpa, luz, aire). Los puntos del <strong>sistema hidro</strong> aparecen después del asistente DWC/RDWC.',
     },
     germinacion: {
-      title: 'Paso 4 · Germinación (6 fases)',
+      title: cam === 'semilla_propagador' ? 'Modo propagador' : 'Paso 4 · Germinación (6 fases)',
       text:
-        'Control día a día en <strong>Inicio</strong>. Incluye checklist de traslado antes del depósito.',
+        cam === 'semilla_propagador'
+          ? 'Registro diario en <strong>Inicio</strong> (T°, HR, nutrientes). Al concluir por días → hidro.'
+          : 'Control día a día en <strong>Inicio</strong>. Incluye checklist de traslado antes del depósito.',
     },
     hidro_config: {
       title: 'Paso 5 · Sistema DWC/RDWC',
@@ -757,10 +759,18 @@ function actualizarPostSetupChecklistRail() {
     typeof hcGerminacionActiva === 'function' ? hcGerminacionActiva(cfg) : false;
 
   if (fase === 'cultivo_pendiente' && !(pasoUnico && railGuiado[pasoUnico.etapa])) {
-    title = 'Cultivo en el esquema';
-    text =
-      'Asigna <strong>variedad</strong> y <strong>fecha</strong> en cada cesta con planta.';
-    btnLabel = 'Asignar cultivos';
+    if (typeof hcCultivoMatrizDisponible === 'function' && !hcCultivoMatrizDisponible(cfg)) {
+      title = 'DWC/RDWC antes del esquema';
+      text =
+        'Cierra el asistente <strong>DWC/RDWC</strong> (nº de cestas según semillas en germinación). Luego asigna variedad y fecha de traslado.';
+      btnLabel = 'Configurar sistema';
+      railAction = 'abrirSetupFaseHidro';
+    } else {
+      title = 'Cultivo en el esquema';
+      text =
+        'Asigna <strong>variedad</strong> y <strong>fecha de traslado</strong> en cada cesta (misma genética que germinaste).';
+      btnLabel = 'Asignar cultivos';
+    }
     const sinVariedad =
       typeof torreTieneAlgunaVariedadAsignada === 'function' && !torreTieneAlgunaVariedadAsignada();
     const bloqueado =
@@ -872,6 +882,18 @@ function hcPreseleccionarVariedadAssignPostSetup() {
     const sel = document.getElementById('torreAssignVariedad');
     if (!sel || typeof CULTIVOS_DB === 'undefined') return;
     const cfg = state.configTorre || {};
+    const g = cfg.germinacionFlow || {};
+    const vidGerm =
+      g.variedadId ||
+      (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) ||
+      '';
+    if (vidGerm && typeof getCultivoDB === 'function') {
+      const cu = getCultivoDB(vidGerm);
+      if (cu && cu.nombre) {
+        sel.value = cu.nombre;
+        return;
+      }
+    }
     const grupo =
       typeof hcGrupoCultivoDominanteDesdeConfig === 'function'
         ? hcGrupoCultivoDominanteDesdeConfig(cfg)

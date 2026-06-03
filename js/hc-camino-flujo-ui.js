@@ -24,14 +24,15 @@
     return typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
   }
 
-  /** Semilla en propagador con germinación activa y sin traslado al cubo. */
+  /** Camino propagador: operativa centrada en germinación hasta cerrar DWC/RDWC. */
   function hcOperativaFasePropagadorGerm(cfg) {
     cfg = cfg || cfgActiva();
     if (getCam(cfg) !== 'semilla_propagador') return false;
-    if (typeof hcGerminacionActiva === 'function' && !hcGerminacionActiva(cfg)) return false;
-    var g = cfg.germinacionFlow;
-    if (g && g.trasladoAt) return false;
-    return true;
+    if (typeof hcMostrarSistemaPropagador === 'function') {
+      return hcMostrarSistemaPropagador(cfg);
+    }
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+    return false;
   }
 
   var STEP_BANNERS = {
@@ -90,13 +91,12 @@
     var map = STEP_BANNERS[cam];
     var html = map && map[pagina] ? map[pagina] : '';
     if (
-      !html &&
       typeof hcSetupEnFaseSalaPreGerm === 'function' &&
       hcSetupEnFaseSalaPreGerm() &&
       pagina === (typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4)
     ) {
       html =
-        '<strong>Configurar sala:</strong> carpa, LED y extractor tras las 6 fases (o tras prep en hidro directo).';
+        '<strong>Solo sala (1 paso):</strong> carpa, LED, extractor y medidor. Sin repetir fotoperiodo ni catálogo completo.';
     }
     if (!html) {
       box.classList.add('setup-hidden');
@@ -108,6 +108,24 @@
   }
 
   function getSetupStepLabelForPage(page) {
+    if (
+      typeof hcSetupEnFaseSalaPreGerm === 'function' &&
+      hcSetupEnFaseSalaPreGerm() &&
+      page === (typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4)
+    ) {
+      return 'Equipamiento sala';
+    }
+    if (
+      typeof hcSetupEnFaseGerminacion === 'function' &&
+      !hcSetupEnFaseGerminacion() &&
+      typeof state !== 'undefined' &&
+      state &&
+      state.configTorre &&
+      state.configTorre.hcSetupFase === 'hidro' &&
+      page === (typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8)
+    ) {
+      return 'DWC/RDWC';
+    }
     var cam = getCam();
     var map = STEP_LABELS[cam];
     if (map && map[page]) return map[page];
@@ -169,8 +187,8 @@
       return (
         '<div class="hc-traslado-sala-banner setup-field-hint setup-field-hint--banner" role="status">' +
         '<strong>' +
-        (cam === 'semilla_propagador' ? '6 fases completadas · Configura la sala' : 'Configura la sala') +
-        '</strong> Carpa, LED y extractor antes del traslado al hidro. ' +
+        (cam === 'semilla_propagador' ? 'Germinación concluida · Sala (opcional)' : 'Configura la sala') +
+        '</strong> Carpa, LED y extractor si quieres antes del traslado al hidro. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button></div>'
       );
     }
@@ -234,36 +252,14 @@
     ensureOperativaBanner(
       'salaPropagadorResumenBanner',
       prop
-        ? '<strong>Sala (resumen).</strong> La carpa y el LED se configuran tras las 6 fases. Aquí verás equipamiento cuando completes el traslado.'
+        ? '<strong>Sala (opcional).</strong> Puedes configurar carpa y LED cuando la germinación esté concluida y vayas al hidro. No es obligatorio durante el propagador.'
         : '',
       'tab-sala',
       null
     );
 
-    var torreWrap = el('torreSVGWrap');
-    var gate = el('hcSistemaFasePropagadorGate');
-    if (prop) {
-      if (!gate) {
-        gate = document.createElement('section');
-        gate.id = 'hcSistemaFasePropagadorGate';
-        gate.className = 'hc-camino-fase-gate card';
-        gate.setAttribute('role', 'region');
-        gate.innerHTML =
-          '<h2 class="hc-camino-fase-gate-title">Matriz DWC/RDWC — después del traslado</h2>' +
-          '<p class="setup-field-hint">Mientras germinas en el propagador, la matriz de cestas y el sistema hidro se activan al terminar las 6 fases y configurar la sala.</p>' +
-          '<button type="button" class="btn btn-primary btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Ir a Germinación</button>';
-        var tab = el('tab-sistema');
-        if (tab && torreWrap) tab.insertBefore(gate, torreWrap);
-      }
-      gate.classList.remove('setup-hidden');
-      if (torreWrap) torreWrap.classList.add('setup-hidden');
-      var torreCard = el('torreNombreCard');
-      if (torreCard) torreCard.classList.add('setup-hidden');
-    } else {
-      if (gate) gate.classList.add('setup-hidden');
-      if (torreWrap) torreWrap.classList.remove('setup-hidden');
-      var torreCard2 = el('torreNombreCard');
-      if (torreCard2) torreCard2.classList.remove('setup-hidden');
+    if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+      hcRefreshSistemaPropagadorPanel();
     }
 
     var hub = el('dashGerminacionHub');

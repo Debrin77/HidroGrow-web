@@ -401,8 +401,57 @@
     if (!Number.isFinite(g.semillasActivas) || g.semillasActivas < 0) {
       g.semillasActivas = g.numSemillas;
     }
+    if (!Array.isArray(g.nutrientesAplicados)) g.nutrientesAplicados = [];
     migrateChecklistLegacy(cfg, g);
     return g;
+  }
+
+  function diasObjetivoConclusionGerm(cfg, g) {
+    g = g || ensureGerminacionFlow(cfg);
+    var hitos =
+      g.variedadId && typeof getGerminacionDiasHitos === 'function'
+        ? getGerminacionDiasHitos(g.variedadId)
+        : null;
+    var spec =
+      g.variedadId && typeof getGerminacionSpecPorVariedad === 'function'
+        ? getGerminacionSpecPorVariedad(g.variedadId)
+        : {};
+    var plantD = hitos && hitos.planton ? hitos.planton : parseRangoDiasMedio(spec.planton);
+    if (plantD > 0) return plantD;
+    return 12;
+  }
+
+  /** Propagador: conclusión por días (o marca manual). Hidro directo: 6 fases + checklist. */
+  function germinacionConcluida(cfg) {
+    cfg = cfg || cfgActiva();
+    var g = ensureGerminacionFlow(cfg);
+    if (g.concluidaAt) return true;
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador') {
+      if (!g.startedAt) return false;
+      var dias = diasDesdeInicio(g) + 1;
+      return dias >= diasObjetivoConclusionGerm(cfg, g);
+    }
+    return fasesCompletadas(g);
+  }
+
+  function hcGerminacionMarcarConcluida() {
+    var cfg = cfgActiva();
+    var g = ensureGerminacionFlow(cfg);
+    g.concluidaAt = new Date().toISOString();
+    persistirGerminacion();
+    if (typeof showToast === 'function') {
+      showToast(
+        '✓ Germinación marcada como concluida · configura el sistema hidropónico para el traslado',
+        false,
+        { durationMs: 6200, prominent: true }
+      );
+    }
+    refreshDashGerminacionHub();
+    if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
+    if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
 
   function migrateChecklistLegacy(cfg, g) {
@@ -568,7 +617,14 @@
     }
     refreshDashGerminacionHub();
     if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
-    if (fasesCompletadas(g)) {
+    var camDone = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgActiva()) : '';
+    if (camDone === 'semilla_propagador' && typeof germinacionConcluida === 'function' && germinacionConcluida(cfgActiva())) {
+      if (typeof showToast === 'function') {
+        showToast('Germinación concluida · configura el sistema hidropónico en Sistema o el botón del hub', false, {
+          durationMs: 6800,
+        });
+      }
+    } else if (fasesCompletadas(g)) {
       setTimeout(function () {
         try {
           document.getElementById('hcGermTrasladoCta')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -610,7 +666,11 @@
     var idx = indiceFaseActual(g);
     var faseId = idx < PASOS.length ? PASOS[idx].id : 'dwc';
     var diaN = diasDesdeInicio(g) + 1;
-    g.registroDiario.unshift({
+    var nutProd = String(document.getElementById('hcGermNutProducto')?.value || '').trim();
+    var nutEc = parseFloat(String(document.getElementById('hcGermNutEc')?.value || '').replace(',', '.'));
+    var nutPh = parseFloat(String(document.getElementById('hcGermNutPh')?.value || '').replace(',', '.'));
+    var nutMl = parseFloat(String(document.getElementById('hcGermNutMl')?.value || '').replace(',', '.'));
+    var entry = {
       fechaIso: hoyIso(),
       fecha: hoyDisplay(),
       hora: horaDisplay(),
@@ -619,7 +679,24 @@
       nota: nota,
       temp: Number.isFinite(t) ? t : null,
       hr: Number.isFinite(h) ? h : null,
-    });
+      nutProducto: nutProd,
+      nutEc: Number.isFinite(nutEc) ? nutEc : null,
+      nutPh: Number.isFinite(nutPh) ? nutPh : null,
+      nutMl: Number.isFinite(nutMl) ? nutMl : null,
+    };
+    g.registroDiario.unshift(entry);
+    if (nutProd || Number.isFinite(nutEc) || Number.isFinite(nutPh) || Number.isFinite(nutMl)) {
+      g.nutrientesAplicados.unshift({
+        fechaIso: entry.fechaIso,
+        fecha: entry.fecha,
+        producto: nutProd,
+        ec: entry.nutEc,
+        ph: entry.nutPh,
+        ml: entry.nutMl,
+        nota: nota,
+      });
+      if (g.nutrientesAplicados.length > 40) g.nutrientesAplicados.length = 40;
+    }
     if (g.registroDiario.length > 90) g.registroDiario.length = 90;
     persistirGerminacion();
     syncGerminacionRegistroAHistorial({
@@ -630,8 +707,11 @@
       nota: nota,
       subtipo: 'diario',
     });
-    if (typeof showToast === 'function') showToast('Registro del día guardado · día ' + diaN + ' · también en Historial', false);
+    if (typeof showToast === 'function') {
+      showToast('Registro del día guardado · día ' + diaN + ' · también en Historial', false);
+    }
     refreshDashGerminacionHub();
+    if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
     if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
   }
 
@@ -1000,7 +1080,15 @@
     if (bloqueoSala === 'hidro_config') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
-        '<strong>Semilla en hidro.</strong> Cierra DWC/RDWC en el asistente antes de las 6 fases. ' +
+        '<strong>' +
+        (camGerm === 'semilla_propagador'
+          ? 'Germinación concluida · Sistema hidropónico'
+          : 'Semilla en hidro · sistema') +
+        '</strong> ' +
+        (camGerm === 'semilla_propagador'
+          ? 'Configura DWC/RDWC para el traslado desde el propagador. La pestaña Sistema mostrará el esquema hidro al guardar.'
+          : 'Cierra DWC/RDWC en el asistente antes de las 6 fases.') +
+        ' ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar sistema</button></div>';
     } else if (bloqueoSala === 'deposito_llenado') {
       salaCtaHtml =
@@ -1011,9 +1099,9 @@
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>' +
-        (camGerm === 'semilla_propagador' ? 'Tras las 6 fases · Sala.' : 'Sala.') +
+        (camGerm === 'semilla_propagador' ? 'Sala (opcional).' : 'Sala.') +
         '</strong> Configura carpa, LED y extractor' +
-        (camGerm === 'semilla_propagador' ? ' antes del traslado al hidro' : ' antes de las 6 fases') +
+        (camGerm === 'semilla_propagador' ? ' si quieres antes del traslado' : ' antes de las 6 fases') +
         '. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button></div>';
     } else if (bloqueoSala === 'sala_montaje') {
@@ -1043,8 +1131,7 @@
       '<h2 class="hc-germ-hub-title">Germinación · camino al cubo</h2>' +
       '<p class="hc-germ-hub-sub">' +
       (camGerm === 'semilla_propagador'
-        ? 'Checklist propagador → <strong>6 fases con registro diario</strong> → sala → traslado al ' +
-          esc(tipo || 'DWC/RDWC')
+        ? '<strong>App de propagador:</strong> registro diario (T°, HR, nutrientes en agua) → al concluir por días → hidro → traslado'
         : 'Prep + sala + sistema + depósito → <strong>6 fases</strong> en el cubo → traslado al ' +
           esc(tipo || 'DWC/RDWC')) +
       '</p>' +
@@ -1111,7 +1198,29 @@
         : '<p class="hc-germ-reg-pend">Pendiente: anota lecturas y observaciones (calendario también lo recuerda).</p>') +
       '<label class="hc-germ-reg-lbl">Notas del día (humedad, luz, cambios)</label>' +
       '<textarea id="hcGermRegistroNota" class="param-input hc-germ-reg-textarea" rows="2" placeholder="Ej. ventilé el domo 5 min, cotiledón abierto…"></textarea>' +
+      '<div class="hc-germ-nut-grid">' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">Nutriente / producto</span>' +
+      '<input type="text" class="param-input dash-quick-input" id="hcGermNutProducto" placeholder="Ej. CalMag, enraizador…" maxlength="80"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">EC µS/cm</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutEc" inputmode="decimal" step="10" placeholder="400"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">pH</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
+      '<p class="setup-field-hint hc-germ-nut-hint">Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).</p>' +
       '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
+      (camGerm === 'semilla_propagador'
+        ? '<div class="hc-germ-concluir-block">' +
+          (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+            ? '<p class="hc-germ-concluir-ok">✓ Germinación concluida' +
+              (g.concluidaAt ? ' (marcada manualmente)' : ' (días según genética)') +
+              '. Siguiente: <button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></p>'
+            : '<p class="setup-field-hint">Objetivo orientativo: día <strong>' +
+              diasObjetivoConclusionGerm(cfg, g) +
+              '</strong>. Puedes darla por concluida antes si las plántulas están listas.</p>' +
+              '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionMarcarConcluida()">Dar germinación por concluida</button>') +
+          '</div>'
+        : '') +
       renderRegistroReciente(g) +
       '</div>' +
       '<div class="hc-germ-domo-block">' +
@@ -1142,16 +1251,24 @@
         : '') +
       '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">Guardar lectura del domo</button>' +
       '</div>' +
-      (allDone
+      (camGerm === 'semilla_propagador' &&
+      typeof germinacionConcluida === 'function' &&
+      germinacionConcluida(cfg) &&
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(cfg)
         ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
-          '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist mejora al ' +
-          esc(tipo) +
-          '</button>' +
-          '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
-          esc(tipo) +
-          ' →</button>' +
-          '<p class="hc-germ-traslado-foot">Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.</p></div>'
-        : '') +
+          '<p class="hc-germ-traslado-lead"><strong>Paso siguiente:</strong> configura el sistema hidropónico (cestas según semillas). Luego checklist de traslado.</p>' +
+          '<button type="button" class="btn btn-primary btn-lg" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></div>'
+        : allDone
+          ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist mejora al ' +
+            esc(tipo) +
+            '</button>' +
+            '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
+            esc(tipo) +
+            ' →</button>' +
+            '<p class="hc-germ-traslado-foot">Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.</p></div>'
+          : '') +
       '</div>';
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
@@ -1343,6 +1460,22 @@
     var paso = idx < PASOS.length ? PASOS[idx] : null;
     var diaN = diasDesdeInicio(g) + 1;
 
+    var camCal = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var objDias = diasObjetivoConclusionGerm(cfg, g);
+    var concl = typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+
+    if (camCal === 'semilla_propagador' && concl && typeof hcCaminoRequiereConfigHidroPendiente === 'function' && hcCaminoRequiereConfigHidroPendiente(cfg)) {
+      if (diff === 0) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '💧',
+          titulo: 'Configurar sistema hidropónico',
+          desc: 'Germinación concluida: abre el asistente DWC/RDWC antes del traslado al depósito.',
+          action: 'inicio',
+        });
+      }
+    }
+
     if (diff === 0 && paso) {
       ev.push({
         tipo: 'germinacion',
@@ -1364,8 +1497,34 @@
           tipo: 'germinacion',
           icono: '📝',
           titulo: 'Registro diario germinación',
-          desc: 'Anota T°, HR, humedad del cubo y observaciones en Inicio.',
+          desc: 'Anota T°, HR, nutrientes en agua y observaciones en Inicio.',
           action: 'inicio',
+        });
+      }
+      if (camCal === 'semilla_propagador' && !concl && diaN >= objDias - 1) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '✅',
+          titulo: 'Control · revisar cierre de germinación',
+          desc: 'Día ' + diaN + ' / objetivo ~' + objDias + '. Marca conclusión si las plántulas están listas para el hidro.',
+          action: 'inicio',
+        });
+      }
+      var domo = g.ultimaDomo || {};
+      if (domo.temp != null && (domo.temp < 20 || domo.temp > 28)) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '🌡️',
+          titulo: 'Alerta · T° domo fuera de rango',
+          desc: 'Última lectura ' + domo.temp + ' °C · ideal 22–26 °C en propagador.',
+        });
+      }
+      if (domo.hr != null && (domo.hr < 60 || domo.hr > 90)) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '💧',
+          titulo: 'Alerta · HR domo',
+          desc: 'Última HR ' + domo.hr + ' % · objetivo 70–80 % bajo domo.',
         });
       }
     }
@@ -1486,4 +1645,8 @@
   global.hcGermActualizarNumSemillas = hcGermActualizarNumSemillas;
   global.hcGermActualizarSemillasActivas = hcGermActualizarSemillasActivas;
   global.ensureGerminacionFlow = ensureGerminacionFlow;
+  global.germinacionConcluida = germinacionConcluida;
+  global.diasObjetivoConclusionGerm = diasObjetivoConclusionGerm;
+  global.hcGerminacionMarcarConcluida = hcGerminacionMarcarConcluida;
+  global.renderGermTrayViz = renderGermTrayViz;
 })();

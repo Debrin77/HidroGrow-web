@@ -16,14 +16,19 @@ Referencia para **semilla en propagador** y **semilla en hidro**. Los otros cami
 | 6 | *(omitido)* | SOG/SCROG + foto/auto fusionados en paso 7 |
 | 7 | Plan cultivo | Método, genética, semillero (opcional) |
 
-Tras **Guardar**: solo **checklist propagador** → **Inicio → Germinación** (6 fases + registro diario).
+Tras **Guardar**: solo **checklist propagador** → la app funciona como **propagador** (Sistema = gráfico del domo, no DWC).
 
-### Después del asistente
+### Modo propagador (operativa)
 
-1. Checklist propagador/domo  
-2. **6 fases** en Inicio (Medir del domo vía Germinación, no depósito)  
-3. **Configurar sala** (asistente + montaje)  
-4. Checklist traslado → DWC/RDWC → depósito → operativa  
+- Pestañas: **Inicio** (hub + registro diario), **Medir** (domo, no depósito), **Sala** (opcional), **Sistema** (propagador + resumen semillas/sustrato/**nutrientes en agua**).
+- **Calendario**: alertas de control (registro pendiente, T°/HR, cierre por días, configurar hidro).
+- Conclusión por **días** (genética) o botón «Dar por concluida» → **solo entonces** aviso de **DWC/RDWC**.
+
+### Después de concluir germinación
+
+1. Asistente **DWC/RDWC** (cestas ≈ semillas) → Sistema muestra esquema hidro (ya no propagador)  
+2. **Sala** opcional (un paso) + montaje  
+3. Checklist traslado → matriz → depósito  
 
 ### Pestañas en fase propagador
 

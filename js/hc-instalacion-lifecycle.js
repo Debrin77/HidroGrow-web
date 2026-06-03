@@ -35,6 +35,12 @@
   }
 
   function cultivoEstaAsignado() {
+    if (
+      typeof hcCultivoMatrizDisponible === 'function' &&
+      !hcCultivoMatrizDisponible(cfgActiva())
+    ) {
+      return false;
+    }
     if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) {
       return false;
     }
@@ -85,6 +91,27 @@
       fase = 'operativa';
       pasos.forEach(function (p) { p.done = true; });
       pasoIdx = 4;
+    } else if (
+      typeof hcCultivoMatrizDisponible === 'function' &&
+      !hcCultivoMatrizDisponible(cfg)
+    ) {
+      pasos[0].done = true;
+      if (montajeEstaVerificado(cfg)) {
+        pasos[1].done = true;
+      } else {
+        pasos[1].current = true;
+      }
+      pasos[2].blocked = true;
+      pasos[3].blocked = true;
+      var sigCam =
+        typeof hcSiguientePasoInstalacion === 'function'
+          ? hcSiguientePasoInstalacion(cfg)
+          : null;
+      fase = 'germinacion';
+      if (sigCam && sigCam.etapa === 'sala_config') fase = 'montaje_pendiente';
+      else if (sigCam && sigCam.etapa === 'sala_montaje') fase = 'montaje_pendiente';
+      else if (sigCam && sigCam.etapa === 'hidro_config') fase = 'montaje_pendiente';
+      pasoIdx = montajeEstaVerificado(cfg) ? 1 : 1;
     } else {
       pasos[0].done = true;
       if (!montajeEstaVerificado(cfg)) {
@@ -196,12 +223,21 @@
         propagadorMontajeCompleto(cfg)
       ) {
         if (
-          typeof germinacionSeisFasesCompletas === 'function' &&
-          germinacionSeisFasesCompletas(cfg)
+          typeof germinacionConcluida === 'function' &&
+          germinacionConcluida(cfg) &&
+          typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+          hcCaminoRequiereConfigHidroPendiente(cfg)
         ) {
+          return {
+            label: 'Configurar DWC/RDWC (traslado)',
+            action: 'abrirSetupFaseHidro',
+            etapa: 'hidro_config',
+          };
+        }
+        if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
           if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
             return {
-              label: 'Configurar sala (tras las 6 fases)',
+              label: 'Configurar sala (opcional)',
               action: 'abrirSetupFaseSala',
               etapa: 'sala_config',
             };
@@ -209,13 +245,12 @@
           if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
             return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
           }
-        } else {
-          return {
-            label: 'Control germinación (6 fases)',
-            action: 'irGerminacion',
-            etapa: 'germinacion',
-          };
         }
+        return {
+          label: 'Registro diario · propagador',
+          action: 'irGerminacion',
+          etapa: 'germinacion',
+        };
       }
       if (
         typeof hcGerminacionActiva === 'function' &&
@@ -271,6 +306,11 @@
         }
         return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'montaje' };
       case 'cultivo_pendiente':
+        if (typeof hcCultivoMatrizDisponible === 'function' && !hcCultivoMatrizDisponible(cfg)) {
+          return typeof hcSiguientePasoInstalacion === 'function'
+            ? hcSiguientePasoInstalacion(cfg, 'germinacion')
+            : { label: 'Continuar camino', action: 'irGerminacion', etapa: 'germinacion' };
+        }
         return { label: 'Asignar cultivos en el esquema', action: 'irCultivo', etapa: 'cultivo' };
       case 'deposito_pendiente':
         return { label: 'Checklist del depósito (nutrientes)', action: 'abrirChecklist', etapa: 'deposito' };
@@ -424,6 +464,18 @@
   }
 
   function hcIrCultivoMatriz(desdePostSetup) {
+    var cfg = cfgActiva();
+    if (
+      typeof hcCultivoMatrizDisponible === 'function' &&
+      !hcCultivoMatrizDisponible(cfg)
+    ) {
+      if (typeof mostrarChecklistBloqueadoCultivoSistema === 'function') {
+        mostrarChecklistBloqueadoCultivoSistema({ desdePostSetupRail: !!desdePostSetup });
+      } else if (typeof abrirSetupFaseHidro === 'function') {
+        abrirSetupFaseHidro();
+      }
+      return;
+    }
     try {
       if (typeof goTab === 'function') goTab('sistema');
     } catch (_) {}
@@ -695,13 +747,22 @@
         delete window._hcSalaPreGermRecienGuardada;
       } catch (_) {}
       setTimeout(function () {
-        hcIrMontajeSala();
+        try {
+          if (typeof goTab === 'function') goTab('sala');
+        } catch (_) {}
         setTimeout(function () {
           try {
             var det = document.getElementById('sistemaMontajeChecksDetails');
             if (det) det.open = true;
             if (typeof hcOpenPuestaMarchaChecklist === 'function') hcOpenPuestaMarchaChecklist();
           } catch (_) {}
+          if (typeof showToast === 'function') {
+            showToast(
+              'Montaje de sala (carpa, luz, aire). Sin sistema hidro ni asignar cestas hasta el asistente DWC/RDWC.',
+              false,
+              { durationMs: 7200, prominent: true }
+            );
+          }
           refreshInstalacionLifecycleUi();
           try {
             if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();

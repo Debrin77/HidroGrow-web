@@ -989,17 +989,45 @@
     return html;
   }
 
+  function buildPmGermContextHtml(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof hcMontajeEsSoloEquipamientoSala !== 'function' || !hcMontajeEsSoloEquipamientoSala(cfg)) {
+      return '';
+    }
+    var g = cfg.germinacionFlow || {};
+    var n = Math.min(72, Math.max(1, Math.round(Number(g.numSemillas) || 1)));
+    var vid = g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '';
+    var nom = '';
+    if (vid && typeof getCultivoDB === 'function') {
+      var cu = getCultivoDB(vid);
+      if (cu && cu.nombre) nom = cu.nombre;
+    }
+    return (
+      '<div class="hc-pm-germ-ctx setup-box-info setup-mb-12" role="note">' +
+      '<strong>Solo montaje de sala.</strong> No marques «sistema hidro configurado» ni tuberías del depósito: eso va en el asistente <strong>DWC/RDWC</strong> tras las 6 fases.' +
+      (nom
+        ? '<br>Genética en germinación: <strong>' + esc(nom) + '</strong> · ' + n + ' semilla(s) orientativas para cestas.'
+        : '') +
+      '</div>'
+    );
+  }
+
   function buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, mode) {
+    var soloSala =
+      typeof hcMontajeEsSoloEquipamientoSala === 'function' && hcMontajeEsSoloEquipamientoSala(cfg);
     var ventanaTxt = bloqueada
       ? 'Montaje cerrado tras el primer llenado del depósito.'
-      : mode === 'inline'
-        ? 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>. Toca una tarjeta para marcarla.'
-        : 'Editable hasta el <strong>primer llenado del depósito</strong>. Toca cada tarjeta o usa la casilla.';
+      : soloSala
+        ? 'Verifica <strong>carpa, LED, extractor y medidor</strong>. El circuito hidro y las cestas van después.'
+        : mode === 'inline'
+          ? 'Revisa el montaje hasta el <strong>primer llenado del depósito</strong>. Toca una tarjeta para marcarla.'
+          : 'Editable hasta el <strong>primer llenado del depósito</strong>. Toca cada tarjeta o usa la casilla.';
     return (
       '<div class="hc-pm-shell hc-pm-shell--' +
       mode +
       '">' +
       buildPmProgressHtml(prog, verificada, bloqueada) +
+      buildPmGermContextHtml(cfg) +
       '<p class="hc-pm-lead">' +
       ventanaTxt +
       '</p>' +
