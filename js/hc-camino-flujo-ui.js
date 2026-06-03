@@ -263,6 +263,14 @@
       btnSala.disabled = !!ocultarSala;
       btnSala.setAttribute('aria-hidden', ocultarSala ? 'true' : 'false');
       btnSala.tabIndex = ocultarSala ? -1 : 0;
+      if (ocultarSala) {
+        btnSala.setAttribute(
+          'title',
+          'Sala disponible al concluir la germinación (Inicio → Germinación)'
+        );
+      } else {
+        btnSala.setAttribute('title', 'Sala de cultivo');
+      }
     }
 
     var btnSistema = el('btn-sistema');
@@ -279,9 +287,32 @@
     document.body.classList.toggle('hc-modo-propagador-sin-sala', !!ocultarSala);
   }
 
+  function propagadorSalaOcultaBannerHtml(cfg) {
+    if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_propagador') {
+      return '';
+    }
+    if (
+      typeof hcOcultarTabSalaDuranteCamino !== 'function' ||
+      !hcOcultarTabSalaDuranteCamino(cfg)
+    ) {
+      return '';
+    }
+    return (
+      '<strong>Sala aún no en la barra.</strong> En propagador configuras carpa y LED cuando la germinación esté concluida ' +
+      '(días según genética o botón en Germinación abajo). La pestaña Sala aparecerá entonces.'
+    );
+  }
+
   function refreshTabsOperativaCamino() {
     var cfg = cfgActiva();
     aplicarVisibilidadTabsCamino(cfg);
+
+    ensureOperativaBanner(
+      'propagadorSalaOcultaBanner',
+      propagadorSalaOcultaBannerHtml(cfg),
+      'tab-inicio',
+      'dashGerminacionHub'
+    );
 
     ensureOperativaBanner(
       'medirPropagadorFaseBanner',

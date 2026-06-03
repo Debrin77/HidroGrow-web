@@ -68,6 +68,10 @@ La sala LED completa en propagador se configura **después** de las 6 fases.
 - **Semilla hidro**: DWC y sala en el primer asistente; fase prep solo checklist + montaje + depósito.
 - **Esqueje / Madre**: sin fases de semilla; matriz bloqueada mientras `getSistemaFaseCamino()` devuelve fase.
 
+## Mapa detallado propagador
+
+Pantallas, IDs DOM, checklist de prueba y mejoras UX: **[PROPAGADOR-CAMINO.md](./PROPAGADOR-CAMINO.md)**.
+
 ## Archivos
 
 | Área | JS |

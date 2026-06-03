@@ -520,6 +520,17 @@
     return Math.round((n / PASOS.length) * 100);
   }
 
+  /** Anillo del hub en propagador: avance por días hacia el objetivo genética (no las 6 fases). */
+  function pctProgresoPropagadorDias(cfg, g) {
+    g = g || ensureGerminacionFlow(cfg);
+    if (!g.startedAt) return 0;
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return 100;
+    var obj = diasObjetivoConclusionGerm(cfg, g);
+    if (obj < 1) return 0;
+    var dias = diasDesdeInicio(g) + 1;
+    return Math.min(100, Math.round((dias / obj) * 100));
+  }
+
   function persistirGerminacion() {
     try {
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
@@ -1048,7 +1059,15 @@
     hub.classList.remove('setup-hidden');
     var g = ensureGerminacionFlow(cfg);
     var idx = indiceFaseActual(g);
-    var pct = pctProgreso(g);
+    var camGermHub = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var pct =
+      camGermHub === 'semilla_propagador' ? pctProgresoPropagadorDias(cfg, g) : pctProgreso(g);
+    var pctRingLbl =
+      camGermHub === 'semilla_propagador'
+        ? (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+            ? 'OK'
+            : 'd' + (diasDesdeInicio(g) + 1))
+        : pct + '%';
     var modo = getModoGerminacion(cfg, g);
     var pasoRaw = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
     var paso = pasoDisplay(pasoRaw, modo);
@@ -1140,8 +1159,8 @@
       '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
       pct +
       '%" aria-hidden="true"><span>' +
-      pct +
-      '%</span></div>' +
+      esc(pctRingLbl) +
+      '</span></div>' +
       '<div class="hc-germ-hub-titles">' +
       '<h2 class="hc-germ-hub-title">Germinación · camino al cubo</h2>' +
       '<p class="hc-germ-hub-sub">' +
@@ -1158,6 +1177,12 @@
       '</span> · día <strong>' +
       diaN +
       '</strong> del seguimiento</p>' +
+      (camGerm === 'semilla_propagador'
+        ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
+          '<strong>Guía de 6 fases (opcional):</strong> el cierre de germinación va por <strong>días según genética</strong> (~' +
+          diasObjetivoConclusionGerm(cfg, g) +
+          ') o el botón «Dar por concluida» más abajo. No hace falta marcar todas las fases del rail.</p>'
+        : '') +
       (modoGerminacionFijadoPorCamino(cfg)
         ? '<p class="hc-germ-modo-fijo setup-field-hint">Modo fijado por tu camino en el asistente.</p>'
         : '<div class="hc-germ-modo-toggle" role="group" aria-label="Modo de germinación">' +
@@ -1180,7 +1205,11 @@
       '</span>' +
       '<div class="hc-germ-focus-body">' +
       '<div class="hc-germ-focus-kicker">' +
-      (allDone ? 'Camino completo' : 'Fase ' + paso.paso + ' de ' + PASOS.length) +
+      (allDone
+        ? 'Camino completo'
+        : camGerm === 'semilla_propagador'
+          ? 'Guía opcional · fase ' + paso.paso + ' de ' + PASOS.length
+          : 'Fase ' + paso.paso + ' de ' + PASOS.length) +
       '</div>' +
       '<h3 class="hc-germ-focus-title">' +
       esc(allDone ? 'Lista para el hidro' : paso.titulo) +
@@ -1625,8 +1654,16 @@
       ev.push({
         tipo: 'germinacion',
         icono: '🌱',
-        titulo: 'Germinación · fase ' + paso.paso + ' (día ' + diaN + ')',
-        desc: tareaDiaFase(paso.id, modo) + (registroHoyHecho(g) ? '' : ' · Registra el día en Inicio → Germinación.'),
+        titulo:
+          camCal === 'semilla_propagador'
+            ? 'Propagador · día ' + diaN + ' (guía fase ' + paso.paso + ')'
+            : 'Germinación · fase ' + paso.paso + ' (día ' + diaN + ')',
+        desc:
+          (camCal === 'semilla_propagador'
+            ? 'Seguimiento diario; las 6 fases son orientativas. '
+            : '') +
+          tareaDiaFase(paso.id, modo) +
+          (registroHoyHecho(g) ? '' : ' · Registra el día en Inicio → Germinación.'),
         action: 'inicio',
       });
       if (paso.id === 'domo' || paso.id === 'semilla' || paso.id === 'taproot') {

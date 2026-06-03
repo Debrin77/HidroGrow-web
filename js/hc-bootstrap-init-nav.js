@@ -132,6 +132,16 @@ function initApp() {
 
   // Aplicar configuración de torre si existe
   aplicarConfigTorre();
+  try {
+    if (
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(state.configTorre || {}) === 'semilla_propagador' &&
+      typeof hcSyncGerminacionPlanCultivo === 'function'
+    ) {
+      hcSyncGerminacionPlanCultivo(state.configTorre);
+    }
+    if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+  } catch (_) {}
   mostrarBtnNotificaciones();
   if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   setTimeout(programarRecordatorios, 2000);

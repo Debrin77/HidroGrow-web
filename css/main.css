@@ -10036,6 +10036,18 @@ html.hc-theme-dark .hc-germ-hub-sub,
 html.hc-theme-dark .hc-germ-hub-var {
   color: var(--muted);
 }
+.hc-germ-prop-hint {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.22);
+  line-height: 1.45;
+}
+html.hc-theme-dark .hc-germ-prop-hint {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.25);
+}
 .hc-germ-rail {
   position: relative;
   display: flex;
