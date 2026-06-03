@@ -55,11 +55,13 @@
       var cam = getCaminoCultivo();
       var def = getCaminoDef(cam);
       if (def && def.orden && def.orden.length) {
+        var tituloCamino =
+          cam === 'semilla_propagador'
+            ? ''
+            : '<div class="hc-origen-ruta-title">' + esc((def.icon || '') + ' ' + def.label) + '</div>';
         host.innerHTML =
           '<div class="hc-origen-ruta-card hc-camino-ruta-card" role="region" aria-label="Tu camino">' +
-          '<div class="hc-origen-ruta-title">' +
-          esc((def.icon || '') + ' ' + def.label) +
-          '</div>' +
+          tituloCamino +
           '<ol class="hc-origen-ruta-ol">' +
           def.orden
             .map(function (s) {
@@ -107,9 +109,21 @@
     } catch (_) {}
   }
 
+  function ocultarBannerRutaGermAhora() {
+    return (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    );
+  }
+
   function refreshSetupEquipOrigenBanner() {
     var box = el('setupPremiumEquipOrigenBanner');
     if (!box) return;
+    if (ocultarBannerRutaGermAhora()) {
+      box.classList.add('setup-hidden');
+      box.innerHTML = '';
+      return;
+    }
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     var def = typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
     var faseGerm =

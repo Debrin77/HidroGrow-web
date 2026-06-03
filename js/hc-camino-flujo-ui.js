@@ -76,6 +76,13 @@
   function refreshSetupCaminoStepBanner(pagina) {
     var box = el('setupCaminoStepBanner');
     if (!box) return;
+    var pageGerm =
+      typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    if (isGermAhoraPropagadorUi() && pagina === pageGerm) {
+      box.classList.add('setup-hidden');
+      box.innerHTML = '';
+      return;
+    }
     var cam = getCam();
     var map = STEP_BANNERS[cam];
     var html = map && map[pagina] ? map[pagina] : '';

@@ -8,7 +8,7 @@
   var CAMINOS = {
     semilla_propagador: {
       id: 'semilla_propagador',
-      label: 'Semilla en propagador / domo',
+      label: 'Semilla en propagador',
       short: 'Propagador',
       origenPlanta: 'semilla',
       germModo: 'propagador',
@@ -160,11 +160,13 @@
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;');
             };
+      var tituloCamino =
+        cam === 'semilla_propagador'
+          ? ''
+          : '<div class="hc-origen-ruta-title">' + esc(def.icon + ' ' + def.label) + '</div>';
       flow.innerHTML =
         '<div class="hc-origen-ruta-card hc-camino-ruta-card" role="region" aria-label="Tu camino">' +
-        '<div class="hc-origen-ruta-title">' +
-        esc(def.icon + ' ' + def.label) +
-        '</div>' +
+        tituloCamino +
         '<ol class="hc-origen-ruta-ol">' +
         def.orden
           .map(function (s) {
@@ -175,16 +177,8 @@
     }
     var fase = document.getElementById('setupCaminoFaseBanner');
     if (fase) {
-      if (def.faseInicial === 'germinacion') {
-        fase.classList.remove('setup-hidden');
-        fase.innerHTML =
-          '<strong>Fase 1 · Germinación.</strong> Tras el propagador (o prep hidro) configuras la <strong>sala</strong>, ' +
-          'luego las 6 fases. El <strong>DWC/RDWC</strong> se cierra al terminar la germinación (sin repetirla en el depósito).';
-      } else {
-        fase.classList.remove('setup-hidden');
-        fase.innerHTML =
-          '<strong>Camino hidro.</strong> Configura propagador/enraizado, sistema DWC/RDWC y sala en este asistente.';
-      }
+      fase.classList.add('setup-hidden');
+      fase.innerHTML = '';
     }
   }
 
