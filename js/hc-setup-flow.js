@@ -45,13 +45,13 @@
   function getSetupSkippedPages() {
     const skip = new Set();
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) {
-      skip.add(typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 14);
+      skip.add(typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15);
     }
     if (setupFlowCanSkipUbicacion()) {
-      skip.add(typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 12);
+      skip.add(typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13);
     }
     if (setupFlowCanSkipEquip()) {
-      skip.add(typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 9);
+      skip.add(typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10);
     }
     return skip;
   }
@@ -62,7 +62,7 @@
   }
 
   function getSetupVisiblePages() {
-    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 15;
+    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
     const skip = getSetupSkippedPages();
     const out = [];
     for (let i = 0; i < total; i++) {
@@ -82,7 +82,7 @@
   }
 
   function setupFlowAdvancePage(delta) {
-    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 15;
+    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
     const skip = getSetupSkippedPages();
     let p = typeof setupPagina !== 'undefined' ? setupPagina : 0;
     const step = delta > 0 ? 1 : -1;
@@ -197,7 +197,7 @@
     const p = ensurePremium();
     const premiumActive = !!p;
 
-    if (page === typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 8) {
+    if (page === typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9) {
       const hint = document.getElementById('setupFlowTipoHint');
       const inline = document.getElementById('setupTipoInstalacionInline');
       const tipoOk =
@@ -222,7 +222,7 @@
       }
     }
 
-    if (page === typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 9) {
+    if (page === typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10) {
       const catDetails = document.getElementById('setupEquipCatalogDetails');
       if (catDetails && premiumActive) catDetails.classList.add('setup-hidden');
       else if (catDetails) catDetails.classList.remove('setup-hidden');

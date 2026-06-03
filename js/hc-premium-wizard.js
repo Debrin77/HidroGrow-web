@@ -86,39 +86,45 @@
   function seleccionarPremiumOrigen(origen) {
     const o = origen === 'clon' ? 'clon' : origen === 'madre' ? 'madre' : 'semilla';
     ensurePremiumSetup().origenPlanta = o;
+    if (typeof persistOrigenASetupData === 'function') persistOrigenASetupData(o);
     aplicarRecomendacionPremiumPorOrigen(o);
+    if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
     refreshPremiumGerminacionUI();
     refreshPremiumMetodoOrigenHint();
     if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+    if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
   }
 
   const ORIGEN_RECOMENDACIONES = {
     clon: {
       metodoCultivo: 'sog',
       geneticaPref: 'foto',
+      recoOrigen:
+        '<strong>Esqueje:</strong> sin las 6 fases de semilla. Enraizado en propagador → net pot → mismo DWC/RDWC → floración.',
       recoPaso6:
-        'Recomendación aplicada: <strong>SOG + fotoperíodo</strong> (esquejes uniformes, veg corta). ' +
-        'Revísalo en el paso «Genética y método» si quieres otro enfoque.',
+        'Checklist de corte y domo en este paso. Recomendación: <strong>SOG + fotoperíodo</strong>.',
       recoPaso5:
-        'Origen <strong>esqueje/clon</strong>: recomendado <strong>SOG + fotoperíodo</strong>. ' +
-        'Los esquejes suelen ir en SOG; la genética casi siempre es foto.',
+        'Origen <strong>esqueje</strong>: SOG + foto en Genética y método.',
     },
     semilla: {
+      recoOrigen:
+        '<strong>Semilla:</strong> no necesitas la sala LED al máximo el día 1 — sí propagador/domo y rockwool. ' +
+        'Las <strong>6 fases</strong> las sigues en <strong>Inicio</strong>; luego traslado al DWC/RDWC y floración.',
       recoPaso6:
-        'Con <strong>semilla</strong>, registra un <strong>domo / propagador</strong> en el paso <strong>Espacio y equipamiento</strong> (grupo Germinación). ' +
-        'Aquí solo va la <strong>marca de semillas</strong> (opcional). El seguimiento día a día va en <strong>Inicio → Germinación</strong>.',
+        'Marca <strong>genética</strong> y semillero (opcional). El propagador va en <strong>Espacio y equipamiento</strong>.',
       recoPaso5:
-        'SOG/SCROG y foto/auto quedan aquí. Si vienes de semilla, vuelve a <strong>Espacio y equipamiento</strong> si aún no marcaste propagador.',
+        'SOG/SCROG y foto/auto en el paso Genética y método.',
     },
     madre: {
       geneticaPref: 'foto',
+      recoOrigen:
+        '<strong>Madre:</strong> cubo en hidro a 18/6 (no floración de cosecha). Los esquejes que saques siguen el camino de <strong>clon</strong>.',
       recoPaso6:
-        'Planta <strong>madre</strong>: <strong>fotoperíodo 18/6</strong> permanente. ' +
-        'SOG/SCROG aplica a los esquejes que tomes, no a la madre.',
+        'Mantén la madre y planifica cortes. Los esquejes van a SOG/SCROG según Genética y método.',
       recoPaso5:
-        'Origen <strong>madre</strong>: solo <strong>fotoperíodo</strong> en la madre (18/6).',
+        'Madre siempre <strong>fotoperíodo 18/6</strong>.',
     },
   };
 
@@ -147,7 +153,7 @@
     const box = el('setupPremiumOrigenReco');
     if (!box) return;
     const rec = ORIGEN_RECOMENDACIONES[origen || 'semilla'] || {};
-    const txt = rec.recoPaso6 || '';
+    const txt = rec.recoOrigen || rec.recoPaso6 || '';
     if (!txt) {
       box.classList.add('setup-hidden');
       box.innerHTML = '';
@@ -538,6 +544,7 @@
     refreshPremiumEntornoUI();
     refreshPremiumMetodoUI();
     seleccionarPremiumGenetica(p.geneticaPref || 'foto');
+    if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
     refreshPremiumGerminacionUI();
     calcularPremiumSala();
     refreshPremiumClimaResumen();
@@ -550,6 +557,9 @@
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
 
+    if (pagina === SETUP_PAGE_ORIGEN) {
+      if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
+    }
     if (pagina === SETUP_PAGE_PREMIUM_6) {
       refreshPremiumGerminacionUI();
       if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
@@ -558,6 +568,7 @@
       if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     }
     if (pagina === SETUP_PAGE_PREMIUM_3) {
+      if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
       if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
         syncSalaMedidasDesdeEquipamientoInstalado();
       }

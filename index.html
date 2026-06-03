@@ -3229,6 +3229,7 @@
       <div class="setup-step-dot" id="sdot12"></div>
       <div class="setup-step-dot" id="sdot13"></div>
       <div class="setup-step-dot" id="sdot14"></div>
+      <div class="setup-step-dot" id="sdot15"></div>
     </div>
     <div class="setup-steps-label" id="setupStepLabel">Paso 1 de 8</div>
     <div id="setupRoadmapMini" class="setup-roadmap-mini setup-hidden" aria-hidden="true"></div>
@@ -3269,6 +3270,38 @@
         Empezar asistente
       </button>
       <p class="welcome-hint setup-hidden" aria-hidden="true">Tras guardar: montaje en Sala, cultivos en el esquema, checklist del depósito.</p>
+    </div>
+
+    <div class="setup-page" id="spagePremiumOrigen">
+      <div class="setup-title">¿Cómo empiezas el cultivo?</div>
+      <div class="setup-subtitle">
+        Elige el <strong>camino hasta la floración</strong> en tu DWC/RDWC. El asistente adapta equipamiento y pasos siguientes.
+      </div>
+      <div class="setup-box-info setup-mb-12" role="note">
+        <strong>Destino común:</strong> planta enraizada en net pot → depósito → vegetativo → <strong>floración</strong>.
+        La madre no es cosecha: mantiene 18/6 y produce esquejes.
+      </div>
+      <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
+      <div class="setup-block-title">Origen de plantas</div>
+      <div class="setup-grid-3 setup-grid-gap-8 setup-mb-12">
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
+          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
+          <div class="setup-option-title-md">Semilla</div>
+          <div class="setup-option-desc-sm">6 fases · propagador o en el hidro</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
+          <span class="hc-visual-origin-icon" data-visual="esqueje"></span>
+          <div class="setup-option-title-md">Clon / esqueje</div>
+          <div class="setup-option-desc-sm">Domo → net pot → hidro</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
+          <span class="hc-visual-origin-icon" data-visual="madre"></span>
+          <div class="setup-option-title-md">Madre DWC/RDWC</div>
+          <div class="setup-option-desc-sm">18/6 · luego esquejes</div>
+        </button>
+      </div>
+      <div id="setupPremiumOrigenReco" class="setup-box-info setup-mb-12" role="status" aria-live="polite"></div>
+      <p class="setup-field-hint">Siguiente: objetivo, sala y equipamiento según tu elección (propagador si semilla, enraizado si esqueje).</p>
     </div>
 
     <div class="setup-page" id="spagePremium1">
@@ -3322,6 +3355,7 @@
       <div class="setup-title">Espacio y equipamiento</div>
       <div class="setup-subtitle" id="setupPremium3Subtitle">Catálogo por grupos: sala, hidro y herramientas. Elige marca/modelo o deja «Manual».</div>
       <div id="setupPremiumEquipSection">
+        <div id="setupPremiumEquipOrigenBanner" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div id="setupPremiumEquipGermReco" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
         <p class="setup-field-hint setup-mb-8">Top 10 por categoría (marcas habituales en growshops ES). Con <strong>semilla</strong>, el grupo <strong>Germinación</strong> incluye propagador y mat térmica. Puedes dejar «Manual / otro modelo».</p>
@@ -3434,29 +3468,12 @@
     </div>
 
     <div class="setup-page" id="spagePremium6">
-      <div class="setup-title">Germinación, clones y madre</div>
-      <div class="setup-subtitle">Origen de planta. Con <strong>semilla</strong>, el camino de 6 fases se sigue en <strong>Inicio</strong> (días reales), no aquí.</div>
-      <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
-      <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
-      <div class="setup-block-title">Origen de plantas</div>
-      <div class="setup-grid-3 setup-grid-gap-8 setup-mb-12">
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
-          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
-          <div class="setup-option-title-md">Semilla</div>
-          <div class="setup-option-desc-sm">Germinador → rockwool → net pot</div>
-        </button>
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
-          <span class="hc-visual-origin-icon" data-visual="esqueje"></span>
-          <div class="setup-option-title-md">Clon / esqueje</div>
-          <div class="setup-option-desc-sm">Ya enraizado o en domo</div>
-        </button>
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
-          <span class="hc-visual-origin-icon" data-visual="madre"></span>
-          <div class="setup-option-title-md">Madre DWC/RDWC</div>
-          <div class="setup-option-desc-sm">18/6 · esquejes cada 10–14 d</div>
-        </button>
+      <div class="setup-title">Detalle según tu origen</div>
+      <div class="setup-subtitle">
+        Ya elegiste el camino en el <strong>paso 1</strong>. Aquí: genética, semillero (semilla) o checklist de esquejes/madre.
+        Con <strong>semilla</strong>, el día a día de las 6 fases va en <strong>Inicio → Germinación</strong>.
       </div>
-      <div id="setupPremiumOrigenReco" class="setup-box-info setup-hidden setup-mb-12" role="status" aria-live="polite"></div>
+      <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div id="setupPremiumSemilleroSection" class="setup-hidden">
         <div class="setup-box-info setup-mb-8" id="setupPremiumSemilleroExplain" role="note">
           <strong>Tienda de semillas (breeder)</strong> — no es el propagador.
@@ -3524,7 +3541,7 @@
       <ul class="setup-checklist-preview setup-mb-12">
         <li>Tipo DWC/RDWC confirmado en bienvenida</li>
         <li>Entorno, luz y fotoperiodo ya definidos</li>
-        <li>Origen semilla/clon/madre y camino de germinación</li>
+        <li>Origen (paso 1) y detalle genética / germinación / esquejes</li>
         <li>Checklist de compra: aire, EC/pH, net pots, nutriente</li>
       </ul>
       <p class="setup-field-hint">El diagrama nítido del sistema aparece en el paso Geometría.</p>
@@ -5145,7 +5162,8 @@
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-germinacion-flow.js?v=2026-05-31-setup-genetics"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-setup-genetics"></script>
+  <script src="js/hc-premium-origen-paso.js?v=2026-05-31-origen-primero"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-06-02-dwc-rdwc-only"></script>

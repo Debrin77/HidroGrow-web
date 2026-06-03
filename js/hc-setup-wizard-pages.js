@@ -112,20 +112,21 @@ function renderSetupPage() {
   // Labels de cada paso
   const labels = [
     'Bienvenida',           // 0
-    'Objetivo',             // 1
-    'Entorno',              // 2
-    'Espacio',              // 3
-    'Clima y luz',          // 4
-    'Genética',             // 5
-    'Germinación',          // 6
-    'Sistema hidro',        // 7
-    'Geometría',            // 8
-    'Equipamiento',         // 9
-    'Agua y fijación',      // 10
-    'Nutrientes',           // 11
-    'Meteo',                // 12
-    'Cultivos',             // 13
-    'Resumen',              // 14
+    'Origen planta',        // 1
+    'Objetivo',             // 2
+    'Entorno',              // 3
+    'Espacio',              // 4
+    'Clima y luz',          // 5
+    'Genética',             // 6
+    'Detalle origen',       // 7
+    'Sistema hidro',        // 8
+    'Geometría',            // 9
+    'Equipamiento',         // 10
+    'Agua y fijación',      // 11
+    'Nutrientes',           // 12
+    'Meteo',                // 13
+    'Cultivos',             // 14
+    'Resumen',              // 15
   ];
   const labelEl = document.getElementById('setupStepLabel');
   if (labelEl) {

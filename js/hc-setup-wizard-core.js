@@ -2044,24 +2044,26 @@ let setupCoordenadas = { lat: null, lon: null, ciudad: '' };
 
 const SETUP_PAGE_WELCOME = 0;
 const SETUP_PAGE_PREMIUM_START = 1;
-const SETUP_PAGE_PREMIUM_END = 7;
-const SETUP_PAGE_PREMIUM_1 = 1;
-const SETUP_PAGE_PREMIUM_2 = 2;
-const SETUP_PAGE_PREMIUM_3 = 3;
-const SETUP_PAGE_PREMIUM_4 = 4;
-const SETUP_PAGE_PREMIUM_5 = 5;
-const SETUP_PAGE_PREMIUM_6 = 6;
-const SETUP_PAGE_PREMIUM_7 = 7;
-const SETUP_PAGE_GEOMETRY = 8;
-const SETUP_PAGE_EQUIP = 9;
-const SETUP_PAGE_AGUA = 10;
-const SETUP_PAGE_NUTRIENTES = 11;
-const SETUP_PAGE_UBICACION = 12;
-const SETUP_PAGE_CULTIVOS = 13;
-const SETUP_PAGE_RESUMEN = 14;
-const SETUP_TOTAL_PAGES = 15;
+const SETUP_PAGE_ORIGEN = 1;
+const SETUP_PAGE_PREMIUM_END = 8;
+const SETUP_PAGE_PREMIUM_1 = 2;
+const SETUP_PAGE_PREMIUM_2 = 3;
+const SETUP_PAGE_PREMIUM_3 = 4;
+const SETUP_PAGE_PREMIUM_4 = 5;
+const SETUP_PAGE_PREMIUM_5 = 6;
+const SETUP_PAGE_PREMIUM_6 = 7;
+const SETUP_PAGE_PREMIUM_7 = 8;
+const SETUP_PAGE_GEOMETRY = 9;
+const SETUP_PAGE_EQUIP = 10;
+const SETUP_PAGE_AGUA = 11;
+const SETUP_PAGE_NUTRIENTES = 12;
+const SETUP_PAGE_UBICACION = 13;
+const SETUP_PAGE_CULTIVOS = 14;
+const SETUP_PAGE_RESUMEN = 15;
+const SETUP_TOTAL_PAGES = 16;
 const SETUP_PAGE_IDS = [
   'spage0',
+  'spagePremiumOrigen',
   'spagePremium1', 'spagePremium2', 'spagePremium3', 'spagePremium4',
   'spagePremium5', 'spagePremium6', 'spagePremium7',
   'spage1', 'spage2', 'spage3', 'spage4', 'spage5', 'spage6', 'spage7',
