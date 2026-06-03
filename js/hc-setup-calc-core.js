@@ -1623,9 +1623,15 @@ function selMunicipioSetupIdx(idx) {
   document.getElementById('setupCiudadSeleccionada')?.classList.remove('setup-hidden');
   const selTxt = document.getElementById('setupCiudadSeleccionada');
   if (selTxt) {
-    selTxt.textContent =
-      '✅ ' + nombre + ' · EC agua: ' + data.ec + ' µS/cm · ' + data.dureza;
+    selTxt.innerHTML =
+      '<span class="setup-city-confirm-ico" aria-hidden="true">✓</span>' +
+      '<span class="setup-city-confirm-body">' +
+      '<strong>Municipio confirmado (agua del grifo)</strong><br>' +
+      '<span class="setup-city-confirm-name">' + nombre + '</span>' +
+      '<span class="setup-city-confirm-coords">EC agua: ' + data.ec + ' µS/cm · ' + data.dureza + '</span>' +
+      '</span></span>';
   }
+  if (typeof showToast === 'function') showToast('✓ Municipio confirmado: ' + nombre, false);
 }
 
 async function detectarCiudadSetup() {
@@ -1647,7 +1653,13 @@ async function detectarCiudadSetup() {
       const sel = document.getElementById('ciudadSeleccionadaSetup');
       if (sel) {
         sel.classList.remove('setup-hidden');
-        sel.textContent = '📍 ' + nombre + ' (GPS)';
+        sel.innerHTML =
+          '<span class="setup-city-confirm-ico" aria-hidden="true">✓</span>' +
+          '<span class="setup-city-confirm-body">' +
+          '<strong>Municipio confirmado</strong><br>' +
+          '<span class="setup-city-confirm-name">📍 ' + nombre + '</span>' +
+          '<span class="setup-city-confirm-coords">Detectado por GPS · coordenadas guardadas.</span>' +
+          '</span></span>';
       }
     } else {
       showToast('No se pudo obtener el municipio desde el GPS', true);

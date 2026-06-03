@@ -174,6 +174,12 @@
       }
     }
 
+    var ambImport = document.getElementById('medirAmbienteImportanteBanner');
+    if (ambImport) {
+      var mostrarAmbImport = lc.fase !== 'sin_config';
+      ambImport.classList.toggle('setup-hidden', !mostrarAmbImport);
+    }
+
     if (flow) {
       flow.classList.toggle('medir-flow--pre-operativa', !!pendiente);
       flow.setAttribute('aria-hidden', pendiente ? 'true' : 'false');

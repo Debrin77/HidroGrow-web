@@ -13040,6 +13040,63 @@ html.hc-theme-dark .consejo-text-toggle {
   box-sizing: border-box;
   margin-bottom: 8px;
 }
+.medir-localidad-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(34, 197, 94, 0.45);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, var(--bg2, #fffdf9) 70%);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--white);
+}
+.medir-localidad-confirm-ico {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.25);
+  color: var(--green-dim, #166534);
+  font-weight: 800;
+  font-size: 13px;
+}
+.medir-ambiente-importante {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(180, 83, 9, 0.45);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.35) 100%);
+  font-size: 12px;
+  line-height: 1.45;
+  color: #78350f;
+}
+.medir-ambiente-importante-ico {
+  flex-shrink: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #b45309;
+}
+html.hc-theme-dark .medir-localidad-confirm {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(20, 28, 23, 0.95) 70%);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+html.hc-theme-dark .medir-localidad-confirm-ico {
+  color: var(--green, #4ade80);
+}
+html.hc-theme-dark .medir-ambiente-importante {
+  color: #fde68a;
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.5) 0%, rgba(20, 28, 23, 0.92) 70%);
+  border-color: rgba(212, 160, 23, 0.4);
+}
 /* Mediciones — bloque exterior/interior: título alineado al resto de secciones; cuerpo legible */
 .medir-panel-ubic-luz .config-section-title {
   font-family: var(--font-ui);
@@ -18358,14 +18415,48 @@ button.toggle-switch:focus-visible {
   overflow: hidden;
 }
 .setup-city-selected {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
   margin-top: 8px;
   padding: 10px 12px;
-  background: #f0fdf4;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
   border: 1.5px solid #16a34a;
   border-radius: 10px;
   font-size: 13px;
   color: #15803d;
   font-weight: 700;
+}
+.setup-city-confirm-ico {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #16a34a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+}
+.setup-city-confirm-body {
+  min-width: 0;
+  line-height: 1.4;
+}
+.setup-city-confirm-name {
+  display: block;
+  font-weight: 800;
+  color: #14532d;
+  margin-top: 2px;
+}
+.setup-city-confirm-coords {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #166534;
+  opacity: 0.9;
+  margin-top: 2px;
 }
 .setup-city-option {
   width: 100%;

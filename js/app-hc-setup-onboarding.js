@@ -822,10 +822,34 @@ function selCiudadSetup(nombre, lat, lon) {
   const res = document.getElementById('ciudadResultadosSetup');
   const sel = document.getElementById('ciudadSeleccionadaSetup');
   if (res) res.classList.add('setup-hidden');
-  if (sel) { sel.classList.remove('setup-hidden'); sel.textContent = '📍 ' + nombre; }
-  // Sincronizar con input original si existe
+  if (sel) {
+    sel.classList.remove('setup-hidden');
+    sel.innerHTML =
+      '<span class="setup-city-confirm-ico" aria-hidden="true">✓</span>' +
+      '<span class="setup-city-confirm-body">' +
+      '<strong>Municipio confirmado</strong><br>' +
+      '<span class="setup-city-confirm-name">' + nombre + '</span>' +
+      (Number.isFinite(lat) && Number.isFinite(lon)
+        ? '<span class="setup-city-confirm-coords">Coordenadas guardadas para meteo y avisos.</span>'
+        : '') +
+      '</span></span>';
+  }
   const input2 = document.getElementById('setupCiudad2');
   if (input2) input2.value = nombre;
+  try {
+    if (typeof state !== 'undefined' && state) {
+      if (!state.configTorre) state.configTorre = {};
+      state.configTorre.ciudad = nombre;
+      state.configTorre.lat = lat;
+      state.configTorre.lon = lon;
+      const firstM = String(nombre).split(',')[0].trim();
+      if (firstM) state.configTorre.localidadMeteo = firstM;
+      if (typeof invalidateMeteoNomiCache === 'function') invalidateMeteoNomiCache();
+    }
+  } catch (_) {}
+  if (typeof showToast === 'function') {
+    showToast('✓ Municipio confirmado: ' + String(nombre).split(',')[0].trim(), false);
+  }
 }
 
 // Guardar setupData en la configuración de la torre al finalizar

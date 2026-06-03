@@ -21,11 +21,19 @@
       .replace(/>/g, '&gt;');
   }
 
+  function readDimFromCfg(cfg, key, domId) {
+    const fromDom = num(domId);
+    if (Number.isFinite(fromDom)) return fromDom;
+    const v = Number(cfg && cfg[key]);
+    return Number.isFinite(v) ? v : NaN;
+  }
+
   function calcularGrowRoomInterno(cfg) {
-    const ancho = num('growRoomAnchoM');
-    const largo = num('growRoomLargoM');
-    const alto = num('growRoomAltoM');
-    const ledW = num('growRoomLedW');
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const ancho = readDimFromCfg(cfg, 'growRoomAnchoM', 'growRoomAnchoM');
+    const largo = readDimFromCfg(cfg, 'growRoomLargoM', 'growRoomLargoM');
+    const alto = readDimFromCfg(cfg, 'growRoomAltoM', 'growRoomAltoM');
+    const ledW = readDimFromCfg(cfg, 'growRoomLedW', 'growRoomLedW');
     const fase = String(el('growRoomFase')?.value || cfg.growRoomFase || 'vegetativo');
     const wM2 = (typeof GROW_ROOM_W_M2 !== 'undefined' && GROW_ROOM_W_M2[fase]) || GROW_ROOM_W_M2.vegetativo;
 
@@ -50,7 +58,7 @@
     const m3hObj = Math.round(vol * exch.obj);
     const m3hMin = Math.round(vol * (exch.min || 30));
     const m3hMax = Math.round(vol * (exch.max || 90));
-    const extractorUser = num('growRoomExtractorM3h');
+    const extractorUser = readDimFromCfg(cfg, 'growRoomExtractorM3h', 'growRoomExtractorM3h');
     let extEstado = 'ok';
     if (Number.isFinite(extractorUser) && extractorUser > 0) {
       if (extractorUser < m3hMin * 0.9) extEstado = 'warn';
@@ -196,8 +204,23 @@
     renderGrowRoomResult(calcularGrowRoomInterno(cfg));
   }
 
+  /** led | extractor | null — si el equipo del catálogo no cuadra con medidas de Sala. */
+  function evalSalaRevisionCategoria(cfg, catKey) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const interior =
+      String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
+      'exterior';
+    if (!interior) return 'ok';
+    const r = calcularGrowRoomInterno(cfg);
+    if (r.error) return 'ok';
+    if (catKey === 'led' && r.ledUser != null && r.ledEstado === 'warn') return 'warn';
+    if (catKey === 'extractor' && r.extractorUser != null && r.extEstado === 'warn') return 'warn';
+    return 'ok';
+  }
+
   window.calcularGrowRoom = calcularGrowRoom;
   window.cargarGrowRoomUI = cargarGrowRoomUI;
   window.persistGrowRoom = persistGrowRoom;
   window.aplicarPresetTendaGrowRoom = aplicarPresetTenda;
+  window.evalSalaRevisionCategoria = evalSalaRevisionCategoria;
 })();

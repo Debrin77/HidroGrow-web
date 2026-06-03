@@ -453,9 +453,31 @@
     return null;
   }
 
+  /** VPD/evolución: solo tras montaje verificado o modo operativo (no durante paso 2 montaje). */
+  function shouldShowSalaSeguimientoCta() {
+    try {
+      if (typeof getInstalacionLifecycle === 'function') {
+        const lc = getInstalacionLifecycle();
+        if (lc && lc.operativaDiaria) return true;
+        if (lc && lc.fase === 'sin_config') return false;
+        const cfg =
+          typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+        if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
+        return false;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function renderSalaSeguimientoCta() {
     const el = document.getElementById('salaSeguimientoCta');
     if (!el) return;
+    if (!shouldShowSalaSeguimientoCta()) {
+      el.classList.add('setup-hidden');
+      el.innerHTML = '';
+      return;
+    }
+    el.classList.remove('setup-hidden');
     const ult = getUltimaAmbientalActiva();
     const edad = ult ? edadMedicionCorta(ult.fecha, ult.hora) : '';
     let stats = '';
@@ -510,6 +532,7 @@
   }
 
   window.renderHistorialSeguimiento = renderHistorialSeguimiento;
+  window.shouldShowSalaSeguimientoCta = shouldShowSalaSeguimientoCta;
   window.renderSalaSeguimientoCta = renderSalaSeguimientoCta;
   window.hcIrHistorialSeguimiento = hcIrHistorialSeguimiento;
 

@@ -787,6 +787,21 @@
     );
   }
 
+  function itemSalaRevisionWarn(cfg, it) {
+    if (!it) return false;
+    var cat = it.fromEquip || (it.cat && String(it.cat)) || null;
+    if (!cat && it.fromToggle && MONTAJE_TOGGLES[it.fromToggle]) {
+      cat = MONTAJE_TOGGLES[it.fromToggle].cat;
+    }
+    if (!cat) return false;
+    try {
+      if (typeof evalSalaRevisionCategoria === 'function') {
+        return evalSalaRevisionCategoria(cfg, cat) === 'warn';
+      }
+    } catch (_) {}
+    return false;
+  }
+
   function buildPmEquipRefHtml(cfg) {
     var inst = cfg.equipamientoInstalado || {};
     var equipList = Object.keys(inst)
@@ -797,14 +812,46 @@
         return equipLabel(inst[k], k);
       })
       .join(', ');
+    var warnCats = [];
+    Object.keys(inst).forEach(function (k) {
+      if (inst[k] && (inst[k].marca || inst[k].id) && itemSalaRevisionWarn(cfg, { fromEquip: k })) {
+        warnCats.push(k);
+      }
+    });
+    var html = '';
     if (equipList) {
-      return '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' + esc(equipList) + '</p>';
+      html +=
+        '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' +
+        esc(equipList) +
+        ' · revisa medidas en <button type="button" class="hc-pm-equip-link" onclick="hcPmIrRevisarSalaEquip()">Sala → equipamiento</button></p>';
+    } else {
+      html +=
+        '<p class="hc-pm-equip-ref hc-pm-equip-ref--warn">' +
+        'Sin equipamiento en catálogo: completa el asistente (Espacio y equipamiento) o la pestaña <strong>Sala</strong>.' +
+        '</p>';
     }
-    return (
-      '<p class="hc-pm-equip-ref hc-pm-equip-ref--warn">' +
-      'Sin equipamiento en catálogo: completa el asistente (Espacio y equipamiento) o la pestaña <strong>Sala</strong>.' +
-      '</p>'
-    );
+    if (warnCats.length) {
+      html +=
+        '<p class="hc-pm-equip-ref hc-pm-equip-ref--sala-warn" role="note">' +
+        '<span class="hc-pm-sala-warn-ico" aria-hidden="true">⚠️</span> ' +
+        '<strong>Revisar en Sala:</strong> LED o extractor pueden no cuadrar con m² y volumen de la carpa (marca «revisar» en el resumen de sala).' +
+        '</p>';
+    }
+    return html;
+  }
+
+  function hcPmIrRevisarSalaEquip() {
+    try {
+      if (typeof goTab === 'function') goTab('sala');
+      setTimeout(function () {
+        var det = document.getElementById('sistemaEquipDetails');
+        if (det) det.open = true;
+        try {
+          det.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+        if (typeof calcularGrowRoom === 'function') calcularGrowRoom();
+      }, 200);
+    } catch (_) {}
   }
 
   function buildPmCestaRecoHtml(cfg) {
@@ -856,6 +903,7 @@
     var dot = labelMain.indexOf(' · ');
     var title = dot > 0 ? labelMain.slice(0, dot) : labelMain;
     var sub = dot > 0 ? labelMain.slice(dot + 3) : '';
+    var salaWarn = itemSalaRevisionWarn(cfg, it);
     return (
       '<article class="hc-pm-card hc-pm-card--' +
       accent +
@@ -863,6 +911,7 @@
       (disabled ? ' hc-pm-card--disabled' : '') +
       (it.optional ? ' hc-pm-card--opt' : '') +
       (compact ? ' hc-pm-card--compact' : '') +
+      (salaWarn ? ' hc-pm-card--sala-warn' : '') +
       '" data-pm-id="' +
       esc(safe) +
       '" role="listitem" tabindex="' +
@@ -891,6 +940,9 @@
       '<div class="hc-pm-card-text">' +
       '<h4 class="hc-pm-card-title">' +
       esc(title) +
+      (salaWarn
+        ? ' <span class="hc-pm-sala-warn-badge" title="Revisar medidas en Sala → equipamiento">⚠️ Sala</span>'
+        : '') +
       (it.optional ? ' <span class="hc-pm-opt">(opcional)</span>' : '') +
       '</h4>' +
       (sub ? '<p class="hc-pm-card-sub">' + esc(sub) + '</p>' : '') +
@@ -998,6 +1050,7 @@
           label: def.label + (nom ? ' · ' + nom : ''),
           hint: def.hint + (inst[key].nota ? ' — ' + inst[key].nota : ''),
           fromEquip: key,
+          cat: key,
         });
       });
       if (!inst.led && !items.some(function (it) { return it.id === 'eq_led'; })) {
@@ -1483,6 +1536,7 @@
   global.hcMaybeOfferPuestaMarcha = maybeOfferAfterSetup;
   global.hcRefreshPuestaMarchaUi = refreshPuestaMarchaUi;
   global.hcBuildPuestaMarchaItems = buildItemsForConfig;
+  global.hcPmIrRevisarSalaEquip = hcPmIrRevisarSalaEquip;
   global.hcAbrirConfiguradorDesdeMontaje = hcAbrirConfiguradorDesdeMontaje;
   global.montajeEdicionBloqueada = montajeEdicionBloqueada;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1323,6 +1323,30 @@ function ensureSensoresHardware() {
   return s;
 }
 
+function refreshLocalidadMeteoConfirmUI() {
+  const box = document.getElementById('localidadMeteoConfirmada');
+  const inp = document.getElementById('inputLocalidadMeteo');
+  if (!box) return;
+  const v = (inp && inp.value ? inp.value : (state.configTorre && state.configTorre.localidadMeteo) || '').trim();
+  if (!v) {
+    box.classList.add('setup-hidden');
+    box.innerHTML = '';
+    return;
+  }
+  box.classList.remove('setup-hidden');
+  box.innerHTML =
+    '<span class="medir-localidad-confirm-ico" aria-hidden="true">✓</span>' +
+    '<span><strong>Municipio confirmado:</strong> ' + v + ' — meteo y avisos usarán esta localidad.</span>';
+}
+
+function onInputLocalidadMeteoDraft() {
+  const box = document.getElementById('localidadMeteoConfirmada');
+  if (box) {
+    box.classList.add('setup-hidden');
+    box.innerHTML = '';
+  }
+}
+
 function persistLocalidadMeteo() {
   if (!state.configTorre) state.configTorre = {};
   const v = (document.getElementById('inputLocalidadMeteo')?.value || '').trim();
@@ -1337,6 +1361,10 @@ function persistLocalidadMeteo() {
   saveState();
   try { refreshUbicacionInstalacionUI(); } catch (_) {}
   try { updateTorreStats(); } catch (_) {}
+  refreshLocalidadMeteoConfirmUI();
+  if (v && typeof showToast === 'function') {
+    showToast('✓ Municipio para clima: ' + v, false);
+  }
   void geocodificarLocalidadMeteoParaAvisos();
 }
 
@@ -1450,6 +1478,10 @@ function usarMunicipioGrifoParaMeteo() {
   showToast('Municipio para avisos rellenado desde el grifo', false);
 }
 
+window.onInputLocalidadMeteoDraft = onInputLocalidadMeteoDraft;
+window.refreshLocalidadMeteoConfirmUI = refreshLocalidadMeteoConfirmUI;
+window.persistLocalidadMeteo = persistLocalidadMeteo;
+
 function cargarLocalidadMeteoUI() {
   const el = document.getElementById('inputLocalidadMeteo');
   if (!el) return;
@@ -1460,6 +1492,7 @@ function cargarLocalidadMeteoUI() {
     btn.classList.toggle('setup-hidden', !(state.configAgua === 'grifo' && state.configAguaMunicipio));
   }
   refreshMeteoFuenteActivaUI();
+  refreshLocalidadMeteoConfirmUI();
   if (v) void geocodificarLocalidadMeteoParaAvisos();
 }
 
