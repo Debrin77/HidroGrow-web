@@ -267,6 +267,38 @@
     }
   }
 
+  function diasEnFaseActual(g, idx) {
+    if (idx == null || idx < 0) return 0;
+    var iso = null;
+    if (idx <= 0) {
+      iso = g.startedAt;
+    } else {
+      var prev = g.pasos[PASOS[idx - 1].id];
+      iso = (prev && prev.doneAt) || g.startedAt;
+    }
+    if (!iso) return 0;
+    try {
+      var a = new Date(iso);
+      var b = new Date();
+      a.setHours(0, 0, 0, 0);
+      b.setHours(0, 0, 0, 0);
+      return Math.max(0, Math.round((b - a) / 86400000));
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  function renderFasesCalendarioBlock(g, idx, diaN, allDone) {
+    if (allDone || typeof renderGerminacionFasesCalendarioHtml !== 'function') return '';
+    var ref = g.variedadId || '';
+    var paso = idx < PASOS.length ? PASOS[idx] : null;
+    return renderGerminacionFasesCalendarioHtml(ref, {
+      faseId: paso ? paso.id : '',
+      diasEnFase: diasEnFaseActual(g, idx),
+      diaSeguimiento: diaN,
+    });
+  }
+
   function registroHoyHecho(g) {
     if (!Array.isArray(g.registroDiario)) return false;
     var iso = hoyIso();
@@ -922,6 +954,7 @@
     var g = ensureGerminacionFlow(cfg);
     var idx = indiceFaseActual(g);
     var pct = pctProgreso(g);
+    var modo = getModoGerminacion(cfg, g);
     var pasoRaw = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
     var paso = pasoDisplay(pasoRaw, modo);
     var allDone = fasesCompletadas(g);
@@ -937,7 +970,6 @@
       if (cu) cultNombre = cu.nombre || g.variedadId;
     }
     var domo = g.ultimaDomo || {};
-    var modo = getModoGerminacion(cfg, g);
     var equipAviso = allDone ? '' : avisoEquipFase(paso.id, g, modo);
     var hintVar = allDone ? '' : hintVariedadFase(g.variedadId, paso.id);
     var tareaHoy = allDone ? '' : tareaDiaFase(paso.id, modo, g.variedadId);
@@ -1036,9 +1068,7 @@
       semMarca +
       '</div></div>' +
       renderTimeline(g, idx, modo) +
-      (g.variedadId && typeof renderGerminacionFasesCalendarioHtml === 'function'
-        ? renderGerminacionFasesCalendarioHtml(g.variedadId)
-        : '') +
+      renderFasesCalendarioBlock(g, idx, diaN, allDone) +
       (modo === 'propagador' ? renderGermTrayViz(g) : '') +
       '<div class="hc-germ-focus' +
       (allDone ? ' hc-germ-focus--done' : '') +
@@ -1054,7 +1084,7 @@
       esc(allDone ? 'Lista para el hidro' : paso.titulo) +
       '</h3>' +
       '<p class="hc-germ-focus-desc">' +
-      esc(allDone ? 'Asigna la plántula en la matriz y prepara el depósito con EC baja.' : paso.desc) +
+      esc(allDone ? 'Asigna la plántula en la matriz y prepara el depósito con EC baja.' : pasoDesc) +
       '</p>' +
       (equipAviso ? '<p class="hc-germ-equip-aviso" role="note">' + esc(equipAviso) + '</p>' : '') +
       (allDone

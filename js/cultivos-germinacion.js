@@ -276,7 +276,43 @@ function getGerminacionFasesCalendario(ref) {
   };
 }
 
-function renderGerminacionFasesCalendarioHtml(ref) {
+/**
+ * Aviso si la fase actual supera días orientativos (por tiempo en fase o día global del camino).
+ */
+function getGerminacionAvisoRetrasoFase(ref, faseId, diasEnFase, diaSeguimiento) {
+  const cal = getGerminacionFasesCalendario(ref);
+  const f = cal.fases.find(function (x) {
+    return x.id === faseId;
+  });
+  if (!f) return null;
+  const enFase = Math.max(0, diasEnFase | 0);
+  const diaCam = diaSeguimiento != null ? diaSeguimiento | 0 : 0;
+  const porFase = enFase > f.dias + 1;
+  const porCamino = diaCam > 0 && diaCam > f.diaHasta + 1;
+  if (!porFase && !porCamino) return null;
+  const motivo = porFase
+    ? 'Llevas <strong>' +
+      enFase +
+      ' d</strong> en esta fase (orientativo ' +
+      f.diasLabel +
+      ').'
+    : 'Vas por el <strong>día ' +
+      diaCam +
+      '</strong> del camino y esta fase suele cerrarse antes del día ' +
+      (f.diaHasta + 1) +
+      '.';
+  return {
+    faseId: f.id,
+    fasePaso: f.paso,
+    diasOrientativos: f.dias,
+    mensaje:
+      motivo +
+      ' Revisa T°, HR y humedad del cubo; si la planta va bien, marca la fase completada. Si no avanza, cambia método o genética.',
+  };
+}
+
+function renderGerminacionFasesCalendarioHtml(ref, opts) {
+  const o = opts && typeof opts === 'object' ? opts : {};
   const cal = getGerminacionFasesCalendario(ref);
   const esc =
     typeof meteoEscHtml === 'function'
@@ -284,16 +320,33 @@ function renderGerminacionFasesCalendarioHtml(ref) {
       : function (s) {
           return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
         };
-  const nom = cal.spec.nombreGenetica ? esc(cal.spec.nombreGenetica) : 'tu genética';
+  const tieneGenetica = !!(cal.spec && cal.spec.nombreGenetica);
+  const nom = tieneGenetica
+    ? esc(cal.spec.nombreGenetica)
+    : 'perfil híbrida por defecto';
+  const perfilNota = tieneGenetica
+    ? ''
+    : '<p class="hc-germ-fases-cal-default setup-field-hint">Sin genética en el asistente: usamos tiempos de <strong>híbrida fotoperiódica</strong>. Elige cepa en Configuración para afinar.</p>';
+  const faseAct = o.faseId || '';
+  const avisoRetraso =
+    faseAct && typeof getGerminacionAvisoRetrasoFase === 'function'
+      ? getGerminacionAvisoRetrasoFase(ref, faseAct, o.diasEnFase, o.diaSeguimiento)
+      : null;
   const items = cal.fases
     .map(function (f) {
+      const isCur = faseAct && f.id === faseAct;
+      const isLate = isCur && avisoRetraso;
       return (
-        '<li class="hc-germ-fases-cal-item">' +
+        '<li class="hc-germ-fases-cal-item' +
+        (isCur ? ' hc-germ-fases-cal-item--current' : '') +
+        (isLate ? ' hc-germ-fases-cal-item--late' : '') +
+        '">' +
         '<span class="hc-germ-fases-cal-paso">' +
         f.paso +
         '</span>' +
         '<span class="hc-germ-fases-cal-nom">' +
         esc(f.tituloCorto) +
+        (isCur ? ' <span class="hc-germ-fases-cal-ahora">(ahora)</span>' : '') +
         '</span>' +
         '<span class="hc-germ-fases-cal-dias">' +
         esc(f.diasLabel) +
@@ -307,6 +360,13 @@ function renderGerminacionFasesCalendarioHtml(ref) {
     })
     .join('');
 
+  const retrasoHtml = avisoRetraso
+    ? '<div class="hc-germ-fases-cal-retraso setup-field-hint setup-field-hint--banner" role="status">' +
+      '⏱ ' +
+      avisoRetraso.mensaje +
+      '</div>'
+    : '';
+
   return (
     '<div class="hc-germ-fases-cal" role="region" aria-label="Días orientativos por fase">' +
     '<h4 class="hc-germ-block-lbl">Calendario orientativo · 6 fases</h4>' +
@@ -319,6 +379,8 @@ function renderGerminacionFasesCalendarioHtml(ref) {
     ' d</strong> hasta el traslado (rango típico ' +
     esc(cal.totalRangoLabel) +
     ').</p>' +
+    perfilNota +
+    retrasoHtml +
     '<ol class="hc-germ-fases-cal-list">' +
     items +
     '</ol></div>'
@@ -517,6 +579,7 @@ function hcGerminacionPanelHtmlCompleto(nombreVariedad) {
 window.getGerminacionSpecPorVariedad = getGerminacionSpecPorVariedad;
 window.getGerminacionDiasHitos = getGerminacionDiasHitos;
 window.getGerminacionFasesCalendario = getGerminacionFasesCalendario;
+window.getGerminacionAvisoRetrasoFase = getGerminacionAvisoRetrasoFase;
 window.renderGerminacionFasesCalendarioHtml = renderGerminacionFasesCalendarioHtml;
 window.getGerminacionTareaDia = getGerminacionTareaDia;
 window.getGerminacionHintFase = getGerminacionHintFase;

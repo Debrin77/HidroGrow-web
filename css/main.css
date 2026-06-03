@@ -10119,6 +10119,31 @@ html.hc-theme-dark .hc-germ-fases-cal {
   font-size: 0.72rem;
   color: var(--muted);
 }
+.hc-germ-fases-cal-default {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+}
+.hc-germ-fases-cal-retraso,
+.hc-germ-retraso-aviso {
+  margin: 0.5rem 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.hc-germ-fases-cal-item--current .hc-germ-fases-cal-nom {
+  font-weight: 700;
+}
+.hc-germ-fases-cal-item--late {
+  padding: 0.25rem 0.35rem;
+  margin: -0.15rem 0;
+  border-radius: 8px;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(234, 179, 8, 0.35);
+}
+.hc-germ-fases-cal-ahora {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #15803d;
+}
 .hc-germ-rail-step--done .hc-germ-rail-dot {
   background: #22c55e;
   border-color: #16a34a;
