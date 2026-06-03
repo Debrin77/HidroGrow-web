@@ -377,8 +377,6 @@ function seleccionarNumTorres(tipo) {
   });
   const map = { una:'torreSolo', varias:'torreVarias' };
   document.getElementById(map[tipo])?.classList.add('selected');
-  const info = document.getElementById('infoVarTorres');
-  if (info) info.style.display = tipo === 'varias' ? 'block' : 'none';
   actualizarResumenSetup();
 }
 
