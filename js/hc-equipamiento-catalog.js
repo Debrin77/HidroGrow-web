@@ -548,7 +548,14 @@ function getEquipCatalogGroups(entorno) {
       });
   }
 
-  if (camino === 'semilla_propagador' && faseGerm) {
+  var propagadorSoloAhora =
+    camino === 'semilla_propagador' &&
+    !faseSala &&
+    (faseGerm ||
+      (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm()));
+
+  if (propagadorSoloAhora) {
     return [
       Object.assign({}, EQUIP_GERMINACION_GROUP, {
         label: 'Germinación en propagador — ahora',
@@ -574,12 +581,12 @@ function getEquipCatalogGroups(entorno) {
 
   if (origen === 'semilla' || camino === 'semilla_propagador' || camino === 'semilla_hidro') {
     const germGrp = Object.assign({}, EQUIP_GERMINACION_GROUP, {
-      label: faseGerm
+      label: faseGerm || propagadorSoloAhora
         ? 'Germinación — imprescindible ahora'
         : 'Germinación (semilla) — recomendado',
-      required: faseGerm,
+      required: !!(faseGerm || propagadorSoloAhora),
     });
-    if (faseGerm) {
+    if (faseGerm || propagadorSoloAhora) {
       return [germGrp];
     }
     return [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base);

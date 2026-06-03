@@ -411,7 +411,10 @@
     const int = p.entorno !== 'exterior';
     el('setupPremiumLocInterior')?.classList.toggle('selected', int);
     el('setupPremiumLocExterior')?.classList.toggle('selected', !int);
-    el('setupPremiumSalaInterior')?.classList.toggle('setup-hidden', !int);
+    var soloPropagador =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
+    el('setupPremiumSalaInterior')?.classList.toggle('setup-hidden', !int || soloPropagador);
     el('setupPremiumExteriorHint')?.classList.toggle('setup-hidden', int);
     const sub = el('setupPremium3Subtitle');
     if (sub) {
@@ -421,9 +424,13 @@
         typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
       const faseSala =
         typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
-      if (faseGerm && cam === 'semilla_propagador') {
+      if (
+        (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+          hcCaminoSemillaPropagadorSetupGerm()) ||
+        (faseGerm && cam === 'semilla_propagador')
+      ) {
         sub.textContent =
-          'Solo domo y mat térmica ahora. Carpa, LED y extractor van en «Configurar sala» tras el checklist del propagador.';
+          'Solo domo y mat térmica ahora. Carpa, LED y extractor van en «Configurar sala» tras las 6 fases del propagador.';
       } else if (faseSala && (cam === 'semilla_propagador' || cam === 'semilla_hidro')) {
         sub.textContent =
           'Configura la sala (carpa, LED, clima, circulación). El propagador ya lo diste en la fase anterior.';
@@ -444,6 +451,44 @@
     el('setupPremiumMetodoSOG')?.classList.toggle('selected', m === 'sog');
     el('setupPremiumMetodoSCROG')?.classList.toggle('selected', m === 'scrog');
     refreshPremiumMetodoHint();
+  }
+
+  /** Paso 5 (SOG/SCROG + foto/auto) se fusiona en paso 6 para semilla en propagador. */
+  function syncPremiumMetodoGenPlacement() {
+    const bundle = el('setupPremiumMetodoGenBundle');
+    const host = el('setupPremiumMetodoGenGermHost');
+    const page5 = el('spagePremium5');
+    if (!bundle || !host || !page5) return;
+    const enGerm =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
+    const sub6 = el('setupPremium6Subtitle');
+    if (enGerm) {
+      if (bundle.parentNode !== host) host.appendChild(bundle);
+      host.classList.remove('setup-hidden');
+      if (sub6) {
+        sub6.innerHTML =
+          '<strong>Semilla en propagador:</strong> método SOG/SCROG y foto/auto arriba; luego semillero (opcional) y genética concreta. ' +
+          'Las <strong>6 fases</strong> las harás en <strong>Inicio → Germinación</strong>. La sala y el DWC/RDWC van después.';
+      }
+    } else {
+      if (sub6) {
+        sub6.innerHTML =
+          'Ya elegiste el camino en el <strong>paso 1</strong>. Aquí: genética, semillero (semilla) o checklist de esquejes/madre. ' +
+          'Con <strong>semilla</strong>, el día a día de las 6 fases va en <strong>Inicio → Germinación</strong>.';
+      }
+      if (bundle.parentNode !== page5) {
+        const anchor = el('setupPremiumMetodoGenBundleAnchor');
+        if (anchor && anchor.parentNode === page5) {
+          page5.insertBefore(bundle, anchor.nextSibling);
+        } else {
+          const sub = page5.querySelector('.setup-subtitle');
+          if (sub && sub.nextSibling) page5.insertBefore(bundle, sub.nextSibling);
+          else page5.appendChild(bundle);
+        }
+      }
+      host.classList.add('setup-hidden');
+    }
   }
 
   function refreshPremiumGerminacionUI() {
@@ -578,11 +623,13 @@
     if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
+    syncPremiumMetodoGenPlacement();
 
     if (pagina === SETUP_PAGE_ORIGEN) {
       if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
     }
     if (pagina === SETUP_PAGE_PREMIUM_6) {
+      syncPremiumMetodoGenPlacement();
       refreshPremiumGerminacionUI();
       if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
       if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
@@ -667,6 +714,12 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
+      if (
+        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm()
+      ) {
+        return true;
+      }
       if (typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
           window.salaTieneMedidasDesdeEquipamiento()) {
         return true;
@@ -713,6 +766,7 @@
   window.validarPremiumSetupPaso = validarPremiumSetupPaso;
   window.validarPlantasVsSalaPremium = validarPlantasVsSalaPremium;
   window.ensurePremiumSetup = ensurePremiumSetup;
+  window.syncPremiumMetodoGenPlacement = syncPremiumMetodoGenPlacement;
   window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
   window.hcAsegurarMedidasSalaInteriorAntesGuardar = hcAsegurarMedidasSalaInteriorAntesGuardar;
 })();

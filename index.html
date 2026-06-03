@@ -3467,6 +3467,8 @@
     <div class="setup-page" id="spagePremium5">
       <div class="setup-title">Genética y método</div>
       <div class="setup-subtitle">SOG o SCROG. Variedades concretas en Cultivos.</div>
+      <span id="setupPremiumMetodoGenBundleAnchor" class="setup-hidden" aria-hidden="true"></span>
+      <div id="setupPremiumMetodoGenBundle">
       <div class="setup-block-title">Método de cultivo</div>
       <div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">
         <button type="button" class="equip-card equip-card-pad-12" id="setupPremiumMetodoSOG" onclick="seleccionarPremiumMetodo('sog')">
@@ -3492,14 +3494,16 @@
       </div>
       <div id="setupPremiumGeneticaHint" class="setup-box-info"></div>
       <div id="setupPremiumMetodoOrigenHint" class="setup-box-info setup-hidden setup-mt-8" role="note" aria-live="polite"></div>
+      </div>
     </div>
 
     <div class="setup-page" id="spagePremium6">
       <div class="setup-title">Detalle según tu origen</div>
-      <div class="setup-subtitle">
+      <div class="setup-subtitle" id="setupPremium6Subtitle">
         Ya elegiste el camino en el <strong>paso 1</strong>. Aquí: genética, semillero (semilla) o checklist de esquejes/madre.
         Con <strong>semilla</strong>, el día a día de las 6 fases va en <strong>Inicio → Germinación</strong>.
       </div>
+      <div id="setupPremiumMetodoGenGermHost" class="setup-mb-12 setup-hidden" role="group" aria-label="Método y preferencia genética"></div>
       <div id="setupPremiumEsquejesIntro" class="setup-box-info setup-mb-12 setup-hidden"></div>
       <div id="setupPremiumSemilleroSection" class="setup-hidden">
         <div class="setup-box-info setup-mb-8" id="setupPremiumSemilleroExplain" role="note">
@@ -5181,7 +5185,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-flujos-camino"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -5221,17 +5225,17 @@
 <script src="js/torre-render-main.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/cultivos-germinacion.js?v=2026-05-31-fases-retraso"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-flujos-camino"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-propagador-montaje.js?v=2026-05-31-prop-premium"></script>
   <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-historial"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-flujos-camino"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero2"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-equip-no-dup"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-propagador-flow"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
-  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-origen-primero"></script>
+  <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
   <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
   <script src="js/hc-cultivo-cesta-matrix.js?v=2026-06-02-dwc-rdwc-only"></script>

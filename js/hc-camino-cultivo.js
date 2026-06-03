@@ -128,6 +128,7 @@
       if (def.germModo) state.configTorre.premiumSetup.germinacionModoPreferido = def.germModo;
     }
     refreshCaminoCultivoUI();
+    if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
     if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
   }
@@ -199,12 +200,30 @@
     return !!cfg.salaPreGermConfigAt;
   }
 
+  /** Asistente premium aún en bloque germinación (antes de geometría/hidro). */
+  function hcSetupWizardEnBloquePremiumGerm() {
+    if (typeof setupPagina === 'undefined') return false;
+    var start =
+      typeof SETUP_PAGE_PREMIUM_START !== 'undefined' ? SETUP_PAGE_PREMIUM_START : 1;
+    var end = typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+    return setupPagina >= start && setupPagina <= end;
+  }
+
+  /** Semilla en propagador: fase 1 del asistente = solo domo/mat, sin sala ni hidro. */
+  function hcCaminoSemillaPropagadorSetupGerm() {
+    if (getCaminoCultivo() !== 'semilla_propagador') return false;
+    if (hcSetupEnFaseSalaPreGerm()) return false;
+    if (hcSetupEnFaseGerminacion()) return true;
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+    return hcSetupWizardEnBloquePremiumGerm();
+  }
+
   /** Durante el wizard o con instalación en fase germinación (sin hidro cerrado). */
   function hcSetupEnFaseGerminacion() {
     if (hcSetupEnFaseSalaPreGerm()) return false;
     var cam = getCaminoCultivo();
     var def = getCaminoDef(cam);
-    if (def.faseInicial !== 'germinacion') return false;
+    if (!def || def.faseInicial !== 'germinacion') return false;
     try {
       var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
       if (cfg && cfg.hcSetupFase === 'hidro') return false;
@@ -212,6 +231,7 @@
       if (cfg && cfg.hcSetupFase === 'germinacion') return true;
     } catch (_) {}
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+    if (cam === 'semilla_propagador' && hcSetupWizardEnBloquePremiumGerm()) return true;
     return false;
   }
 
@@ -463,6 +483,9 @@
       typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
       typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
     ];
+    if (cam === 'semilla_propagador') {
+      pages.push(typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6);
+    }
     pages.forEach(function (p) {
       skip.add(p);
     });
@@ -797,6 +820,8 @@
   global.refreshCaminoCultivoUI = refreshCaminoCultivoUI;
   global.hcSetupEnFaseGerminacion = hcSetupEnFaseGerminacion;
   global.hcSetupEnFaseSalaPreGerm = hcSetupEnFaseSalaPreGerm;
+  global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
+  global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
   global.montajeSalaPreGermOk = montajeSalaPreGermOk;

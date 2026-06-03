@@ -63,8 +63,19 @@
     return skip;
   }
 
-  /** No saltar del todo: sondas opcionales siguen en spage2, pero el catálogo puede estar ya en premium. */
+  /** Sondas en spage2: omitir si el camino propagador ya cerró equipamiento en premium. */
   function setupFlowCanSkipEquip() {
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      return true;
+    }
+    if (typeof getSetupSkippedPagesForCamino === 'function') {
+      const skip = getSetupSkippedPagesForCamino();
+      const eq = typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10;
+      if (skip.has(eq)) return true;
+    }
     return false;
   }
 

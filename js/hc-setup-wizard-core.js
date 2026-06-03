@@ -2228,6 +2228,9 @@ function cerrarSetup() {
 }
 
 function iniciarConfiguracionTorre() {
+  if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
+    setupEsNuevaTorre = true;
+  }
   if (setupEsNuevaTorre && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
     showToast('Elige DWC o RDWC antes de continuar', true);
     return;

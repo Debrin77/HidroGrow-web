@@ -378,12 +378,15 @@
     renderEquipFaltantesHint();
     const cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
-    const faseGerm =
-      typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+    const soloPropagador =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
     const salaSec = el('setupPremiumSalaInterior');
     if (salaSec) {
-      salaSec.classList.toggle('setup-hidden', !!(faseGerm && cam === 'semilla_propagador'));
+      salaSec.classList.toggle('setup-hidden', !!soloPropagador);
     }
+    const equipSec = el('setupPremiumEquipSection');
+    if (equipSec) equipSec.classList.remove('setup-hidden');
   }
 
   function renderEquipFaltantesHint() {
@@ -400,7 +403,11 @@
     const origen =
       typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
     const sinPropagador = (origen === 'semilla' || origen === 'clon') && !(inst.propagador && inst.propagador.id);
-    if (faseGerm && cam === 'semilla_propagador' && !sinPropagador) {
+    if (
+      (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm()) &&
+      !sinPropagador
+    ) {
       hint.classList.remove('setup-hidden');
       hint.classList.add('setup-box-info');
       hint.innerHTML =
