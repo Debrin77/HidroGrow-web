@@ -10074,6 +10074,51 @@ html.hc-theme-dark .hc-germ-hub-pct-ring {
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
   animation: hc-germ-pulse 1.6s ease-in-out infinite;
 }
+.hc-germ-fases-cal {
+  margin: 0.85rem 0 0.25rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(34, 197, 94, 0.06);
+  border: 1px solid rgba(34, 197, 94, 0.22);
+}
+html.hc-theme-dark .hc-germ-fases-cal {
+  background: rgba(34, 197, 94, 0.08);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+.hc-germ-fases-cal-lead {
+  margin: 0.35rem 0 0.6rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.hc-germ-fases-cal-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+.hc-germ-fases-cal-item {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr auto;
+  gap: 0.25rem 0.5rem;
+  align-items: baseline;
+  font-size: 0.8rem;
+}
+.hc-germ-fases-cal-paso {
+  font-weight: 800;
+  color: #15803d;
+}
+.hc-germ-fases-cal-dias {
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+.hc-germ-fases-cal-rango {
+  grid-column: 2 / -1;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
 .hc-germ-rail-step--done .hc-germ-rail-dot {
   background: #22c55e;
   border-color: #16a34a;
@@ -10409,6 +10454,114 @@ html.hc-theme-dark .hc-prop-inline {
   background: #ecfdf5;
   color: #166534;
   font-weight: 700;
+}
+.hc-germ-tray-block {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.32);
+  background: linear-gradient(145deg, rgba(240, 253, 244, 0.85), rgba(255, 251, 235, 0.5));
+}
+html.hc-theme-dark .hc-germ-tray-block {
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.35), rgba(15, 23, 42, 0.5));
+  border-color: rgba(52, 211, 153, 0.25);
+}
+.hc-germ-tray-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.hc-germ-tray-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.hc-germ-tray-field .param-input {
+  max-width: 5rem;
+}
+.hc-germ-tray-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.hc-germ-tray-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.hc-germ-tray-dot--sem { background: #fde68a; border: 1px solid #d97706; }
+.hc-germ-tray-dot--germ { background: #86efac; border: 1px solid #16a34a; }
+.hc-germ-tray-dot--empty { background: rgba(148, 163, 184, 0.25); }
+.hc-germ-tray-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--hc-tray-cols, 6), minmax(0, 1fr));
+  gap: 4px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.06);
+}
+html.hc-theme-dark .hc-germ-tray-grid {
+  background: rgba(0, 0, 0, 0.25);
+}
+.hc-germ-tray-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  min-height: 14px;
+}
+.hc-germ-tray-cell--sem {
+  background: linear-gradient(145deg, #fef3c7, #fde68a);
+  border-color: #d97706;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+.hc-germ-tray-cell--germ {
+  background: linear-gradient(145deg, #bbf7d0, #4ade80);
+  border-color: #16a34a;
+}
+.hc-germ-tray-cell--empty {
+  background: rgba(148, 163, 184, 0.12);
+}
+.hc-germ-chart-wrap {
+  margin-top: 12px;
+}
+.hc-germ-chart-lbl {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.hc-germ-chart {
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.04);
+}
+.hc-germ-chart-temp {
+  fill: none;
+  stroke: #0ea5e9;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.hc-germ-chart-hr {
+  fill: none;
+  stroke: #22c55e;
+  stroke-width: 2;
+  stroke-dasharray: 4 2;
+  vector-effect: non-scaling-stroke;
+}
+.hc-germ-chart-empty {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--muted);
 }
 .hc-germ-tarea-hoy,
 .hc-germ-var-hint {
@@ -19839,6 +19992,32 @@ button.toggle-switch:focus-visible {
 .equip-catalog-group[data-equip-group="germinacion"] .equip-catalog-group-head,
 .equip-catalog-group[data-equip-group="enraizado"] .equip-catalog-group-head {
   color: #14532d;
+}
+.equip-catalog-group--required {
+  border-width: 2px;
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.12);
+}
+.equip-catalog-group-req {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #0d9488);
+  color: #fff;
+}
+.equip-catalog-group-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #64748b;
+}
+.setup-equip-recap-premium {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.9), rgba(255, 251, 235, 0.6));
 }
 .equip-pick-section {
   margin-bottom: 14px;

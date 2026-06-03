@@ -485,6 +485,7 @@ function renderRegistro() {
     reposicion: { bg:'#ecfeff', border:'#06b6d4', color:'#0e7490',  icon:'hc-i-droplet' },
     apunte: { bg:'#f5f3ff', border:'#7c3aed', color:'#5b21b6', icon:'hc-i-note' },
     tareas_dia: { bg:'#ecfdf5', border:'#059669', color:'#047857', icon:'hc-i-alert-ok' },
+    germinacion: { bg:'#f0fdf4', border:'#22c55e', color:'#15803d', icon:'hc-i-plant' },
   };
 
   // Agrupar por fecha
@@ -498,7 +499,8 @@ function renderRegistro() {
   lista.innerHTML = Object.entries(porFecha).map(([fecha, evs]) => {
     const cols = evs.map(e => {
       const c = colores[e.tipo] || { bg:'#f8fafc', border:'#94a3b8', color:'#475569', icon:'hc-i-pin' };
-      const badgeIcon = (e.tipo === 'reposicion' && e.icono) ? e.icono : c.icon;
+      const badgeIcon =
+        (e.tipo === 'reposicion' || e.tipo === 'germinacion') && e.icono ? e.icono : c.icon;
       const badgeIconHtml =
         typeof hcRegistroIconMarkup === 'function' ? hcRegistroIconMarkup(badgeIcon) : badgeIcon;
       const sis = infoSistemaEntrada(e);
@@ -694,7 +696,9 @@ function renderRegistro() {
                         ? 'Apunte'
                         : e.tipo === 'tareas_dia'
                           ? 'Tarea del día'
-                          : (String(e.tipo || 'medicion').charAt(0).toUpperCase() + String(e.tipo || 'medicion').slice(1))) +
+                          : e.tipo === 'germinacion'
+                            ? 'Germinación'
+                            : (String(e.tipo || 'medicion').charAt(0).toUpperCase() + String(e.tipo || 'medicion').slice(1))) +
             '</span>' +
             (sis && sis.nombre
               ? typeof hcInstalacionChipHtml === 'function'

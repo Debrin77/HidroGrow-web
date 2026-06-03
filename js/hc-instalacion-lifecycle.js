@@ -159,30 +159,71 @@
           etapa: 'propagador',
         };
       }
+      if (cam === 'semilla_hidro' && typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+        if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
+          return {
+            label: 'Prep germinación en hidro',
+            action: 'irPropagadorMontaje',
+            etapa: 'prep_hidro',
+          };
+        }
+        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+          return { label: 'Configurar sala', action: 'abrirSetupFaseSala', etapa: 'sala_config' };
+        }
+        if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+          return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
+        }
+        if (
+          cfg.tipoInstalacion !== 'dwc' &&
+          cfg.tipoInstalacion !== 'rdwc' &&
+          typeof abrirSetupFaseHidro === 'function'
+        ) {
+          return { label: 'Configurar DWC/RDWC', action: 'abrirSetupFaseHidro', etapa: 'hidro_config' };
+        }
+        if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+          return {
+            label: 'Primer llenado del depósito',
+            action: 'abrirChecklist',
+            etapa: 'deposito_llenado',
+          };
+        }
+      }
       if (
-        typeof hcCaminoRequiereSalaPreGerm === 'function' &&
-        hcCaminoRequiereSalaPreGerm(cfg) &&
+        cam === 'semilla_propagador' &&
         typeof hcGerminacionActiva === 'function' &&
         hcGerminacionActiva(cfg) &&
         typeof propagadorMontajeCompleto === 'function' &&
         propagadorMontajeCompleto(cfg)
       ) {
-        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+        if (
+          typeof germinacionSeisFasesCompletas === 'function' &&
+          germinacionSeisFasesCompletas(cfg)
+        ) {
+          if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+            return {
+              label: 'Configurar sala (tras las 6 fases)',
+              action: 'abrirSetupFaseSala',
+              etapa: 'sala_config',
+            };
+          }
+          if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+            return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
+          }
+        } else {
           return {
-            label: 'Configurar sala (antes de las 6 fases)',
-            action: 'abrirSetupFaseSala',
-            etapa: 'sala_config',
-          };
-        }
-        if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
-          return {
-            label: 'Montaje de sala (checklist)',
-            action: 'irMontaje',
-            etapa: 'sala_montaje',
+            label: 'Control germinación (6 fases)',
+            action: 'irGerminacion',
+            etapa: 'germinacion',
           };
         }
       }
-      if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+      if (
+        typeof hcGerminacionActiva === 'function' &&
+        hcGerminacionActiva(cfg) &&
+        typeof propagadorMontajeCompleto === 'function' &&
+        propagadorMontajeCompleto(cfg) &&
+        cam !== 'semilla_hidro'
+      ) {
         return {
           label: 'Control germinación (6 fases)',
           action: 'irGerminacion',
@@ -443,6 +484,9 @@
           } catch (_) {}
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
         }, 200);
+        break;
+      case 'abrirSetupFaseSala':
+        if (typeof abrirSetupFaseSala === 'function') abrirSetupFaseSala();
         break;
       case 'abrirSetupFaseHidro':
         if (typeof abrirSetupFaseHidro === 'function') abrirSetupFaseHidro();

@@ -112,15 +112,21 @@
     if (!box) return;
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     var def = typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
+    var faseGerm =
+      typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
     var txt = '';
     if (cam === 'semilla_propagador') {
-      txt =
-        '<strong>Ruta: semilla en propagador.</strong> Domo y mat térmica en Fase 1. Tras el checklist del propagador: ' +
-        '<strong>configura la sala</strong>, montaje, <strong>6 fases</strong> en Inicio y luego DWC/RDWC.';
+      txt = faseGerm
+        ? '<strong>Ruta: semilla en propagador.</strong> En <strong>Espacio</strong> solo domo y mat térmica → checklist → ' +
+          '<strong>6 fases con registro diario</strong>. La sala va <em>después</em> de las 6 fases.'
+        : '<strong>Ruta: semilla en propagador.</strong> Domo y mat térmica en Fase 1. Tras el checklist del propagador: ' +
+          '<strong>configura la sala</strong>, montaje, <strong>6 fases</strong> en Inicio y luego DWC/RDWC.';
     } else if (cam === 'semilla_hidro') {
-      txt =
-        '<strong>Ruta: semilla en hidro.</strong> Prep en depósito → <strong>sala y montaje</strong> → 6 fases en Inicio. ' +
-        'Al terminar solo cierras DWC/RDWC (sin repetir germinación en el depósito).';
+      txt = faseGerm
+        ? '<strong>Ruta: semilla en hidro.</strong> Equipamiento de <strong>sala + prep cubo</strong> → montaje → ' +
+          'DWC/RDWC y <strong>primer llenado</strong> → luego las 6 fases en Inicio.'
+        : '<strong>Ruta: semilla en hidro.</strong> Prep en depósito → <strong>sala y montaje</strong> → 6 fases en Inicio. ' +
+          'Al terminar solo cierras DWC/RDWC (sin repetir germinación en el depósito).';
     } else if (cam === 'esqueje_hidro') {
       txt =
         '<strong>Ruta: esqueje.</strong> <strong>Propagador</strong> para enraizar + sala y circuito hidro en este asistente.';

@@ -304,14 +304,24 @@
     }
     groups.forEach(function (group) {
       const section = document.createElement('section');
-      section.className = 'equip-catalog-group';
+      section.className =
+        'equip-catalog-group' +
+        (group.required ? ' equip-catalog-group--required' : '') +
+        (group.optional ? ' equip-catalog-group--optional' : '');
       section.setAttribute('data-equip-group', group.id || 'all');
       const head = document.createElement('div');
       head.className = 'equip-catalog-group-head';
       head.innerHTML =
         '<span class="equip-catalog-group-icon" aria-hidden="true">' + (group.icon || '•') + '</span>' +
-        '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>';
+        '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>' +
+        (group.required ? '<span class="equip-catalog-group-req">Ahora</span>' : '');
       section.appendChild(head);
+      if (group.hint) {
+        const hintP = document.createElement('p');
+        hintP.className = 'equip-catalog-group-hint';
+        hintP.textContent = group.hint;
+        section.appendChild(hintP);
+      }
       const grid = document.createElement('div');
       grid.className = 'equip-catalog-grid equip-catalog-grid--group';
       (group.keys || []).forEach(function (key) {
@@ -366,16 +376,37 @@
     renderEquipCatalogInto(el('setupPremiumEquipGrid'), 'setupPremiumEquip_');
     renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
     renderEquipFaltantesHint();
+    const cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    const faseGerm =
+      typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+    const salaSec = el('setupPremiumSalaInterior');
+    if (salaSec) {
+      salaSec.classList.toggle('setup-hidden', !!(faseGerm && cam === 'semilla_propagador'));
+    }
   }
 
   function renderEquipFaltantesHint() {
     const hint = el('setupPremiumEquipFaltantes');
     if (!hint) return;
-    const falt = getCamposEquipamientoFaltantes();
+    const cfg = getWizardEquipCfg();
+    const inst = ensureEquipInstalado(cfg);
+    const falt = getCamposEquipamientoFaltantes(cfg);
+    const cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    const faseGerm =
+      typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
     hint.classList.remove('setup-box-warn', 'setup-box-info', 'setup-hidden');
     const origen =
       typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
     const sinPropagador = (origen === 'semilla' || origen === 'clon') && !(inst.propagador && inst.propagador.id);
+    if (faseGerm && cam === 'semilla_propagador' && !sinPropagador) {
+      hint.classList.remove('setup-hidden');
+      hint.classList.add('setup-box-info');
+      hint.innerHTML =
+        '<span class="equip-faltantes-ok">✓ Germinación registrada.</span> La sala (carpa, LED, extractor…) la completarás en <strong>Configurar sala</strong>, no aquí.';
+      return;
+    }
     if (!falt.length && !sinPropagador) {
       hint.classList.add('setup-box-info');
       hint.innerHTML = '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado para monitorización.</span>';

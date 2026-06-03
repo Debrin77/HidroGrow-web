@@ -198,6 +198,133 @@ function getGerminacionDiasHitos(ref) {
   };
 }
 
+/** Metadatos de las 6 fases del hub (ids alineados con HC_GERMINACION_PASOS). */
+const GERMINACION_FASES_CAL_META = [
+  { id: 'semilla', paso: 1, tituloCorto: 'Germinador' },
+  { id: 'taproot', paso: 2, tituloCorto: 'Radícula' },
+  { id: 'rockwool', paso: 3, tituloCorto: 'Rockwool' },
+  { id: 'domo', paso: 4, tituloCorto: 'Domo + luz' },
+  { id: 'netpot', paso: 5, tituloCorto: 'Net pot' },
+  { id: 'dwc', paso: 6, tituloCorto: 'Traslado DWC' },
+];
+
+/**
+ * Reparte días orientativos entre las 6 fases según genética (no sustituye marcar la fase a mano).
+ */
+function getGerminacionFasesCalendario(ref) {
+  const spec = getGerminacionSpecPorVariedad(ref);
+  const osc = parseRangoDiasGerm(spec.osc);
+  const emerg = spec.diasEmergMedio || 4;
+  const plant = spec.diasPlantonMedio || 16;
+  const totalObj = Math.max(10, spec.diasPreHidro || Math.round(emerg * 0.35 + plant * 0.65));
+
+  const pesos = [
+    Math.max(1, osc.medio || 2),
+    Math.max(1, Math.round(emerg * 0.35)),
+    Math.max(2, Math.round(emerg * 0.3)),
+    Math.max(4, Math.round(plant * 0.45)),
+    Math.max(2, Math.round(plant * 0.4)),
+    1,
+  ];
+  let sumP = pesos.reduce(function (a, b) {
+    return a + b;
+  }, 0);
+  const dias = pesos.map(function (p) {
+    return Math.max(1, Math.round((p / sumP) * totalObj));
+  });
+  let sumD = dias.reduce(function (a, b) {
+    return a + b;
+  }, 0);
+  while (sumD > totalObj) {
+    const idx = dias[3] > 2 ? 3 : dias[4] > 2 ? 4 : 2;
+    dias[idx]--;
+    sumD--;
+  }
+  while (sumD < totalObj) {
+    dias[3]++;
+    sumD++;
+  }
+
+  let acum = 0;
+  const fases = GERMINACION_FASES_CAL_META.map(function (meta, i) {
+    const d = dias[i];
+    const desde = acum + 1;
+    acum += d;
+    return Object.assign({}, meta, {
+      dias: d,
+      diasLabel: d === 1 ? '~1 d' : '~' + d + ' d',
+      diaDesde: desde,
+      diaHasta: acum,
+    });
+  });
+
+  const emergR = parseRangoDiasGerm(spec.emerg);
+  const plantR = parseRangoDiasGerm(spec.planton);
+  const totalMin = Math.max(10, emergR.min + plantR.min - 2);
+  const totalMax = Math.min(28, emergR.max + plantR.max + 2);
+
+  return {
+    spec: spec,
+    fases: fases,
+    totalOrientativo: totalObj,
+    totalRangoLabel:
+      totalMin === totalMax
+        ? totalMin + ' d'
+        : totalMin + '–' + totalMax + ' d',
+    avisoManual:
+      'Las 6 fases no avanzan solas: las marcas cuando la planta lo pide. Los días son guía según tu genética.',
+  };
+}
+
+function renderGerminacionFasesCalendarioHtml(ref) {
+  const cal = getGerminacionFasesCalendario(ref);
+  const esc =
+    typeof meteoEscHtml === 'function'
+      ? meteoEscHtml
+      : function (s) {
+          return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        };
+  const nom = cal.spec.nombreGenetica ? esc(cal.spec.nombreGenetica) : 'tu genética';
+  const items = cal.fases
+    .map(function (f) {
+      return (
+        '<li class="hc-germ-fases-cal-item">' +
+        '<span class="hc-germ-fases-cal-paso">' +
+        f.paso +
+        '</span>' +
+        '<span class="hc-germ-fases-cal-nom">' +
+        esc(f.tituloCorto) +
+        '</span>' +
+        '<span class="hc-germ-fases-cal-dias">' +
+        esc(f.diasLabel) +
+        '</span>' +
+        '<span class="hc-germ-fases-cal-rango">días ' +
+        f.diaDesde +
+        '–' +
+        f.diaHasta +
+        ' del camino</span></li>'
+      );
+    })
+    .join('');
+
+  return (
+    '<div class="hc-germ-fases-cal" role="region" aria-label="Días orientativos por fase">' +
+    '<h4 class="hc-germ-block-lbl">Calendario orientativo · 6 fases</h4>' +
+    '<p class="hc-germ-fases-cal-lead">' +
+    esc(cal.avisoManual) +
+    ' Para <strong>' +
+    nom +
+    '</strong>: unos <strong>' +
+    cal.totalOrientativo +
+    ' d</strong> hasta el traslado (rango típico ' +
+    esc(cal.totalRangoLabel) +
+    ').</p>' +
+    '<ol class="hc-germ-fases-cal-list">' +
+    items +
+    '</ol></div>'
+  );
+}
+
 /**
  * Tarea diaria orientada por genética + fase (cannabis).
  */
@@ -389,6 +516,8 @@ function hcGerminacionPanelHtmlCompleto(nombreVariedad) {
 
 window.getGerminacionSpecPorVariedad = getGerminacionSpecPorVariedad;
 window.getGerminacionDiasHitos = getGerminacionDiasHitos;
+window.getGerminacionFasesCalendario = getGerminacionFasesCalendario;
+window.renderGerminacionFasesCalendarioHtml = renderGerminacionFasesCalendarioHtml;
 window.getGerminacionTareaDia = getGerminacionTareaDia;
 window.getGerminacionHintFase = getGerminacionHintFase;
 window.renderGerminacionGeneticsCardHtml = renderGerminacionGeneticsCardHtml;

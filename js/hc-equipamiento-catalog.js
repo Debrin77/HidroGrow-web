@@ -500,6 +500,13 @@ const EQUIP_ENRAIZADO_GROUP = {
   keys: ['propagador', 'mat_termica_germ'],
 };
 
+const EQUIP_PREP_HIDRO_GROUP = {
+  id: 'prep_hidro',
+  label: 'Prep germinación en cubo',
+  icon: '🪴',
+  keys: ['propagador', 'mat_termica_germ', 'medidor', 'bomba_aire'],
+};
+
 function getPremiumOrigenPlanta() {
   try {
     if (typeof ensurePremiumSetup === 'function') {
@@ -522,7 +529,49 @@ function getEquipCatalogGroups(entorno) {
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
   const faseGerm =
     typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+  const faseSala =
+    typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
+  const germKeys = ['propagador', 'mat_termica_germ'];
+
+  if (faseSala && (camino === 'semilla_propagador' || camino === 'semilla_hidro')) {
+    return base
+      .map(function (g) {
+        return Object.assign({}, g, {
+          keys: (g.keys || []).filter(function (k) {
+            return germKeys.indexOf(k) < 0;
+          }),
+        });
+      })
+      .filter(function (g) {
+        return g.keys && g.keys.length;
+      });
+  }
+
+  if (camino === 'semilla_propagador' && faseGerm) {
+    return [
+      Object.assign({}, EQUIP_GERMINACION_GROUP, {
+        label: 'Germinación en propagador — ahora',
+        required: true,
+        hint:
+          'Solo domo y mat térmica. La carpa, LED y extractor los configuras después de las 6 fases.',
+      }),
+    ];
+  }
+
+  if (camino === 'semilla_hidro' && faseGerm) {
+    return [
+      Object.assign({}, EQUIP_PREP_HIDRO_GROUP, {
+        required: true,
+        hint: 'Cubo en net pot, medidor y aireación. Debajo: sala completa (carpa, LED, clima).',
+      }),
+    ].concat(
+      base.map(function (g) {
+        return Object.assign({}, g, { required: g.id === 'sala' || g.id === 'hidro' });
+      })
+    );
+  }
+
   if (origen === 'semilla' || camino === 'semilla_propagador' || camino === 'semilla_hidro') {
     const germGrp = Object.assign({}, EQUIP_GERMINACION_GROUP, {
       label: faseGerm
@@ -531,11 +580,7 @@ function getEquipCatalogGroups(entorno) {
       required: faseGerm,
     });
     if (faseGerm) {
-      const salaOpt = Object.assign({}, base[0] || { id: 'sala', label: 'Sala', keys: [] }, {
-        label: 'Sala interior — opcional (más adelante)',
-        optional: true,
-      });
-      return [germGrp, salaOpt].concat(base.slice(1));
+      return [germGrp];
     }
     return [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base);
   }

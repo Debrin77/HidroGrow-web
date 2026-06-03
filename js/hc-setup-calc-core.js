@@ -1713,10 +1713,18 @@ function guardarSetupYContinuarCore() {
   } catch (_) {}
   const faseSalaPreGerm =
     typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
+  const caminoSave =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+  const wizardHidroGermCompleto =
+    caminoSave === 'semilla_hidro' &&
+    typeof setupPagina !== 'undefined' &&
+    typeof SETUP_PAGE_PREMIUM_END !== 'undefined' &&
+    setupPagina >= SETUP_PAGE_PREMIUM_END;
   const faseGermSetup =
     !faseSalaPreGerm &&
     typeof hcSetupEnFaseGerminacion === 'function' &&
-    hcSetupEnFaseGerminacion();
+    hcSetupEnFaseGerminacion() &&
+    !wizardHidroGermCompleto;
   if (setupEsNuevaTorre) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
     const fromInp = inpNom ? (inpNom.value || '').trim().slice(0, 40) : '';

@@ -63,9 +63,28 @@
     return skip;
   }
 
-  /** No saltar el paso hidro: el catálogo premium no incluye aireador/CO₂ del circuito. */
+  /** No saltar del todo: sondas opcionales siguen en spage2, pero el catálogo puede estar ya en premium. */
   function setupFlowCanSkipEquip() {
     return false;
+  }
+
+  function premiumEquipCatalogCompleto() {
+    try {
+      const cfg =
+        typeof getWizardEquipCfg === 'function'
+          ? getWizardEquipCfg()
+          : typeof state !== 'undefined' && state && state.configTorre
+            ? state.configTorre
+            : null;
+      if (!cfg || !cfg.equipamientoInstalado) return false;
+      const inst = cfg.equipamientoInstalado;
+      const n = Object.keys(inst).filter(function (k) {
+        return inst[k] && (inst[k].id || inst[k].marca);
+      }).length;
+      return n >= 1;
+    } catch (_) {
+      return false;
+    }
   }
 
   function getSetupVisiblePages() {
@@ -238,8 +257,38 @@
 
     if (page === typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10) {
       const catDetails = document.getElementById('setupEquipCatalogDetails');
-      if (catDetails && premiumActive) catDetails.classList.add('setup-hidden');
-      else if (catDetails) catDetails.classList.remove('setup-hidden');
+      const quick = document.getElementById('setupEquipQuickPick');
+      const recap = document.getElementById('setupEquipYaEnPremium');
+      const yaCatalog = premiumActive && premiumEquipCatalogCompleto();
+      const resumen =
+        typeof getEquipamientoResumenHtml === 'function' ? getEquipamientoResumenHtml() : '';
+      if (catDetails) {
+        catDetails.classList.toggle('setup-hidden', !!(premiumActive || yaCatalog));
+      }
+      if (quick) quick.classList.toggle('setup-hidden', !!yaCatalog);
+      ['setupEquipSectionHydro', 'setupEquipSectionInterior', 'setupEquipSectionExterior', 'setupEquipSectionTools'].forEach(
+        function (id) {
+          const sec = document.getElementById(id);
+          if (sec) sec.classList.toggle('setup-hidden', !!yaCatalog);
+        }
+      );
+      if (recap) {
+        if (yaCatalog && resumen) {
+          recap.classList.remove('setup-hidden');
+          recap.innerHTML =
+            '<strong>Ya registrado en «Espacio y equipamiento»:</strong> ' +
+            resumen +
+            '. Aquí solo marcas <strong>sondas opcionales</strong> y atajos del circuito si faltara algo.';
+        } else {
+          recap.classList.add('setup-hidden');
+          recap.innerHTML = '';
+        }
+      }
+      const sub = document.querySelector('#spage2 .setup-subtitle');
+      if (sub && yaCatalog) {
+        sub.textContent =
+          'El catálogo premium ya está guardado. Revisa sondas opcionales (abajo) y los atajos solo si te falta algo del circuito.';
+      }
       if (typeof refreshSetupEquipEntornoVis === 'function') refreshSetupEquipEntornoVis();
     }
 

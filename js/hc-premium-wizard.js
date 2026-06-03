@@ -415,9 +415,25 @@
     el('setupPremiumExteriorHint')?.classList.toggle('setup-hidden', int);
     const sub = el('setupPremium3Subtitle');
     if (sub) {
-      sub.textContent = int
-        ? 'Catálogo agrupado: carpa, LED, filtro carbón, circulación, timer… Luego revisa medidas de sala.'
-        : 'Prioriza medidor, toldo/malla y herramientas. Confirma municipio en Ubicación para meteo.';
+      const cam =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      const faseGerm =
+        typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+      const faseSala =
+        typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
+      if (faseGerm && cam === 'semilla_propagador') {
+        sub.textContent =
+          'Solo domo y mat térmica ahora. Carpa, LED y extractor van en «Configurar sala» tras el checklist del propagador.';
+      } else if (faseSala && (cam === 'semilla_propagador' || cam === 'semilla_hidro')) {
+        sub.textContent =
+          'Configura la sala (carpa, LED, clima, circulación). El propagador ya lo diste en la fase anterior.';
+      } else if (int) {
+        sub.textContent =
+          'Catálogo agrupado: carpa, LED, filtro carbón, circulación, timer… Luego revisa medidas de sala.';
+      } else {
+        sub.textContent =
+          'Prioriza medidor, toldo/malla y herramientas. Confirma municipio en Ubicación para meteo.';
+      }
     }
     const chk = el('setupPremiumCarpaReflectante');
     if (chk) chk.checked = !!p.carpaReflectante;

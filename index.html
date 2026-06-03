@@ -36,9 +36,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@400;600;700;800&family=Inconsolata:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=2026-05-31-welcome-camino">
+  <link rel="stylesheet" href="css/main.css?v=2026-05-31-germ-fases-cal">
   <link rel="stylesheet" href="css/hc-brand-canopy.css?v=2026-05-31-montaje-a11y">
-  <link rel="stylesheet" href="css/hc-pm-checklist.css?v=2026-05-31-montaje-visual">
+  <link rel="stylesheet" href="css/hc-pm-checklist.css?v=2026-05-31-prop-premium">
 </head>
 <body>
 <script>
@@ -3385,7 +3385,7 @@
         <div id="setupPremiumEquipOrigenBanner" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div id="setupPremiumEquipGermReco" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
-        <p class="setup-field-hint setup-mb-8">Top 10 por categoría (marcas habituales en growshops ES). Con <strong>semilla</strong>, el grupo <strong>Germinación</strong> incluye propagador y mat térmica. Puedes dejar «Manual / otro modelo».</p>
+        <p class="setup-field-hint setup-mb-8" id="setupPremium3EquipHint">Top 10 por categoría (growshops ES). Con <strong>semilla en propagador</strong>, en esta fase solo verás <strong>domo y mat térmica</strong>; la sala se configura después del checklist del propagador.</p>
         <div id="setupPremiumEquipGrid" class="equip-catalog-host setup-mb-8"></div>
         <div id="setupPremiumEquipFaltantes" class="setup-mb-16 setup-hidden" aria-live="polite"></div>
       </div>
@@ -3912,6 +3912,7 @@
     <div class="setup-page" id="spage2">
       <div class="setup-title"><svg class="hc-ico hc-ico--setup-title" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg> Equipamiento</div>
       <div class="setup-subtitle">Marca lo que tienes: circuito hidro, sala, herramientas y protección exterior.</div>
+      <div id="setupEquipYaEnPremium" class="setup-box-info setup-equip-recap-premium setup-mb-12 setup-hidden" role="status" aria-live="polite"></div>
 
       <details class="setup-equip-catalog-details setup-mb-16" id="setupEquipCatalogDetails" open>
         <summary class="setup-block-title setup-equip-catalog-summary">Catálogo marca y modelo (growshops ES)</summary>
@@ -5180,7 +5181,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-tijeras-top10"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-flujos-camino"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -5193,7 +5194,7 @@
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-medir-operativa.js?v=2026-05-31-copy-lite"></script>
-  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-coherencia"></script>
+  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-flujos-camino"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-coherencia"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
@@ -5218,17 +5219,17 @@
 <script src="js/diagrams/hc-diagram-scada-theme.js?v=2026-05-15-scada1"></script>
   <script src="js/torre-render-build.js?v=2026-06-02-dwc-rdwc-only"></script>
 <script src="js/torre-render-main.js?v=2026-06-02-dwc-rdwc-only"></script>
-  <script src="js/cultivos-germinacion.js?v=2026-05-31-setup-genetics"></script>
+  <script src="js/cultivos-germinacion.js?v=2026-05-31-fases-cal"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-select-fix"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-flujos-camino"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-propagador-montaje.js?v=2026-05-31-coherencia"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-coherencia"></script>
+  <script src="js/hc-propagador-montaje.js?v=2026-05-31-prop-premium"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-historial"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-resumen"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-flujos-camino"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero2"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-origen-primero"></script>
+  <script src="js/hc-setup-flow.js?v=2026-05-31-equip-no-dup"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
@@ -5238,7 +5239,7 @@
 
 
 
-  <script src="js/hc-setup-calc-core.js?v=2026-05-31-fix-issrf"></script>
+  <script src="js/hc-setup-calc-core.js?v=2026-05-31-flujos-camino"></script>
   <script src="js/hc-setup-rotacion.js?v=2026-05-31-montaje-ui"></script>
   <script src="js/hc-setup-compat-modal.js?v=2026-06-02-icons-full"></script>
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
@@ -5254,7 +5255,7 @@
   <script src="js/hc-medicion-wizard.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
   <script src="js/hc-setup-checklist.js?v=2026-06-02-dwc-rdwc-only"></script>
-  <script src="js/hc-setup-historial-tabs.js?v=2026-06-02-icons-full"></script>
+  <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-germ-historial"></script>
   <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>

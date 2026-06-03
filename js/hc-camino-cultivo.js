@@ -15,11 +15,10 @@
       faseInicial: 'germinacion',
       icon: '🫧',
       orden: [
-        'Equipamiento de germinación (domo, mat térmica) en Fase 1.',
-        'Checklist del propagador → <strong>configura la sala</strong> (asistente + montaje).',
-        'Las 6 fases de germinación en Inicio.',
-        'Tras las 6 fases: cierra DWC/RDWC en el asistente (sin repetir germinación en el depósito).',
-        'Completa puntos de sistema hidro en montaje y checklist del depósito.',
+        'Fase 1: solo equipamiento de <strong>germinación</strong> (domo, mat térmica) — sin sala.',
+        'Checklist del propagador → <strong>6 fases</strong> en Inicio con registro diario.',
+        'Tras las 6 fases: <strong>configura la sala</strong> (asistente + montaje).',
+        'Checklist traslado → cierra DWC/RDWC (Fase 2) → depósito y cultivo.',
       ],
     },
     semilla_hidro: {
@@ -31,10 +30,10 @@
       faseInicial: 'germinacion',
       icon: '💧',
       orden: [
-        'Prep en hidro (checklist): net pot, cubo, medidor, aireación suave.',
-        'Configura la <strong>sala</strong> (asistente + montaje), igual que en propagador.',
-        'Las <strong>6 fases</strong> en Inicio (germinación en el cubo, no en el depósito suelto).',
-        'Checklist de traslado → cierra DWC/RDWC (sin repetir germinación en el depósito).',
+        'Asistente: equipamiento de <strong>sala + prep hidro</strong> (net pot, medidor, aireación).',
+        'Checklist prep → montaje sala → <strong>DWC/RDWC + primer llenado</strong> del depósito.',
+        'Las <strong>6 fases</strong> en Inicio (registro diario en el cubo, no semilla suelta en tanque).',
+        'Tras las 6 fases: checklist traslado y operativa del sistema definitivo.',
       ],
     },
     esqueje_hidro: {
@@ -225,6 +224,10 @@
     return !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
   }
 
+  function germinacionSeisFasesCompletas(cfg) {
+    return contarFasesGermHechas(cfg) >= 6;
+  }
+
   function salaListaAntesDeGerminacion(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!hcCaminoRequiereSalaPreGerm(cfg)) return true;
@@ -234,13 +237,32 @@
     return montajeSalaPreGermOk(cfg);
   }
 
+  /** Propagador: sala después de las 6 fases. Hidro directo: sala antes de germinar. */
   function hcGerminacionBloqueadaPorSala(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!hcCaminoRequiereSalaPreGerm(cfg)) return false;
+    var cam = getCaminoCultivo(cfg);
     if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
       return false;
     }
-    return !salaListaAntesDeGerminacion(cfg);
+    if (cam === 'semilla_propagador') {
+      if (!germinacionSeisFasesCompletas(cfg)) return false;
+      return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
+    }
+    return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
+  }
+
+  /** Semilla en hidro: prep + sala + montaje + sistema + depósito antes de las 6 fases. */
+  function hcGerminacionBloqueadaPorPrepSistema(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_hidro') return '';
+    if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
+      return '';
+    }
+    if (!salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg)) return '';
+    if (!hidroInstalacionCerrada(cfg)) return 'hidro_config';
+    if (!depositoListo(cfg)) return 'deposito_llenado';
+    return '';
   }
 
   function hcGerminacionBloqueada(cfg) {
@@ -248,6 +270,9 @@
     if (typeof hcGerminacionBloqueadaPorMontaje === 'function' && hcGerminacionBloqueadaPorMontaje(cfg)) {
       return 'propagador';
     }
+    var prepSys = hcGerminacionBloqueadaPorPrepSistema(cfg);
+    if (prepSys === 'hidro_config') return 'hidro_config';
+    if (prepSys === 'deposito_llenado') return 'deposito_llenado';
     if (hcGerminacionBloqueadaPorSala(cfg)) {
       if (!salaPreGermConfigurada(cfg)) return 'sala_config';
       return 'sala_montaje';
@@ -419,6 +444,16 @@
     }
     if (skip.size > 0) return skip;
     if (!hcSetupEnFaseGerminacion()) return skip;
+    var cam = getCaminoCultivo();
+    if (cam === 'semilla_hidro') {
+      [
+        typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
+        typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
+      ].forEach(function (p) {
+        skip.add(p);
+      });
+      return skip;
+    }
     var pages = [
       typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8,
       typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9,
@@ -488,32 +523,76 @@
     if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
       var fasesN = contarFasesGermHechas(cfg);
       var g = cfg.germinacionFlow || {};
-      pasos = [
-        {
-          id: 'prep',
-          label: cam === 'semilla_hidro' ? 'Prep en hidro' : 'Propagador / domo',
-          done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
-          action: 'irPropagadorMontaje',
-        },
-        {
-          id: 'sala_cfg',
-          label: 'Sala configurada',
-          done: salaPreGermConfigurada(cfg),
-          action: 'abrirSetupFaseSala',
-        },
-        {
-          id: 'sala_mont',
-          label: 'Montaje de sala',
-          done: montajeSalaPreGermOk(cfg),
-          action: 'irMontaje',
-        },
-        {
-          id: 'fases6',
-          label: '6 fases (' + fasesN + '/6)',
-          done: fasesN >= 6,
-          action: 'irGerminacion',
-          hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
-        },
+      if (cam === 'semilla_propagador') {
+        pasos = [
+          {
+            id: 'prep',
+            label: 'Checklist propagador',
+            done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
+            action: 'irPropagadorMontaje',
+          },
+          {
+            id: 'fases6',
+            label: '6 fases (' + fasesN + '/6)',
+            done: fasesN >= 6,
+            action: 'irGerminacion',
+            hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
+          },
+          {
+            id: 'sala_cfg',
+            label: 'Sala configurada',
+            done: salaPreGermConfigurada(cfg),
+            action: 'abrirSetupFaseSala',
+          },
+          {
+            id: 'sala_mont',
+            label: 'Montaje de sala',
+            done: montajeSalaPreGermOk(cfg),
+            action: 'irMontaje',
+          },
+        ];
+      } else {
+        pasos = [
+          {
+            id: 'prep',
+            label: 'Prep en hidro',
+            done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
+            action: 'irPropagadorMontaje',
+          },
+          {
+            id: 'sala_cfg',
+            label: 'Sala configurada',
+            done: salaPreGermConfigurada(cfg),
+            action: 'abrirSetupFaseSala',
+          },
+          {
+            id: 'sala_mont',
+            label: 'Montaje de sala',
+            done: montajeSalaPreGermOk(cfg),
+            action: 'irMontaje',
+          },
+          {
+            id: 'hidro',
+            label: 'DWC/RDWC cerrado',
+            done: hidroInstalacionCerrada(cfg),
+            action: 'abrirSetupFaseHidro',
+          },
+          {
+            id: 'deposito_pre',
+            label: 'Depósito listo (germinar)',
+            done: depositoListo(cfg),
+            action: 'abrirChecklist',
+          },
+          {
+            id: 'fases6',
+            label: '6 fases (' + fasesN + '/6)',
+            done: fasesN >= 6,
+            action: 'irGerminacion',
+            hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
+          },
+        ];
+      }
+      pasos = pasos.concat([
         {
           id: 'traslado',
           label: 'Checklist traslado',
@@ -522,7 +601,7 @@
         },
         {
           id: 'hidro',
-          label: 'DWC/RDWC cerrado',
+          label: cam === 'semilla_hidro' ? 'Sistema definitivo' : 'DWC/RDWC cerrado',
           done: hidroInstalacionCerrada(cfg),
           action: 'abrirSetupFaseHidro',
         },
@@ -538,7 +617,7 @@
           done: depositoListo(cfg),
           action: 'abrirChecklist',
         },
-      ];
+      ]);
     } else if (cam === 'esqueje_hidro') {
       pasos = [
         {
@@ -723,10 +802,13 @@
   global.montajeSalaPreGermOk = montajeSalaPreGermOk;
   global.salaListaAntesDeGerminacion = salaListaAntesDeGerminacion;
   global.hcGerminacionBloqueadaPorSala = hcGerminacionBloqueadaPorSala;
+  global.hcGerminacionBloqueadaPorPrepSistema = hcGerminacionBloqueadaPorPrepSistema;
+  global.germinacionSeisFasesCompletas = germinacionSeisFasesCompletas;
   global.hcGerminacionBloqueada = hcGerminacionBloqueada;
   global.hcCaminoEsSemilla = hcCaminoEsSemilla;
   global.hcCaminoRequiereConfigHidroPendiente = hcCaminoRequiereConfigHidroPendiente;
   global.germinacionListaParaConfigHidro = germinacionListaParaConfigHidro;
+  global.depositoListo = depositoListo;
   global.persistCaminoToConfig = persistCaminoToConfig;
   global.abrirSetupFaseSala = abrirSetupFaseSala;
   global.abrirSetupFaseHidro = abrirSetupFaseHidro;

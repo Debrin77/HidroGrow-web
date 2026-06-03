@@ -244,6 +244,10 @@ html.hc-theme-dark .hc-pm-card--checked {
   border-left: 4px solid #34d399;
   background: linear-gradient(120deg, rgba(52, 211, 153, 0.14) 0%, var(--bg2, #fffdf9) 55%);
 }
+.hc-pm-card--germ {
+  border-left: 4px solid #22c55e;
+  background: linear-gradient(120deg, rgba(34, 197, 94, 0.16) 0%, var(--bg2, #fffdf9) 55%);
+}
 
 html.hc-theme-dark .hc-pm-card--hydro {
   background: linear-gradient(120deg, rgba(14, 165, 233, 0.18) 0%, rgba(20, 28, 23, 0.95) 60%);
@@ -531,4 +535,115 @@ html.hc-theme-dark .hc-pm-cesta-reco {
   .hc-pm-card:active:not(.hc-pm-card--disabled) {
     transform: none;
   }
+}
+
+/* ── Propagador / prep germ (premium) ── */
+.hc-pm-shell--prop {
+  gap: 14px;
+}
+.hc-prop-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.95) 0%, rgba(254, 243, 199, 0.45) 100%);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+html.hc-theme-dark .hc-prop-hero {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.45) 0%, rgba(120, 53, 15, 0.2) 100%);
+  border-color: rgba(52, 211, 153, 0.3);
+}
+.hc-prop-hero-ico {
+  flex-shrink: 0;
+  font-size: 2rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(34, 197, 94, 0.25));
+}
+.hc-prop-hero-text {
+  min-width: 0;
+}
+.hc-prop-modal-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #14532d;
+  line-height: 1.25;
+}
+html.hc-theme-dark .hc-prop-modal-title {
+  color: #86efac;
+}
+.hc-pm-shell--prop .hc-pm-lead {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #475569;
+}
+html.hc-theme-dark .hc-pm-shell--prop .hc-pm-lead {
+  color: #cbd5e1;
+}
+.hc-pm-progress--prop {
+  border-color: rgba(34, 197, 94, 0.28);
+  background: linear-gradient(145deg, #ecfdf5 0%, #fffbeb 55%);
+}
+html.hc-theme-dark .hc-pm-progress--prop {
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.35) 0%, rgba(20, 28, 23, 0.92) 60%);
+}
+.hc-pm-grid--prop {
+  gap: 10px;
+}
+.hc-pm-card-done-badge {
+  align-self: center;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #22c55e, #0d9488);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+}
+.hc-pm-card--checked .hc-pm-card-check.is-on {
+  border-color: #16a34a;
+  background: #22c55e;
+}
+.hc-pm-card--checked .hc-pm-card-title {
+  color: #166534;
+}
+html.hc-theme-dark .hc-pm-card--germ {
+  background: linear-gradient(120deg, rgba(34, 197, 94, 0.18) 0%, rgba(20, 28, 23, 0.95) 60%);
+}
+.hc-prop-inline--premium {
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  background: linear-gradient(145deg, rgba(240, 253, 244, 0.9), rgba(255, 251, 235, 0.7));
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+  padding: 14px 14px 12px;
+}
+.hc-prop-inline-ico {
+  font-size: 1.25rem;
+  margin-right: 6px;
+}
+.hc-prop-inline-bar {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.25);
+  overflow: hidden;
+  margin: 8px 0 10px;
+}
+.hc-prop-inline-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #14b8a6);
+  transition: width 0.35s ease;
+}
+.hc-prop-inline-pct--ok {
+  color: #047857;
+  background: rgba(34, 197, 94, 0.15);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+html.hc-theme-dark .hc-prop-inline--premium {
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.35), rgba(15, 23, 42, 0.6));
 }
