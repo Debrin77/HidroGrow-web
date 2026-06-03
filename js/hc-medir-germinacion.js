@@ -101,21 +101,28 @@
   }
 
   /**
-   * Campos de sala (PPFD, CO₂, temp. exterior): solo tras configurar sala y checklist de montaje verificado.
+   * Campos de sala (PPFD, CO₂, temp. exterior): en propagador solo tras configurar la sala en el asistente.
    */
   function hcMedirSalaAmbienteDisponible(cfg) {
     cfg = cfg || cfgActiva();
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
-      return typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg);
+      return typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
     }
     return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
   }
 
-  /** Medir propagador: siempre EC del agua del domo; pH según fase del plan. */
+  /** Medir propagador: T°/HR/VPD del domo siempre; EC según fase; pH según plan. */
   function getMedirGermActivos(cfg) {
     var plan = getPlanMedirGerm(cfg);
     var activos = keysActivos(plan);
+    if (hcMedirModoGerminacionPropagador(cfg)) {
+      activos.temp = true;
+      activos.hr = true;
+      activos.vpd = true;
+      activos.ec = true;
+      return { plan: plan, activos: activos };
+    }
     activos.ec = true;
     return { plan: plan, activos: activos };
   }
@@ -245,24 +252,32 @@
     var flow = document.getElementById('medirFlow');
     if (flow) {
       flow.classList.toggle('medir-flow--germ-prop', activo);
+      var mountAmb = document.getElementById('medirFlowAmbienteMount');
+      var solPanel = flow.querySelector('.medir-step-panel--solucion');
+      if (activo && mountAmb && solPanel) {
+        flow.insertBefore(mountAmb, solPanel);
+      } else if (!activo && mountAmb && solPanel) {
+        var actions = flow.querySelector('.medir-flow-actions');
+        if (actions && mountAmb.nextElementSibling !== actions) {
+          flow.insertBefore(solPanel, mountAmb);
+        }
+      }
       var quickBlock = flow.querySelector('.medir-quick-parse');
       if (quickBlock) quickBlock.classList.toggle('setup-hidden', activo);
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) {
         if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
         lead.innerHTML = activo
-          ? 'Comprueba T°, HR' +
-            (activos.ec ? ', EC' : '') +
-            (activos.ph ? ', pH' : '') +
-            (activos.vpd ? ' y VPD' : '') +
-            ' del propagador. Los recuadros indican si estás en rango.'
+          ? 'Introduce <strong>T° y HR del domo</strong>; el <strong>VPD se calcula solo</strong>' +
+            (activos.ec || activos.ph ? '. También puedes registrar EC/pH del propagador' : '') +
+            '. Los recuadros indican si estás en rango.'
           : lead.dataset.hcMedirLeadDefault;
       }
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
       if (solPanel) solPanel.classList.toggle('setup-hidden', !activo || !tieneSolucion);
       var solHead = solPanel && solPanel.querySelector('.medir-step-kicker--solucion');
       if (solHead) {
-        solHead.textContent = activo ? 'Agua del propagador' : 'Paso 1 · solución';
+        solHead.textContent = activo ? 'Agua del propagador (si aplica)' : 'Paso 1 · solución';
       }
       var solSub = solPanel && solPanel.querySelector('.medir-step-sub');
       if (solSub && activo) {
@@ -387,7 +402,7 @@
         : '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
     hint.innerHTML =
       (germ
-        ? '<strong>Sala aún no lista.</strong> PPFD, CO₂ y temperatura exterior aparecen cuando la sala esté configurada y el montaje verificado. Arriba puedes registrar el <strong>domo del propagador</strong> (T°, HR, VPD). '
+        ? '<strong>Sala sin configurar.</strong> PPFD, CO₂ y temp. exterior aparecen cuando completes la <strong>configuración de sala</strong> en el asistente. Arriba: <strong>T°, HR y VPD del domo</strong>. '
         : '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras configurar la instalación y completar el checklist de montaje. ') +
       cfgBtn +
       '.';
@@ -414,10 +429,10 @@
       if (!kick.dataset.hcMedirKickDefault) kick.dataset.hcMedirKickDefault = kick.textContent;
       if (!sub.dataset.hcMedirSubDefault) sub.dataset.hcMedirSubDefault = sub.textContent;
       if (germ) {
-        kick.textContent = salaLista ? 'Paso 2 · domo y sala' : 'Domo propagador';
+        kick.textContent = salaLista ? 'Domo y sala' : 'Domo propagador';
         sub.textContent = salaLista
-          ? 'T°, HR y VPD del domo · PPFD, CO₂ y temp. exterior de la sala'
-          : 'T°, HR y VPD del domo (sin sala montada aún)';
+          ? 'T°, HR y VPD del domo · PPFD, CO₂ y temp. exterior (sala configurada)'
+          : 'T°, HR y VPD del domo — obligatorio';
       } else if (!salaLista) {
         kick.textContent = 'Paso 2 · opcional';
         sub.textContent = 'Luz, CO₂ y temp. exterior tras montaje de sala verificado';

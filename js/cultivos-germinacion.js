@@ -1042,6 +1042,14 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
         r.ph.max +
         ')</span></li>'
       : '';
+  const vpdLine =
+    r.vpd && (opts.forMedir || faseId === 'domo')
+      ? '<li><span class="hc-germ-rangos-k">VPD</span><strong>' +
+        r.vpd.min +
+        '–' +
+        r.vpd.max +
+        ' kPa</strong></li>'
+      : '';
   const items =
     '<li><span class="hc-germ-rangos-k">T° domo</span><strong>' +
     r.temp.min +
@@ -1053,6 +1061,7 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
     '–' +
     r.hr.max +
     ' %</strong></li>' +
+    vpdLine +
     ecLine +
     phLine;
   if (opts.forMedir) {

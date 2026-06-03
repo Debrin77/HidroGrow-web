@@ -109,7 +109,7 @@ async function guardarMedicion(payloadOverride) {
   if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
     showToast(
       medirGermSave
-        ? '⚠️ Introduce al menos T° domo, HR o EC/pH del propagador'
+        ? '⚠️ Introduce al menos T° y HR del domo (el VPD se calcula solo)'
         : '⚠️ Introduce al menos un valor (depósito o ambiente)',
       true
     );
