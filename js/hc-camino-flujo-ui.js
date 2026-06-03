@@ -307,11 +307,7 @@
       typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
     if (!f) return '';
     if (f === 'propagador') {
-      return (
-        '<strong>Germinación en propagador.</strong> En Medir registra <strong>T°, HR y VPD del domo</strong> (y EC/pH del agua del propagador según fase) — mismos rangos que en Inicio. ' +
-        'No uses el depósito DWC hasta configurar el hidro. También en ' +
-        '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>.'
-      );
+      return '';
     }
     if (f === 'germ_cubo') {
       return (
