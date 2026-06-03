@@ -55,6 +55,9 @@ function renderSetupPage() {
   if (setupPagina === SETUP_PAGE_ORIGEN && typeof refreshCaminoCultivoUI === 'function') {
     setTimeout(refreshCaminoCultivoUI, 0);
   }
+  try {
+    if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(setupPagina);
+  } catch (_) {}
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     setTimeout(function () {
       if (typeof cargarPremiumSetupUI === 'function') cargarPremiumSetupUI(setupPagina);
@@ -147,6 +150,11 @@ function renderSetupPage() {
       typeof getSetupDisplayStepInfo === 'function'
         ? getSetupDisplayStepInfo(setupPagina)
         : { step: setupPagina + 1, total: SETUP_TOTAL_PAGES };
+    const camLbl =
+      typeof getSetupStepLabelForPage === 'function'
+        ? getSetupStepLabelForPage(setupPagina)
+        : null;
+    const stepName = camLbl || labels[setupPagina] || '';
     if (setupEsNuevaTorre) {
       const nomLbl = (setupNombreNuevaTorre || '').trim() || 'Nueva instalación';
       labelEl.textContent =
@@ -158,7 +166,7 @@ function renderSetupPage() {
             ' de ' +
             flowInfo.total +
             ' — ' +
-            (labels[setupPagina] || '');
+            stepName;
     } else {
       labelEl.textContent =
         setupPagina === 0
@@ -168,7 +176,7 @@ function renderSetupPage() {
             ' de ' +
             flowInfo.total +
             ' — ' +
-            (labels[setupPagina] || '');
+            stepName;
     }
   }
 

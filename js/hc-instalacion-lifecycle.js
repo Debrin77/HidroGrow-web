@@ -656,7 +656,8 @@
     }
   }
 
-  function hcMostrarBannerSalaPostSetup(nombre) {
+  function hcMostrarBannerSalaPostSetup(nombre, opts) {
+    opts = opts && typeof opts === 'object' ? opts : {};
     var nom = String(nombre || '').trim();
     var titulo = nom ? '«' + nom + '» guardada' : 'Instalación guardada';
     var tab = document.getElementById('tab-sala');
@@ -668,15 +669,19 @@
     ban.className = 'setup-field-hint setup-field-hint--banner hc-sala-post-setup-banner';
     ban.setAttribute('role', 'status');
     var cfgBan = cfgActiva();
-    var germBan =
-      typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgBan);
-    ban.innerHTML =
-      '<strong>✅ ' +
-      esc(titulo) +
-      '</strong> ' +
-      (germBan
-        ? 'Verifica montaje de sala; luego las <strong>6 fases</strong> en Inicio.'
-        : 'Checklist de montaje abajo.');
+    var germBan = !!opts.faseGerm || (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgBan));
+    var cam = String(opts.camino || (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgBan) : ''));
+    var cuerpo = 'Checklist de montaje abajo.';
+    if (germBan && cam === 'semilla_propagador') {
+      cuerpo =
+        'La sala se configura <strong>después de las 6 fases</strong>. Ahora: checklist del propagador en Inicio.';
+    } else if (germBan && cam === 'semilla_hidro') {
+      cuerpo =
+        'Tras el prep hidro: <strong>configura la sala</strong> aquí y el montaje antes de las 6 fases.';
+    } else if (germBan) {
+      cuerpo = 'Verifica montaje de sala; luego las <strong>6 fases</strong> en Inicio.';
+    }
+    ban.innerHTML = '<strong>✅ ' + esc(titulo) + '</strong> ' + cuerpo;
     var intro = tab.querySelector('.medir-sala-intro');
     if (intro) intro.insertAdjacentElement('afterend', ban);
     else tab.insertBefore(ban, tab.firstChild);
@@ -706,27 +711,34 @@
       return;
     }
     if (cfgGerm.hcSetupFase === 'germinacion') {
+      var camGerm =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
       setTimeout(function () {
-        try {
-          if (typeof goTab === 'function') goTab('inicio');
-        } catch (_) {}
+        var abrirCheck =
+          typeof propagadorMontajeCompleto === 'function' &&
+          !propagadorMontajeCompleto(cfgGerm) &&
+          typeof hcOpenPropagadorMontajeChecklist === 'function';
+        if (abrirCheck) {
+          hcOpenPropagadorMontajeChecklist();
+        }
+        if (camGerm !== 'semilla_hidro') {
+          try {
+            if (typeof goTab === 'function') goTab('inicio');
+          } catch (_) {}
+        }
         setTimeout(function () {
           try {
             document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } catch (_) {}
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-          if (
-            typeof propagadorMontajeCompleto === 'function' &&
-            !propagadorMontajeCompleto(cfgGerm) &&
-            typeof hcOpenPropagadorMontajeChecklist === 'function'
-          ) {
-            hcOpenPropagadorMontajeChecklist();
-          }
           refreshInstalacionLifecycleUi();
           try {
             if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
           } catch (_) {}
-        }, 280);
+          try {
+            if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+          } catch (_) {}
+        }, camGerm === 'semilla_hidro' ? 120 : 280);
       }, 300);
       return;
     }

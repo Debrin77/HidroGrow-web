@@ -447,7 +447,7 @@
       ? '¿Confirmas que el domo de enraizado está listo?\n\nSiguiente: asignar esquejes en la matriz y primer llenado.'
       : esRutaGermHidro(cfg)
         ? '¿Confirmas el preparativo en hidro?\n\nSiguiente: configurar la sala antes de las 6 fases.'
-        : '¿Confirmas el propagador/domo?\n\nSiguiente: configurar la sala (carpa, LED, extractor) antes de las 6 fases.';
+        : '¿Confirmas el propagador/domo?\n\nSiguiente: las 6 fases en Inicio (la sala va después).';
     if (!confirm(msgConfirm)) {
       return;
     }
@@ -459,13 +459,31 @@
       showToast(
         esRutaEsqueje(cfg)
           ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
-          : '✓ Listo. Ahora configura la sala completa en el asistente.',
+          : esRutaGermHidro(cfg)
+            ? '✓ Prep listo. Siguiente: configurar la sala en el asistente.'
+            : '✓ Propagador listo. Sigue las 6 fases en Inicio → Germinación.',
         false,
         { durationMs: 5600 }
       );
     }
     if (esRutaEsqueje(cfg)) {
       refreshPropagadorMontajeUi();
+      return;
+    }
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador') {
+      setTimeout(function () {
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          try {
+            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        }, 280);
+      }, 400);
       return;
     }
     if (typeof hcCaminoRequiereSalaPreGerm === 'function' && hcCaminoRequiereSalaPreGerm(cfg)) {

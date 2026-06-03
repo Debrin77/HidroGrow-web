@@ -3126,6 +3126,10 @@ select#editVariedad option {
   backdrop-filter: blur(4px);
 }
 .modal-overlay.open { display: flex; }
+/* Por encima de tab-bar (~9999) y overlays de checklist; .modal-overlay más abajo pisaba .ctp-modal-overlay */
+.modal-overlay.ctp-modal-overlay {
+  z-index: 12650;
+}
 .modal {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -6981,17 +6985,27 @@ html.hc-theme-dark .recarga-card .btn-recarga-confirm.primary {
   gap: 8px;
 }
 .dash-post-setup-kicker {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #047857;
+  color: #065f46;
 }
 .dash-post-setup-txt {
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
-  color: #374151;
+  color: #334155;
+}
+html.hc-theme-dark .dash-post-setup-camino {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(74, 222, 128, 0.35);
+}
+html.hc-theme-dark .dash-post-setup-kicker {
+  color: #86efac;
+}
+html.hc-theme-dark .dash-post-setup-txt {
+  color: var(--muted);
 }
 .dash-post-setup-actions {
   display: flex;
@@ -9961,18 +9975,18 @@ html.hc-theme-dark .hc-germ-hub-card {
   margin-bottom: 14px;
 }
 .hc-germ-hub-badge {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #047857;
-  background: rgba(34, 197, 94, 0.18);
+  color: #065f46;
+  background: rgba(34, 197, 94, 0.28);
   padding: 4px 8px;
   border-radius: 6px;
 }
 html.hc-theme-dark .hc-germ-hub-badge {
-  color: #6ee7b7;
-  background: rgba(52, 211, 153, 0.15);
+  color: #d1fae5;
+  background: rgba(52, 211, 153, 0.28);
 }
 .hc-germ-hub-pct-ring {
   width: 52px;
@@ -10013,8 +10027,12 @@ html.hc-theme-dark .hc-germ-hub-pct-ring {
 .hc-germ-hub-var {
   margin: 4px 0 0;
   font-size: 12px;
+  color: #334155;
+  line-height: 1.45;
+}
+html.hc-theme-dark .hc-germ-hub-sub,
+html.hc-theme-dark .hc-germ-hub-var {
   color: var(--muted);
-  line-height: 1.4;
 }
 .hc-germ-rail {
   position: relative;
@@ -10334,12 +10352,55 @@ html.hc-theme-dark .hc-germ-equip-chip--on {
   border-radius: 10px;
   font-size: 12px;
   line-height: 1.45;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
+html.hc-theme-dark .hc-germ-sala-cta {
+  color: var(--muted);
+  background: rgba(30, 41, 59, 0.65);
+  border-color: rgba(148, 163, 184, 0.28);
+}
+html.hc-theme-dark .hc-germ-sala-cta strong {
+  color: var(--white);
+}
 .hc-germ-sala-cta .btn { flex-shrink: 0; }
+.setup-camino-step-banner {
+  margin: 8px 16px 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.setup-required-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9a3412;
+  margin-left: 4px;
+}
+.setup-genetica-req--pendiente {
+  border-color: #f59e0b;
+  background: #fffbeb;
+  color: #78350f;
+}
+.setup-input-city[aria-invalid="true"] {
+  border-color: #dc2626;
+  outline: 2px solid rgba(220, 38, 38, 0.35);
+  outline-offset: 1px;
+}
+.hc-camino-fase-gate {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+}
+.hc-camino-fase-gate-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.hc-traslado-sala-host:empty {
+  display: none;
+}
 .hc-germ-modo-fijo {
   margin: 6px 0 0;
   font-size: 11px;
@@ -10382,7 +10443,7 @@ html.hc-theme-dark .hc-camino-resumen-card {
 .hc-camino-resumen-pct {
   font-size: 13px;
   font-weight: 700;
-  color: #047857;
+  color: #065f46;
 }
 html.hc-theme-dark .hc-camino-resumen-pct {
   color: #6ee7b7;
@@ -10390,8 +10451,12 @@ html.hc-theme-dark .hc-camino-resumen-pct {
 .hc-camino-resumen-lead {
   margin: 0 0 10px;
   font-size: 12px;
-  color: var(--muted);
+  color: #334155;
   line-height: 1.45;
+}
+html.hc-theme-dark .hc-camino-resumen-lead,
+html.hc-theme-dark .hc-camino-resumen-hint {
+  color: var(--muted);
 }
 .hc-camino-resumen-list {
   list-style: none;
@@ -10448,16 +10513,24 @@ html.hc-theme-dark .hc-prop-inline {
 }
 .hc-germ-modo-pill {
   display: inline-block;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(34, 197, 94, 0.15);
-  color: #047857;
+  background: rgba(34, 197, 94, 0.22);
+  color: #065f46;
 }
 .hc-germ-modo-pill--hidro_directo {
-  background: rgba(14, 165, 233, 0.15);
-  color: #0369a1;
+  background: rgba(14, 165, 233, 0.22);
+  color: #075985;
+}
+html.hc-theme-dark .hc-germ-modo-pill {
+  color: #bbf7d0;
+  background: rgba(52, 211, 153, 0.22);
+}
+html.hc-theme-dark .hc-germ-modo-pill--hidro_directo {
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.22);
 }
 .hc-germ-modo-toggle {
   display: flex;
@@ -10723,13 +10796,20 @@ html.hc-theme-dark .hc-germ-genetics-card {
   padding-left: 1.2rem;
   font-size: 12px;
   line-height: 1.45;
-  color: var(--muted);
+  color: #334155;
 }
 .hc-origen-ruta-equip {
   margin: 0;
-  font-size: 11px;
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.45;
+}
+html.hc-theme-dark .hc-origen-ruta-title {
+  color: var(--white);
+}
+html.hc-theme-dark .hc-origen-ruta-ol,
+html.hc-theme-dark .hc-origen-ruta-equip {
   color: var(--muted);
-  line-height: 1.4;
 }
 .hc-germ-setup-ol {
   margin: 8px 0 0;
@@ -16874,7 +16954,7 @@ button.toggle-switch:focus-visible {
 .setup-step-dot.active  { background: #86efac; }
 .setup-steps-label {
   font-size: 12px;
-  color: #6b7280;
+  color: #475569;
   margin-top: 6px;
   font-weight: 600;
 }
@@ -16885,23 +16965,23 @@ button.toggle-switch:focus-visible {
   margin-top: 8px;
 }
 .setup-roadmap-chip {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   padding: 3px 8px;
   border-radius: 999px;
   background: #f1f5f9;
-  color: #64748b;
+  color: #475569;
   border: 1px solid #e2e8f0;
 }
 .setup-roadmap-chip--active {
   background: #ecfdf5;
-  color: #047857;
+  color: #065f46;
   border-color: #6ee7b7;
 }
 .setup-roadmap-chip--done {
-  color: #475569;
+  color: #334155;
 }
 .setup-guia-panel {
   margin-top: 8px;
@@ -17148,7 +17228,7 @@ button.toggle-switch:focus-visible {
   font-family: var(--font-sans);
   font-size: 15px;
   font-weight: 500;
-  color: #64748b;
+  color: #475569;
   margin-bottom: 24px;
   line-height: 1.55;
 }
@@ -19603,9 +19683,10 @@ button.toggle-switch:focus-visible {
   color: #374151;
 }
 .setup-option-desc-sm {
-  font-size: 9px;
-  color: #6b7280;
+  font-size: 11px;
+  color: #475569;
   margin-top: 2px;
+  line-height: 1.4;
 }
 .setup-option-desc-danger {
   display: flex;
@@ -19635,10 +19716,10 @@ button.toggle-switch:focus-visible {
   color: #374151;
 }
 .setup-option-desc-md {
-  font-size: 10px;
-  color: #6b7280;
+  font-size: 11px;
+  color: #475569;
   margin-top: 3px;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 .agua-modal-intro {
   font-size: 13px;
@@ -19811,8 +19892,8 @@ button.toggle-switch:focus-visible {
   color: #374151;
 }
 .setup-loc-desc {
-  font-size: 11px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #475569;
   margin-top: 4px;
   line-height: 1.5;
 }
@@ -20182,7 +20263,7 @@ button.toggle-switch:focus-visible {
 .medir-equip-muted { color: #9ca3af; }
 .medir-equip-foot { font-size: 11px; color: #6b7280; font-style: italic; margin: 0; }
 .setup-mt-12 { margin-top: 12px; }
-.setup-optional-tag { font-size: 11px; color: #9ca3af; font-weight: 500; }
+.setup-optional-tag { font-size: 11px; color: #64748b; font-weight: 600; }
 .hc-visual-ico { width: 1.25rem; height: 1.25rem; vertical-align: middle; }
 .hc-visual-ico--sm { width: 1rem; height: 1rem; }
 .hc-visual-ico--lg { width: 2rem; height: 2rem; display: block; margin: 0 auto 6px; }
@@ -21277,6 +21358,107 @@ html.hc-theme-dark .hc-sala-post-setup-banner {
 }
 html.hc-theme-dark .hc-sala-post-setup-banner strong {
   color: #dcfce7;
+}
+
+/* Asistente + flujo camino/germ: contraste AA en tema oscuro */
+html.hc-theme-dark .setup-overlay {
+  background: linear-gradient(165deg, #0c1017 0%, #0f1a14 45%, #101c18 100%);
+}
+html.hc-theme-dark .setup-header {
+  background: color-mix(in srgb, #131a22 92%, transparent);
+  border-bottom-color: rgba(241, 245, 249, 0.1);
+}
+html.hc-theme-dark .setup-title {
+  color: var(--white);
+}
+html.hc-theme-dark .setup-subtitle,
+html.hc-theme-dark .setup-steps-label,
+html.hc-theme-dark .setup-field-hint,
+html.hc-theme-dark .setup-nombre-hint {
+  color: var(--muted);
+}
+html.hc-theme-dark .setup-box-info,
+html.hc-theme-dark .setup-camino-step-banner.setup-box-info,
+html.hc-theme-dark #setupCaminoFaseBanner.setup-box-warn {
+  background: rgba(30, 58, 138, 0.35);
+  border-color: rgba(147, 197, 253, 0.45);
+  color: #dbeafe;
+}
+html.hc-theme-dark .setup-box-info strong,
+html.hc-theme-dark .setup-camino-step-banner strong {
+  color: #f0f9ff;
+}
+html.hc-theme-dark .setup-box-warn,
+html.hc-theme-dark .setup-genetica-req--pendiente {
+  background: rgba(120, 53, 15, 0.35);
+  border-color: rgba(251, 191, 36, 0.45);
+  color: #fde68a;
+}
+html.hc-theme-dark .setup-required-tag {
+  color: #fcd34d;
+}
+html.hc-theme-dark .setup-field-hint--banner,
+html.hc-theme-dark .hc-camino-fase-banner,
+html.hc-theme-dark .hc-traslado-sala-banner {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: var(--muted);
+}
+html.hc-theme-dark .setup-field-hint--banner strong,
+html.hc-theme-dark .hc-camino-fase-banner strong,
+html.hc-theme-dark .hc-traslado-sala-banner strong {
+  color: var(--white);
+}
+html.hc-theme-dark .setup-option-desc-sm,
+html.hc-theme-dark .setup-option-desc-md,
+html.hc-theme-dark .setup-loc-desc,
+html.hc-theme-dark .setup-optional-tag {
+  color: var(--muted);
+}
+html.hc-theme-dark .setup-option-title-md,
+html.hc-theme-dark .setup-option-title-sm,
+html.hc-theme-dark .setup-loc-title {
+  color: var(--white);
+}
+html.hc-theme-dark .setup-overlay .equip-catalog-head {
+  color: var(--white);
+}
+html.hc-theme-dark .setup-overlay .equip-catalog-hint {
+  color: var(--muted);
+}
+html.hc-theme-dark .setup-roadmap-chip {
+  background: var(--bg3);
+  color: var(--muted);
+  border-color: var(--border);
+}
+html.hc-theme-dark .setup-roadmap-chip--active {
+  background: rgba(34, 197, 94, 0.18);
+  color: #86efac;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+html.hc-theme-dark .hc-germ-modo-btn {
+  color: var(--muted);
+  background: var(--bg2);
+}
+html.hc-theme-dark .hc-germ-modo-btn--on {
+  color: #bbf7d0;
+  background: rgba(34, 197, 94, 0.2);
+}
+html.hc-theme-dark .hc-camino-fase-gate {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+html.hc-theme-dark .hc-camino-fase-gate-title {
+  color: var(--white);
+}
+html.hc-theme-dark .hc-germ-fases-cal-rango,
+html.hc-theme-dark .hc-germ-modo-fijo,
+html.hc-theme-dark .dash-inst-lifecycle-germ-hint {
+  color: var(--muted);
+}
+html.hc-theme-dark .hc-germ-fases-cal-paso {
+  color: #86efac;
 }
 .hc-pm-item--inline.hc-pm-item--done {
   color: var(--green-dim);

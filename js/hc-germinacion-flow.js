@@ -1156,6 +1156,9 @@
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     } catch (_) {}
+    try {
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+    } catch (_) {}
   }
 
   function renderRegistroReciente(g) {
@@ -1460,6 +1463,8 @@
     ensureGerminacionFlow(cfg).activo = true;
     ensureGerminacionFlow(cfg).startedAt = hoyIso();
   }
+
+  var refreshDashGerminacionHub = renderDashGerminacionHub;
 
   global.hcGerminacionActiva = hcGerminacionActiva;
   global.hcGerminacionSyncDesdePremium = hcGerminacionSyncDesdePremium;

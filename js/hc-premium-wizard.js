@@ -624,6 +624,8 @@
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
     syncPremiumMetodoGenPlacement();
+    if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
+    if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(pagina);
 
     if (pagina === SETUP_PAGE_ORIGEN) {
       if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
@@ -713,13 +715,34 @@
         return false;
       }
     }
-    if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
+    if (pagina === SETUP_PAGE_PREMIUM_3) {
       if (
         typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
         hcCaminoSemillaPropagadorSetupGerm()
       ) {
+        if (
+          typeof validarGeneticaGermObligatoria === 'function' &&
+          !validarGeneticaGermObligatoria()
+        ) {
+          return false;
+        }
         return true;
       }
+    }
+    if (pagina === SETUP_PAGE_PREMIUM_6) {
+      if (
+        typeof requiereGeneticaGermEnSetup === 'function' &&
+        requiereGeneticaGermEnSetup()
+      ) {
+        if (
+          typeof validarGeneticaGermObligatoria === 'function' &&
+          !validarGeneticaGermObligatoria()
+        ) {
+          return false;
+        }
+      }
+    }
+    if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
       if (typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
           window.salaTieneMedidasDesdeEquipamiento()) {
         return true;

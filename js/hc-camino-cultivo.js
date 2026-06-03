@@ -129,8 +129,12 @@
     }
     refreshCaminoCultivoUI();
     if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
+    if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
     if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
+    if (typeof refreshSetupCaminoStepBanner === 'function' && typeof setupPagina !== 'undefined') {
+      refreshSetupCaminoStepBanner(setupPagina);
+    }
   }
 
   function refreshCaminoCultivoUI() {

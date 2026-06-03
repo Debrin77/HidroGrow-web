@@ -305,16 +305,26 @@ function showToast(msg, error, opts) {
 function hcNotifyInstalacionGuardada(opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
   const nombre = String(opts.nombre || '').trim();
-  const msg = nombre
-    ? '✅ «' + nombre + '» guardada · Checklist en Sala'
-    : '✅ Instalación guardada · Checklist en Sala';
+  const cam = String(opts.camino || '').trim();
+  const faseGerm = !!opts.faseGerm;
+  const salaPre = !!opts.salaPreGerm;
+  let msg = nombre ? '✅ «' + nombre + '» guardada' : '✅ Instalación guardada';
+  if (salaPre) {
+    msg += ' · Montaje de sala y luego las 6 fases';
+  } else if (faseGerm && cam === 'semilla_hidro') {
+    msg += ' · Prep hidro → sala → 6 fases en Inicio';
+  } else if (faseGerm && cam === 'semilla_propagador') {
+    msg += ' · Checklist propagador → 6 fases (sala después)';
+  } else if (!faseGerm) {
+    msg += ' · Continúa en Sala o Cultivo';
+  }
   const delayMs = Number.isFinite(opts.delayMs) ? opts.delayMs : 280;
   setTimeout(function () {
     showToast(msg, false, { durationMs: 8200, zIndex: 10400, prominent: true });
   }, delayMs);
   try {
-    if (typeof hcMostrarBannerSalaPostSetup === 'function') {
-      hcMostrarBannerSalaPostSetup(nombre);
+    if (typeof hcMostrarBannerSalaPostSetup === 'function' && (salaPre || !faseGerm || cam === 'semilla_hidro')) {
+      hcMostrarBannerSalaPostSetup(nombre, { camino: cam, faseGerm: faseGerm });
     }
   } catch (_) {}
 }

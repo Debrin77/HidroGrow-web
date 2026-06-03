@@ -1750,6 +1750,23 @@ function guardarSetupYContinuarCore() {
       renderSetupPage();
       return false;
     }
+    if (
+      faseGermSetup &&
+      typeof validarGeneticaGermObligatoria === 'function' &&
+      !validarGeneticaGermObligatoria()
+    ) {
+      setupPagina =
+        typeof paginaGeneticaGermSetup === 'function'
+          ? paginaGeneticaGermSetup()
+          : typeof SETUP_PAGE_PREMIUM_3 !== 'undefined'
+            ? SETUP_PAGE_PREMIUM_3
+            : 4;
+      renderSetupPage();
+      if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') {
+        hcScrollSetupWizardAlFalloGuardado();
+      }
+      return false;
+    }
   }
 
   const isDwc = setupTipoInstalacion === 'dwc';
@@ -2334,15 +2351,26 @@ function guardarSetupYContinuarCore() {
     !salaPreGermGuardada &&
     state.configTorre &&
     state.configTorre.hcSetupFase === 'germinacion';
+  const camGuardado =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
   if (typeof hcNotifyInstalacionGuardada === 'function') {
-    hcNotifyInstalacionGuardada({ nombre: nombreGuardado });
+    hcNotifyInstalacionGuardada({
+      nombre: nombreGuardado,
+      salaPreGerm: salaPreGermGuardada,
+      faseGerm: faseGermGuardada,
+      camino: camGuardado,
+    });
   } else if (typeof showToast === 'function') {
     setTimeout(function () {
+      var msgGerm =
+        camGuardado === 'semilla_hidro'
+          ? '✅ Guardado · checklist prep hidro → sala → sistema → 6 fases'
+          : '✅ Guardado · checklist propagador → 6 fases en Inicio (sala después)';
       showToast(
         salaPreGermGuardada
-          ? '✅ Sala guardada · abre el checklist de montaje de sala y luego las 6 fases'
+          ? '✅ Sala guardada · checklist de montaje y luego las 6 fases'
           : faseGermGuardada
-            ? '✅ Fase 1 guardada · checklist propagador → sala → 6 fases en Inicio'
+            ? msgGerm
             : nombreGuardado
               ? '✅ «' + nombreGuardado + '» guardada'
               : '✅ Instalación guardada',

@@ -17,6 +17,61 @@
     return p.geneticaPref === 'auto' ? 'auto' : p.geneticaPref === 'foto' ? 'foto' : '';
   }
 
+  /** Semilla en fase germ del asistente: genética obligatoria (paso 4 propagador o 6 hidro). */
+  function requiereGeneticaGermEnSetup() {
+    var orig =
+      typeof getPremiumOrigenPlanta === 'function'
+        ? getPremiumOrigenPlanta()
+        : ensurePremium().origenPlanta || 'semilla';
+    if (orig !== 'semilla') return false;
+    if (typeof hcSetupEnFaseGerminacion === 'function' && !hcSetupEnFaseGerminacion()) {
+      return false;
+    }
+    if (typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return false;
+    }
+    return true;
+  }
+
+  function paginaGeneticaGermSetup() {
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    }
+    return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+  }
+
+  function validarGeneticaGermObligatoria() {
+    if (!requiereGeneticaGermEnSetup()) return true;
+    persistVariedadGermFromUI();
+    var vid = String(ensurePremium().variedadGerminacion || '').trim();
+    var sel = el('setupPremiumVariedadGermSelect');
+    var req = el('setupPremiumGeneticaGermReq');
+    if (!vid) {
+      if (req) {
+        req.classList.remove('setup-hidden');
+        req.setAttribute('role', 'alert');
+        req.textContent =
+          'Obligatorio: elige la genética del catálogo para preconfigurar Inicio → Germinación.';
+      }
+      if (sel) {
+        sel.setAttribute('aria-invalid', 'true');
+        try {
+          sel.focus();
+        } catch (_) {}
+      }
+      if (typeof showToast === 'function') {
+        showToast('Elige la genética (semilla) antes de continuar', true);
+      }
+      return false;
+    }
+    if (sel) sel.removeAttribute('aria-invalid');
+    if (req) req.setAttribute('role', 'note');
+    return true;
+  }
+
   function syncVariedadGermATorre(variedadId) {
     const vid = String(variedadId || '').trim();
     const p = ensurePremium();
@@ -97,8 +152,32 @@
     }
 
     const req = el('setupPremiumGeneticaGermReq');
+    const oblig = requiereGeneticaGermEnSetup();
     if (req) {
-      req.classList.toggle('setup-hidden', !!vid);
+      if (oblig && !vid) {
+        req.classList.remove('setup-hidden');
+        req.classList.add('setup-genetica-req--pendiente');
+        req.setAttribute('role', 'note');
+        req.textContent =
+          'Obligatorio: elige la genética del catálogo para continuar (coherente con foto/auto).';
+      } else {
+        req.classList.remove('setup-genetica-req--pendiente');
+        req.classList.toggle('setup-hidden', !!vid || !oblig);
+        if (!vid && !oblig) {
+          req.textContent =
+            'Recomendado: elige la genética ahora para no repetirlo en Inicio.';
+          req.classList.remove('setup-hidden');
+        }
+      }
+    }
+    if (sel) {
+      if (oblig) {
+        sel.setAttribute('aria-required', 'true');
+        sel.required = true;
+      } else {
+        sel.removeAttribute('aria-required');
+        sel.required = false;
+      }
     }
   }
 
@@ -112,6 +191,10 @@
     const show = orig === 'semilla';
     sec.classList.toggle('setup-hidden', !show);
     if (!show) return;
+
+    var reqTag = el('setupPremiumGeneticaGermRequiredTag');
+    var oblig = requiereGeneticaGermEnSetup();
+    if (reqTag) reqTag.classList.toggle('setup-hidden', !oblig);
 
     const p = ensurePremium();
     const pref = filtroGeneticaPref();
@@ -135,4 +218,7 @@
   window.refreshPremiumGeneticaGermVis = refreshPremiumGeneticaGermVis;
   window.persistVariedadGermFromUI = persistVariedadGermFromUI;
   window.syncVariedadGermATorre = syncVariedadGermATorre;
+  window.requiereGeneticaGermEnSetup = requiereGeneticaGermEnSetup;
+  window.validarGeneticaGermObligatoria = validarGeneticaGermObligatoria;
+  window.paginaGeneticaGermSetup = paginaGeneticaGermSetup;
 })();

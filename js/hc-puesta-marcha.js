@@ -1358,6 +1358,7 @@
 
   function openPmGuia(key) {
     var safe = String(key || '').replace(/[^a-zA-Z0-9_]/g, '');
+    if (!safe) return;
     var content = buildGuiaContent(safe, getCfg());
     if (!content) {
       if (typeof showToast === 'function') showToast('Guía no disponible para este paso.', true);
@@ -1376,14 +1377,48 @@
       markBtn.style.display = content.optional ? 'none' : '';
       markBtn.textContent = 'Marcar paso hecho';
     }
-    if (modal) modal.classList.add('open');
+    if (!modal) {
+      if (typeof showToast === 'function') showToast('No se pudo abrir la guía (modal ausente).', true);
+      return;
+    }
+    modal.classList.add('open');
+    try {
+      if (typeof a11yDialogOpened === 'function') a11yDialogOpened(modal);
+    } catch (_) {}
+    try {
+      modal.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (_) {}
   }
 
   function closePmGuia(ev) {
     if (ev && ev.target !== ev.currentTarget) return;
     var modal = document.getElementById('modalPmGuia');
-    if (modal) modal.classList.remove('open');
+    if (modal) {
+      modal.classList.remove('open');
+      try {
+        if (typeof a11yDialogClosed === 'function') a11yDialogClosed(modal);
+      } catch (_) {}
+    }
     _pmGuiaKeyOpen = null;
+  }
+
+  function ensurePmGuiaClickDelegation() {
+    if (ensurePmGuiaClickDelegation._ready) return;
+    ensurePmGuiaClickDelegation._ready = true;
+    document.addEventListener(
+      'click',
+      function (ev) {
+        var btn = ev.target && ev.target.closest ? ev.target.closest('.hc-pm-guia-btn, .hc-pm-guia-chip') : null;
+        if (!btn) return;
+        var card = btn.closest('[data-pm-id]');
+        var id = card ? card.getAttribute('data-pm-id') : '';
+        if (!id) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        openPmGuia(id);
+      },
+      true
+    );
   }
 
   function pmGuiaMarkDone() {
@@ -1604,6 +1639,8 @@
 
   global.hcOpenPuestaMarchaChecklist = openPuestaMarchaChecklist;
   global.hcClosePuestaMarchaChecklist = closePuestaMarchaChecklist;
+  ensurePmGuiaClickDelegation();
+
   global.hcOpenPmGuia = openPmGuia;
   global.hcClosePmGuia = closePmGuia;
   global.hcPmGuiaMarkDone = pmGuiaMarkDone;
