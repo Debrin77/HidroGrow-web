@@ -2070,6 +2070,9 @@ function guardarSetupYContinuarCore() {
       if (typeof persistPremiumGermPlanToConfig === 'function') {
         persistPremiumGermPlanToConfig(state.configTorre);
       }
+      if (typeof hcGerminacionSyncDesdePremium === 'function') {
+        hcGerminacionSyncDesdePremium(state.configTorre);
+      }
       if (typeof validarPlanGerminacionCompleto === 'function') {
         const vPlan = validarPlanGerminacionCompleto(state.configTorre, { requierePropagador: true });
         if (!vPlan.ok) {
@@ -2353,33 +2356,48 @@ function guardarSetupYContinuarCore() {
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     if (typeof saveState === 'function') saveState();
   } catch (_) {}
+  const transicionPropagadorChecklist =
+    faseGermSetup && !faseSalaPreGerm && camPersist === 'semilla_propagador';
+
   aplicarConfigTorre();
   actualizarHeaderTorre();
   actualizarBadgesNutriente();
-  try {
-    if (typeof renderConsejos === 'function') renderConsejos();
-  } catch (_) {}
-  try {
-    if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
-    else renderTorre();
-  } catch (eRenderTorre) {
+  if (!transicionPropagadorChecklist) {
     try {
-      console.error('renderTorre (post-guardado asistente)', eRenderTorre);
+      if (typeof renderConsejos === 'function') renderConsejos();
+    } catch (_) {}
+    try {
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      else renderTorre();
+    } catch (eRenderTorre) {
+      try {
+        console.error('renderTorre (post-guardado asistente)', eRenderTorre);
+      } catch (_) {}
+    }
+    try {
+      if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+    } catch (_) {}
+    updateTorreStats();
+    updateDashboard();
+    try {
+      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+    } catch (_) {}
+    try {
+      if (typeof hcShowPendingSalasReminder === 'function') hcShowPendingSalasReminder();
     } catch (_) {}
   }
-  try {
-    if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
-  } catch (_) {}
-  updateTorreStats();
-  updateDashboard();
-  try {
-    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
-  } catch (_) {}
-  try {
-    if (typeof hcShowPendingSalasReminder === 'function') hcShowPendingSalasReminder();
-  } catch (_) {}
 
-  // Cerrar asistente primero para que el paso a Cultivo / checklist sea continuo (sin solapamiento visual).
+  // Checklist propagador encima del asistente → al cerrar no se ve Inicio un instante.
+  if (transicionPropagadorChecklist) {
+    try {
+      window._hcPropagadorChecklistTrasSetup = true;
+      if (typeof hcOpenPropagadorMontajeChecklist === 'function') {
+        hcOpenPropagadorMontajeChecklist();
+      }
+    } catch (_) {}
+  }
+
+  // Cerrar asistente (el modal propagador queda por encima).
   try {
     window._hcSetupWizardCompletadoTs = Date.now();
     window._hcPostSetupChecklistPreguntaMostrada = false;

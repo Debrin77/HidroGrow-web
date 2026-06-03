@@ -794,23 +794,34 @@
     if (cfgGerm.hcSetupFase === 'germinacion') {
       var camGerm =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
+      var propagadorTrasSetup =
+        camGerm === 'semilla_propagador' &&
+        typeof window !== 'undefined' &&
+        window._hcPropagadorChecklistTrasSetup;
+      var delayEntrada = propagadorTrasSetup ? 0 : 300;
       setTimeout(function () {
+        var modalProp = document.getElementById('modalPropagadorMontaje');
+        var checklistYaAbierto = !!(modalProp && modalProp.classList.contains('open'));
         var abrirCheck =
+          !checklistYaAbierto &&
           typeof propagadorMontajeCompleto === 'function' &&
           !propagadorMontajeCompleto(cfgGerm) &&
           typeof hcOpenPropagadorMontajeChecklist === 'function';
         if (abrirCheck) {
           hcOpenPropagadorMontajeChecklist();
+          checklistYaAbierto = true;
         }
-        if (camGerm !== 'semilla_hidro') {
+        if (camGerm !== 'semilla_hidro' && !checklistYaAbierto && !propagadorTrasSetup) {
           try {
             if (typeof goTab === 'function') goTab('inicio');
           } catch (_) {}
         }
         setTimeout(function () {
-          try {
-            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          } catch (_) {}
+          if (!checklistYaAbierto && camGerm !== 'semilla_hidro') {
+            try {
+              document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (_) {}
+          }
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
           refreshInstalacionLifecycleUi();
           try {
@@ -819,8 +830,17 @@
           try {
             if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
           } catch (_) {}
-        }, camGerm === 'semilla_hidro' ? 120 : 280);
-      }, 300);
+          if (propagadorTrasSetup || checklistYaAbierto) {
+            try {
+              if (typeof updateDashboard === 'function') updateDashboard();
+              if (typeof updateTorreStats === 'function') updateTorreStats();
+            } catch (_) {}
+          }
+          try {
+            delete window._hcPropagadorChecklistTrasSetup;
+          } catch (_) {}
+        }, propagadorTrasSetup ? 80 : camGerm === 'semilla_hidro' ? 120 : 280);
+      }, delayEntrada);
       return;
     }
     setTimeout(function () {

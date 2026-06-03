@@ -412,8 +412,12 @@
       if (typeof showToast === 'function') showToast('Checklist no disponible.', true);
       return;
     }
+    var cfg = getCfg();
+    try {
+      if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
+    } catch (_) {}
     var body = document.getElementById('propagadorMontajeBody');
-    if (body) body.innerHTML = renderBodyHtml(getCfg());
+    if (body) body.innerHTML = renderBodyHtml(cfg);
     var title = document.getElementById('propagadorMontajeTitle');
     var cfg = getCfg();
     if (title) {
@@ -468,10 +472,10 @@
       }
     }
     var msgConfirm = esRutaEsqueje(cfg)
-      ? '¿Confirmas que el domo de enraizado está listo?\n\nSiguiente: asignar esquejes en la matriz y primer llenado.'
+      ? '¿Confirmas que el domo de enraizado está listo?'
       : esRutaGermHidro(cfg)
-        ? '¿Confirmas el preparativo en hidro?\n\nSiguiente: configurar la sala antes de las 6 fases.'
-        : '¿Confirmas el propagador/domo?\n\nSiguiente: las 6 fases en Inicio (la sala va después).';
+        ? '¿Confirmas el preparativo en hidro?'
+        : '¿Confirmas el propagador/domo?';
     if (!confirm(msgConfirm)) {
       return;
     }
