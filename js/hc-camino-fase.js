@@ -218,6 +218,51 @@
     return f === 'propagador' || f === 'germ_cubo' || f === 'prep_hidro';
   }
 
+  /**
+   * «Recarga completa» = vaciar + limpiar + mezcla nueva del depósito DWC/RDWC.
+   * En propagador (sin hidro cerrado) no aplica: solo domo y aporte opcional en el registro diario.
+   */
+  function hcRecargaCompletaAplicaEnCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_propagador') return true;
+    if (typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)) {
+      return true;
+    }
+    if (typeof depositoListo === 'function' && depositoListo(cfg)) return true;
+    return false;
+  }
+
+  /** Texto para Inicio cuando la tarjeta de recarga completa no aplica (propagador). */
+  function hcDashRecargaPropagadorInfo(cfg) {
+    cfg = cfg || cfgActiva();
+    if (hcRecargaCompletaAplicaEnCamino(cfg)) return null;
+    var g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : {};
+    var vid = String(
+      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+    ).trim();
+    var spec =
+      typeof getGerminacionSpecPorVariedad === 'function'
+        ? getGerminacionSpecPorVariedad(vid)
+        : { ecInicialUs: 500, phCubo: '5.5' };
+    var faseId =
+      typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+    var faseNut = faseId === 'semilla' || faseId === 'taproot';
+    var ec = spec.ecInicialUs || 500;
+    var diasObj =
+      typeof diasObjetivoConclusionGerm === 'function'
+        ? diasObjetivoConclusionGerm(cfg, g)
+        : 12;
+    return {
+      ecOrientativaUs: ec,
+      phCubo: spec.phCubo || '5.5',
+      faseId: faseId,
+      faseNutrienteOpcional: !faseNut,
+      diasObjetivo: diasObjetivo,
+      nombreVar: spec.nombreGenetica || vid || '',
+    };
+  }
+
   global.getSistemaFaseCamino = getSistemaFaseCamino;
   global.hcMostrarSistemaFaseCamino = hcMostrarSistemaFaseCamino;
   global.hcMostrarSistemaPropagador = hcMostrarSistemaPropagador;
@@ -226,6 +271,8 @@
   global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
   global.hcDashTorreInfoPropagador = hcDashTorreInfoPropagador;
   global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
+  global.hcRecargaCompletaAplicaEnCamino = hcRecargaCompletaAplicaEnCamino;
+  global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;
   global.hcOcultarTabSalaDuranteCamino = hcOcultarTabSalaDuranteCamino;
   global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;

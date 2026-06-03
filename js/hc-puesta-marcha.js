@@ -1291,6 +1291,27 @@
 
   function renderPuestaMarchaInlinePreview() {
     var cfg = getCfg();
+    var hubHtml =
+      typeof renderMontajeInicioHubPropagador === 'function'
+        ? renderMontajeInicioHubPropagador(cfg)
+        : '';
+    if (hubHtml) {
+      var inicioHost = document.getElementById('hcMontajeInicioBody');
+      if (inicioHost) inicioHost.innerHTML = hubHtml;
+      var salaHost = document.getElementById('sistemaMontajeChecksBody');
+      if (salaHost) {
+        salaHost.innerHTML =
+          '<p class="hc-pm-inline-lead">Mismo checklist de <strong>montaje de sala</strong> que en Inicio (carpa, luz, aire). Sin puntos de depósito DWC hasta tras la germinación.</p>' +
+          buildPuestaMarchaInlineHtml(
+            cfg,
+            getChecks(cfg),
+            countProgress(getChecks(cfg), cfg, buildItemsForConfig(cfg)),
+            !!(getChecks(cfg).completedAt),
+            buildItemsForConfig(cfg)
+          );
+      }
+      return;
+    }
     var checks = getChecks(cfg);
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
@@ -1359,7 +1380,13 @@
     }
     var inicioSub = document.getElementById('hcMontajeInicioSub');
     if (inicioSub) {
-      if (bloqueada) {
+      var subHub =
+        typeof renderMontajeInicioHubSubtitulo === 'function'
+          ? renderMontajeInicioHubSubtitulo(cfg)
+          : '';
+      if (subHub) {
+        inicioSub.textContent = subHub;
+      } else if (bloqueada) {
         inicioSub.textContent = '✓ Cerrado tras depósito';
       } else if (verificada) {
         inicioSub.textContent = '✓ Editable hasta depósito';

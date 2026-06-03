@@ -425,11 +425,63 @@ function updateDashTorre() {
   elX.textContent = proxDias < 999 ? proxDias + 'd' : '—';
 }
 
+function refreshDashRecargaCardCamino() {
+  const cfg = state.configTorre || {};
+  const card = document.getElementById('dashRecargaCard');
+  const alt = document.getElementById('dashRecargaPropagadorAviso');
+  const aplica =
+    typeof hcRecargaCompletaAplicaEnCamino !== 'function' || hcRecargaCompletaAplicaEnCamino(cfg);
+  if (card) card.classList.toggle('setup-hidden', !aplica);
+  if (!aplica) {
+    const info =
+      typeof hcDashRecargaPropagadorInfo === 'function' ? hcDashRecargaPropagadorInfo(cfg) : null;
+    let host = alt;
+    if (!host && card && card.parentNode) {
+      host = document.createElement('section');
+      host.id = 'dashRecargaPropagadorAviso';
+      host.className = 'dash-recarga-prop-aviso setup-field-hint setup-field-hint--banner';
+      host.setAttribute('role', 'note');
+      card.parentNode.insertBefore(host, card.nextSibling);
+    }
+    if (host && info) {
+      host.classList.remove('setup-hidden');
+      host.innerHTML =
+        '<strong>Recarga completa del depósito:</strong> no aplica en fase propagador. ' +
+        'Controla <strong>T° y HR del domo</strong> en el hub de germinación. ' +
+        (info.faseNutrienteOpcional
+          ? 'Aporte de nutriente opcional en el <strong>registro diario</strong> (no es vaciar el depósito). '
+          : 'En esta fase prioriza humedad y pH del cubo (~' +
+            (info.phCubo || '5,5') +
+            '); sin mezcla de depósito. ') +
+        (info.nombreVar ? 'Genética <strong>' + info.nombreVar + '</strong>: ' : '') +
+        'EC orientativa al pasar al agua ~<strong>' +
+        info.ecOrientativaUs +
+        ' µS</strong> (según perfil de la cepa, no por número de semillas). ' +
+        'La recarga completa se activa tras configurar DWC/RDWC (~día ' +
+        info.diasObjetivo +
+        ' o al dar por concluida la germinación).';
+    } else if (host) {
+      host.classList.add('setup-hidden');
+    }
+  } else if (alt) {
+    alt.classList.add('setup-hidden');
+  }
+  const quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
+  if (quickRec) quickRec.classList.toggle('setup-hidden', !aplica);
+}
+
 function updateRecargaBar() {
+  try {
+    if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
+  } catch (_) {}
   const diasEl = document.getElementById('recargaDias');
   const barEl  = document.getElementById('recargaBar');
   const notaEl = document.getElementById('recargaNota');
   if (!diasEl || !barEl || !notaEl) return;
+  const cfgRec = state.configTorre || {};
+  if (typeof hcRecargaCompletaAplicaEnCamino === 'function' && !hcRecargaCompletaAplicaEnCamino(cfgRec)) {
+    return;
+  }
   hydrateRecargaVolumenAvisoMedirUI();
 
   const sysLbl =

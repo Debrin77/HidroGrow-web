@@ -362,7 +362,7 @@
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
-      '<p class="hc-prop-inline-lead">Completa el checklist premium; después <strong>configura la sala</strong> y las 6 fases.</p>' +
+      '<p class="hc-prop-inline-lead">Checklist del propagador. Montaje de sala (opcional) y <strong>hidro DWC</strong> están en <strong>Checklists de montaje</strong> más abajo.</p>' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +
@@ -538,6 +538,183 @@
     return null;
   }
 
+  function montajeInicioUsaHubPropagador(cfg) {
+    cfg = cfg || getCfg();
+    if (!esRutaPropagador(cfg)) return false;
+    if (typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)) {
+      return false;
+    }
+    return true;
+  }
+
+  function progSalaMontaje(cfg) {
+    cfg = cfg || getCfg();
+    var checks =
+      cfg.puestaMarchaChecks && typeof cfg.puestaMarchaChecks === 'object'
+        ? cfg.puestaMarchaChecks
+        : {};
+    var items =
+      typeof hcBuildPuestaMarchaItems === 'function' ? hcBuildPuestaMarchaItems(cfg) : [];
+    var done = 0;
+    var total = 0;
+    items.forEach(function (it) {
+      if (it.optional) return;
+      total++;
+      if (checks[it.id]) done++;
+      else if (it.id === 'sistema' && cfg.checklistInstalacionConfirmada) done++;
+      else if (it.autoNombre) {
+        var t =
+          typeof getTorreActiva === 'function'
+            ? getTorreActiva()
+            : typeof state !== 'undefined' && state.torres
+              ? state.torres[state.torreActiva || 0]
+              : null;
+        var n = t && t.nombre ? String(t.nombre).trim() : '';
+        if (n.length > 2 && n.toLowerCase() !== 'instalación') done++;
+      }
+    });
+    return {
+      done: done,
+      total: total,
+      verificada: !!checks.completedAt,
+    };
+  }
+
+  function renderMontajeInicioHubSubtitulo(cfg) {
+    if (!montajeInicioUsaHubPropagador(cfg)) return '';
+    var propCh = getChecks(cfg);
+    var propIt = buildItems(cfg);
+    var propProg = countProgress(propCh, propIt);
+    var sala = progSalaMontaje(cfg);
+    var partes = [];
+    partes.push(
+      'Propagador ' +
+        (propCh.completedAt ? '✓' : propProg.done + '/' + propProg.total)
+    );
+    partes.push('Sala ' + (sala.verificada ? '✓' : sala.done + '/' + sala.total));
+    var concluida =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    partes.push(concluida ? 'Hidro pendiente' : 'Hidro tras germinación');
+    return partes.join(' · ');
+  }
+
+  function renderMontajeInicioHubPropagador(cfg) {
+    cfg = cfg || getCfg();
+    if (!montajeInicioUsaHubPropagador(cfg)) return '';
+    var propCh = getChecks(cfg);
+    var propIt = buildItems(cfg);
+    var propProg = countProgress(propCh, propIt);
+    var propOk = !!propCh.completedAt;
+    var sala = progSalaMontaje(cfg);
+    var g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : {};
+    var concluida =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    var hidroPend =
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(cfg);
+    var diasObj =
+      typeof diasObjetivoConclusionGerm === 'function'
+        ? diasObjetivoConclusionGerm(cfg, g)
+        : 12;
+    var diaN = 1;
+    if (g.startedAt) {
+      var d0 = new Date(g.startedAt);
+      d0.setHours(0, 0, 0, 0);
+      var hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      diaN = Math.max(1, Math.floor((hoy - d0) / 86400000) + 1);
+    }
+    var nomVar = '';
+    if (typeof getPlanGermEstado === 'function') {
+      var st = getPlanGermEstado(cfg);
+      if (st && st.nombreVar) nomVar = st.nombreVar;
+    }
+
+    var hidroCls = 'hc-montaje-inicio-card hc-montaje-inicio-card--hidro';
+    var hidroBadge = '3 · Tras germinación';
+    var hidroBody =
+      'El asistente <strong>DWC/RDWC</strong>, tuberías, depósito y primer llenado <strong>no se abren ahora</strong> para no mezclar pasos con el propagador.';
+    var hidroStatus = '';
+    var hidroBtn = '';
+    if (!concluida) {
+      hidroCls += ' hc-montaje-inicio-card--locked';
+      hidroBadge = '3 · Bloqueado';
+      hidroBody +=
+        ' Se desbloquea al <strong>dar por concluida la germinación</strong> (orientativo ~día ' +
+        diasObj +
+        ' según genética' +
+        (nomVar ? ' · ' + esc(nomVar) : '') +
+        '; vas por día ' +
+        diaN +
+        ').';
+      hidroStatus =
+        '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--lock">🔒 No configurar hidro hasta el traslado</p>';
+    } else if (hidroPend) {
+      hidroBody = 'Germinación concluida. Configura el circuito hidropónico antes del traslado al depósito.';
+      hidroStatus =
+        '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ready">Listo para Fase 2</p>';
+      hidroBtn =
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button>';
+    } else {
+      hidroStatus =
+        '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ok">✓ Sistema hidro configurado</p>';
+      hidroBtn =
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sistema\')">Ver en Cultivo e instalación</button>';
+    }
+
+    return (
+      '<div class="hc-montaje-inicio-hub" role="region" aria-label="Checklists del camino semilla con propagador">' +
+      '<p class="hc-montaje-inicio-hub-lead" role="note">' +
+      '<strong>Tres checklists distintos.</strong> Ahora: propagador y (si quieres) montaje de sala. ' +
+      'El sistema hidropónico queda para después de la germinación y el traslado.</p>' +
+      '<ol class="hc-montaje-inicio-hub-list">' +
+      '<li class="hc-montaje-inicio-card hc-montaje-inicio-card--prop">' +
+      '<div class="hc-montaje-inicio-card-head">' +
+      '<span class="hc-montaje-inicio-card-badge hc-montaje-inicio-card-badge--now">1 · Ahora</span>' +
+      '<h4 class="hc-montaje-inicio-card-title">Checklist · Montaje del propagador</h4></div>' +
+      '<p class="hc-montaje-inicio-card-desc">Domo, mat térmica, rockwool pH 5,5, higiene y ventilación. Checklist <strong>completo</strong> (todos los puntos).</p>' +
+      '<p class="hc-montaje-inicio-card-status' +
+      (propOk ? ' hc-montaje-inicio-card-status--ok' : '') +
+      '">' +
+      (propOk ? '✓ Verificado' : propProg.done + '/' + propProg.total + ' puntos') +
+      '</p>' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
+      (propOk ? 'Revisar checklist propagador' : 'Abrir checklist propagador') +
+      '</button></li>' +
+      '<li class="hc-montaje-inicio-card hc-montaje-inicio-card--sala">' +
+      '<div class="hc-montaje-inicio-card-head">' +
+      '<span class="hc-montaje-inicio-card-badge hc-montaje-inicio-card-badge--opt">2 · Opcional ahora</span>' +
+      '<h4 class="hc-montaje-inicio-card-title">Checklist · Montaje de sala</h4></div>' +
+      '<p class="hc-montaje-inicio-card-desc">Carpa, LED, extractor, medidor… Puedes montarlo durante la germinación. <strong>Sin tuberías ni depósito DWC</strong> (esos puntos no aparecen hasta Fase 2).</p>' +
+      '<p class="hc-montaje-inicio-card-status' +
+      (sala.verificada ? ' hc-montaje-inicio-card-status--ok' : '') +
+      '">' +
+      (sala.verificada ? '✓ Sala verificada' : sala.done + '/' + sala.total + ' puntos esenciales') +
+      '</p>' +
+      '<div class="hc-montaje-inicio-card-actions">' +
+      '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
+      (sala.verificada ? 'Revisar checklist sala' : 'Abrir checklist sala') +
+      '</button> ' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sala\');setTimeout(function(){var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d)d.open=true},300)">Ir a Sala</button>' +
+      '</div></li>' +
+      '<li class="' +
+      hidroCls +
+      '">' +
+      '<div class="hc-montaje-inicio-card-head">' +
+      '<span class="hc-montaje-inicio-card-badge hc-montaje-inicio-card-badge--later">' +
+      esc(hidroBadge) +
+      '</span>' +
+      '<h4 class="hc-montaje-inicio-card-title">Sistema hidropónico DWC/RDWC</h4></div>' +
+      '<p class="hc-montaje-inicio-card-desc">' +
+      hidroBody +
+      '</p>' +
+      hidroStatus +
+      (hidroBtn ? '<div class="hc-montaje-inicio-card-actions">' + hidroBtn + '</div>' : '') +
+      '</li></ol></div>'
+    );
+  }
+
   global.propagadorMontajeCompleto = propagadorMontajeCompleto;
   global.enraizadoMontajeCompleto = enraizadoMontajeCompleto;
   global.aplicaChecklistEnraizado = aplicaChecklistEnraizado;
@@ -551,4 +728,7 @@
   global.renderPropagadorMontajeInlineHtml = renderInlineEnGermHub;
   global.hcPropagadorMontajeSiguienteTrasGerminacion = hcPropagadorMontajeSiguienteTrasGerminacion;
   global.hcRerenderPropagadorMontajeModal = hcRerenderPropagadorMontajeModal;
+  global.montajeInicioUsaHubPropagador = montajeInicioUsaHubPropagador;
+  global.renderMontajeInicioHubPropagador = renderMontajeInicioHubPropagador;
+  global.renderMontajeInicioHubSubtitulo = renderMontajeInicioHubSubtitulo;
 })(typeof window !== 'undefined' ? window : this);
