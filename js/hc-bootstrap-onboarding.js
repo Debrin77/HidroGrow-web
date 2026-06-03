@@ -17,6 +17,17 @@ let _tabCoachRetryTimer = null;
 let _hcWelcomeScrollLockY = 0;
 
 /** Fuerza scroll al inicio (PWA / recarga no debe abrir a mitad de página). */
+function hcScrollWelcomeOverlayTop() {
+  try {
+    const ov = document.getElementById('welcomeOverlay');
+    if (!ov) return;
+    ov.scrollTop = 0;
+    ov.scrollLeft = 0;
+    const grid = ov.querySelector('.welcome-value-grid');
+    if (grid) grid.scrollLeft = 0;
+  } catch (_) {}
+}
+
 function hcScrollAppToTop() {
   try {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -28,12 +39,7 @@ function hcScrollAppToTop() {
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   } catch (_) {}
-  try {
-    const ov = document.getElementById('welcomeOverlay');
-    if (ov) ov.scrollTop = 0;
-    const card = ov && ov.querySelector('.welcome-card');
-    if (card) card.scrollTop = 0;
-  } catch (_) {}
+  hcScrollWelcomeOverlayTop();
 }
 
 function hcScrollWelcomeToTopDeferred() {
@@ -275,6 +281,8 @@ function applyWelcomeScrollLock(open) {
     document.documentElement.classList.toggle('hc-welcome-open', !!open);
     if (open) {
       hcScrollWelcomeToTopDeferred();
+      setTimeout(hcScrollWelcomeOverlayTop, 120);
+      setTimeout(hcScrollWelcomeOverlayTop, 480);
       _hcWelcomeScrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
       document.body.style.position = 'fixed';
       document.body.style.top = _hcWelcomeScrollLockY ? '-' + _hcWelcomeScrollLockY + 'px' : '0';
