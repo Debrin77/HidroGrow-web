@@ -115,6 +115,9 @@
     renderMedirEquipamientoPanel();
     if (catId === 'propagador' || catId === 'mat_termica_germ') {
       try {
+        if (catId === 'propagador' && typeof onPropagadorEquipSeleccionado === 'function') {
+          onPropagadorEquipSeleccionado();
+        }
         if (typeof hcGerminacionSyncEquipDesdeInstalado === 'function') hcGerminacionSyncEquipDesdeInstalado(cfg);
         if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
         if (typeof saveState === 'function') saveState();
@@ -355,9 +358,18 @@
       banner.classList.remove('setup-hidden');
       const tieneProp = !!(inst.propagador && inst.propagador.id);
       banner.className = tieneProp ? 'setup-box-info setup-mb-8' : 'setup-box-warn setup-mb-8';
+      var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+      var plan =
+        Number.isFinite(p.numSemillasGerm) && p.sustratoGerm
+          ? ' Plan: <strong>' +
+            p.numSemillasGerm +
+            ' semilla(s)</strong> en <strong>' +
+            (typeof etiquetaSustratoGerm === 'function' ? etiquetaSustratoGerm(p.sustratoGerm) : p.sustratoGerm) +
+            '</strong> (bloque de abajo).'
+          : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
       banner.innerHTML = tieneProp
-        ? '<strong>Semilla:</strong> propagador registrado en catálogo. El seguimiento día a día (domo, cubos rockwool) va en <strong>Inicio → Germinación</strong>.'
-        : '<strong>Semilla elegida:</strong> marca un <strong>domo / propagador</strong> en el grupo <strong>Germinación</strong> de arriba (recomendado). Sin domo: germina a 22–26 °C en bandeja húmeda.';
+        ? '<strong>Semilla:</strong> propagador en catálogo.' + plan + ' Seguimiento en <strong>Inicio → Germinación</strong> y <strong>Sistema → Propagador</strong>.'
+        : '<strong>Semilla:</strong> marca un <strong>domo / propagador</strong> arriba y completa el plan de semillas/sustrato abajo.';
       return;
     }
     if (origen === 'clon') {

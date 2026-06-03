@@ -733,6 +733,14 @@ function actualizarPostSetupChecklistRail() {
       title: 'Montaje · sistema hidro',
       text: 'Completa tuberías, aireación y puntos de sistema en el checklist de Sala.',
     },
+    enraizado: {
+      title: 'Enraizado de esquejes',
+      text: 'Checklist en Sistema (domo, rockwool). Luego asigna clones en el esquema.',
+    },
+    madre_fase: {
+      title: 'Cubo madre',
+      text: 'Asigna la madre en el esquema y el primer llenado del depósito.',
+    },
   };
 
   if (pasoUnico && railGuiado[pasoUnico.etapa]) {

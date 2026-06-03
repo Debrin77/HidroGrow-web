@@ -10357,6 +10357,13 @@ body.hc-modo-propagador-sistema #tab-sistema #torreNombreCard,
 body.hc-modo-propagador-sistema #tab-sistema .torre-tab-resumen-superior {
   display: none !important;
 }
+.hc-sis-fase-pasos {
+  margin: 12px 0;
+  padding-left: 1.2rem;
+  font-size: 13px;
+}
+.hc-sis-fase-paso { margin: 6px 0; }
+.hc-sis-fase-paso--ok { color: #059669; }
 .hc-germ-hub-modo {
   margin: 6px 0 0;
   font-size: 12px;

@@ -3388,7 +3388,7 @@
         <div id="setupPremiumEquipOrigenBanner" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div id="setupPremiumEquipGermReco" class="setup-box-info setup-mb-8 setup-hidden" role="status" aria-live="polite"></div>
         <div class="setup-block-title">Marca y modelo (catálogo ES)</div>
-        <p class="setup-field-hint setup-mb-8" id="setupPremium3EquipHint">Top 10 por categoría (growshops ES). Con <strong>semilla en propagador</strong>, en esta fase solo verás <strong>domo y mat térmica</strong>; la sala se configura después del checklist del propagador.</p>
+        <p class="setup-field-hint setup-mb-8" id="setupPremium3EquipHint">Top 10 por categoría (growshops ES). Con <strong>semilla en propagador</strong>: domo, mat térmica y bloque <strong>cuántas semillas + sustrato</strong>; la sala va después del propagador.</p>
         <div id="setupPremiumEquipGrid" class="equip-catalog-host setup-mb-8"></div>
         <div id="setupPremiumEquipFaltantes" class="setup-mb-16 setup-hidden" aria-live="polite"></div>
       </div>
@@ -3440,12 +3440,13 @@
 
     <div class="setup-page" id="spagePremium4">
       <div class="setup-title">Clima, luz y fotoperiodo</div>
-      <div class="setup-subtitle">Fase y horas de luz → objetivos VPD y EC.</div>
+      <div class="setup-subtitle" id="setupPremiumClimaSubtitle">Fase y horas de luz → objetivos VPD y EC.</div>
+      <p id="setupPremiumClimaCaminoHint" class="setup-box-info setup-mb-8 setup-hidden" role="status"></p>
       <div class="setup-mb-8">
         <label class="setup-field-label" for="setupPremiumFase">Fase inicial del cultivo</label>
-        <select id="setupPremiumFase" class="setup-input-city" onchange="calcularPremiumSala();refreshPremiumClimaResumen()">
-          <option value="esqueje">Esqueje / plántula</option>
-          <option value="vegetativo" selected>Vegetativo</option>
+        <select id="setupPremiumFase" class="setup-input-city" onchange="marcarPremiumClimaManual();calcularPremiumSala();refreshPremiumClimaResumen()">
+          <option value="esqueje" selected>Esqueje / plántula</option>
+          <option value="vegetativo">Vegetativo</option>
           <option value="prefloracion">Prefloración</option>
           <option value="floracion">Floración</option>
         </select>
@@ -3453,13 +3454,13 @@
       <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
         <div>
           <label class="setup-field-label" for="setupPremiumHorasLuz">Horas de luz / día</label>
-          <input type="number" id="setupPremiumHorasLuz" class="setup-input-city" min="12" max="24" step="1" value="18" onchange="refreshPremiumClimaResumen()">
+          <input type="number" id="setupPremiumHorasLuz" class="setup-input-city" min="12" max="24" step="1" value="18" onchange="marcarPremiumClimaManual();refreshPremiumClimaResumen()">
         </div>
         <div>
           <label class="setup-field-label" for="setupPremiumIntensidadLuz">Intensidad bajo foco</label>
-          <select id="setupPremiumIntensidadLuz" class="setup-input-city" onchange="refreshPremiumClimaResumen()">
-            <option value="baja">Baja (plántula)</option>
-            <option value="media" selected>Media (veg)</option>
+          <select id="setupPremiumIntensidadLuz" class="setup-input-city" onchange="marcarPremiumClimaManual();refreshPremiumClimaResumen()">
+            <option value="baja" selected>Baja (plántula / domo)</option>
+            <option value="media">Media (veg)</option>
             <option value="alta">Alta (flor)</option>
           </select>
         </div>
@@ -4509,7 +4510,7 @@
     <div id="propagadorMontajeBody" class="hc-pm-body"></div>
     <div class="hc-pm-foot">
       <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePropagadorMontajeChecklist()">Cerrar</button>
-      <button type="button" class="btn btn-primary btn-sm" onclick="hcFinishPropagadorMontaje()">Listo · configurar sala</button>
+      <button type="button" class="btn btn-primary btn-sm" id="hcPropagadorMontajeFinishBtn" onclick="hcFinishPropagadorMontaje()">Confirmar propagador</button>
     </div>
   </div>
 </div>
@@ -5203,12 +5204,12 @@
   <script src="js/hc-bootstrap-state.js?v=2026-05-31-origen"></script>
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-medir-operativa.js?v=2026-05-31-copy-lite"></script>
-  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-propagador-app"></script>
+  <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-flujo-cristalino"></script>
-  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-tabs-propagador"></script>
+  <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
   <script src="js/diagrams/hc-diagram-labels.js?v=2026-05-18-labels"></script>
   <script src="js/diagrams/dwc/dwc-scada-tokens.js?v=2026-05-15-scada2"></script>
@@ -5232,14 +5233,16 @@
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-propagador-flow"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-propagador-montaje.js?v=2026-05-31-flujo-cristalino"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-propagador-app"></script>
+  <script src="js/hc-propagador-montaje.js?v=2026-05-31-germ-plan-gate"></script>
+  <script src="js/hc-premium-germ-plan.js?v=2026-05-31-germ-plan-gate"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-germ-plan-gate"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-genetica-oblig"></script>
-  <script src="js/hc-camino-cultivo.js?v=2026-05-31-propagador-app"></script>
-  <script src="js/hc-sistema-propagador.js?v=2026-05-31-propagador-app"></script>
-  <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-tabs-propagador"></script>
+  <script src="js/hc-camino-fase.js?v=2026-05-31-caminos-fase"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-germ-plan-gate"></script>
+  <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-caminos-fase"></script>
+  <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
-  <script src="js/hc-premium-wizard.js?v=2026-05-31-flujo-logico"></script>
+  <script src="js/hc-premium-wizard.js?v=2026-05-31-clima-camino"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-flow"></script>
@@ -5265,12 +5268,12 @@
   <script src="js/hc-setup-mediciones-logic.js?v=2026-05-31-ui-plantas-pm"></script>
   <script src="js/hc-medicion-wizard.js?v=2026-06-02-dwc-rdwc-only"></script>
   <script src="js/hc-tools-pro.js?v=10"></script>
-  <script src="js/hc-setup-checklist.js?v=2026-05-31-flujo-logico"></script>
+  <script src="js/hc-setup-checklist.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/hc-setup-historial-tabs.js?v=2026-05-31-germ-historial"></script>
   <script src="js/hc-historial-seguimiento.js?v=2026-05-31-seg-vpd"></script>
   <script src="js/hc-consejos-extras.js?v=2026-05-31-consejos"></script>
   <script src="js/hc-setup-consejos.js?v=2026-06-02-dwc-rdwc-only2"></script>
-  <script src="js/calendario-logic.js?v=2026-05-31-germ-cal"></script>
+  <script src="js/calendario-logic.js?v=2026-05-31-caminos-fase"></script>
   <script src="js/meteo-forecast-meteo.js?v=13"></script>
   <script src="js/meteo-forecast-dashboard.js?v=2026-05-31-sin-instalacion"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>

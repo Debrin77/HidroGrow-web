@@ -438,10 +438,13 @@ function goTab(tab) {
   if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
   if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
   if (tab === 'sistema') {
-    const modoPropagador =
-      typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador();
-    if (modoPropagador) {
-      if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
+    const modoFase =
+      typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino();
+    if (modoFase) {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+      else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+        hcRefreshSistemaPropagadorPanel();
+      }
     } else {
       renderTorre();
       if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();

@@ -25,14 +25,20 @@
         altoM: null,
         ledW: null,
         extractorM3h: null,
-        faseSala: 'vegetativo',
+        faseSala: 'esqueje',
         horasLuz: 18,
-        intensidadLuz: 'media',
+        intensidadLuz: 'baja',
+        climaManual: false,
+        climaPresetCamino: 'semilla_propagador',
         geneticaPref: 'foto',
         origenPlanta: 'semilla',
         caminoCultivo: 'semilla_propagador',
         germinacionModoPreferido: 'propagador',
         variedadGerminacion: '',
+        numSemillasGerm: 6,
+        sustratoGerm: 'lana',
+        bandejaGerm: 'auto',
+        numSemillasGermManual: false,
         germinacionChecklist: {},
         metodoCultivo: 'scrog',
         metodoManual: false,
@@ -355,6 +361,107 @@
     refreshPremiumClimaResumen();
   }
 
+  /** Valores de clima/luz alineados con cada camino (domo, cubo, enraizado, madre). */
+  const CLIMATE_PRESETS_BY_CAMINO = {
+    semilla_propagador: {
+      faseSala: 'esqueje',
+      horasLuz: 18,
+      intensidadLuz: 'baja',
+      subtitle:
+        'Preconfigurado para <strong>propagador / domo</strong> (Fase 1). La sala LED la afinarás tras las 6 fases.',
+      resumenExtra:
+        'Domo: HR <strong>70–80 %</strong>, ventilar <strong>2×/día</strong> (5 min), luz <strong>suave 18/6</strong> (no saturar plántulas).',
+    },
+    semilla_hidro: {
+      faseSala: 'esqueje',
+      horasLuz: 18,
+      intensidadLuz: 'baja',
+      subtitle:
+        'Orientado a <strong>germinación en cubo</strong> (microdomo o HR alta). Subirás intensidad en veg de sala.',
+      resumenExtra: 'Cubo con domo mini: luz tenue, T° agua 20–24 °C, HR alta en el microclima.',
+    },
+    esqueje_hidro: {
+      faseSala: 'esqueje',
+      horasLuz: 18,
+      intensidadLuz: 'baja',
+      subtitle: 'Clima para <strong>enraizado</strong> de esquejes bajo domo.',
+      resumenExtra: 'Enraizado: HR 70–80 %, ventilar domo 2×/día, luz suave 18/6.',
+    },
+    madre_hidro: {
+      faseSala: 'vegetativo',
+      horasLuz: 18,
+      intensidadLuz: 'media',
+      subtitle: 'Madre en hidro: <strong>18/6 permanente</strong> (sin floración de cosecha).',
+      resumenExtra: 'Planta madre: fotoperíodo estable 18/6 y VPD de vegetativo.',
+    },
+  };
+
+  function getPremiumClimaPresetForCamino(caminoId) {
+    return CLIMATE_PRESETS_BY_CAMINO[caminoId] || null;
+  }
+
+  function needsPremiumClimaPresetApply(cam, p) {
+    if (!cam || !CLIMATE_PRESETS_BY_CAMINO[cam]) return false;
+    if (p.climaManual) return false;
+    if (p.climaPresetCamino !== cam) return true;
+    const preset = CLIMATE_PRESETS_BY_CAMINO[cam];
+    if (
+      cam === 'semilla_propagador' &&
+      (p.faseSala === 'vegetativo' || p.faseSala === 'floracion' || p.faseSala === 'prefloracion') &&
+      p.intensidadLuz !== 'baja'
+    ) {
+      return true;
+    }
+    return (
+      p.faseSala !== preset.faseSala ||
+      Number(p.horasLuz) !== preset.horasLuz ||
+      p.intensidadLuz !== preset.intensidadLuz
+    );
+  }
+
+  function aplicarPremiumClimaPorCamino(caminoId, opts) {
+    opts = opts || {};
+    const preset = getPremiumClimaPresetForCamino(caminoId);
+    if (!preset) return;
+    const p = ensurePremiumSetup();
+    if (p.climaManual && !opts.force) return;
+    p.faseSala = preset.faseSala;
+    p.horasLuz = preset.horasLuz;
+    p.intensidadLuz = preset.intensidadLuz;
+    p.climaPresetCamino = caminoId;
+    if (el('setupPremiumFase')) el('setupPremiumFase').value = preset.faseSala;
+    if (el('setupPremiumHorasLuz')) el('setupPremiumHorasLuz').value = String(preset.horasLuz);
+    if (el('setupPremiumIntensidadLuz')) el('setupPremiumIntensidadLuz').value = preset.intensidadLuz;
+    refreshPremiumClimaCaminoUI();
+    if (typeof calcularPremiumSala === 'function') calcularPremiumSala();
+    else refreshPremiumClimaResumen();
+  }
+
+  function marcarPremiumClimaManual() {
+    ensurePremiumSetup().climaManual = true;
+  }
+
+  function refreshPremiumClimaCaminoUI() {
+    const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    const preset = getPremiumClimaPresetForCamino(cam);
+    const sub = el('setupPremiumClimaSubtitle');
+    if (sub) {
+      sub.innerHTML = preset
+        ? preset.subtitle
+        : 'Fase y horas de luz → objetivos VPD y EC.';
+    }
+    const hint = el('setupPremiumClimaCaminoHint');
+    if (hint) {
+      if (preset && preset.resumenExtra) {
+        hint.classList.remove('setup-hidden');
+        hint.innerHTML = preset.resumenExtra;
+      } else {
+        hint.classList.add('setup-hidden');
+        hint.innerHTML = '';
+      }
+    }
+  }
+
   function refreshPremiumClimaResumen() {
     const out = el('setupPremiumClimaResumen');
     if (!out) return;
@@ -371,7 +478,13 @@
       html += '<p>VPD objetivo <strong>' + rangos.vpd.min + '–' + rangos.vpd.max + ' kPa</strong> · HR ' +
         rangos.hr.min + '–' + rangos.hr.max + '% · PPFD ' + rangos.ppfd.min + '–' + rangos.ppfd.max + ' µmol/m²/s</p>';
     }
+    const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    const preset = getPremiumClimaPresetForCamino(cam);
+    if (preset && preset.resumenExtra && !p.climaManual) {
+      html += '<p class="setup-field-hint">' + preset.resumenExtra + '</p>';
+    }
     out.innerHTML = html;
+    refreshPremiumClimaCaminoUI();
   }
 
   function refreshPremiumMetodoHint() {
@@ -563,6 +676,7 @@
       p.consejosModoUi = getConsejosModoSetupActivo();
       setupData.consejosModoUi = p.consejosModoUi;
     }
+    if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
   }
 
   function cargarPremiumSetupUI(pagina) {
@@ -599,6 +713,13 @@
     if (el('setupPremiumHorasLuz')) el('setupPremiumHorasLuz').value = String(p.horasLuz || 18);
     if (el('setupPremiumIntensidadLuz') && p.intensidadLuz) el('setupPremiumIntensidadLuz').value = p.intensidadLuz;
 
+    var camClima = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
+    if (camClima && needsPremiumClimaPresetApply(camClima, p)) {
+      aplicarPremiumClimaPorCamino(camClima, { force: true });
+    } else {
+      refreshPremiumClimaCaminoUI();
+    }
+
     seleccionarPremiumObjetivo(p.objetivo || 'autocultivo');
     if (pagina === SETUP_PAGE_PREMIUM_1 && typeof seleccionarConsejosModoSetup === 'function') {
       const modoConsejos =
@@ -624,7 +745,9 @@
     refreshPremiumMetodoOrigenHint();
     refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
     syncPremiumMetodoGenPlacement();
+    if (typeof syncPremiumGermPlanFromConfig === 'function') syncPremiumGermPlanFromConfig(cfg);
     if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
+    if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(pagina);
 
     if (pagina === SETUP_PAGE_ORIGEN) {
@@ -646,6 +769,15 @@
       refreshPremiumEntornoUI();
       if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
       calcularPremiumSala();
+    }
+    if (typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' && pagina === SETUP_PAGE_PREMIUM_4) {
+      var camP4 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      if (camP4 && needsPremiumClimaPresetApply(camP4, p)) {
+        aplicarPremiumClimaPorCamino(camP4, { force: true });
+      } else {
+        refreshPremiumClimaCaminoUI();
+        refreshPremiumClimaResumen();
+      }
     }
   }
 
@@ -685,6 +817,7 @@
     if (typeof syncVariedadGermATorre === 'function') {
       syncVariedadGermATorre(p.variedadGerminacion || '');
     }
+    if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;
@@ -725,6 +858,9 @@
           typeof validarGeneticaGermObligatoria === 'function' &&
           !validarGeneticaGermObligatoria()
         ) {
+          return false;
+        }
+        if (typeof validarPremiumGermPlan === 'function' && !validarPremiumGermPlan()) {
           return false;
         }
         return true;
@@ -784,6 +920,9 @@
   window.aplicarPremiumTentPreset = aplicarPremiumTentPreset;
   window.calcularPremiumSala = calcularPremiumSala;
   window.refreshPremiumClimaResumen = refreshPremiumClimaResumen;
+  window.aplicarPremiumClimaPorCamino = aplicarPremiumClimaPorCamino;
+  window.marcarPremiumClimaManual = marcarPremiumClimaManual;
+  window.refreshPremiumClimaCaminoUI = refreshPremiumClimaCaminoUI;
   window.togglePremiumGermPaso = togglePremiumGermPaso;
   window.cargarPremiumSetupUI = cargarPremiumSetupUI;
   window.persistPremiumSetupToConfig = persistPremiumSetupToConfig;

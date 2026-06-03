@@ -480,6 +480,16 @@
     if (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) {
       g.variedadId = cfg.premiumSetup.variedadGerminacion;
     }
+    if (cfg.premiumSetup && Number.isFinite(cfg.premiumSetup.numSemillasGerm)) {
+      g.numSemillas = Math.min(72, Math.max(1, Math.round(cfg.premiumSetup.numSemillasGerm)));
+      if (!Number.isFinite(g.semillasActivas) || g.semillasActivas < 1 || g.semillasActivas > g.numSemillas) {
+        g.semillasActivas = g.numSemillas;
+      }
+    }
+    if (cfg.premiumSetup && cfg.premiumSetup.sustratoGerm) {
+      g.sustratoGerm = cfg.premiumSetup.sustratoGerm;
+    }
+    if (cfg.sustratoGerm) g.sustratoGerm = cfg.sustratoGerm;
     hcGerminacionSyncEquipDesdeInstalado(cfg);
   }
 
@@ -581,6 +591,9 @@
           if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) {
             if (typeof abrirChecklist === 'function') setTimeout(function () { abrirChecklist(false); }, 400);
           }
+        } else if (bloqueo === 'plan_germ') {
+          showToast('Define genética, semillas y sustrato en el checklist del propagador.', true);
+          if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
         } else {
           showToast('Primero completa el checklist del propagador o prep hidro (arriba).', true);
           if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();

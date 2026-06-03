@@ -298,7 +298,7 @@
       ? 'Antes de las <strong>6 fases</strong>: confirma net pot y microclima. Después <strong>configura la sala</strong> (asistente + montaje); el DWC/RDWC se cierra al terminar el camino.'
       : esRutaEsqueje(cfg)
         ? 'Domo, higiene y microclima antes de pasar esquejes a la matriz.'
-        : 'Imprescindible antes de la sala y las <strong>6 fases</strong>. Marca cada punto; el ✓ verde confirma que está hecho.';
+        : 'Marca cada punto del montaje. Arriba debes tener <strong>genética, semillas y sustrato</strong> antes de confirmar.';
     var inst = cfg.equipamientoInstalado || {};
     var equipRef = '';
     if (inst.propagador && inst.propagador.marca) {
@@ -310,8 +310,11 @@
           : '') +
         '</p>';
     }
+    var planBlock =
+      typeof renderPlanGermModalBlock === 'function' ? renderPlanGermModalBlock(cfg) : '';
     return (
       '<div class="hc-pm-shell hc-pm-shell--prop">' +
+      planBlock +
       '<div class="hc-prop-hero">' +
       '<span class="hc-prop-hero-ico" aria-hidden="true">' +
       (esRutaGermHidro(cfg) ? '💧' : esRutaEsqueje(cfg) ? '🌿' : '🫧') +
@@ -443,6 +446,27 @@
       }
       return;
     }
+    if (
+      typeof requiereValidacionPlanGerm === 'function' &&
+      requiereValidacionPlanGerm(cfg) &&
+      typeof validarPlanGerminacionCompleto === 'function'
+    ) {
+      persistHcPropPlanFromModal();
+      var planVal = validarPlanGerminacionCompleto(cfg);
+      if (!planVal.ok) {
+        if (typeof showToast === 'function') {
+          showToast(
+            planVal.message || 'Completa genética, semillas y sustrato en el bloque superior.',
+            true,
+            { durationMs: 6200 }
+          );
+        }
+        try {
+          document.getElementById('hcPropPlanGermBlock')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch (_) {}
+        return;
+      }
+    }
     var msgConfirm = esRutaEsqueje(cfg)
       ? '¿Confirmas que el domo de enraizado está listo?\n\nSiguiente: asignar esquejes en la matriz y primer llenado.'
       : esRutaGermHidro(cfg)
@@ -452,6 +476,14 @@
       return;
     }
     checks.completedAt = new Date().toISOString();
+    try {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+      else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+        hcRefreshSistemaPropagadorPanel();
+      }
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    } catch (_) {}
     saveChecks(cfg, checks);
     hcClosePropagadorMontajeChecklist();
     refreshPropagadorMontajeUi();
@@ -522,4 +554,5 @@
   global.hcPropCardKey = hcPropCardKey;
   global.renderPropagadorMontajeInlineHtml = renderInlineEnGermHub;
   global.hcPropagadorMontajeSiguienteTrasGerminacion = hcPropagadorMontajeSiguienteTrasGerminacion;
+  global.hcRerenderPropagadorMontajeModal = hcRerenderPropagadorMontajeModal;
 })(typeof window !== 'undefined' ? window : this);

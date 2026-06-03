@@ -573,6 +573,12 @@ function generarEventos(fecha) {
     });
   }
 
+  if (typeof hcCaminoFaseEventosCalendario === 'function') {
+    try {
+      const evCam = hcCaminoFaseEventosCalendario(d, hoy);
+      if (evCam && evCam.length) ev.push(...evCam);
+    } catch (_) {}
+  }
   if (typeof hcGerminacionEventosCalendario === 'function') {
     try {
       const evGerm = hcGerminacionEventosCalendario(d, hoy);

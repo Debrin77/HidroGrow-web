@@ -2086,16 +2086,52 @@ function mostrarChecklistBloqueadoCultivoSistema(opts) {
     o.className = 'checklist-pregunta-overlay';
     o.setAttribute('role', 'dialog');
     o.setAttribute('aria-modal', 'true');
-    o.setAttribute('aria-label', 'Sistema hidro pendiente');
+    o.setAttribute('aria-label', 'Fase previa pendiente');
+    const cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    const fase =
+      typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : '';
+    var tit = 'Completa la fase actual';
+    var cuerpo = 'Sigue los pasos en la pestaña <strong>Sistema</strong> antes de asignar cestas.';
+    var cta = "typeof goTab==='function'&&goTab('sistema')";
+    var ctaLbl = 'Ir a Sistema';
+    if (cam === 'semilla_propagador' && fase === 'propagador') {
+      tit = 'Propagador antes del esquema';
+      cuerpo = 'Configura DWC/RDWC tras concluir la germinación.';
+      cta = 'typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()';
+      ctaLbl = 'DWC/RDWC';
+    } else if (fase === 'enraizado') {
+      tit = 'Enraizado antes del esquema';
+      cuerpo = 'Checklist de enraizado y luego asigna clones en el esquema.';
+      cta = 'typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()';
+      ctaLbl = 'Checklist enraizado';
+    } else if (fase === 'madre') {
+      tit = 'Cubo madre';
+      cuerpo = 'Asigna la planta madre en el esquema (18/6).';
+      cta = 'typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)';
+      ctaLbl = 'Asignar madre';
+    } else if (fase === 'prep_hidro' || fase === 'germ_cubo') {
+      tit = 'Germinación en cubo';
+      cuerpo = 'Completa prep, depósito y fases en Inicio antes del esquema definitivo.';
+      cta = 'goTab(\'sistema\')';
+      ctaLbl = 'Ver pasos';
+    }
     o.innerHTML =
       '<div class="checklist-pregunta-sheet">' +
       '<div class="checklist-pregunta-handle"></div>' +
       '<div class="checklist-pregunta-head">' +
-      '<div class="checklist-pregunta-emoji">🫧</div>' +
-      '<div><div class="checklist-pregunta-title">Primero el sistema DWC/RDWC</div></div></div>' +
-      '<p class="checklist-pregunta-nota-pasos">Las cestas del esquema se asignan <strong>después</strong> de cerrar el asistente hidro. ' +
-      'La genética y el número de plantas vienen de <strong>Inicio → Germinación</strong>.</p>' +
-      '<button type="button" class="checklist-pregunta-btn-main" onclick="document.getElementById(\'checklistBloqueoCultivoOverlay\')?.remove();typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Abrir asistente DWC/RDWC</button>' +
+      '<div class="checklist-pregunta-emoji">📋</div>' +
+      '<div><div class="checklist-pregunta-title">' +
+      tit +
+      '</div></div></div>' +
+      '<p class="checklist-pregunta-nota-pasos">' +
+      cuerpo +
+      '</p>' +
+      '<button type="button" class="checklist-pregunta-btn-main" onclick="document.getElementById(\'checklistBloqueoCultivoOverlay\')?.remove();' +
+      cta +
+      '">' +
+      ctaLbl +
+      '</button>' +
       '<button type="button" class="checklist-pregunta-btn-ghost" onclick="document.getElementById(\'checklistBloqueoCultivoOverlay\')?.remove()">Cerrar</button>' +
       '</div>';
     document.body.appendChild(o);

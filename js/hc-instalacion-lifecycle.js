@@ -300,11 +300,23 @@
     switch (fase) {
       case 'sin_config':
         return { label: 'Configurar instalación', action: 'abrirSetup', etapa: 'config' };
-      case 'montaje_pendiente':
+      case 'montaje_pendiente': {
+        var faseSis =
+          typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+        if (faseSis === 'enraizado') {
+          return { label: 'Enraizado · checklist', action: 'irPropagadorMontaje', etapa: 'enraizado' };
+        }
+        if (faseSis === 'madre') {
+          return { label: 'Asignar madre', action: 'irCultivo', etapa: 'madre_fase' };
+        }
+        if (faseSis === 'prep_hidro' || faseSis === 'germ_cubo') {
+          return { label: 'Ver pasos en Sistema', action: 'irSistemaFase', etapa: 'germinacion' };
+        }
         if (cam === 'esqueje_hidro' && typeof enraizadoMontajeCompleto === 'function' && !enraizadoMontajeCompleto(cfg)) {
           return { label: 'Checklist de enraizado', action: 'irPropagadorMontaje', etapa: 'enraizado' };
         }
         return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'montaje' };
+      }
       case 'cultivo_pendiente':
         if (typeof hcCultivoMatrizDisponible === 'function' && !hcCultivoMatrizDisponible(cfg)) {
           return typeof hcSiguientePasoInstalacion === 'function'
@@ -525,6 +537,14 @@
         break;
       case 'irMedir':
         hcIrRutinaDia();
+        break;
+      case 'irSistemaFase':
+        try {
+          if (typeof goTab === 'function') goTab('sistema');
+        } catch (_) {}
+        setTimeout(function () {
+          if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+        }, 200);
         break;
       case 'irGerminacion':
         try {

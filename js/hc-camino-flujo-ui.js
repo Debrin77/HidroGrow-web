@@ -24,17 +24,6 @@
     return typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
   }
 
-  /** Camino propagador: operativa centrada en germinación hasta cerrar DWC/RDWC. */
-  function hcOperativaFasePropagadorGerm(cfg) {
-    cfg = cfg || cfgActiva();
-    if (getCam(cfg) !== 'semilla_propagador') return false;
-    if (typeof hcMostrarSistemaPropagador === 'function') {
-      return hcMostrarSistemaPropagador(cfg);
-    }
-    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
-    return false;
-  }
-
   var STEP_BANNERS = {
     semilla_propagador: {
       1: '<strong>Camino:</strong> propagador → 6 fases en Inicio → sala → traslado al hidro.',
@@ -168,6 +157,7 @@
       t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
     }
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
+    if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
   }
 
   function hcNecesitaBannerTrasladoSala(cfg) {
@@ -236,20 +226,36 @@
     ban.innerHTML = html;
   }
 
-  /** Sala oculta en barra hasta concluir germinación (menos ruido en modo propagador). */
-  function hcOcultarTabSalaDuranteGerm(cfg) {
-    cfg = cfg || cfgActiva();
-    if (getCam(cfg) !== 'semilla_propagador') return false;
-    if (typeof hcGerminacionActiva !== 'function' || !hcGerminacionActiva(cfg)) return false;
-    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
-    return true;
+  function medirBannerHtml(cfg) {
+    var f =
+      typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+    if (!f) return '';
+    if (f === 'propagador' || f === 'germ_cubo') {
+      return (
+        '<strong>Seguimiento activo.</strong> Domo/cubo en <button type="button" class="btn btn-link btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Inicio → Germinación</button>. ' +
+        (f === 'germ_cubo' ? 'Medir también el depósito del cubo.' : 'Sin medir el depósito DWC aún.')
+      );
+    }
+    if (f === 'prep_hidro') {
+      return '<strong>Prep hidro.</strong> Completa los pasos en la pestaña Sistema antes de las 6 fases en el cubo.';
+    }
+    if (f === 'enraizado') {
+      return '<strong>Enraizado.</strong> Control del domo en Inicio/checklist; el depósito completo tras asignar clones.';
+    }
+    if (f === 'madre') {
+      return '<strong>Cubo madre.</strong> 18/6 · asigna la madre en Sistema y el primer llenado del depósito.';
+    }
+    return '';
   }
 
   function aplicarVisibilidadTabsCamino(cfg) {
     cfg = cfg || cfgActiva();
-    var ocultarSala = hcOcultarTabSalaDuranteGerm(cfg);
-    var modoPropagadorSistema =
-      typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg);
+    var ocultarSala =
+      typeof hcOcultarTabSalaDuranteCamino === 'function' && hcOcultarTabSalaDuranteCamino(cfg);
+    var faseSistema =
+      typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino(cfg);
+    var tituloTab =
+      typeof hcTituloSistemaTab === 'function' ? hcTituloSistemaTab(cfg) : 'Cultivo e instalación';
 
     var btnSala = el('btn-sala');
     if (btnSala) {
@@ -261,42 +267,32 @@
 
     var btnSistema = el('btn-sistema');
     if (btnSistema) {
-      if (modoPropagadorSistema) {
-        btnSistema.setAttribute('title', 'Propagador');
-        btnSistema.setAttribute('aria-label', 'Ir a Propagador');
-      } else {
-        btnSistema.setAttribute('title', 'Cultivo e instalación');
-        btnSistema.setAttribute('aria-label', 'Ir a Cultivo e instalación');
-      }
+      btnSistema.setAttribute('title', tituloTab);
+      btnSistema.setAttribute('aria-label', 'Ir a ' + tituloTab);
     }
 
     var tituloAccent = document.querySelector('#tab-sistema .section-title .accent');
-    if (tituloAccent) {
-      tituloAccent.textContent = modoPropagadorSistema ? 'Propagador' : 'Cultivo e instalación';
-    }
+    if (tituloAccent) tituloAccent.textContent = tituloTab;
     var hintSistema = el('tabContextHintSistema');
-    if (hintSistema) {
-      hintSistema.classList.toggle('setup-hidden', !!modoPropagadorSistema);
-    }
-    document.body.classList.toggle('hc-modo-propagador-sistema', !!modoPropagadorSistema);
+    if (hintSistema) hintSistema.classList.toggle('setup-hidden', !!faseSistema);
+    document.body.classList.toggle('hc-modo-propagador-sistema', !!faseSistema);
     document.body.classList.toggle('hc-modo-propagador-sin-sala', !!ocultarSala);
   }
 
   function refreshTabsOperativaCamino() {
     var cfg = cfgActiva();
-    var prop = hcOperativaFasePropagadorGerm(cfg);
     aplicarVisibilidadTabsCamino(cfg);
 
     ensureOperativaBanner(
       'medirPropagadorFaseBanner',
-      prop
-        ? '<strong>Fase propagador.</strong> Registra temp./HR del domo en <button type="button" class="btn btn-link btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Inicio → Germinación</button>. El depósito y EC/pH del cubo llegan después del traslado.'
-        : '',
+      medirBannerHtml(cfg),
       'tab-mediciones',
       'medirTorreBanner'
     );
 
-    if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+    if (typeof hcRefreshSistemaFasePanel === 'function') {
+      hcRefreshSistemaFasePanel();
+    } else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
       hcRefreshSistemaPropagadorPanel();
     }
 
@@ -324,7 +320,6 @@
     };
   }
 
-  global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
   global.refreshSetupCaminoStepBanner = refreshSetupCaminoStepBanner;
   global.getSetupStepLabelForPage = getSetupStepLabelForPage;
   global.syncPremiumGermSectionPlacement = syncPremiumGermSectionPlacement;
@@ -340,8 +335,8 @@
     global.goTab = function (tab) {
       if (
         tab === 'sala' &&
-        typeof hcOcultarTabSalaDuranteGerm === 'function' &&
-        hcOcultarTabSalaDuranteGerm()
+        typeof hcOcultarTabSalaDuranteCamino === 'function' &&
+        hcOcultarTabSalaDuranteCamino()
       ) {
         if (typeof showToast === 'function') {
           showToast(
@@ -374,6 +369,5 @@
     } catch (_) {}
   });
 
-  global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
   global.aplicarVisibilidadTabsCamino = aplicarVisibilidadTabsCamino;
 })(typeof window !== 'undefined' ? window : globalThis);

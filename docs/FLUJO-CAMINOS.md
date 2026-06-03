@@ -1,82 +1,80 @@
-# Flujos por camino de cultivo (HidroGrow)
+# Cuatro caminos — proceso propio, resultado común
 
-Referencia para **semilla en propagador** y **semilla en hidro**. Los otros caminos (`esqueje_hidro`, `madre_hidro`) siguen el asistente hidro completo.
+Misma meta: **cultivar en casa**. Cada camino tiene su **fase en Sistema** (sin esquema DWC hasta operativa) y reglas sin repetir pasos del asistente.
 
-## Semilla en propagador (`semilla_propagador`)
+Módulo central: `hc-camino-fase.js` · Panel: `hc-sistema-fase-camino.js`
 
-### Asistente (7 pasos visibles)
+## Resumen por camino
 
-| Paso | Etiqueta | Contenido |
-|------|----------|-----------|
-| 1 | Camino | Cuatro rutas + resumen del orden |
-| 2 | Objetivo | Legal, objetivo, nivel Consejos |
-| 3 | Entorno | Interior / exterior |
-| 4 | Germinación ahora | Domo, mat térmica, **genética concreta (obligatoria)** |
-| 5 | Clima domo | Fotoperiodo inicial (sin sala LED) |
-| 6 | *(omitido)* | SOG/SCROG + foto/auto fusionados en paso 7 |
-| 7 | Plan cultivo | Método, genética, semillero (opcional) |
-
-Tras **Guardar**: solo **checklist propagador** → la app funciona como **propagador** (Sistema = gráfico del domo, no DWC).
-
-### Modo propagador (operativa)
-
-- Pestañas visibles: **Inicio**, **Medir**, **Sistema** (renombrado «Propagador»). **Sala** oculta hasta concluir germinación; luego reaparece (opcional).
-- **Calendario**: alertas de control (registro pendiente, T°/HR, cierre por días, configurar hidro).
-- Conclusión por **días** (genética) o botón «Dar por concluida» → **solo entonces** aviso de **DWC/RDWC**.
-
-### Después de concluir germinación
-
-1. Asistente **DWC/RDWC** (cestas ≈ semillas) → Sistema muestra esquema hidro (ya no propagador)  
-2. **Sala** opcional (un paso) + montaje  
-3. Checklist traslado → matriz → depósito  
-
-### Pestañas en fase propagador
-
-- **Inicio**: hub Germinación + banner traslado/sala cuando toque  
-- **Medir**: aviso — domo en Inicio; depósito tras traslado  
-- **Sala**: resumen; montaje completo tras las 6 fases  
-- **Sistema**: mensaje “matriz después del traslado” (torre oculta)  
-- **Calendario / Historial**: sync germinación  
+| Camino | Fase en Sistema (pestaña) | Sala en barra | Matriz (esquema) |
+|--------|---------------------------|---------------|------------------|
+| **Propagador** | Propagador → luego hidro | Oculta hasta concluir germinación | Tras cerrar DWC/RDWC |
+| **Semilla en hidro** | Prep hidro → Germinación en cubo | Visible desde el inicio | Tras traslado / fases |
+| **Esqueje** | Enraizado | Visible | Tras checklist + clones asignados |
+| **Madre** | Cubo madre | Visible | Tras madre asignada + 1.er llenado |
 
 ---
 
-## Semilla en hidro (`semilla_hidro`)
+## 1. Semilla en propagador (`semilla_propagador`)
 
-### Asistente
-
-| Paso | Etiqueta | Contenido |
-|------|----------|-----------|
-| 4 | Espacio y prep | Sala + prep cubo (no solo domo) |
-| 5 | Clima y luz | Sala |
-| 6 | Genética y método | SOG/SCROG, foto/auto, cepa |
-| 7 | Detalle origen | Semillero opcional |
-
-Tras **Guardar**: **checklist prep hidro** (no el del propagador solo) → **configurar sala** → montaje → DWC/RDWC + primer llenado → **6 fases** en el cubo.
-
-### Orden operativo
-
-1. Prep hidro (modal checklist)  
-2. Sala (asistente `abrirSetupFaseSala`)  
-3. Montaje sala  
-4. Sistema hidro + depósito  
-5. 6 fases en Inicio  
-6. Traslado / operativa definitiva  
+- Asistente 7 pasos: domo, genética, **sin sala ni DWC**.
+- Operativa: Inicio + Medir (domo) + **Sistema = Propagador** (gráfico bandeja, nutrientes en agua).
+- En **Germinación ahora** (paso equipamiento): **cuántas semillas** + **sustrato** (lana/jiffy/papel); sugerencia según propagador del catálogo top 10 ES (77 o 24 celdas).
+- El **checklist del propagador** no se puede cerrar sin genética, número de semillas, sustrato y (camino propagador) domo en catálogo.
+- Conclusión por **días** o botón manual → **DWC/RDWC** (un paso) → sala opcional → traslado.
 
 ---
 
-## CTAs unificados
+## 2. Semilla en hidro (`semilla_hidro`)
 
-- **Configurar sala**: `abrirSetupFaseSala()` — propagador solo tras 6/6 fases; hidro antes de germinar.  
-- **Siguiente paso instalación**: `hcSiguientePasoInstalacion()` en lifecycle / Medir / rail.  
-- **Traslado al cubo**: `hcGerminacionAbrirTraslado()` tras checklist de traslado.  
+- Asistente **único** con sala + DWC/RDWC (no vuelve a pedirlo).
+- Orden en Sistema (**Prep hidro**): checklist prep → sala → montaje → depósito listo → **6 fases** en Inicio.
+- Luego **Germinación en cubo**: mismo registro/nutrientes; esquema completo tras checklist traslado.
+- Medir: depósito del cubo + microclima.
 
-## Archivos clave
+---
+
+## 3. Esqueje al hidro (`esqueje_hidro`)
+
+- Asistente completo (sala + hidro); **sin** hub de germinación de semilla.
+- Sistema = **Enraizado**: checklist domo/rockwool → asignar clones en esquema → depósito.
+- Calendario / Medir: orientado a enraizado y luego operativa.
+
+---
+
+## 4. Madre (`madre_hidro`)
+
+- Cubo **18/6** permanente.
+- Sistema = **Cubo madre**: asignar madre en matriz → primer llenado → operativa (esquejes aparte).
+
+---
+
+## Clima en el asistente (paso «Clima, luz y fotoperiodo»)
+
+Al elegir el camino se aplican valores orientativos (sin pisar si el usuario ya los cambió a mano):
+
+| Camino | Fase | Horas | Intensidad |
+|--------|------|-------|------------|
+| Propagador | Esqueje / plántula | 18 | Baja (domo) |
+| Semilla hidro | Esqueje / plántula | 18 | Baja |
+| Esqueje | Esqueje / plántula | 18 | Baja |
+| Madre | Vegetativo | 18 | Media |
+
+La sala LED completa en propagador se configura **después** de las 6 fases.
+
+## Reglas anti-repetición
+
+- **Propagador**: `abrirSetupFaseSala` y `abrirSetupFaseHidro` solo cuando toca (no en el asistente inicial).
+- **Semilla hidro**: DWC y sala en el primer asistente; fase prep solo checklist + montaje + depósito.
+- **Esqueje / Madre**: sin fases de semilla; matriz bloqueada mientras `getSistemaFaseCamino()` devuelve fase.
+
+## Archivos
 
 | Área | JS |
 |------|-----|
-| Caminos y skips | `hc-camino-cultivo.js` |
-| Banners y pestañas | `hc-camino-flujo-ui.js` |
-| Wizard premium | `hc-premium-wizard.js`, `hc-setup-wizard-pages.js` |
-| Post-guardado | `hc-setup-calc-core.js`, `hc-instalacion-lifecycle.js` |
+| Fases | `hc-camino-fase.js` |
+| Panel Sistema | `hc-sistema-fase-camino.js` |
+| Caminos / skips | `hc-camino-cultivo.js` |
+| UI pestañas | `hc-camino-flujo-ui.js` |
 | Germinación | `hc-germinacion-flow.js` |
 | Checklists | `hc-propagador-montaje.js` |

@@ -30,10 +30,10 @@
       faseInicial: 'germinacion',
       icon: '💧',
       orden: [
-        'Asistente: equipamiento de <strong>sala + prep hidro</strong> (net pot, medidor, aireación).',
-        'Checklist prep → montaje sala → <strong>DWC/RDWC + primer llenado</strong> del depósito.',
-        'Las <strong>6 fases</strong> en Inicio (registro diario en el cubo, no semilla suelta en tanque).',
-        'Tras las 6 fases: checklist traslado y operativa del sistema definitivo.',
+        'Asistente único: <strong>sala + DWC/RDWC</strong> (sin repetir después).',
+        'Checklist prep → montaje → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).',
+        'Sistema muestra germinación en cubo; el esquema completo tras el traslado.',
+        'Medir = agua del depósito + microclima del cubo.',
       ],
     },
     esqueje_hidro: {
@@ -45,10 +45,9 @@
       faseInicial: 'hidro',
       icon: '🌿',
       orden: [
-        'Asistente: propagador, DWC/RDWC, sala y equipamiento.',
-        'Montaje de sala verificado en checklist.',
-        '<strong>Checklist de enraizado</strong> (domo, rockwool, higiene) antes de la matriz.',
-        'Asigna clones en Cultivo → primer llenado del depósito.',
+        'Asistente: sala + DWC/RDWC en un solo paso (sin germinación de semilla).',
+        'Sistema = <strong>enraizado</strong> hasta checklist y clones en el esquema.',
+        'Luego primer llenado y operativa (Medir, Calendario).',
       ],
     },
     madre_hidro: {
@@ -60,9 +59,9 @@
       faseInicial: 'hidro',
       icon: '👑',
       orden: [
-        'Cubo madre 18/6 + sala y depósito.',
-        'Checklist de mantenimiento y sesiones de esquejes.',
-        'Los clones siguen el camino de esqueje al hidro.',
+        'Asistente: cubo madre + sala + depósito.',
+        'Sistema = <strong>cubo madre</strong> hasta asignar planta y primer llenado.',
+        '18/6 permanente; esquejes con el camino de clon.',
       ],
     },
   };
@@ -113,6 +112,10 @@
     p.caminoCultivo = def.id;
     p.origenPlanta = def.origenPlanta;
     p.germinacionModoPreferido = def.germModo || '';
+    p.climaManual = false;
+    if (typeof aplicarPremiumClimaPorCamino === 'function') {
+      aplicarPremiumClimaPorCamino(def.id, { force: true });
+    }
     if (typeof seleccionarPremiumOrigen === 'function') {
       seleccionarPremiumOrigen(def.origenPlanta);
     } else if (typeof persistOrigenASetupData === 'function') {
@@ -128,6 +131,7 @@
       if (def.germModo) state.configTorre.premiumSetup.germinacionModoPreferido = def.germModo;
     }
     refreshCaminoCultivoUI();
+    if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
     if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
@@ -294,6 +298,9 @@
     if (typeof hcGerminacionBloqueadaPorMontaje === 'function' && hcGerminacionBloqueadaPorMontaje(cfg)) {
       return 'propagador';
     }
+    if (typeof hcGerminacionBloqueadaPorPlanDatos === 'function' && hcGerminacionBloqueadaPorPlanDatos(cfg)) {
+      return 'plan_germ';
+    }
     var prepSys = hcGerminacionBloqueadaPorPrepSistema(cfg);
     if (prepSys === 'hidro_config') return 'hidro_config';
     if (prepSys === 'deposito_llenado') return 'deposito_llenado';
@@ -408,9 +415,12 @@
     return cfg.tipoInstalacion !== 'dwc' && cfg.tipoInstalacion !== 'rdwc';
   }
 
-  /** Asignar cestas en el esquema solo tras cerrar el asistente hidro. */
+  /** Matriz visible solo en fase operativa (no durante modo fase en Sistema). */
   function hcCultivoMatrizDisponible(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) {
+      return false;
+    }
     if (!hcMontajeEsSoloEquipamientoSala(cfg)) return true;
     return cfg.checklistInstalacionConfirmada === true;
   }
@@ -994,6 +1004,7 @@
   global.hcSalaPreGermPermitida = hcSalaPreGermPermitida;
   global.hcMontajeEsSoloEquipamientoSala = hcMontajeEsSoloEquipamientoSala;
   global.hcCultivoMatrizDisponible = hcCultivoMatrizDisponible;
+  global.cultivoMatrizListo = cultivoMatrizListo;
   global.hcSugerirGeometriaDesdeGerminacion = hcSugerirGeometriaDesdeGerminacion;
   global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
   global.hcAplicarGerminacionATorreTrasHidro = hcAplicarGerminacionATorreTrasHidro;
