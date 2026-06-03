@@ -736,6 +736,7 @@
       showToast('Registro del día guardado · día ' + diaN + ' · también en Historial', false);
     }
     refreshDashGerminacionHub();
+    if (typeof updateDashboard === 'function') updateDashboard();
     if (typeof hcRefreshSistemaPropagadorPanel === 'function') hcRefreshSistemaPropagadorPanel();
     if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
@@ -866,6 +867,7 @@
       showToast('Registro del domo guardado', false);
     }
     refreshDashGerminacionHub();
+    if (typeof updateDashboard === 'function') updateDashboard();
   }
 
   function primerCestaVacia() {
@@ -1851,7 +1853,17 @@
   global.guardarRegistroGerminacionDiario = guardarRegistroGerminacionDiario;
   global.hcGermActualizarNumSemillas = hcGermActualizarNumSemillas;
   global.hcGermActualizarSemillasActivas = hcGermActualizarSemillasActivas;
+  function hcGerminacionFaseActualId(cfg) {
+    cfg = cfg || cfgActiva();
+    var g = ensureGerminacionFlow(cfg);
+    for (var i = 0; i < PASOS.length; i++) {
+      if (!g.pasos[PASOS[i].id] || !g.pasos[PASOS[i].id].doneAt) return PASOS[i].id;
+    }
+    return 'dwc';
+  }
+
   global.ensureGerminacionFlow = ensureGerminacionFlow;
+  global.hcGerminacionFaseActualId = hcGerminacionFaseActualId;
   global.germinacionConcluida = germinacionConcluida;
   global.diasObjetivoConclusionGerm = diasObjetivoConclusionGerm;
   global.hcGerminacionMarcarConcluida = hcGerminacionMarcarConcluida;

@@ -26,10 +26,15 @@ function updateDashboard() {
       now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
-  // Última medición
+  // Última medición / lecturas germinación
+  const cfgDash = state.configTorre || {};
   const elUltima = document.getElementById('dashUltimaMedicion');
+  const usaTilesGerm =
+    typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfgDash);
   if (elUltima) {
-    if (state.ultimaMedicion) {
+    if (usaTilesGerm) {
+      refreshDashTilesGerminacion(cfgDash);
+    } else if (state.ultimaMedicion) {
       const m = state.ultimaMedicion;
       elUltima.textContent = `Última medición: ${m.fecha} ${m.hora}`;
       updateTiles(m);
@@ -37,6 +42,8 @@ function updateDashboard() {
       elUltima.textContent = 'Sin mediciones aún';
       updateTiles(null);
     }
+  } else if (usaTilesGerm) {
+    refreshDashTilesGerminacion(cfgDash);
   }
 
   // Torre stats
@@ -150,6 +157,10 @@ function formatMedicionTileValor(key, val) {
   switch (key) {
     case 'ec':
       return String(Math.round(n));
+    case 'hr':
+      return String(Math.round(n));
+    case 'vpd':
+      return (Math.round(n * 100) / 100).toFixed(2);
     case 'ph':
     case 'temp':
     case 'vol':
@@ -159,7 +170,175 @@ function formatMedicionTileValor(key, val) {
   }
 }
 
+const DASH_TILE_HIDRO_DEFAULTS = {
+  EC: { name: 'EC', unit: 'µS/cm', icon: 'hc-i-bolt', solo: false, aria: 'conductividad eléctrica EC' },
+  PH: { name: 'pH', unit: '', icon: 'hc-i-flask', solo: true, aria: 'pH' },
+  Temp: { name: 'Agua', unit: '°C', icon: 'hc-i-therm', solo: false, aria: 'temperatura del agua' },
+  Vol: { name: 'Volumen', unit: 'L', icon: 'hc-i-bucket', solo: false, aria: 'volumen del depósito' },
+};
+
+const DASH_TILE_GERM_STATUS = {
+  temp: { ok: 'En rango', warn: 'Vigilar T°', bad: 'Fuera de rango', empty: 'Sin lectura' },
+  hr: { ok: 'HR OK', warn: 'Vigilar HR', bad: 'Fuera de rango', empty: 'Sin lectura' },
+  ph: { ok: 'pH cubo OK', warn: 'Vigilar pH', bad: 'Corregir pH', empty: 'Sin lectura' },
+  ec: { ok: 'EC orientativa', warn: 'Ajustar EC', bad: 'Muy alejada', empty: 'Sin lectura' },
+  vpd: { ok: 'VPD OK', warn: 'Vigilar VPD', bad: 'Estrés VPD', empty: 'Sin lectura' },
+};
+
+function aplicarDashTileHidroDefaults() {
+  ['EC', 'PH', 'Temp', 'Vol'].forEach(function (slot) {
+    const tile = document.getElementById('tile' + slot);
+    const def = DASH_TILE_HIDRO_DEFAULTS[slot];
+    if (!tile || !def) return;
+    tile.classList.remove('setup-hidden');
+    tile.onclick = function () {
+      goTab('mediciones');
+    };
+    const iconUse = tile.querySelector('.tile-icon .hc-ico use');
+    if (iconUse) iconUse.setAttribute('href', '#' + def.icon);
+    const metric = tile.querySelector('.tile-metric');
+    if (metric) {
+      metric.classList.toggle('tile-metric--solo', !!def.solo);
+      const nameEl = metric.querySelector('.tile-metric-name');
+      const unitEl = metric.querySelector('.tile-metric-unit');
+      if (nameEl) nameEl.textContent = def.name;
+      if (unitEl) {
+        unitEl.textContent = def.unit;
+        unitEl.style.display = def.unit ? '' : 'none';
+      } else if (def.unit) {
+        const u = document.createElement('span');
+        u.className = 'tile-metric-unit';
+        u.textContent = def.unit;
+        metric.appendChild(u);
+      }
+    }
+  });
+  const grid = document.querySelector('.dash-medicion-y-cultivo .params-grid');
+  if (grid) grid.classList.remove('params-grid--germ');
+  const cultivoBtn = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
+  if (cultivoBtn) cultivoBtn.classList.remove('setup-hidden');
+}
+
+function valorGermTile(key, lecturas) {
+  if (!lecturas) return NaN;
+  if (key === 'temp') return lecturas.temp;
+  if (key === 'hr') return lecturas.hr;
+  if (key === 'vpd') return lecturas.vpd;
+  if (key === 'ph') return lecturas.ph;
+  if (key === 'ec') return lecturas.ec;
+  return NaN;
+}
+
+function refreshDashTilesGerminacion(cfg) {
+  cfg = cfg || state.configTorre || {};
+  if (typeof getGerminacionDashTilesPlan !== 'function') {
+    updateTiles(state.ultimaMedicion || null);
+    return;
+  }
+  const plan = getGerminacionDashTilesPlan(cfg);
+  const lecturas =
+    typeof getGerminacionLecturasParaDash === 'function'
+      ? getGerminacionLecturasParaDash(cfg)
+      : {};
+  const slotsActivos = {};
+  plan.tiles.forEach(function (t) {
+    slotsActivos[t.slot] = t;
+  });
+
+  const elUltima = document.getElementById('dashUltimaMedicion');
+  if (elUltima) {
+    const tr = plan.tempRango;
+    const objetivo =
+      'T° ' + tr.min + '–' + tr.max + ' °C · HR ' + plan.hrRango.min + '–' + plan.hrRango.max + '%';
+    const gen = plan.spec && plan.spec.nombreGenetica ? ' · ' + plan.spec.nombreGenetica : '';
+    if (lecturas.fecha) {
+      elUltima.textContent =
+        'Última lectura domo: ' +
+        lecturas.fecha +
+        (lecturas.hora ? ' ' + lecturas.hora : '') +
+        ' · Fase ' +
+        plan.faseLabel +
+        gen;
+    } else {
+      elUltima.textContent =
+        'Germinación · fase ' + plan.faseLabel + ' · ' + objetivo + gen;
+    }
+    elUltima.setAttribute('title', objetivo);
+  }
+
+  const grid = document.querySelector('.dash-medicion-y-cultivo .params-grid');
+  if (grid) grid.classList.add('params-grid--germ');
+  const cultivoBtn = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
+  if (cultivoBtn) cultivoBtn.classList.add('setup-hidden');
+
+  ['EC', 'PH', 'Temp', 'Vol'].forEach(function (slot) {
+    const tile = document.getElementById('tile' + slot);
+    const valEl = document.getElementById('tile' + slot + 'Val');
+    const statusEl = document.getElementById('tile' + slot + 'Status');
+    if (!tile || !valEl || !statusEl) return;
+
+    const def = slotsActivos[slot];
+    if (!def) {
+      tile.classList.add('setup-hidden');
+      return;
+    }
+    tile.classList.remove('setup-hidden');
+    tile.onclick = function () {
+      if (typeof hcIrHubGerminacionOperativa === 'function') hcIrHubGerminacionOperativa();
+      else goTab('inicio');
+    };
+
+    const iconUse = tile.querySelector('.tile-icon .hc-ico use');
+    if (iconUse) iconUse.setAttribute('href', '#' + def.iconId);
+    const metric = tile.querySelector('.tile-metric');
+    if (metric) {
+      metric.classList.toggle('tile-metric--solo', !def.unit);
+      const nameEl = metric.querySelector('.tile-metric-name');
+      const unitEl = metric.querySelector('.tile-metric-unit');
+      if (nameEl) nameEl.textContent = def.label;
+      if (unitEl) {
+        unitEl.textContent = def.unit;
+        unitEl.style.display = def.unit ? '' : 'none';
+      }
+    }
+
+    const raw = valorGermTile(def.key, lecturas);
+    const val = typeof raw === 'number' ? raw : parseFloat(raw);
+    const tipo =
+      typeof getDashTileClassGerm === 'function'
+        ? getDashTileClassGerm(def.key, val, def.rango)
+        : Number.isFinite(val)
+          ? 'ok'
+          : 'empty';
+    const stMap = DASH_TILE_GERM_STATUS[def.key] || DASH_TILE_GERM_STATUS.temp;
+
+    tile.className = 'param-tile ' + tipo;
+    valEl.className = 'tile-value ' + tipo;
+    valEl.textContent = formatMedicionTileValor(def.key, val);
+    statusEl.className = 'tile-status ' + tipo;
+    statusEl.textContent = stMap[tipo] || stMap.empty;
+    const valTxt = valEl.textContent || '—';
+    const stTxt = statusEl.textContent || 'Sin datos';
+    tile.setAttribute(
+      'aria-label',
+      def.label + ' ' + valTxt + ', ' + stTxt + '. Ir al registro de germinación'
+    );
+  });
+}
+
+function restoreDashTilesHidroIfNeeded(cfg) {
+  cfg = cfg || state.configTorre || {};
+  if (typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg)) return;
+  aplicarDashTileHidroDefaults();
+}
+
 function updateTiles(m) {
+  const cfg = state.configTorre || {};
+  if (typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg)) {
+    refreshDashTilesGerminacion(cfg);
+    return;
+  }
+  aplicarDashTileHidroDefaults();
   if (!m) {
     ['EC', 'PH', 'Temp', 'Vol'].forEach(id => {
       const tile = document.getElementById('tile' + id);

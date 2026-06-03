@@ -576,6 +576,149 @@ function hcGerminacionPanelHtmlCompleto(nombreVariedad) {
     : inner;
 }
 
+function getGerminacionRangosMonitoreo(variedadId, faseId) {
+  const spec = getGerminacionSpecPorVariedad(variedadId);
+  const ecT = spec.ecInicialUs || 500;
+  const phT = parseFloat(spec.phCubo) || 5.5;
+  const grupo = spec.grupo || 'hibrida';
+  let temp = { min: 22, max: 26, warnLow: 20, warnHigh: 28 };
+  if (grupo === 'sativa') temp = { min: 22, max: 27, warnLow: 20, warnHigh: 29 };
+  else if (grupo === 'indica' || grupo === 'cbd') temp = { min: 21, max: 25, warnLow: 19, warnHigh: 27 };
+  else if (grupo === 'auto') temp = { min: 22, max: 26, warnLow: 21, warnHigh: 28 };
+  const hr = { min: 70, max: 80, warnLow: 62, warnHigh: 88 };
+  const ph = {
+    min: phT - 0.12,
+    max: phT + 0.12,
+    warnLow: phT - 0.35,
+    warnHigh: phT + 0.45,
+  };
+  const ec = {
+    min: ecT - 80,
+    max: ecT + 80,
+    warnLow: ecT - 180,
+    warnHigh: ecT + 200,
+  };
+  const vpd = { min: 0.45, max: 1.15, warnLow: 0.3, warnHigh: 1.45 };
+  return { spec, ecObjetivo: ecT, phObjetivo: phT, temp, hr, ph, ec, vpd, faseId: faseId || 'semilla' };
+}
+
+/** Cuadros indispensables en Inicio según fase del camino y genética. */
+function getGerminacionDashTilesPlan(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  const faseId =
+    typeof hcGerminacionFaseActualId === 'function'
+      ? hcGerminacionFaseActualId(cfg)
+      : 'semilla';
+  const vid = String(
+    g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+  ).trim();
+  const r = getGerminacionRangosMonitoreo(vid, faseId);
+  const tiles = [];
+
+  function add(slot, key, label, unit, iconId) {
+    tiles.push({
+      slot,
+      key,
+      label,
+      unit: unit || '',
+      iconId: iconId || 'hc-i-therm',
+      rango: r[key],
+    });
+  }
+
+  add('EC', 'temp', 'T° domo', '°C', 'hc-i-therm');
+  add('PH', 'hr', 'Humedad', '%', 'hc-i-droplet');
+
+  if (faseId === 'taproot') {
+    add('Temp', 'ph', 'pH cubo', '', 'hc-i-flask');
+  } else if (faseId === 'rockwool' || faseId === 'netpot' || faseId === 'dwc') {
+    add('Temp', 'ec', 'EC agua', 'µS', 'hc-i-bolt');
+    add('Vol', 'ph', 'pH cubo', '', 'hc-i-flask');
+  } else if (faseId === 'domo') {
+    add('Temp', 'vpd', 'VPD', 'kPa', 'hc-i-wind');
+  }
+
+  const faseMeta = GERMINACION_FASES_CAL_META.find(function (x) {
+    return x.id === faseId;
+  });
+  return {
+    tiles,
+    faseId,
+    faseLabel: faseMeta ? faseMeta.tituloCorto : faseId,
+    spec: r.spec,
+    ecObjetivo: r.ecObjetivo,
+    phObjetivo: r.phObjetivo,
+    tempRango: r.temp,
+    hrRango: r.hr,
+  };
+}
+
+function getGerminacionLecturasParaDash(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  const domo = g.ultimaDomo || {};
+  let temp = domo.temp;
+  let hr = domo.hr;
+  let vpd = domo.vpd;
+  let ec = null;
+  let ph = null;
+  const reg = Array.isArray(g.registroDiario) && g.registroDiario.length ? g.registroDiario[0] : null;
+  if (reg) {
+    if (temp == null && reg.temp != null) temp = reg.temp;
+    if (hr == null && reg.hr != null) hr = reg.hr;
+    if (reg.nutEc != null) ec = reg.nutEc;
+    if (reg.nutPh != null) ph = reg.nutPh;
+  }
+  const st = typeof state !== 'undefined' ? state : null;
+  const um = st && st.ultimaMedicion ? st.ultimaMedicion : null;
+  if (um) {
+    const ta = parseFloat(um.tempAire);
+    const hs = parseFloat(um.humSala);
+    if (temp == null && Number.isFinite(ta)) temp = ta;
+    if (hr == null && Number.isFinite(hs)) hr = hs;
+    const vp = parseFloat(um.vpd);
+    if (vpd == null && Number.isFinite(vp)) vpd = vp;
+    const uec = parseFloat(um.ec);
+    const uph = parseFloat(um.ph);
+    if (ec == null && Number.isFinite(uec) && uec < 1200) ec = uec;
+    if (ph == null && Number.isFinite(uph) && uph > 0 && uph < 8) ph = uph;
+  }
+  if (
+    vpd == null &&
+    typeof calcVPDkPa === 'function' &&
+    Number.isFinite(temp) &&
+    Number.isFinite(hr)
+  ) {
+    const v = calcVPDkPa(temp, hr);
+    if (Number.isFinite(v)) vpd = v;
+  }
+  return {
+    temp,
+    hr,
+    vpd,
+    ec,
+    ph,
+    fecha: domo.fecha || (reg && reg.fecha) || (um && um.fecha) || '',
+    hora: domo.hora || (reg && reg.hora) || (um && um.hora) || '',
+  };
+}
+
+function getDashTileClassGerm(key, val, rango) {
+  const n = typeof val === 'number' ? val : parseFloat(val);
+  if (!Number.isFinite(n)) return 'empty';
+  if (!rango) return 'empty';
+  if (n >= rango.min && n <= rango.max) return 'ok';
+  if (n >= rango.warnLow && n <= rango.warnHigh) return 'warn';
+  return 'bad';
+}
+
+window.getGerminacionRangosMonitoreo = getGerminacionRangosMonitoreo;
+window.getGerminacionDashTilesPlan = getGerminacionDashTilesPlan;
+window.getGerminacionLecturasParaDash = getGerminacionLecturasParaDash;
+window.getDashTileClassGerm = getDashTileClassGerm;
 window.getGerminacionSpecPorVariedad = getGerminacionSpecPorVariedad;
 window.getGerminacionDiasHitos = getGerminacionDiasHitos;
 window.getGerminacionFasesCalendario = getGerminacionFasesCalendario;

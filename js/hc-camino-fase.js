@@ -164,6 +164,41 @@
     return hcMostrarSistemaFaseCamino(cfg);
   }
 
+  /** Subtítulo del banner «Instalación seleccionada» en Inicio (sin L ni nutriente de depósito). */
+  function hcDashUsaTilesGerminacion(cfg) {
+    cfg = cfg || cfgActiva();
+    if (hcMostrarSistemaPropagador(cfg)) return true;
+    if (getSistemaFaseCamino(cfg) === 'germ_cubo') return true;
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+    return false;
+  }
+
+  function hcDashTorreInfoPropagador(cfg) {
+    cfg = cfg || cfgActiva();
+    if (!hcMostrarSistemaPropagador(cfg)) return null;
+    var parts = ['Germinación en propagador'];
+    if (typeof getPlanGermEstado === 'function') {
+      var st = getPlanGermEstado(cfg);
+      if (st.numSemillas >= 1) {
+        parts.push(st.numSemillas + (st.numSemillas === 1 ? ' semilla' : ' semillas'));
+      }
+      if (st.nombreVar) parts.push(st.nombreVar);
+      if (st.sustrato) {
+        var subLbl =
+          typeof etiquetaSustratoGerm === 'function'
+            ? etiquetaSustratoGerm(st.sustrato)
+            : st.sustrato;
+        if (subLbl) parts.push(subLbl);
+      }
+    }
+    var op =
+      typeof sistemaEstaOperativa === 'function' && sistemaEstaOperativa(cfg)
+        ? 'operativa'
+        : 'stand-by';
+    parts.push(op);
+    return parts.join(' · ');
+  }
+
   /** Solo propagador: ocultar Sala hasta concluir germinación. */
   function hcOcultarTabSalaDuranteCamino(cfg) {
     cfg = cfg || cfgActiva();
@@ -189,6 +224,8 @@
   global.hcTituloSistemaTab = hcTituloSistemaTab;
   global.hcOperativaFaseCamino = hcOperativaFaseCamino;
   global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
+  global.hcDashTorreInfoPropagador = hcDashTorreInfoPropagador;
+  global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
   global.hcOcultarTabSalaDuranteCamino = hcOcultarTabSalaDuranteCamino;
   global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;

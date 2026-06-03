@@ -6399,6 +6399,9 @@ button.torre-summary:focus-visible,
   gap: 8px;
   margin-bottom: var(--dash-section-gap);
 }
+.params-grid--germ .param-tile.setup-hidden {
+  display: none;
+}
 .param-tile {
   display: flex;
   flex-direction: column;

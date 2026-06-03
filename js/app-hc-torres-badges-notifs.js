@@ -1092,21 +1092,27 @@ function actualizarBadgesNutriente() {
   const dashFuente = document.getElementById('dashNutrienteFuente');
   const dashRazon = document.getElementById('dashNutrienteRazon');
   const dashAviso   = document.getElementById('dashNutrienteAviso');
-  if (dashNombre) {
+  const propagDashInicio =
+    typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg);
+  const dashNutLabel = document.getElementById('dashNutrienteLabel');
+  const dashSisInfo = document.getElementById('dashSistemaInfo');
+  if (dashNutLabel) dashNutLabel.classList.toggle('setup-hidden', propagDashInicio);
+  if (dashSisInfo) dashSisInfo.classList.toggle('setup-hidden', propagDashInicio);
+  if (dashNombre && !propagDashInicio) {
     dashNombre.textContent = nut
       ? nut.nombre
       : hayInst
         ? 'Nutriente sin elegir'
         : 'Sin nutriente';
   }
-  if (dashDetalle) {
+  if (dashDetalle && !propagDashInicio) {
     dashDetalle.textContent = nut
       ? nut.detalle
       : hayInst
         ? 'Elige marca en Cultivo e instalación o Medir'
         : 'Configura tu instalación en el asistente';
   }
-  if (dashEstado || dashRecomendado || dashRazon || dashFuente) {
+  if (!propagDashInicio && (dashEstado || dashRecomendado || dashRazon || dashFuente)) {
     if (!hayInst) {
       if (dashEstado) dashEstado.textContent = 'Actual: —';
       if (dashRecomendado) dashRecomendado.textContent = 'Recomendado ahora: —';
@@ -1169,7 +1175,7 @@ function actualizarBadgesNutriente() {
     if (dashRazon) dashRazon.textContent = motivo;
     }
   }
-  if (dashAviso) {
+  if (dashAviso && !propagDashInicio) {
     const msg =
       typeof hcGetAvisoCambioNutrientePorFase === 'function'
         ? hcGetAvisoCambioNutrientePorFase('inicio')
@@ -1207,37 +1213,43 @@ function actualizarBadgesNutriente() {
   }
   if (dashTorreNombre) dashTorreNombre.textContent  = (torre.nombre || '').trim() || 'Instalación';
   if (dashTorreInfo) {
-    const niv = cfg.numNiveles || 5;
-    const ces = cfg.numCestas  || 5;
-    const tipoDash =
-      typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
-    let geomTxt;
-    if (tipoDash === 'dwc') {
-      const esMc =
-        typeof dwcGetOxigenacionDiseno === 'function' && dwcGetOxigenacionDiseno(cfg) === 'cubos_independientes';
-      if (esMc) {
-        const nCubos =
-          typeof dwcGetNumCubosIndependientes === 'function' ? dwcGetNumCubosIndependientes(cfg) : niv * ces;
-        geomTxt = nCubos + ' cubo' + (nCubos === 1 ? '' : 's');
+    const infoPropag =
+      typeof hcDashTorreInfoPropagador === 'function' ? hcDashTorreInfoPropagador(cfg) : null;
+    if (infoPropag) {
+      dashTorreInfo.textContent = infoPropag;
+    } else {
+      const niv = cfg.numNiveles || 5;
+      const ces = cfg.numCestas  || 5;
+      const tipoDash =
+        typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
+      let geomTxt;
+      if (tipoDash === 'dwc') {
+        const esMc =
+          typeof dwcGetOxigenacionDiseno === 'function' && dwcGetOxigenacionDiseno(cfg) === 'cubos_independientes';
+        if (esMc) {
+          const nCubos =
+            typeof dwcGetNumCubosIndependientes === 'function' ? dwcGetNumCubosIndependientes(cfg) : niv * ces;
+          geomTxt = nCubos + ' cubo' + (nCubos === 1 ? '' : 's');
+        } else {
+          geomTxt = niv + ' filas · ' + ces + ' macetas';
+        }
+      } else if (tipoDash === 'rdwc') {
+        geomTxt = (cfg.rdwcRows || 1) + ' filas · ' + (cfg.rdwcSites || 4) + ' módulos';
       } else {
         geomTxt = niv + ' filas · ' + ces + ' macetas';
       }
-    } else if (tipoDash === 'rdwc') {
-      geomTxt = (cfg.rdwcRows || 1) + ' filas · ' + (cfg.rdwcSites || 4) + ' módulos';
-    } else {
-      geomTxt = niv + ' filas · ' + ces + ' macetas';
+      const vMax = getVolumenDepositoMaxLitros(cfg);
+      const vMez = getVolumenMezclaLitros(cfg);
+      const volTxt =
+        vMax != null && Number.isFinite(vMax) && vMax > 0
+          ? vMez != null && Number.isFinite(vMez) && vMez < vMax - 0.05
+            ? vMax + 'L máx · ' + vMez + 'L mezcla'
+            : vMax + 'L'
+          : 'L depósito por indicar';
+      const nutTxt = nut ? nut.nombre : 'nutriente por elegir';
+      const estadoTxt = sistemaEstaOperativa(cfg) ? 'operativa' : 'stand-by';
+      dashTorreInfo.textContent = geomTxt + ' · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
     }
-    const vMax = getVolumenDepositoMaxLitros(cfg);
-    const vMez = getVolumenMezclaLitros(cfg);
-    const volTxt =
-      vMax != null && Number.isFinite(vMax) && vMax > 0
-        ? vMez != null && Number.isFinite(vMez) && vMez < vMax - 0.05
-          ? vMax + 'L máx · ' + vMez + 'L mezcla'
-          : vMax + 'L'
-        : 'L depósito por indicar';
-    const nutTxt = nut ? nut.nombre : 'nutriente por elegir';
-    const estadoTxt = sistemaEstaOperativa(cfg) ? 'operativa' : 'stand-by';
-    dashTorreInfo.textContent = geomTxt + ' · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
   }
 
   // Pestaña Medir — banner torre
