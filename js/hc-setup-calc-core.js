@@ -1746,6 +1746,8 @@ function guardarSetupYContinuarCore() {
 
   const isDwc = setupTipoInstalacion === 'dwc';
   const isRdwc = setupTipoInstalacion === 'rdwc';
+  const isSrf = setupTipoInstalacion === 'srf';
+  const isNft = setupTipoInstalacion === 'nft';
   let niveles = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10);
   let cestas  = parseInt(document.getElementById('sliderCestas')?.value  || 5, 10);
   let nftNvSlider = 4;
