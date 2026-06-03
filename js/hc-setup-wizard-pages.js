@@ -6,8 +6,14 @@ function refrescarNftCanalesSliderEtiqueta() {}
 
 function renderSetupPage() {
   // Instalación nueva: el último paso es cultivos (6); nunca mostrar spage7 (resumen/«varias torres»).
-  if (setupEsNuevaTorre && setupPagina > SETUP_TOTAL_PAGES - 2) {
-    setupPagina = SETUP_TOTAL_PAGES - 2;
+  const ultimoPasoRender =
+    typeof getSetupUltimoPasoIndice === 'function'
+      ? getSetupUltimoPasoIndice()
+      : setupEsNuevaTorre
+        ? SETUP_TOTAL_PAGES - 2
+        : SETUP_TOTAL_PAGES - 1;
+  if (setupEsNuevaTorre && setupPagina > ultimoPasoRender) {
+    setupPagina = ultimoPasoRender;
   }
 
   // Ocultar todas las páginas
@@ -45,6 +51,9 @@ function renderSetupPage() {
         if (typeof refreshRdwcSetupPreview === 'function') refreshRdwcSetupPreview();
       } catch (_) {}
     }, 0);
+  }
+  if (setupPagina === SETUP_PAGE_ORIGEN && typeof refreshCaminoCultivoUI === 'function') {
+    setTimeout(refreshCaminoCultivoUI, 0);
   }
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     setTimeout(function () {
@@ -172,7 +181,12 @@ function renderSetupPage() {
         ? 'block'
         : 'none';
   }
-  const ultimoPaso = setupEsNuevaTorre ? SETUP_TOTAL_PAGES - 2 : SETUP_TOTAL_PAGES - 1;
+  const ultimoPaso =
+    typeof getSetupUltimoPasoIndice === 'function'
+      ? getSetupUltimoPasoIndice()
+      : setupEsNuevaTorre
+        ? SETUP_TOTAL_PAGES - 2
+        : SETUP_TOTAL_PAGES - 1;
   if (next) {
     if (setupPagina === 0) {
       next.style.display = 'none';
@@ -183,7 +197,12 @@ function renderSetupPage() {
       next.removeAttribute('aria-hidden');
       next.tabIndex = 0;
       if (setupPagina === ultimoPaso) {
-        next.textContent = '✅ Guardar y empezar';
+        next.textContent =
+          typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()
+            ? '✅ Guardar sala e ir a montaje'
+            : typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion()
+              ? '✅ Guardar e ir a germinación'
+              : '✅ Guardar y empezar';
         next.setAttribute('aria-label', 'Guardar configuración y empezar');
       } else {
         next.textContent = 'Siguiente →';
@@ -249,7 +268,23 @@ function setupNext() {
       showToast(v.msg, true);
     }
   }
-  const ultimoPaso = setupEsNuevaTorre ? SETUP_TOTAL_PAGES - 2 : SETUP_TOTAL_PAGES - 1;
+  const ultimoPaso =
+    typeof getSetupUltimoPasoIndice === 'function'
+      ? getSetupUltimoPasoIndice()
+      : setupEsNuevaTorre
+        ? SETUP_TOTAL_PAGES - 2
+        : SETUP_TOTAL_PAGES - 1;
+  if (setupPagina === ultimoPaso && typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion()) {
+    const inst = (state.configTorre && state.configTorre.equipamientoInstalado) || {};
+    const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (
+      (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
+      !(inst.propagador && inst.propagador.id) &&
+      cam === 'semilla_propagador'
+    ) {
+      showToast('Recomendado: registra un propagador/domo en Espacio y equipamiento', true);
+    }
+  }
   if (setupPagina < ultimoPaso) {
     setupPagina =
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : setupPagina + 1;

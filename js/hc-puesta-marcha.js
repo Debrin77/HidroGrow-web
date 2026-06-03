@@ -1034,6 +1034,19 @@
   function buildItemsForConfig(cfg) {
     cfg = cfg || getCfg();
     var items = ITEMS_BASE.slice();
+    var cam =
+      cfg.caminoCultivo ||
+      (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+      '';
+    var esperaHidro =
+      (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
+      cfg.tipoInstalacion !== 'dwc' &&
+      cfg.tipoInstalacion !== 'rdwc';
+    if (esperaHidro) {
+      items = items.filter(function (it) {
+        return it.id !== 'sistema' && it.id !== 'fugas';
+      });
+    }
     var inst = cfg.equipamientoInstalado && typeof cfg.equipamientoInstalado === 'object' ? cfg.equipamientoInstalado : {};
     var eqArr = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
     var interior =
@@ -1110,6 +1123,10 @@
         fromToggle: key,
       });
     });
+
+    if (esperaHidro) {
+      return items;
+    }
 
     Object.keys(MONTAJE_HIDRO).forEach(function (key) {
       var def = MONTAJE_HIDRO[key];
@@ -1497,10 +1514,62 @@
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     if (typeof showToast === 'function') {
+      var cam =
+        cfg.caminoCultivo ||
+        (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+        '';
+      var germAun =
+        (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
+        typeof germinacionListaParaConfigHidro === 'function' &&
+        !germinacionListaParaConfigHidro(cfg);
+      var msgGermSala =
+        germAun
+          ? '✓ Montaje de sala listo. Sigue las 6 fases en Inicio; al terminar cierras DWC/RDWC (sin repetir germinación en el depósito).'
+          : cam === 'semilla_propagador' || cam === 'semilla_hidro'
+            ? '✓ Montaje verificado. Si falta hidro en la lista, complétalo; luego cultivo y primer llenado.'
+            : '✓ Montaje verificado. Siguiente: cultivos en el esquema y luego primer llenado del depósito.';
+      showToast(msgGermSala, false, { durationMs: 5600 });
+    }
+    if (
+      (cfg.caminoCultivo === 'semilla_propagador' || cfg.caminoCultivo === 'semilla_hidro') &&
+      typeof germinacionListaParaConfigHidro === 'function' &&
+      !germinacionListaParaConfigHidro(cfg)
+    ) {
+      setTimeout(function () {
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+          document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        } catch (_) {}
+      }, 500);
+    }
+  }
+
+  function montajeVerificacionVigente(cfg) {
+    cfg = cfg || getCfg();
+    var checks = getChecks(cfg);
+    if (!checks.completedAt) return false;
+    var items = buildItemsForConfig(cfg);
+    var prog = countProgress(checks, cfg, items);
+    return prog.total > 0 && prog.done >= prog.total;
+  }
+
+  function limpiarVerificacionMontajeSiHidroPendiente(cfg) {
+    cfg = cfg || getCfg();
+    if (cfg.checklistInstalacionConfirmada === true) return;
+    var cam =
+      cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
+    var checks = getChecks(cfg);
+    if (!checks.completedAt) return;
+    if (!limpiarVerificacionMontaje(checks)) return;
+    saveChecks(checks);
+    refreshPuestaMarchaUi();
+    if (typeof showToast === 'function') {
       showToast(
-        '✓ Montaje verificado. Siguiente: cultivos en el esquema y luego primer llenado del depósito.',
+        'Tras configurar DWC/RDWC, completa los puntos de sistema hidro en montaje de sala.',
         false,
-        { durationMs: 5600 }
+        { durationMs: 5200 }
       );
     }
   }
@@ -1539,4 +1608,6 @@
   global.hcPmIrRevisarSalaEquip = hcPmIrRevisarSalaEquip;
   global.hcAbrirConfiguradorDesdeMontaje = hcAbrirConfiguradorDesdeMontaje;
   global.montajeEdicionBloqueada = montajeEdicionBloqueada;
+  global.montajeVerificacionVigente = montajeVerificacionVigente;
+  global.limpiarVerificacionMontajeSiHidroPendiente = limpiarVerificacionMontajeSiHidroPendiente;
 })(typeof window !== 'undefined' ? window : globalThis);

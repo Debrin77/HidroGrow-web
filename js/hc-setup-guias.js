@@ -6,7 +6,7 @@
 
   var SETUP_GUIAS = {
     0: { l1: 'DWC o RDWC — define el resto del asistente.' },
-    1: { l1: 'Semilla, esqueje o madre — el asistente adapta equipamiento y pasos.' },
+    1: { l1: 'Elige una de las 4 rutas: semilla propagador/hidro, esqueje o madre.' },
     2: { l1: 'Objetivo y nivel; luego entorno interior/exterior.' },
     3: { l1: 'Interior o exterior (clima y meteo).' },
     4: { l1: 'Carpa, LED y extractor; grupo germinación si semilla.' },

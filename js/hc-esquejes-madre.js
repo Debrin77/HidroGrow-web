@@ -337,12 +337,15 @@
         hint.innerHTML = origen === 'madre'
           ? '<strong>Modo madre:</strong> mantén 1 planta en cubo DWC/RDWC bajo 18/6 y toma esquejes cada 10–14 d. ' +
             'Es la forma más productiva de repetir genética en hidro (docenas de clones por ciclo).'
-          : '<strong>Clon recibido o propio:</strong> sigue enraizamiento bajo domo antes del net pot. ' +
-            'Si más adelante quieres madre, deja una planta en veg y marca «Madre» en este paso.';
+          : '<strong>Esqueje al hidro:</strong> enraizado en domo (7–14 d) → net pot → depósito. ' +
+            'No uses el bloque de preparación de madre; solo corte, domo y traslado.';
       }
     }
     if (!show) return;
-    renderPasoGrid(el('setupPremiumEsquejesPrepGrid'), PREP_MADRE_PASOS, 'prep', ep.prepMadre);
+    if (secPrep) secPrep.classList.toggle('setup-hidden', origen !== 'madre');
+    if (origen === 'madre') {
+      renderPasoGrid(el('setupPremiumEsquejesPrepGrid'), PREP_MADRE_PASOS, 'prep', ep.prepMadre);
+    }
     renderPasoGrid(el('setupPremiumEsquejesCorteGrid'), CORTE_PASOS, 'corte', ep.corte);
     renderPasoGrid(el('setupPremiumEsquejesEnraizarGrid'), ENRAIZAR_PASOS, 'enraizar', ep.enraizar);
     if (secDomo) {

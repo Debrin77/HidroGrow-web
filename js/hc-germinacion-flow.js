@@ -128,6 +128,16 @@
     cfg = cfg || cfgActiva();
     g = g || ensureGerminacionFlow(cfg);
     if (g.modo === 'propagador' || g.modo === 'hidro_directo') return g.modo;
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_hidro') return 'hidro_directo';
+    if (cam === 'semilla_propagador') return 'propagador';
+    var pref =
+      cfg.premiumSetup && cfg.premiumSetup.germinacionModoPreferido
+        ? String(cfg.premiumSetup.germinacionModoPreferido)
+        : '';
+    if (pref === 'hidro_directo' || pref === 'hidro') return 'hidro_directo';
+    if (pref === 'propagador') return 'propagador';
     var inst = cfg.equipamientoInstalado || {};
     if (inst.propagador && inst.propagador.id) return 'propagador';
     return 'hidro_directo';
@@ -338,6 +348,7 @@
       return;
     }
     const g = ensureGerminacionFlow(cfg);
+    g.modo = getModoGerminacion(cfg, g);
     if (!g.trasladoAt) g.activo = true;
     if (!g.startedAt && g.activo) g.startedAt = hoyIso();
     if (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) {
@@ -416,6 +427,29 @@
 
   function hcGerminacionCompletarFaseActual() {
     const cfg = cfgActiva();
+    var bloqueo =
+      typeof hcGerminacionBloqueada === 'function'
+        ? hcGerminacionBloqueada(cfg)
+        : typeof hcGerminacionBloqueadaPorMontaje === 'function' && hcGerminacionBloqueadaPorMontaje(cfg)
+          ? 'propagador'
+          : '';
+    if (bloqueo) {
+      if (typeof showToast === 'function') {
+        if (bloqueo === 'sala_config') {
+          showToast('Primero configura la sala en el asistente (carpa, LED, extractor).', true);
+          if (typeof abrirSetupFaseSala === 'function') setTimeout(abrirSetupFaseSala, 400);
+        } else if (bloqueo === 'sala_montaje') {
+          showToast('Completa el checklist de montaje de sala en la pestaña Sala.', true);
+          if (typeof hcIrMontajeSala === 'function') setTimeout(hcIrMontajeSala, 400);
+        } else {
+          showToast('Primero completa el checklist del propagador o prep hidro (arriba).', true);
+          if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
+        }
+      } else if (bloqueo === 'propagador' && typeof hcOpenPropagadorMontajeChecklist === 'function') {
+        hcOpenPropagadorMontajeChecklist();
+      }
+      return;
+    }
     const g = ensureGerminacionFlow(cfg);
     const idx = indiceFaseActual(g);
     if (idx >= PASOS.length) {
@@ -719,10 +753,30 @@
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (typeof updateDashboard === 'function') updateDashboard();
       if (typeof showToast === 'function') showToast('✓ Planta en el ' + tipo + ' · sigue con el primer llenado del depósito', false);
-      setTimeout(function () {
-        if (typeof goTab === 'function') goTab('sistema');
-        if (typeof setTorreInteraccionModo === 'function') setTorreInteraccionModo('editar', { skipTutorial: true });
-      }, 400);
+      var camTr =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      if (
+        typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+        hcCaminoRequiereConfigHidroPendiente(cfg)
+      ) {
+        setTimeout(function () {
+          if (typeof showToast === 'function') {
+            showToast(
+              camTr === 'semilla_hidro'
+                ? 'Fase 2: cierra DWC/RDWC en el asistente (germinación en depósito ya hecha). Luego puntos hidro en montaje.'
+                : 'Fase 2: configura DWC/RDWC y puntos de sistema en montaje; sin repetir germinación en el depósito.',
+              false,
+              { durationMs: 5600 }
+            );
+          }
+          if (typeof abrirSetupFaseHidro === 'function') abrirSetupFaseHidro();
+        }, 900);
+      } else {
+        setTimeout(function () {
+          if (typeof goTab === 'function') goTab('sistema');
+          if (typeof setTorreInteraccionModo === 'function') setTorreInteraccionModo('editar', { skipTutorial: true });
+        }, 400);
+      }
     });
   }
 
@@ -804,8 +858,26 @@
       }
     } catch (_) {}
 
+    var propInline =
+      typeof renderPropagadorMontajeInlineHtml === 'function' ? renderPropagadorMontajeInlineHtml() : '';
+    var bloqueoSala = typeof hcGerminacionBloqueada === 'function' ? hcGerminacionBloqueada(cfg) : '';
+    var salaCtaHtml = '';
+    if (bloqueoSala === 'sala_config') {
+      salaCtaHtml =
+        '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+        '<strong>Paso 2 · Sala.</strong> Configura carpa, LED y extractor antes de las 6 fases. ' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button></div>';
+    } else if (bloqueoSala === 'sala_montaje') {
+      salaCtaHtml =
+        '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+        '<strong>Montaje de sala.</strong> Verifica el checklist en la pestaña Sala. ' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Ir a montaje</button></div>';
+    }
+
     hub.innerHTML =
       '<div class="hc-germ-hub-card">' +
+      (propInline || '') +
+      salaCtaHtml +
       '<div class="hc-germ-hub-head">' +
       '<div class="hc-germ-hub-badge">Producto inicial</div>' +
       '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
@@ -815,9 +887,9 @@
       '%</span></div>' +
       '<div class="hc-germ-hub-titles">' +
       '<h2 class="hc-germ-hub-title">Germinación · camino al cubo</h2>' +
-      '<p class="hc-germ-hub-sub">6 fases en orden · luego traslado a <strong>' +
-      esc(tipo) +
-      '</strong></p>' +
+      '<p class="hc-germ-hub-sub">Sala lista → 6 fases → cierra <strong>' +
+      esc(tipo || 'DWC/RDWC') +
+      '</strong> en el asistente (sin repetir germinación en el depósito)</p>' +
       (cultNombre ? '<p class="hc-germ-hub-var">Variedad: ' + esc(cultNombre) + '</p>' : '') +
       '<p class="hc-germ-hub-modo"><span class="hc-germ-modo-pill hc-germ-modo-pill--' +
       esc(modo) +
@@ -916,7 +988,7 @@
           '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
           esc(tipo) +
           ' →</button>' +
-          '<p class="hc-germ-traslado-foot">Primero el checklist del sistema; luego asignas la cesta en la matriz.</p></div>'
+          '<p class="hc-germ-traslado-foot">Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.</p></div>'
         : '') +
       '</div>';
   }
@@ -1079,7 +1151,7 @@
     sec.innerHTML =
       '<div class="hc-germ-setup-preview setup-box-info" role="note">' +
       '<p><strong>Camino semilla → cubo (6 fases).</strong> No las marques aquí: son días de trabajo real.</p>' +
-      '<p>Al guardar la instalación, <strong>Inicio</strong> activa seguimiento diario (propagador o en el mismo hidro), calendario, registro y checklist al pasar al depósito.</p>' +
+      '<p>Orden: checklist propagador o prep hidro → <strong>configurar sala</strong> → montaje → 6 fases aquí → DWC/RDWC → depósito.</p>' +
       (function () {
         var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
         var vid = p && p.variedadGerminacion;

@@ -992,6 +992,9 @@ function abrirSetupNuevaTorre() {
   renderNutrientesGrid();
   updateTorreBuilder();
   renderSetupPage();
+  try {
+    if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
+  } catch (_) {}
   a11yDialogOpened(so);
 
   // Actualizar el título para indicar que es una torre nueva

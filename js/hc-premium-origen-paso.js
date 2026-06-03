@@ -91,40 +91,40 @@
   function refreshSetupEquipOrigenBanner() {
     var box = el('setupPremiumEquipOrigenBanner');
     if (!box) return;
-    var orig =
-      typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    var def = typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
     var txt = '';
-    if (orig === 'semilla') {
+    if (cam === 'semilla_propagador') {
       txt =
-        '<strong>Origen: semilla.</strong> Arriba verás el grupo <strong>Germinación</strong> (propagador, mat térmica). ' +
-        'La sala completa (LED, extractor) es para cuando la plántula esté en el depósito.';
-    } else if (orig === 'clon') {
+        '<strong>Ruta: semilla en propagador.</strong> Domo y mat térmica en Fase 1. Tras el checklist del propagador: ' +
+        '<strong>configura la sala</strong>, montaje, <strong>6 fases</strong> en Inicio y luego DWC/RDWC.';
+    } else if (cam === 'semilla_hidro') {
       txt =
-        '<strong>Origen: esqueje.</strong> Prioriza <strong>enraizado</strong> (propagador). ' +
-        'El seguimiento día a día del domo está en el paso de detalle de origen y en Inicio.';
-    } else if (orig === 'madre') {
+        '<strong>Ruta: semilla en hidro.</strong> Prep en depósito → <strong>sala y montaje</strong> → 6 fases en Inicio. ' +
+        'Al terminar solo cierras DWC/RDWC (sin repetir germinación en el depósito).';
+    } else if (cam === 'esqueje_hidro') {
       txt =
-        '<strong>Origen: madre.</strong> Equipa sala y depósito para la madre (18/6). ' +
-        'Los esquejes que tomes seguirán el camino de clon.';
+        '<strong>Ruta: esqueje.</strong> <strong>Propagador</strong> para enraizar + sala y circuito hidro en este asistente.';
+    } else if (cam === 'madre_hidro') {
+      txt =
+        '<strong>Ruta: madre.</strong> Sala y depósito para la madre (18/6); esquejes con checklist de clon.';
+    } else if (def) {
+      txt = '<strong>' + def.label + '</strong>';
     }
     box.classList.remove('setup-hidden');
     box.innerHTML = txt;
   }
 
   function refreshPremiumOrigenPasoUI() {
+    if (typeof refreshCaminoCultivoUI === 'function') {
+      refreshCaminoCultivoUI();
+      return;
+    }
     var orig =
       typeof getPremiumOrigenPlanta === 'function'
         ? getPremiumOrigenPlanta()
-        : typeof ensurePremiumSetup === 'function'
-          ? ensurePremiumSetup().origenPlanta || 'semilla'
-          : 'semilla';
+        : 'semilla';
     renderOrigenFlowDiagram(orig);
-    if (typeof refreshPremiumOrigenRecoUI === 'function') {
-      refreshPremiumOrigenRecoUI(orig, []);
-    }
-    el('setupPremiumOrigenSemilla')?.classList.toggle('selected', orig === 'semilla');
-    el('setupPremiumOrigenClon')?.classList.toggle('selected', orig === 'clon');
-    el('setupPremiumOrigenMadre')?.classList.toggle('selected', orig === 'madre');
   }
 
   window.renderOrigenFlowDiagram = renderOrigenFlowDiagram;

@@ -1711,19 +1711,32 @@ function guardarSetupYContinuarCore() {
       hcApplySalasPlanFirstInstallName();
     }
   } catch (_) {}
+  const faseSalaPreGerm =
+    typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
+  const faseGermSetup =
+    !faseSalaPreGerm &&
+    typeof hcSetupEnFaseGerminacion === 'function' &&
+    hcSetupEnFaseGerminacion();
   if (setupEsNuevaTorre) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
     const fromInp = inpNom ? (inpNom.value || '').trim().slice(0, 40) : '';
     if (fromInp) setupNombreNuevaTorre = fromInp;
     if (!setupNombreNuevaTorre) {
-      showToast('Escribe un nombre para esta instalación (paso de dimensiones)', true);
-    setupPagina = SETUP_PAGE_GEOMETRY;
-    renderSetupPage();
-    if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
-    document.getElementById('setupNombreInstalacionInput')?.focus();
-    return false;
+      if (faseGermSetup) {
+        const cam =
+          typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+        const def = typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
+        setupNombreNuevaTorre = (def && def.short ? def.short + ' · ' : '') + 'Germinación';
+      } else {
+        showToast('Escribe un nombre para esta instalación (paso de dimensiones)', true);
+        setupPagina = SETUP_PAGE_GEOMETRY;
+        renderSetupPage();
+        if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
+        document.getElementById('setupNombreInstalacionInput')?.focus();
+        return false;
+      }
     }
-    if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
+    if (!faseGermSetup && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
       showToast('Elige DWC o RDWC en el paso «DWC o RDWC» del asistente', true);
       setupPagina = typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
       renderSetupPage();
@@ -1802,7 +1815,7 @@ function guardarSetupYContinuarCore() {
     vol = Math.max(1, Math.round(Number(cR.rdwcControlVolL || 40)));
   }
 
-  const tipoNuevoPrevio = isRdwc ? 'rdwc' : 'dwc';
+  const tipoNuevoPrevio = faseGermSetup || faseSalaPreGerm ? '' : isRdwc ? 'rdwc' : 'dwc';
 
   const cfgPrevWizard = state.configTorre || {};
   const preservedEquipInstalado = (function () {
@@ -1969,7 +1982,7 @@ function guardarSetupYContinuarCore() {
   setupData.horasLuz = horasLuzGuardar;
 
   state.configTorre = {
-    tipoInstalacion: tipoNuevoPrevio,
+    tipoInstalacion: faseGermSetup || faseSalaPreGerm ? '' : tipoNuevoPrevio,
     torreVistaModo: 'esquema',
     torreDiagramaVista: 'esquema',
     tipoTorre:    'custom',
@@ -1977,7 +1990,8 @@ function guardarSetupYContinuarCore() {
     numCestas:    cestas,
     volDeposito:  vol,
     agua:         setupData.agua || 'destilada',
-    checklistInstalacionConfirmada: true,
+    checklistInstalacionConfirmada: faseGermSetup || faseSalaPreGerm ? false : true,
+    hcSetupFase: faseSalaPreGerm ? 'germinacion' : faseGermSetup ? 'germinacion' : 'hidro',
     ubicacion:    setupData.ubicacion || setupUbicacion || 'exterior',
     luz:          setupData.luz || 'led',
     horasLuz:     horasLuzGuardar,
@@ -2050,6 +2064,16 @@ function guardarSetupYContinuarCore() {
   });
   if (isRdwc && typeof buildRdwcConfigFromForm === 'function') {
     Object.assign(state.configTorre, buildRdwcConfigFromForm('setup', state.configTorre));
+  }
+  if (faseSalaPreGerm) {
+    state.configTorre.salaPreGermConfigAt = new Date().toISOString();
+    state.configTorre.hcSetupFase = 'germinacion';
+    try {
+      if (typeof window !== 'undefined') {
+        window._hcSetupSalaPreGermSession = false;
+        window._hcSalaPreGermRecienGuardada = true;
+      }
+    } catch (_) {}
   }
   const ccSetup = parseFloat(String(document.getElementById('setupCalentadorConsignaC')?.value || '').replace(',', '.'));
   if (setupEquipamiento.has('calentador') && Number.isFinite(ccSetup) && ccSetup >= 10 && ccSetup <= 35) {
@@ -2294,16 +2318,30 @@ function guardarSetupYContinuarCore() {
       String(state.torres[state.torreActiva != null ? state.torreActiva : 0].nombre || '').trim()) ||
     (typeof setupNombreNuevaTorre !== 'undefined' ? String(setupNombreNuevaTorre || '').trim() : '') ||
     '';
+  const salaPreGermGuardada =
+    typeof window !== 'undefined' && window._hcSalaPreGermRecienGuardada;
+  const faseGermGuardada =
+    !salaPreGermGuardada &&
+    state.configTorre &&
+    state.configTorre.hcSetupFase === 'germinacion';
   if (typeof hcNotifyInstalacionGuardada === 'function') {
     hcNotifyInstalacionGuardada({ nombre: nombreGuardado });
   } else if (typeof showToast === 'function') {
     setTimeout(function () {
       showToast(
-        nombreGuardado
-          ? '✅ «' + nombreGuardado + '» guardada'
-          : '✅ Instalación guardada',
+        salaPreGermGuardada
+          ? '✅ Sala guardada · abre el checklist de montaje de sala y luego las 6 fases'
+          : faseGermGuardada
+            ? '✅ Fase 1 guardada · checklist propagador → sala → 6 fases en Inicio'
+            : nombreGuardado
+              ? '✅ «' + nombreGuardado + '» guardada'
+              : '✅ Instalación guardada',
         false,
-        { durationMs: 5600, zIndex: 10400, prominent: true }
+        {
+          durationMs: salaPreGermGuardada || faseGermGuardada ? 6800 : 5600,
+          zIndex: 10400,
+          prominent: true,
+        }
       );
     }, 220);
   }

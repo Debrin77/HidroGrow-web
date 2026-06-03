@@ -19,6 +19,7 @@
   function instalacionEstaConfigurada(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
     if (cfg.hcPlantillaAutogenerada) return false;
+    if (cfg.hcSetupFase === 'germinacion' && cfg.caminoCultivo) return true;
     if (cfg.checklistInstalacionConfirmada === true) return true;
     if (
       typeof checklistInstalacionCompletaParaRecarga === 'function' &&
@@ -134,8 +135,59 @@
 
   function getSiguientePaso(fase) {
     try {
+      var cfg = cfgActiva();
+      if (
+        typeof propagadorMontajeCompleto === 'function' &&
+        typeof hcGerminacionActiva === 'function' &&
+        hcGerminacionActiva(cfg) &&
+        !propagadorMontajeCompleto(cfg)
+      ) {
+        var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+        return {
+          label:
+            cam === 'semilla_hidro'
+              ? 'Preparar germinación en hidro'
+              : 'Montaje del propagador',
+          action: 'irPropagadorMontaje',
+        };
+      }
+      if (
+        typeof hcCaminoRequiereSalaPreGerm === 'function' &&
+        hcCaminoRequiereSalaPreGerm(cfg) &&
+        typeof hcGerminacionActiva === 'function' &&
+        hcGerminacionActiva(cfg) &&
+        typeof propagadorMontajeCompleto === 'function' &&
+        propagadorMontajeCompleto(cfg)
+      ) {
+        if (
+          typeof salaPreGermConfigurada === 'function' &&
+          !salaPreGermConfigurada(cfg)
+        ) {
+          return { label: 'Configurar sala (antes de las 6 fases)', action: 'abrirSetupFaseSala' };
+        }
+        if (
+          typeof montajeSalaPreGermOk === 'function' &&
+          !montajeSalaPreGermOk(cfg)
+        ) {
+          return { label: 'Montaje de sala (checklist)', action: 'irMontaje' };
+        }
+      }
       if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva()) {
-        return { label: 'Seguimiento de germinación', action: 'irGerminacion' };
+        return { label: 'Control germinación (6 fases)', action: 'irGerminacion' };
+      }
+      if (
+        typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+        hcCaminoRequiereConfigHidroPendiente(cfg)
+      ) {
+        return { label: 'Configurar DWC/RDWC (Fase 2)', action: 'abrirSetupFaseHidro' };
+      }
+      if (
+        typeof hcCaminoEsSemilla === 'function' &&
+        hcCaminoEsSemilla(getCaminoCultivo(cfg)) &&
+        !montajeEstaVerificado(cfg) &&
+        (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc')
+      ) {
+        return { label: 'Montaje de sala completa', action: 'irMontaje' };
       }
     } catch (_) {}
     switch (fase) {
@@ -163,6 +215,21 @@
     lc = lc || getInstalacionLifecycle();
     if (!lc.esPrimeraInstalacion || lc.operativaDiaria) return null;
     var cfg = cfgActiva();
+    if (
+      typeof hcGerminacionActiva === 'function' &&
+      hcGerminacionActiva(cfg) &&
+      typeof germinacionListaParaConfigHidro === 'function' &&
+      !germinacionListaParaConfigHidro(cfg)
+    ) {
+      return {
+        titulo: 'Primero: germinación (6 fases)',
+        texto:
+          'Completa el camino en <strong>Inicio</strong> (propagador → sala → 6 fases). ' +
+          'El <strong>checklist del depósito</strong> va después de cerrar DWC/RDWC.',
+        cta: 'Ir a germinación',
+        action: 'irGerminacion',
+      };
+    }
     if (!montajeEstaVerificado(cfg)) {
       return {
         titulo: 'Primero: montaje de sala',
@@ -322,6 +389,22 @@
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
         }, 200);
         break;
+      case 'abrirSetupFaseHidro':
+        if (typeof abrirSetupFaseHidro === 'function') abrirSetupFaseHidro();
+        break;
+      case 'irPropagadorMontaje':
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
+          else {
+            try {
+              document.getElementById('hcPropagadorMontajeInline')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } catch (_) {}
+          }
+        }, 200);
+        break;
       default:
         break;
     }
@@ -450,10 +533,16 @@
     ban.id = 'hcSalaPostSetupBanner';
     ban.className = 'setup-field-hint setup-field-hint--banner hc-sala-post-setup-banner';
     ban.setAttribute('role', 'status');
+    var cfgBan = cfgActiva();
+    var germBan =
+      typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgBan);
     ban.innerHTML =
       '<strong>✅ ' +
       esc(titulo) +
-      '</strong> Checklist de montaje abajo.';
+      '</strong> ' +
+      (germBan
+        ? 'Verifica montaje de sala; luego las <strong>6 fases</strong> en Inicio.'
+        : 'Checklist de montaje abajo.');
     var intro = tab.querySelector('.medir-sala-intro');
     if (intro) intro.insertAdjacentElement('afterend', ban);
     else tab.insertBefore(ban, tab.firstChild);
@@ -461,6 +550,52 @@
 
   function iniciarFlujoInstalacionPostSetup() {
     activarInstalacionGuidadaPostSetup();
+    var cfgGerm = cfgActiva();
+    if (typeof window !== 'undefined' && window._hcSalaPreGermRecienGuardada) {
+      try {
+        delete window._hcSalaPreGermRecienGuardada;
+      } catch (_) {}
+      setTimeout(function () {
+        hcIrMontajeSala();
+        setTimeout(function () {
+          try {
+            var det = document.getElementById('sistemaMontajeChecksDetails');
+            if (det) det.open = true;
+            if (typeof hcOpenPuestaMarchaChecklist === 'function') hcOpenPuestaMarchaChecklist();
+          } catch (_) {}
+          refreshInstalacionLifecycleUi();
+          try {
+            if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+          } catch (_) {}
+        }, 420);
+      }, 300);
+      return;
+    }
+    if (cfgGerm.hcSetupFase === 'germinacion') {
+      setTimeout(function () {
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          try {
+            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+          if (
+            typeof propagadorMontajeCompleto === 'function' &&
+            !propagadorMontajeCompleto(cfgGerm) &&
+            typeof hcOpenPropagadorMontajeChecklist === 'function'
+          ) {
+            hcOpenPropagadorMontajeChecklist();
+          }
+          refreshInstalacionLifecycleUi();
+          try {
+            if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
+          } catch (_) {}
+        }, 280);
+      }, 300);
+      return;
+    }
     setTimeout(function () {
       try {
         if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();

@@ -3253,33 +3253,39 @@
     <div class="setup-page" id="spagePremiumOrigen">
       <div class="setup-title">¿Cómo empiezas el cultivo?</div>
       <div class="setup-subtitle">
-        Elige el <strong>camino hasta la floración</strong> en tu DWC/RDWC. El asistente adapta equipamiento y pasos siguientes.
+        Elige <strong>una de las cuatro rutas</strong>. El asistente separa lo imprescindible ahora de la sala y el hidro (cuando toque).
       </div>
-      <div class="setup-box-info setup-mb-12" role="note">
-        <strong>Destino común:</strong> planta enraizada en net pot → depósito → vegetativo → <strong>floración</strong>.
-        La madre no es cosecha: mantiene 18/6 y produce esquejes.
+      <div id="setupCaminoFaseBanner" class="setup-box-warn setup-mb-12" role="status" aria-live="polite"></div>
+      <div class="setup-block-title">Tu camino (elige uno)</div>
+      <div class="setup-grid-2 setup-grid-gap-8 setup-mb-12">
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin selected" id="setupCamino_semilla_propagador"
+          onclick="seleccionarCaminoCultivo('semilla_propagador')">
+          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
+          <div class="setup-option-title-md">Semilla en propagador</div>
+          <div class="setup-option-desc-sm">Domo · 6 fases · luego DWC/RDWC</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupCamino_semilla_hidro"
+          onclick="seleccionarCaminoCultivo('semilla_hidro')">
+          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
+          <div class="setup-option-title-md">Semilla en el hidro</div>
+          <div class="setup-option-desc-sm">6 fases en net pot · luego sistema</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupCamino_esqueje_hidro"
+          onclick="seleccionarCaminoCultivo('esqueje_hidro')">
+          <span class="hc-visual-origin-icon" data-visual="esqueje"></span>
+          <div class="setup-option-title-md">Esqueje al hidro</div>
+          <div class="setup-option-desc-sm">Domo de enraizado → net pot</div>
+        </button>
+        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupCamino_madre_hidro"
+          onclick="seleccionarCaminoCultivo('madre_hidro')">
+          <span class="hc-visual-origin-icon" data-visual="madre"></span>
+          <div class="setup-option-title-md">Madre en hidro</div>
+          <div class="setup-option-desc-sm">18/6 · esquejes después</div>
+        </button>
       </div>
       <div id="setupPremiumOrigenFlow" class="setup-mb-12"></div>
-      <div class="setup-block-title">Origen de plantas</div>
-      <div class="setup-grid-3 setup-grid-gap-8 setup-mb-12">
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin selected" id="setupPremiumOrigenSemilla" onclick="seleccionarPremiumOrigen('semilla')">
-          <span class="hc-visual-origin-icon" data-visual="semilla"></span>
-          <div class="setup-option-title-md">Semilla</div>
-          <div class="setup-option-desc-sm">6 fases · propagador o en el hidro</div>
-        </button>
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenClon" onclick="seleccionarPremiumOrigen('clon')">
-          <span class="hc-visual-origin-icon" data-visual="esqueje"></span>
-          <div class="setup-option-title-md">Clon / esqueje</div>
-          <div class="setup-option-desc-sm">Domo → net pot → hidro</div>
-        </button>
-        <button type="button" class="equip-card equip-card-pad-12 hc-visual-origin" id="setupPremiumOrigenMadre" onclick="seleccionarPremiumOrigen('madre')">
-          <span class="hc-visual-origin-icon" data-visual="madre"></span>
-          <div class="setup-option-title-md">Madre DWC/RDWC</div>
-          <div class="setup-option-desc-sm">18/6 · luego esquejes</div>
-        </button>
-      </div>
-      <div id="setupPremiumOrigenReco" class="setup-box-info setup-mb-12" role="status" aria-live="polite"></div>
-      <p class="setup-field-hint">Siguiente: objetivo, sala y equipamiento según tu elección (propagador si semilla, enraizado si esqueje).</p>
+      <div id="setupPremiumOrigenReco" class="setup-box-info setup-mb-12 setup-hidden" role="status" aria-live="polite" aria-hidden="true"></div>
+      <p class="setup-field-hint">Siguiente: objetivo y equipamiento según tu ruta (germinación imprescindible o hidro completo).</p>
     </div>
 
     <div class="setup-page" id="spagePremium1">
@@ -4440,6 +4446,21 @@
   </div>
 </div>
 
+<!-- Modal: montaje propagador / prep germinación en hidro -->
+<div class="modal-overlay ctp-modal-overlay" id="modalPropagadorMontaje"
+  onclick="hcClosePropagadorMontajeChecklist(event)"
+  role="dialog" aria-modal="true" aria-labelledby="propagadorMontajeTitle">
+  <div class="modal hc-pm-modal hc-pm-modal--modern" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="propagadorMontajeTitle">Montaje del propagador</div>
+    <div id="propagadorMontajeBody" class="hc-pm-body"></div>
+    <div class="hc-pm-foot">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePropagadorMontajeChecklist()">Cerrar</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="hcFinishPropagadorMontaje()">Listo · configurar sala</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: checklist puesta en marcha (montaje, accesorios, IoT opcional) -->
 <div class="modal-overlay ctp-modal-overlay" id="modalPuestaMarcha"
   onclick="hcClosePuestaMarchaChecklist(event)"
@@ -5116,7 +5137,7 @@
   <script src="js/semilleros-catalog.js?v=2026-05-31-sem"></script>
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-origen-reco"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
-  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-equip-full"></script>
+  <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-tijeras-top10"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -5130,7 +5151,7 @@
   <script src="js/hc-bootstrap-pin.js?v=5"></script>
   <script src="js/hc-medir-operativa.js?v=2026-05-31-copy-lite"></script>
   <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-copy-lite"></script>
-  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-montaje"></script>
+  <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-caminos-rail"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-medir-sala-layout.js?v=2026-05-31-copy-lite"></script>
@@ -5158,9 +5179,11 @@
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-equip-select-fix"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-setup-genetics"></script>
+  <script src="js/hc-propagador-montaje.js?v=2026-05-31-caminos"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-05-31-caminos"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-setup-genetics"></script>
-  <script src="js/hc-premium-origen-paso.js?v=2026-05-31-origen-primero"></script>
+  <script src="js/hc-camino-cultivo.js?v=2026-05-31-caminos"></script>
+  <script src="js/hc-premium-origen-paso.js?v=2026-05-31-caminos"></script>
   <script src="js/hc-premium-wizard.js?v=2026-05-31-origen-primero2"></script>
   <script src="js/hc-setup-flow.js?v=2026-05-31-origen-primero"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-equip-full"></script>

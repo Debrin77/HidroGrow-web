@@ -411,11 +411,25 @@ const EQUIPAMIENTO_CATALOG = [
     specs: { sombreoPct: 60 }, nota: 'Malla reflectante · exterior hidro.' },
 
   { id: 'chikamasa_t550', categoria: 'tijeras', marca: 'Chikamasa', modelo: 'T-550', top_es: true, rank: 1,
-    specs: { tipo: 'Curva · acero inox' }, nota: 'Estándar en esquejes y poda fina.' },
-  { id: 'fiskars_micro', categoria: 'tijeras', marca: 'Fiskars', modelo: 'Micro-Tip', top_es: true, rank: 2,
-    specs: { tipo: 'Punta fina' }, nota: 'Defoliación sin dañar cogollos.' },
-  { id: 'bachco_pruning', categoria: 'tijeras', marca: 'Bahco', modelo: 'P121', top_es: true, rank: 3,
-    specs: { tipo: 'Bypass' }, nota: 'Corte limpio · ramas gruesas en SCROG.' },
+    specs: { tipo: 'Curva · acero inox · 155 mm' }, nota: 'La más citada en growshops ES · trim y esquejes.' },
+  { id: 'chikamasa_b500slf', categoria: 'tijeras', marca: 'Chikamasa', modelo: 'B-500SLF', top_es: true, rank: 2,
+    specs: { tipo: 'Recta · muelle · fluor' }, nota: 'Muy vendida · defoliación rápida sin fatiga de mano.' },
+  { id: 'ars_hp130dx', categoria: 'tijeras', marca: 'ARS', modelo: 'HP-130DX', top_es: true, rank: 3,
+    specs: { tipo: 'Curva · acero japonés' }, nota: 'Top valorada en foros ES · corte fino en cogollos.' },
+  { id: 'fiskars_micro', categoria: 'tijeras', marca: 'Fiskars', modelo: 'Micro-Tip SP-13', top_es: true, rank: 4,
+    specs: { tipo: 'Punta fina · bypass' }, nota: 'Amazon y bricolaje ES · defoliación delicada.' },
+  { id: 'okatsune_103', categoria: 'tijeras', marca: 'Okatsune', modelo: '103', top_es: true, rank: 5,
+    specs: { tipo: 'Bypass · forjada · 200 mm' }, nota: 'Calidad pro · poda y limpieza de bajos en SCROG.' },
+  { id: 'chikamasa_b130', categoria: 'tijeras', marca: 'Chikamasa', modelo: 'B-130', top_es: true, rank: 6,
+    specs: { tipo: 'Recta corta · 130 mm' }, nota: 'Hoja corta · clones y manicura en maceta pequeña.' },
+  { id: 'bahco_p121', categoria: 'tijeras', marca: 'Bahco', modelo: 'P121-20-F', top_es: true, rank: 7,
+    specs: { tipo: 'Bypass · 200 mm' }, nota: 'Ferretería y growshop · ramas medias y limpieza de tallo.' },
+  { id: 'ars_ses60c', categoria: 'tijeras', marca: 'ARS', modelo: 'SES-60C', top_es: true, rank: 8,
+    specs: { tipo: 'Curva compacta · 155 mm' }, nota: 'Versión pequeña ARS · manicura densa en floración.' },
+  { id: 'fiskars_solid', categoria: 'tijeras', marca: 'Fiskars', modelo: 'Solid P362', top_es: true, rank: 9,
+    specs: { tipo: 'Bypass reforzado' }, nota: 'Ramas gruesas · topping y poda estructural en veg.' },
+  { id: 'vivosun_pruner', categoria: 'tijeras', marca: 'Vivosun', modelo: 'Precision Pruner', top_es: true, rank: 10,
+    specs: { tipo: 'Curva · resorte' }, nota: 'Muy vendida online ES · pack 2 uds · relación calidad/precio.' },
 
   { id: 'carson_30x', categoria: 'lupa', marca: 'Carson', modelo: '30× LED', top_es: true, rank: 1,
     specs: { aumento: '30×' }, nota: 'Lupa LED · tricomas lechosos/ámbar.' },
@@ -504,12 +518,29 @@ function getPremiumOrigenPlanta() {
 
 function getEquipCatalogGroups(entorno) {
   const origen = getPremiumOrigenPlanta();
+  const camino =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+  const faseGerm =
+    typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
-  if (origen === 'semilla') {
-    return [Object.assign({}, EQUIP_GERMINACION_GROUP, { label: 'Germinación (semilla) — recomendado' }),].concat(base);
+  if (origen === 'semilla' || camino === 'semilla_propagador' || camino === 'semilla_hidro') {
+    const germGrp = Object.assign({}, EQUIP_GERMINACION_GROUP, {
+      label: faseGerm
+        ? 'Germinación — imprescindible ahora'
+        : 'Germinación (semilla) — recomendado',
+      required: faseGerm,
+    });
+    if (faseGerm) {
+      const salaOpt = Object.assign({}, base[0] || { id: 'sala', label: 'Sala', keys: [] }, {
+        label: 'Sala interior — opcional (más adelante)',
+        optional: true,
+      });
+      return [germGrp, salaOpt].concat(base.slice(1));
+    }
+    return [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base);
   }
   if (origen === 'clon') {
-    return [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — recomendado' }),].concat(base);
+    return [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — imprescindible' })].concat(base);
   }
   return base;
 }

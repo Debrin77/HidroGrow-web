@@ -30,6 +30,8 @@
         intensidadLuz: 'media',
         geneticaPref: 'foto',
         origenPlanta: 'semilla',
+        caminoCultivo: 'semilla_propagador',
+        germinacionModoPreferido: 'propagador',
         variedadGerminacion: '',
         germinacionChecklist: {},
         metodoCultivo: 'scrog',
@@ -85,7 +87,11 @@
 
   function seleccionarPremiumOrigen(origen) {
     const o = origen === 'clon' ? 'clon' : origen === 'madre' ? 'madre' : 'semilla';
-    ensurePremiumSetup().origenPlanta = o;
+    const p = ensurePremiumSetup();
+    p.origenPlanta = o;
+    if (!p.caminoCultivo && typeof inferCaminoFromOrigen === 'function') {
+      p.caminoCultivo = inferCaminoFromOrigen(o, p.germinacionModoPreferido);
+    }
     if (typeof persistOrigenASetupData === 'function') persistOrigenASetupData(o);
     aplicarRecomendacionPremiumPorOrigen(o);
     if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
@@ -629,9 +635,10 @@
   function validarPremiumSetupPaso(pagina) {
     persistPremiumSetupFromUI();
     if (pagina === SETUP_PAGE_ORIGEN) {
-      const o = ensurePremiumSetup().origenPlanta;
-      if (o !== 'semilla' && o !== 'clon' && o !== 'madre') {
-        if (typeof showToast === 'function') showToast('Elige cómo empiezas el cultivo (semilla, clon o madre)', true);
+      const cam =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      if (!cam || typeof getCaminoDef !== 'function' || !getCaminoDef(cam)) {
+        if (typeof showToast === 'function') showToast('Elige una de las cuatro rutas de cultivo', true);
         return false;
       }
     }
