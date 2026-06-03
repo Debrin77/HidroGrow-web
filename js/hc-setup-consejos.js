@@ -1494,12 +1494,14 @@ function buildHtmlPlantasInstalacionResumen(opts) {
   if (!plantas.length) {
     const faseSis =
       typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+    const enGermCamino =
+      faseSis === 'propagador' ||
+      faseSis === 'germ_cubo' ||
+      (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg));
     const planSt =
-      faseSis === 'propagador' && typeof getPlanGermEstado === 'function'
-        ? getPlanGermEstado(cfg)
-        : null;
+      enGermCamino && typeof getPlanGermEstado === 'function' ? getPlanGermEstado(cfg) : null;
     const emptyMsg =
-      planSt && planSt.variedad
+      planSt && (planSt.variedad || planSt.numSemillas >= 1)
         ? 'Germinación en propagador: <strong>' +
           esc(planSt.nombreVar) +
           '</strong> · ' +
@@ -1511,7 +1513,7 @@ function buildHtmlPlantasInstalacionResumen(opts) {
               : planSt.sustrato || '—'
           ) +
           '</strong>. Tras el traslado al hidro podrás editar cada alvéolo en el esquema.'
-        : faseSis === 'propagador'
+        : enGermCamino
           ? 'Completa genética, número de semillas y sustrato en el asistente o en el checklist del propagador.'
           : 'Aún no hay variedad asignada en macetas o módulos. En <strong>Cultivo e instalación</strong> elige genética y fecha en cada posición; los consejos de EC, luz y riego se alinearán con esas fichas.';
     return (
@@ -1612,15 +1614,53 @@ function hcConsejosCultivoVisibles(consejos) {
   });
 }
 
+function hcPlantasInstalacionSubtitulo(cfg, plantas) {
+  plantas = plantas || [];
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (plantas.length > 0) {
+    return (
+      plantas.length +
+      ' planta' +
+      (plantas.length === 1 ? '' : 's') +
+      ' identificada' +
+      (plantas.length === 1 ? '' : 's')
+    );
+  }
+  const faseSis =
+    typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+  const enGermCamino =
+    faseSis === 'propagador' ||
+    faseSis === 'germ_cubo' ||
+    (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg));
+  if (enGermCamino && typeof getPlanGermEstado === 'function') {
+    const planSt = getPlanGermEstado(cfg);
+    const partes = [];
+    if (planSt.nombreVar) partes.push(String(planSt.nombreVar).trim());
+    if (planSt.numSemillas >= 1) {
+      partes.push(
+        planSt.numSemillas + ' semilla' + (planSt.numSemillas === 1 ? '' : 's')
+      );
+    }
+    if (planSt.sustrato) {
+      const subLbl =
+        typeof etiquetaSustratoGerm === 'function'
+          ? etiquetaSustratoGerm(planSt.sustrato)
+          : planSt.sustrato;
+      if (subLbl) partes.push(subLbl);
+    }
+    if (partes.length) return partes.join(' · ');
+    if (planSt.variedad) return 'Genética en plan de germinación';
+  }
+  return 'Sin variedad asignada';
+}
+
 function refreshPlantasInstalacionResumen() {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
   const plantas =
     typeof hcCollectPlantasInstalacionActiva === 'function'
       ? hcCollectPlantasInstalacionActiva()
       : [];
-  const subTxt =
-    plantas.length === 0
-      ? 'Sin variedad asignada'
-      : plantas.length + ' planta' + (plantas.length === 1 ? '' : 's') + ' identificada' + (plantas.length === 1 ? '' : 's');
+  const subTxt = hcPlantasInstalacionSubtitulo(cfg, plantas);
   ['hcPlantasInstalacionInicioSub', 'hcPlantasInstalacionSistemaSub'].forEach(id => {
     const sub = document.getElementById(id);
     if (sub) sub.textContent = subTxt;
