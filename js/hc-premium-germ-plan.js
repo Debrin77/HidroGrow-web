@@ -433,7 +433,9 @@
 
   function getPlanGermEstado(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    if (typeof hcGerminacionSyncDesdePremium === 'function') {
+    if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+      hcAsegurarNutrienteGermEnCfg(cfg);
+    } else if (typeof hcGerminacionSyncDesdePremium === 'function') {
       hcGerminacionSyncDesdePremium(cfg);
     }
     var g = typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : {};
@@ -476,13 +478,8 @@
       return { ok: true, missing: [], message: '' };
     }
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    if (cam === 'semilla_propagador') {
-      if (typeof persistPremiumNutrienteGermFromUI === 'function') {
-        persistPremiumNutrienteGermFromUI();
-      }
-      if (typeof persistPremiumNutrienteGermToConfig === 'function') {
-        persistPremiumNutrienteGermToConfig(cfg);
-      }
+    if (cam === 'semilla_propagador' && typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+      hcAsegurarNutrienteGermEnCfg(cfg);
     }
     var st = getPlanGermEstado(cfg);
     var missing = [];

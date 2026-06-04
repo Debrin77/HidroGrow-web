@@ -45,6 +45,8 @@
         bandejaGerm: 'auto',
         numSemillasGermManual: false,
         germinacionChecklist: {},
+        nutrienteGerm: 'canna_aqua',
+        nutrienteGermVolL: 2,
         metodoCultivo: 'scrog',
         metodoManual: false,
         geneticaManual: false,
@@ -796,6 +798,14 @@
     if (cfg.premiumSetup && !(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {
       Object.assign(p, cfg.premiumSetup);
     }
+    if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+      syncPremiumNutrienteGermFromConfig(cfg);
+    } else if (cfg.nutriente || (cfg.premiumSetup && cfg.premiumSetup.nutrienteGerm)) {
+      p.nutrienteGerm = String(
+        (cfg.premiumSetup && cfg.premiumSetup.nutrienteGerm) || cfg.nutriente || p.nutrienteGerm || 'canna_aqua'
+      ).trim();
+      if (typeof setupNutriente !== 'undefined') setupNutriente = p.nutrienteGerm;
+    }
     if (cfg.consejosModoUi === 'avanzado' || cfg.consejosModoUi === 'principiante') {
       p.consejosModoUi = cfg.consejosModoUi;
       if (typeof setupData !== 'undefined') setupData.consejosModoUi = cfg.consejosModoUi;
@@ -979,6 +989,7 @@
       persistPremiumGermPlanToConfig(cfg, { adjustTorre: true, syncNutrient: false });
     }
     if (typeof persistPremiumNutrienteGermToConfig === 'function') persistPremiumNutrienteGermToConfig(cfg);
+    if (typeof hcAsegurarNutrienteGermEnCfg === 'function') hcAsegurarNutrienteGermEnCfg(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (typeof setupData !== 'undefined' && setupData.ciudad) {
       cfg.ciudad = setupData.ciudad;

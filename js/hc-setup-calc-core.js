@@ -2094,11 +2094,15 @@ function guardarSetupYContinuarCore() {
   if (faseGermSetup) {
     try {
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
-      if (typeof persistPremiumNutrienteGermFromUI === 'function') {
-        persistPremiumNutrienteGermFromUI();
-      }
-      if (typeof persistPremiumNutrienteGermToConfig === 'function') {
-        persistPremiumNutrienteGermToConfig(state.configTorre);
+      if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+        hcAsegurarNutrienteGermEnCfg(state.configTorre);
+      } else {
+        if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+          persistPremiumNutrienteGermFromUI();
+        }
+        if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+          persistPremiumNutrienteGermToConfig(state.configTorre);
+        }
       }
       if (typeof persistPremiumGermPlanToConfig === 'function') {
         persistPremiumGermPlanToConfig(state.configTorre, { adjustTorre: true });

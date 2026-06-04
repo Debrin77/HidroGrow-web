@@ -483,9 +483,26 @@
   }
 
   function hcGerminacionSyncDesdePremium(cfg) {
-    if (!cfg || !origenEsSemilla(cfg)) {
-      if (cfg && cfg.germinacionFlow) cfg.germinacionFlow.activo = false;
-      return;
+    if (!cfg) return;
+    var camSync =
+      (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
+      cfg.caminoCultivo ||
+      (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+      '';
+    if (!origenEsSemilla(cfg)) {
+      if (camSync === 'semilla_propagador' || camSync === 'semilla_hidro') {
+        cfg.origenPlanta =
+          typeof normalizarOrigenPlanta === 'function'
+            ? normalizarOrigenPlanta(
+                (cfg.premiumSetup && cfg.premiumSetup.origenPlanta) || cfg.origenPlanta || 'semilla'
+              )
+            : 'germinacion';
+        if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
+        if (!cfg.premiumSetup.origenPlanta) cfg.premiumSetup.origenPlanta = 'semilla';
+      } else {
+        if (cfg.germinacionFlow) cfg.germinacionFlow.activo = false;
+        return;
+      }
     }
     const g = ensureGerminacionFlow(cfg);
     g.modo = getModoGerminacion(cfg, g);

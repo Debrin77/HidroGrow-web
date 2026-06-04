@@ -84,6 +84,16 @@
   }
 
   function getCaminoCultivo(cfgOpt) {
+    var cfg =
+      cfgOpt && typeof cfgOpt === 'object'
+        ? cfgOpt
+        : typeof state !== 'undefined' && state && state.configTorre
+          ? state.configTorre
+          : {};
+    var fromCfg = String(
+      cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || ''
+    ).trim();
+    if (fromCfg && CAMINOS[fromCfg]) return fromCfg;
     try {
       if (typeof ensurePremiumSetup === 'function') {
         var p = ensurePremiumSetup();
@@ -91,9 +101,6 @@
         return inferCaminoFromOrigen(p.origenPlanta, p.germinacionModoPreferido);
       }
     } catch (_) {}
-    var cfg = cfgOpt || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    var c = String(cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '').trim();
-    if (CAMINOS[c]) return c;
     return inferCaminoFromOrigen(
       (cfg.premiumSetup && cfg.premiumSetup.origenPlanta) || cfg.origenPlanta,
       cfg.premiumSetup && cfg.premiumSetup.germinacionModoPreferido
