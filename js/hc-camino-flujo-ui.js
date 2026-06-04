@@ -465,6 +465,7 @@
       }
     }
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
   }
 
   var _tabsHooked = false;

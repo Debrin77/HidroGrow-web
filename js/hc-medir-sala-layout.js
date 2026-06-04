@@ -274,8 +274,34 @@
     });
   }
 
+  function salaRecargaSubTabVisible(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (typeof hcRecargaCompletaAplicaEnCamino === 'function') {
+      return hcRecargaCompletaAplicaEnCamino(cfg);
+    }
+    return true;
+  }
+
+  function refreshSalaSubTabsCaminoUi(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var showRecarga = salaRecargaSubTabVisible(cfg);
+    var btnRec = document.getElementById('stab-recarga');
+    var panelRec = document.getElementById('salaPanelRecarga');
+    var tabs = document.getElementById('salaSubTabs');
+    if (btnRec) btnRec.classList.toggle('setup-hidden', !showRecarga);
+    if (panelRec && !showRecarga) {
+      panelRec.classList.add('setup-hidden');
+      panelRec.setAttribute('aria-hidden', 'true');
+    }
+    if (tabs) tabs.classList.toggle('sala-sub-tabs--sin-recarga', !showRecarga);
+    if (!showRecarga && salaSubActive === 'recarga') {
+      salaSubTab('agua');
+    }
+  }
+
   function salaSubTab(key) {
     if (SALA_SUB_ORDER.indexOf(key) < 0) key = 'agua';
+    if (key === 'recarga' && !salaRecargaSubTabVisible()) key = 'agua';
     salaSubActive = key;
     window.salaSubActive = key;
     SALA_SUB_ORDER.forEach(function (k) {
@@ -345,6 +371,7 @@
     if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
     refreshSalaEquipMontaje();
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
+    refreshSalaSubTabsCaminoUi();
     try {
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
     } catch (_) {}
@@ -364,11 +391,13 @@
     wrapAmbienteCollapsible();
     mountAmbienteInMedirFlow();
     salaSubTab(salaSubActive);
+    refreshSalaSubTabsCaminoUi();
     refreshSalaEquipMontaje();
     refreshSistemaCultivoExtras();
   }
 
   window.salaSubTab = salaSubTab;
+  window.refreshSalaSubTabsCaminoUi = refreshSalaSubTabsCaminoUi;
   window.goTabSala = function (sub) {
     if (typeof goTab === 'function') goTab('sala');
     setTimeout(function () {
