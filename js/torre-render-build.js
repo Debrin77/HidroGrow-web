@@ -1272,11 +1272,167 @@ function torreTablaLineaBreederHtml(cultivo) {
 }
 
 // ── Tabla resumen de variedades debajo del SVG ───────────────────────────────
+function renderTablaSemillasPropagador() {
+  const el = document.getElementById('tablaVariedades');
+  if (!el) return;
+  const cfg = state.configTorre || {};
+  const g =
+    typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+  const plan =
+    typeof getGerminacionDashTilesPlan === 'function'
+      ? getGerminacionDashTilesPlan(cfg)
+      : { faseLabel: '—', spec: {}, ecObjetivo: null, phObjetivo: null };
+  const PASOS = typeof HC_GERMINACION_PASOS !== 'undefined' ? HC_GERMINACION_PASOS : [];
+  const planN =
+    cfg.premiumSetup && Number.isFinite(cfg.premiumSetup.numSemillasGerm)
+      ? Math.round(cfg.premiumSetup.numSemillasGerm)
+      : 0;
+  const total = Math.min(72, Math.max(1, Math.round(Number(g.numSemillas) || planN || 1)));
+  const activas = Math.min(total, Math.max(0, Math.round(Number(g.semillasActivas) || total)));
+  const subLbl =
+    typeof etiquetaSustratoGerm === 'function'
+      ? etiquetaSustratoGerm(
+          g.sustratoGerm || (cfg.premiumSetup && cfg.premiumSetup.sustratoGerm) || cfg.sustrato || 'lana'
+        )
+      : 'Sustrato';
+  const diaN =
+    typeof diasDesdeInicio === 'function' ? diasDesdeInicio(g) + 1 : 1;
+  const faseId =
+    typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+  let pasoIdx = PASOS.length;
+  for (let i = 0; i < PASOS.length; i++) {
+    if (PASOS[i].id === faseId) {
+      pasoIdx = i;
+      break;
+    }
+  }
+  const pasoActual = pasoIdx < PASOS.length ? PASOS[pasoIdx] : PASOS[PASOS.length - 1];
+  let germinadas = 0;
+  if (pasoIdx >= 1) {
+    germinadas = Math.min(activas, Math.max(1, Math.round(activas * (pasoIdx / PASOS.length))));
+  }
+  const vid = String(
+    g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+  ).trim();
+  const cult = vid && typeof getCultivoDB === 'function' ? getCultivoDB(vid) : null;
+  const cultNombre =
+    cult && cult.nombre
+      ? cultivoNombreLista(cult, cult.nombre)
+      : plan.spec && plan.spec.nombreGenetica
+        ? plan.spec.nombreGenetica
+        : vid || '—';
+  const domo = g.ultimaDomo || {};
+  const reg0 =
+    Array.isArray(g.registroDiario) && g.registroDiario.length ? g.registroDiario[0] : null;
+  const ultTemp = domo.temp != null ? domo.temp : reg0 && reg0.temp != null ? reg0.temp : null;
+  const ultHr = domo.hr != null ? domo.hr : reg0 && reg0.hr != null ? reg0.hr : null;
+  const ultVpd = domo.vpd != null ? domo.vpd : null;
+  const ecObj = plan.ecObjetivo != null ? plan.ecObjetivo + ' µS/cm' : '—';
+  const phObj = plan.phObjetivo != null ? String(plan.phObjetivo) : '—';
+
+  let html =
+    '<div class="torre-prog-wrap torre-prog-wrap--propagador">' +
+    '<div class="torre-prog-prop-resumen">' +
+    '<p><strong>Genética:</strong> ' +
+    escHtmlUi(cultNombre) +
+    ' · <strong>Sustrato:</strong> ' +
+    escHtmlUi(subLbl) +
+    '</p>' +
+    '<p><strong>Día ' +
+    diaN +
+    '</strong> · Fase <strong>' +
+    escHtmlUi(pasoActual ? pasoActual.titulo : plan.faseLabel) +
+    '</strong> (' +
+    (pasoActual ? pasoActual.paso : '?') +
+    '/6)</p>' +
+    '<p class="torre-prog-prop-objetivos">Objetivos fase: EC ' +
+    escHtmlUi(ecObj) +
+    ' · pH cubo ' +
+    escHtmlUi(phObj);
+  if (plan.tempRango && plan.tempRango.min != null) {
+    html += ' · T° ' + plan.tempRango.min + '–' + plan.tempRango.max + ' °C';
+  }
+  if (plan.hrRango && plan.hrRango.min != null) {
+    html += ' · HR ' + plan.hrRango.min + '–' + plan.hrRango.max + ' %';
+  }
+  html += '</p>';
+  if (ultTemp != null || ultHr != null) {
+    html +=
+      '<p class="torre-prog-prop-ultima">Último registro domo: ' +
+      (ultTemp != null ? ultTemp + ' °C' : '') +
+      (ultTemp != null && ultHr != null ? ' · ' : '') +
+      (ultHr != null ? ultHr + ' % HR' : '') +
+      (ultVpd != null ? ' · VPD ' + ultVpd + ' kPa' : '') +
+      ' — <button type="button" class="btn btn-link btn-sm" onclick="goTab(\'mediciones\')">Ir a Medir</button></p>';
+  }
+  html += '</div>';
+
+  if (activas < 1) {
+    html +=
+      '<p class="setup-field-hint">Indica cuántas semillas tienes en el propagador (panel de arriba o Inicio → Germinación).</p></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  html +=
+    '<div class="torre-prog-head torre-prog-head--prop">' +
+    '<span>Alvéolo</span><span>Estado</span><span>Evolución</span><span>Características</span>' +
+    '</div>';
+
+  for (let i = 0; i < activas; i++) {
+    let estado = 'En curso';
+    let color = '#2563eb';
+    let evol = 'Semilla en ' + subLbl;
+    if (i < germinadas) {
+      estado = 'Germinando';
+      color = '#16a34a';
+      evol =
+        pasoActual && pasoActual.desc
+          ? pasoActual.desc.slice(0, 72) + (pasoActual.desc.length > 72 ? '…' : '')
+          : 'Fase activa';
+    } else if (pasoIdx === 0) {
+      evol = 'Germinador / papel húmedo · a oscuras o domo';
+    }
+    const rowTone = i % 2 === 0 ? 'torre-prog-row--odd' : 'torre-prog-row--even';
+    html +=
+      '<div class="torre-prog-row torre-prog-row--prop ' +
+      rowTone +
+      '">' +
+      '<span class="torre-prog-nc">' +
+      (i + 1) +
+      '</span>' +
+      '<span class="torre-prog-estado" style="--tp-est-c:' +
+      color +
+      ';--tp-est-bg:' +
+      color +
+      '15">' +
+      escHtmlUi(estado) +
+      '</span>' +
+      '<span class="torre-prog-evol">' +
+      escHtmlUi(evol) +
+      '</span>' +
+      '<span class="torre-prog-car">' +
+      escHtmlUi(subLbl) +
+      (i < germinadas && pasoActual ? ' · ' + escHtmlUi(pasoActual.titulo) : '') +
+      '</span></div>';
+  }
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
 function renderTablaVariedades() {
   const el = document.getElementById('tablaVariedades');
   if (!el) return;
 
   const cfg = state.configTorre || {};
+  if (
+    typeof hcSistemaPropagadorSinHidro === 'function' &&
+    hcSistemaPropagadorSinHidro(cfg)
+  ) {
+    renderTablaSemillasPropagador();
+    return;
+  }
   const numNiveles = cfg.numNiveles || NUM_NIVELES;
   const plantas = [];
 
@@ -1465,13 +1621,36 @@ function actualizarBarraMultiSel() {
 }
 
 function sincronizarTextosPanelInteraccionSistema() {
-  const t = tipoInstalacionNormalizado(state.configTorre);
+  const cfg = state.configTorre || {};
+  const modoProp =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+  const t = tipoInstalacionNormalizado(cfg);
   const esDwc = t === 'dwc';
   const esRdwc = t === 'rdwc';
   const tit = document.getElementById('torreInteraccionTitulo');
   const modRap = document.getElementById('torreAssignModoRapidoTxt');
   const finHint = document.getElementById('torreAssignFinalizarHint');
   const btnUpd = document.getElementById('btnActualizarInstalacionSistema');
+  if (modoProp) {
+    if (btnUpd) {
+      btnUpd.textContent = '🔄 Actualizar propagador';
+      btnUpd.setAttribute(
+        'aria-label',
+        'Guardar semillas, sustrato y datos del domo de esta instalación'
+      );
+    }
+    if (finHint) {
+      finHint.innerHTML =
+        'Los cambios del <strong>domo y bandeja</strong> se guardan con <strong>Actualizar propagador</strong>. El depósito DWC aparece tras el traslado.';
+    }
+    return;
+  }
+  if (btnUpd) {
+    btnUpd.setAttribute(
+      'aria-label',
+      'Guardar en la instalación activa los cambios hechos en esta pantalla'
+    );
+  }
   if (tit) {
     tit.textContent = esRdwc ? 'Módulos en el RDWC' : 'Macetas en el DWC';
   }

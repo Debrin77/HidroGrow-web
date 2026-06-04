@@ -420,6 +420,36 @@
     }
   }
 
+  function refreshTorreExtrasCaminoUi(cfg) {
+    cfg = cfg || cfgActiva();
+    var sinHidro =
+      typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    var det = document.getElementById('torreVariedadesDetails');
+    var tit = det && det.querySelector('.torre-variedades-summary-title');
+    var sub = det && det.querySelector('.torre-variedades-summary-sub');
+    if (tit) {
+      tit.textContent = sinHidro ? 'Resumen por alvéolo (propagador)' : 'Resumen por plaza';
+    }
+    if (sub) {
+      sub.textContent = sinHidro
+        ? 'Semillas, fase de germinación y objetivos del domo'
+        : 'Variedad, días, estado y EC';
+    }
+    var compatCard = document.querySelector('#tab-sistema .compat-panel-card');
+    if (compatCard) compatCard.classList.toggle('setup-hidden', !!sinHidro);
+    try {
+      if (typeof sincronizarTextosPanelInteraccionSistema === 'function') {
+        sincronizarTextosPanelInteraccionSistema();
+      }
+    } catch (_) {}
+    try {
+      if (typeof renderTablaVariedades === 'function') renderTablaVariedades();
+    } catch (_) {}
+    try {
+      if (typeof renderCompatGrid === 'function') renderCompatGrid();
+    } catch (_) {}
+  }
+
   function hcRefreshSistemaFasePanel() {
     var cfg = cfgActiva();
     var panel = document.getElementById('hcSistemaPropagadorPanel');
@@ -443,6 +473,7 @@
       panel.innerHTML = '';
       toggleTorreChrome(false, cfg, null);
       if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
+      refreshTorreExtrasCaminoUi(cfg);
       return;
     }
 
@@ -464,8 +495,10 @@
     try {
       if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
     } catch (_) {}
+    refreshTorreExtrasCaminoUi(cfg);
   }
 
   global.hcRefreshSistemaFasePanel = hcRefreshSistemaFasePanel;
+  global.refreshTorreExtrasCaminoUi = refreshTorreExtrasCaminoUi;
   global.hcRefreshSistemaPropagadorPanel = hcRefreshSistemaFasePanel;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -602,7 +602,17 @@ function toggleCompatPanel() {
 
 function renderCompatGrid() {
   const grid = document.getElementById('compatGrid');
+  const compatCard = document.querySelector('#tab-sistema .compat-panel-card');
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  const ocultarCompat =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+  if (compatCard) compatCard.classList.toggle('setup-hidden', !!ocultarCompat);
   if (!grid) return;
+  if (ocultarCompat) {
+    grid.classList.add('setup-hidden');
+    grid.innerHTML = '';
+    return;
+  }
   try {
 
   const nut = getNutrienteTorre();
