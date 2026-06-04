@@ -1615,30 +1615,14 @@
       <p class="medir-sala-intro setup-hidden" aria-hidden="true">Configuración de sala (no cambia en cada medición).</p>
       <div id="salaSeguimientoCta" class="sala-seg-cta" role="region" aria-label="Resumen ambiental y seguimiento"></div>
       <div id="salaCultivoEquipMount" class="sala-cultivo-equip-mount" aria-label="Equipamiento y montaje de sala">
-        <details class="sistema-montaje-details config-section-collapsible sala-montaje-details" id="sistemaMontajeChecksDetails">
-          <summary class="config-section-collapse-head sistema-montaje-summary">
-            <span class="config-section-collapse-title-wrap">
-              <span class="config-section-collapse-title">
-                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
-                Checklist de montaje
-                <span class="sala-montaje-badge-reco setup-hidden" id="salaMontajeBadgeReco">RECOMENDADO</span>
-              </span>
-              <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
-            </span>
-            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
-          </summary>
-          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody">
-            <p class="sala-montaje-reco-lead setup-hidden" id="salaMontajeRecoLead" role="note"></p>
-            <div class="sala-montaje-prereq-orden setup-hidden" id="salaMontajePrereqOrden" role="note" aria-label="Orden recomendado antes del checklist"></div>
-            <p class="hc-pm-inline-lead hc-pm-inline-placeholder">El checklist se carga al guardar una instalación o al abrir esta sección.</p>
-          </div>
-        </details>
+        <div id="salaPropagadorFlujoGuiado" class="sala-propagador-flujo setup-hidden" role="region" aria-label="Pasos recomendados: configurar sala y montaje"></div>
         <details class="sistema-equip-details sala-equip-details" id="sistemaEquipDetails">
           <summary class="sistema-equip-summary">
             <span class="sistema-equip-summary-main">
-              <span class="sistema-equip-summary-title">
+              <span class="sistema-equip-summary-title" id="salaEquipSummaryTitle">
                 <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-plug"/></svg>
-                Equipamiento de instalación (LED, extractor, medidor…)
+                <span id="salaEquipSummaryTitleText">Equipamiento de instalación (LED, extractor, medidor…)</span>
+                <span class="sala-equip-paso-badge setup-hidden" id="salaEquipPasoBadge">Paso 1</span>
               </span>
               <span class="sistema-equip-resumen" id="sistemaEquipResumen"></span>
             </span>
@@ -1647,6 +1631,26 @@
           <div class="card medir-equip-card sistema-equip-card" id="medirEquipamientoCard">
             <div id="medirEquipamientoPanel" class="medir-equip-panel"></div>
             <div id="salaLayoutPanel" class="hc-sala-layout-panel"></div>
+          </div>
+        </details>
+        <div id="salaPropagadorPuenteMontaje" class="sala-propagador-puente setup-hidden" role="note" aria-live="polite"></div>
+        <details class="sistema-montaje-details config-section-collapsible sala-montaje-details" id="sistemaMontajeChecksDetails">
+          <summary class="config-section-collapse-head sistema-montaje-summary">
+            <span class="config-section-collapse-title-wrap">
+              <span class="config-section-collapse-title" id="salaMontajeSummaryTitle">
+                <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
+                <span id="salaMontajeSummaryTitleText">Checklist de montaje</span>
+                <span class="sala-montaje-paso-badge setup-hidden" id="salaMontajePasoBadge">Paso 2</span>
+                <span class="sala-montaje-badge-reco setup-hidden" id="salaMontajeBadgeReco">RECOMENDADO</span>
+              </span>
+              <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
+            </span>
+            <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
+          </summary>
+          <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody">
+            <p class="sala-montaje-reco-lead setup-hidden" id="salaMontajeRecoLead" role="note"></p>
+            <div class="sala-montaje-prereq-orden setup-hidden" id="salaMontajePrereqOrden" role="note" aria-hidden="true"></div>
+            <p class="hc-pm-inline-lead hc-pm-inline-placeholder">El checklist se carga al guardar una instalación o al abrir esta sección.</p>
           </div>
         </details>
       </div>
@@ -5210,7 +5214,7 @@
   <script src="js/hc-semilleros-wizard.js?v=2026-05-31-skip-detalle"></script>
   <script src="js/hc-genetics-premium.js?v=2026-05-31-gen-esq"></script>
   <script src="js/hc-equipamiento-catalog.js?v=2026-05-31-germ-ahora-lite"></script>
-  <script src="js/hc-luz-equip-sync.js?v=2026-05-31-dash-sala-montaje"></script>
+  <script src="js/hc-luz-equip-sync.js?v=2026-06-03-sala-pasos-prop"></script>
   <script src="js/cultivos-db.js?v=2026-05-31-hidrogrow"></script>
   <script src="js/hc-origen-planta-dias.js?v=2026-05-31-genetics-germ"></script>
   <script src="js/grow-room-db.js?v=2026-05-31-hidrogrow"></script>
@@ -5227,7 +5231,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-06-03-sala-tab-fast"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-06-03-sala-pasos-prop"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-06-03-sala-tab-fast"></script>
   <script src="js/hc-mobile-ui.js?v=2026-05-31-mobile-ui"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>

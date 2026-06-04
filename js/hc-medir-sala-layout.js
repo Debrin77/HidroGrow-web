@@ -376,6 +376,7 @@
     if (det && !det.dataset.hcEquipBound) {
       det.dataset.hcEquipBound = '1';
       det.addEventListener('toggle', function () {
+        if (!det.open) det.dataset.hcEquipUserClosed = '1';
         if (det.open && typeof renderMedirEquipamientoPanel === 'function') {
           renderMedirEquipamientoPanel();
         }
@@ -419,7 +420,6 @@
     if (montajeDet && montajeDet.open && typeof hcRefreshPuestaMarchaUi === 'function') {
       hcRefreshPuestaMarchaUi();
     }
-    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI();
   }
 
@@ -453,6 +453,7 @@
   function refreshSalaTabLight(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
     refreshSalaSubTabsCaminoUi(cfg);
+    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     refreshSalaEquipMontaje({ lightOnly: true });
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
   }

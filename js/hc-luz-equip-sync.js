@@ -300,35 +300,184 @@
     cfg = cfg || getCfg();
     var host = el('salaMontajePrereqOrden');
     if (!host) return;
+    host.innerHTML = '';
+    host.classList.add('setup-hidden');
+  }
+
+  function renderSalaPropagadorFlujoGuiado(cfg) {
+    cfg = cfg || getCfg();
+    var host = el('salaPropagadorFlujoGuiado');
+    var mount = el('salaCultivoEquipMount');
+    var puente = el('salaPropagadorPuenteMontaje');
+    var equipDet = el('sistemaEquipDetails');
+    var montajeDet = el('sistemaMontajeChecksDetails');
     var show = montajeRecomendadoAplica(cfg);
-    host.classList.toggle('setup-hidden', !show);
+    if (mount) mount.classList.toggle('sala-cultivo-equip-mount--propagador', show);
+    if (host) host.classList.toggle('setup-hidden', !show);
     if (!show) {
-      host.innerHTML = '';
+      if (host) host.innerHTML = '';
+      if (puente) {
+        puente.innerHTML = '';
+        puente.classList.add('setup-hidden');
+      }
+      if (equipDet) equipDet.classList.remove('sala-equip-details--paso-activo');
+      if (montajeDet) montajeDet.classList.remove('sala-montaje-details--bloqueado', 'sala-montaje-details--paso-activo');
+      var eqBadge = el('salaEquipPasoBadge');
+      var moBadge = el('salaMontajePasoBadge');
+      if (eqBadge) eqBadge.classList.add('setup-hidden');
+      if (moBadge) moBadge.classList.add('setup-hidden');
       return;
     }
+    var paso = getSalaRecoPasoInicio(cfg);
     var falt =
       typeof global.getCamposEquipamientoFaltantes === 'function'
         ? global.getCamposEquipamientoFaltantes(cfg)
         : [];
-    var warn = '';
-    if (falt.length) {
-      warn =
-        '<p class="sala-montaje-prereq-warn">Falta registrar: <strong>' +
-        falt
-          .map(function (f) {
-            return f.label;
-          })
-          .join(', ') +
-        '</strong>. Sin eso el checklist será genérico y las guías no mostrarán tu marca/modelo.</p>';
+    var salaCfg =
+      typeof global.salaPreGermConfigurada === 'function' && global.salaPreGermConfigurada(cfg);
+    var montajeOk =
+      typeof global.montajeSalaPreGermOk === 'function' && global.montajeSalaPreGermOk(cfg);
+    var eqBadge = el('salaEquipPasoBadge');
+    var moBadge = el('salaMontajePasoBadge');
+    if (eqBadge) eqBadge.classList.remove('setup-hidden');
+    if (moBadge) moBadge.classList.remove('setup-hidden');
+
+    var eqTitle = el('salaEquipSummaryTitleText');
+    if (eqTitle) {
+      eqTitle.textContent =
+        paso === 'equip'
+          ? 'Paso 1 · Configura el equipamiento de la sala'
+          : 'Equipamiento de la sala (resumen)';
     }
-    host.innerHTML =
-      '<p class="sala-montaje-prereq-title">Orden recomendado</p>' +
-      '<ol class="sala-montaje-prereq-steps">' +
-      '<li><strong>Configuración de sala</strong> — ubicación, agua, dimensiones (asistente <em>Configurar sala</em> o <strong>Sala → Agua y ubicación</strong>).</li>' +
-      '<li><strong>Equipamiento</strong> — carpa, LED, extractor, propagador… (<strong>Sala → Equipamiento</strong> o paso del asistente).</li>' +
-      '<li><strong>Checklist de montaje</strong> — comprobar en físico lo que ya elegiste (pasos y mini-guías con tu modelo).</li>' +
-      '</ol>' +
-      warn;
+    var moTitle = el('salaMontajeSummaryTitleText');
+    if (moTitle) {
+      moTitle.textContent =
+        paso === 'montaje' || paso === 'done'
+          ? 'Paso 2 · Checklist de montaje físico'
+          : 'Checklist de montaje';
+    }
+
+    if (equipDet) {
+      equipDet.classList.toggle('sala-equip-details--paso-activo', paso === 'equip');
+      if (paso === 'equip' && !equipDet.dataset.hcEquipUserClosed) {
+        equipDet.open = true;
+      }
+    }
+    if (montajeDet) {
+      montajeDet.classList.toggle('sala-montaje-details--bloqueado', paso === 'equip');
+      montajeDet.classList.toggle('sala-montaje-details--paso-activo', paso === 'montaje');
+      if (paso === 'montaje' && !montajeDet.dataset.hcMontajeUserClosed) {
+        montajeDet.open = true;
+      }
+      if (paso === 'equip') {
+        montajeDet.open = false;
+      }
+    }
+
+    var faltaTxt =
+      falt.length > 0
+        ? ' Falta en el asistente: <strong>' +
+          falt
+            .map(function (f) {
+              return f.label;
+            })
+            .join(', ') +
+          '</strong>.'
+        : '';
+
+    var paso1Estado = salaCfg && !falt.length ? 'done' : paso === 'equip' ? 'active' : 'pending';
+    var paso2Estado = montajeOk ? 'done' : paso === 'montaje' ? 'active' : paso === 'equip' ? 'locked' : 'pending';
+
+    if (host) {
+      host.innerHTML =
+        '<div class="sala-propagador-flujo-inner">' +
+        '<p class="sala-propagador-flujo-lead" role="note">' +
+        '<strong>Dos pasos, en este orden.</strong> Mientras germinas en el propagador, deja lista la <strong>sala</strong> ' +
+        '(carpa, luz, clima) con el <strong>domo y las semillas dentro</strong>. Primero eliges el equipamiento; después confirmas el montaje físico.' +
+        '</p>' +
+        '<ol class="sala-propagador-pasos" aria-label="Pasos sala de cultivo">' +
+        '<li class="sala-propagador-paso-card sala-propagador-paso-card--' +
+        paso1Estado +
+        '">' +
+        '<div class="sala-propagador-paso-head">' +
+        '<span class="sala-propagador-paso-num">1</span>' +
+        '<h3 class="sala-propagador-paso-title">Configura la sala de cultivo</h3></div>' +
+        '<p class="sala-propagador-paso-desc">En el <strong>configurador</strong> elige carpa, LED, extractor, propagador y medidas. ' +
+        'El resumen queda en el desplegable <strong>Paso 1</strong> de abajo.' +
+        faltaTxt +
+        '</p>' +
+        (paso1Estado === 'done'
+          ? '<p class="sala-propagador-paso-status sala-propagador-paso-status--ok">✓ Equipamiento registrado</p>'
+          : '<div class="sala-propagador-paso-actions">' +
+            '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Abrir configurador de sala</button> ' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaEquipDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver resumen abajo</button>' +
+            '</div>') +
+        '</li>' +
+        '<li class="sala-propagador-paso-card sala-propagador-paso-card--' +
+        paso2Estado +
+        '">' +
+        '<div class="sala-propagador-paso-head">' +
+        '<span class="sala-propagador-paso-num">2</span>' +
+        '<h3 class="sala-propagador-paso-title">Checklist de montaje</h3></div>' +
+        '<p class="sala-propagador-paso-desc">Cuando el equipamiento esté elegido, abre el <strong>Paso 2</strong> y marca lo que ya tienes montado en físico (LED, extractor, ventilación, domo…).</p>' +
+        (paso2Estado === 'done'
+          ? '<p class="sala-propagador-paso-status sala-propagador-paso-status--ok">✓ Montaje verificado</p>'
+          : paso2Estado === 'locked'
+            ? '<p class="sala-propagador-paso-status sala-propagador-paso-status--lock">Completa el paso 1 antes</p>'
+            : '<div class="sala-propagador-paso-actions">' +
+              '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Abrir checklist de montaje</button>' +
+              '</div>') +
+        '</li>' +
+        '</ol>' +
+        '</div>';
+    }
+
+    if (puente) {
+      if (paso === 'montaje') {
+        puente.classList.remove('setup-hidden');
+        puente.innerHTML =
+          '<p class="sala-propagador-puente-text">' +
+          '<strong>Siguiente:</strong> el equipamiento ya está en el configurador. Abre el <strong>checklist de montaje</strong> y confirma punto a punto lo montado en la sala.' +
+          '</p>';
+      } else if (paso === 'equip') {
+        puente.classList.remove('setup-hidden');
+        puente.innerHTML =
+          '<p class="sala-propagador-puente-text">' +
+          'Tras guardar en el configurador, despliega <strong>Paso 2 · Checklist de montaje</strong> (más abajo).' +
+          '</p>';
+      } else {
+        puente.innerHTML = '';
+        puente.classList.add('setup-hidden');
+      }
+    }
+  }
+
+  function bindSalaMontajeBloqueadoSummary() {
+    var det = el('sistemaMontajeChecksDetails');
+    if (!det || det.dataset.hcMontajeBloqueadoBound) return;
+    var sum = det.querySelector('summary');
+    if (!sum) return;
+    det.dataset.hcMontajeBloqueadoBound = '1';
+    sum.addEventListener('click', function (e) {
+      if (!det.classList.contains('sala-montaje-details--bloqueado')) return;
+      if (getSalaRecoPasoInicio(getCfg()) !== 'equip') return;
+      e.preventDefault();
+      try {
+        if (typeof global.showToast === 'function') {
+          global.showToast(
+            'Primero configura el equipamiento de la sala (paso 1). Luego podrás abrir el checklist de montaje.',
+            false,
+            { durationMs: 5200 }
+          );
+        }
+      } catch (_) {}
+      var flujo = el('salaPropagadorFlujoGuiado');
+      if (flujo) {
+        try {
+          flujo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } catch (_) {}
+      }
+    });
   }
 
   function applySalaMontajeRecomendadoUi(cfg) {
@@ -336,6 +485,7 @@
       cfg = cfg || getCfg();
       var det = el('sistemaMontajeChecksDetails');
       if (!det) return;
+      bindSalaMontajeBloqueadoSummary();
       var show = montajeRecomendadoAplica(cfg);
       det.classList.toggle('sala-montaje-details--recomendado', show);
 
@@ -346,19 +496,25 @@
       if (lead) {
         lead.classList.toggle('setup-hidden', !show);
         if (show) {
+          var paso = getSalaRecoPasoInicio(cfg);
           lead.textContent =
-            'Montar la sala antes de germinar en el propagador mejora luz, clima y ventilación. ' +
-            'Al acabar la germinación, el traslado al hidro será más rápido si ya completaste los pasos 1 y 2 de abajo.';
+            paso === 'equip'
+              ? 'Primero configura el equipamiento de la sala (paso 1). El checklist de abajo se activa cuando el catálogo esté guardado.'
+              : 'Marca cada punto del montaje físico. Si ya elegiste carpa, LED y extractor en el configurador, las mini-guías usarán tu marca y modelo.';
         }
       }
+      renderSalaPropagadorFlujoGuiado(cfg);
       renderSalaMontajePrerequisito(cfg);
 
-      if (show && !det.open && !det.dataset.hcMontajeUserClosed) {
+      var paso = getSalaRecoPasoInicio(cfg);
+      if (show && paso === 'montaje' && !det.open && !det.dataset.hcMontajeUserClosed) {
         var pm = cfg.puestaMarchaChecks;
         if (!pm || !pm.completedAt) {
           setTimeout(function () {
             try {
-              if (!det.dataset.hcMontajeUserClosed) det.open = true;
+              if (!det.dataset.hcMontajeUserClosed && getSalaRecoPasoInicio(getCfg()) === 'montaje') {
+                det.open = true;
+              }
             } catch (_) {}
           }, 0);
         }
@@ -375,6 +531,7 @@
   global.renderLuzOrigenEquipBlock = renderLuzOrigenEquipBlock;
   global.refreshLuzOrigenUI = refreshLuzOrigenUI;
   global.applySalaMontajeRecomendadoUi = applySalaMontajeRecomendadoUi;
+  global.renderSalaPropagadorFlujoGuiado = renderSalaPropagadorFlujoGuiado;
   global.toggleLuzOrigenManual = toggleLuzOrigenManual;
   global.tieneEquipLuzRelevante = tieneEquipLuzRelevante;
 
@@ -463,8 +620,8 @@
         : 'Configura el equipamiento de la sala de cultivo';
     var text =
       paso === 'montaje'
-        ? 'El equipamiento ya está registrado. Abre el <strong>checklist de montaje</strong> y marca lo que ya tienes montado en físico (LED, extractor, domo/propagador, ventilación). La pestaña Sala aparece al terminar la germinación.'
-        : 'Monta la sala con el <strong>propagador dentro</strong> (carpa, LED, extractor, domo…). Después completa el <strong>checklist de montaje</strong>. Mejora la germinación ahora.';
+        ? 'El equipamiento ya está en el configurador. En <strong>Sala → Paso 2</strong> abre el checklist y marca lo montado en físico (LED, extractor, ventilación, domo…).'
+        : 'En <strong>Sala</strong>: primero el <strong>configurador</strong> (carpa, LED, extractor, propagador dentro de la sala); después el <strong>checklist de montaje</strong>. Mejora la germinación ahora.';
     var cta = paso === 'montaje' ? 'Abrir checklist de montaje ›' : 'Abrir configurador ›';
     var pasoHint =
       paso === 'montaje'
