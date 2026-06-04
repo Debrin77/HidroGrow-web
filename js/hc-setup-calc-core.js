@@ -2197,7 +2197,7 @@ function guardarSetupYContinuarCore() {
     hcRestaurarCfgCaminoGerminacionTrasSetupSala(state.configTorre, cfgPrevWizard);
     if (camPersist) state.configTorre.caminoCultivo = camPersist;
   }
-  if (faseGermSetup) {
+  if (faseGermSetup || wizardHidroGermCompleto) {
     try {
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
       hcSincronizarNutrientePropagadorEnCfg(state.configTorre);
@@ -2206,6 +2206,20 @@ function guardarSetupYContinuarCore() {
       }
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(state.configTorre);
+      }
+      if (wizardHidroGermCompleto && state.configTorre) {
+        var premH = state.configTorre.premiumSetup || {};
+        var instH = state.configTorre.equipamientoInstalado || {};
+        var salaEnWizard =
+          (Number(premH.anchoM) > 0 && Number(premH.largoM) > 0) ||
+          (Number(state.configTorre.growRoomAnchoM) > 0 &&
+            Number(state.configTorre.growRoomLargoM) > 0) ||
+          Object.keys(instH).some(function (k) {
+            return instH[k] && (instH[k].marca || instH[k].id);
+          });
+        if (salaEnWizard && !state.configTorre.salaPreGermConfigAt) {
+          state.configTorre.salaPreGermConfigAt = new Date().toISOString();
+        }
       }
       if (
         typeof validarPremiumNutrienteGerm === 'function' &&
@@ -2220,11 +2234,22 @@ function guardarSetupYContinuarCore() {
         return false;
       }
       if (typeof validarPlanGerminacionCompleto === 'function') {
-        const vPlan = validarPlanGerminacionCompleto(state.configTorre, { requierePropagador: true });
+        const vPlan = validarPlanGerminacionCompleto(state.configTorre, {
+          requierePropagador: !wizardHidroGermCompleto,
+        });
         if (!vPlan.ok) {
-          showToast(vPlan.message || 'Completa genética, semillas y sustrato del propagador', true);
-          setupPagina =
-            typeof SETUP_PAGE_PREMIUM_4 !== 'undefined'
+          showToast(
+            vPlan.message ||
+              (wizardHidroGermCompleto
+                ? 'Completa genética, semillas, sustrato y fecha de siembra'
+                : 'Completa genética, semillas y sustrato del propagador'),
+            true
+          );
+          setupPagina = wizardHidroGermCompleto
+            ? typeof SETUP_PAGE_PREMIUM_6 !== 'undefined'
+              ? SETUP_PAGE_PREMIUM_6
+              : 7
+            : typeof SETUP_PAGE_PREMIUM_4 !== 'undefined'
               ? SETUP_PAGE_PREMIUM_4
               : typeof SETUP_PAGE_PREMIUM_3 !== 'undefined'
                 ? SETUP_PAGE_PREMIUM_3
@@ -2532,6 +2557,11 @@ function guardarSetupYContinuarCore() {
   } catch (_) {}
   const transicionPropagadorChecklist =
     faseGermSetup && !faseSalaPreGerm && camPersist === 'semilla_propagador';
+  const transicionHidroPrepChecklist =
+    wizardHidroGermCompleto &&
+    camPersist === 'semilla_hidro' &&
+    typeof propagadorMontajeCompleto === 'function' &&
+    !propagadorMontajeCompleto(state.configTorre);
 
   aplicarConfigTorre();
   actualizarHeaderTorre();
@@ -2567,6 +2597,13 @@ function guardarSetupYContinuarCore() {
   if (transicionPropagadorChecklist) {
     try {
       window._hcPropagadorChecklistTrasSetup = true;
+      if (typeof hcOpenPropagadorMontajeChecklist === 'function') {
+        hcOpenPropagadorMontajeChecklist();
+      }
+    } catch (_) {}
+  } else if (transicionHidroPrepChecklist) {
+    try {
+      window._hcHidroPrepChecklistTrasSetup = true;
       if (typeof hcOpenPropagadorMontajeChecklist === 'function') {
         hcOpenPropagadorMontajeChecklist();
       }

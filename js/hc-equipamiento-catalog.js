@@ -500,11 +500,13 @@ const EQUIP_ENRAIZADO_GROUP = {
   keys: ['propagador', 'mat_termica_germ'],
 };
 
+/** Semilla en hidro: germina en el depósito/cubo (DWC/RDWC), no en bandeja propagador aparte. */
 const EQUIP_PREP_HIDRO_GROUP = {
   id: 'prep_hidro',
   label: 'Prep germinación en cubo',
   icon: '🪴',
-  keys: ['propagador', 'mat_termica_germ', 'medidor', 'bomba_aire'],
+  keys: ['medidor', 'bomba_aire'],
+  hint: 'La semilla va en net pot dentro del DWC/RDWC (agua + burbujeo). Medidor y oxigenador del depósito. Mini domo sobre la maceta es opcional (checklist prep), no hace falta bandeja propagador.',
 };
 
 function getPremiumOrigenPlanta() {
@@ -590,7 +592,18 @@ function getEquipCatalogGroups(entorno) {
     return [
       Object.assign({}, EQUIP_PREP_HIDRO_GROUP, {
         required: true,
-        hint: 'Cubo en net pot, medidor y aireación. Debajo: sala completa (carpa, LED, clima).',
+        hint:
+          EQUIP_PREP_HIDRO_GROUP.hint +
+          ' Debajo: sala (carpa, LED) y circuito hidro del asistente.',
+      }),
+      Object.assign({}, EQUIP_GERMINACION_GROUP, {
+        id: 'germ_opcional_hidro',
+        label: 'Opcional (no sustituye el cubo)',
+        icon: '🫧',
+        keys: ['propagador', 'mat_termica_germ'],
+        required: false,
+        hint:
+          'Solo si quieres mini domo o calor extra sobre la maceta. En este camino la germinación es en el hidro, no en bandeja aparte.',
       }),
     ].concat(
       base.map(function (g) {

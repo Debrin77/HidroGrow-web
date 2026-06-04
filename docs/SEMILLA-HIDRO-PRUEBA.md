@@ -18,7 +18,9 @@ npm test
 2. Avanzar el asistente: debe aparecer **Espacio y prep**, **Clima y luz**, **Genética** (paso 6), bloque **semillas/sustrato/fecha**, y página **DWC/RDWC** antes de guardar.
 3. Guardar → checklist **prep hidro** (no «solo propagador»).
 
-**Esperado:** no segundo asistente de sala/DWC tras guardar.
+**Esperado:** no segundo asistente de sala/DWC tras guardar. **Debe abrirse el modal checklist prep hidro** (no ir solo a montaje de sala).
+
+**Regresión corregida (auditoría):** si configuraste sala en el wizard, no debe volver a pedir «Configurar sala» — solo montaje verificado si falta.
 
 ### 2. Inicio
 

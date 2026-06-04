@@ -1085,6 +1085,16 @@
           return false;
         }
       }
+      if (
+        typeof hcCaminoSemillaGermEnSetup === 'function' &&
+        hcCaminoSemillaGermEnSetup() &&
+        typeof getCaminoCultivo === 'function' &&
+        getCaminoCultivo() === 'semilla_hidro' &&
+        typeof validarPremiumGermPlan === 'function' &&
+        !validarPremiumGermPlan()
+      ) {
+        return false;
+      }
     }
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
       if (

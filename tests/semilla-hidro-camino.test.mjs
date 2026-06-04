@@ -15,6 +15,7 @@ function read(rel) {
 
 test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
+  const setup = read('js/hc-setup-calc-core.js');
   assert.match(cultivo, /function hcCaminoSemillaGermEnSetup/);
   assert.match(cultivo, /global\.hcCaminoSemillaGermEnSetup/);
   assert.match(cultivo, /getCaminoCultivo\(\) === 'semilla_hidro'/);
@@ -23,6 +24,9 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
     cultivo,
     /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
   );
+  assert.match(setup, /wizardHidroGermCompleto/);
+  assert.match(setup, /salaPreGermConfigAt/);
+  assert.match(setup, /transicionHidroPrepChecklist/);
 });
 
 test('checklist 2: sala visible en hidro (sin banner oculta)', () => {

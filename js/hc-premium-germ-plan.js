@@ -655,7 +655,9 @@
     var missing = [];
     if (!st.variedad) missing.push('genética');
     if (!st.numSemillas || st.numSemillas < 1) missing.push('número de semillas');
-    if (!st.sustrato) missing.push('sustrato en propagador');
+    if (!st.sustrato) {
+      missing.push(cam === 'semilla_hidro' ? 'sustrato' : 'sustrato en propagador');
+    }
     if ((cam === 'semilla_propagador' || cam === 'semilla_hidro') && !st.fechaSiembraGerm) {
       missing.push('fecha de siembra en sustrato');
     }

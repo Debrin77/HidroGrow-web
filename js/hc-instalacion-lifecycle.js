@@ -878,6 +878,29 @@
   function iniciarFlujoInstalacionPostSetup() {
     activarInstalacionGuidadaPostSetup();
     var cfgGerm = cfgActiva();
+    var camPost =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
+    if (
+      camPost === 'semilla_hidro' &&
+      typeof hcGerminacionActiva === 'function' &&
+      hcGerminacionActiva(cfgGerm) &&
+      typeof propagadorMontajeCompleto === 'function' &&
+      !propagadorMontajeCompleto(cfgGerm) &&
+      typeof hcOpenPropagadorMontajeChecklist === 'function'
+    ) {
+      setTimeout(function () {
+        try {
+          hcOpenPropagadorMontajeChecklist();
+        } catch (_) {}
+        refreshInstalacionLifecycleUi();
+        try {
+          if (typeof actualizarPostSetupChecklistRail === 'function') {
+            actualizarPostSetupChecklistRail();
+          }
+        } catch (_) {}
+      }, 300);
+      return;
+    }
     if (typeof window !== 'undefined' && window._hcSalaPreGermRecienGuardada) {
       try {
         delete window._hcSalaPreGermRecienGuardada;
