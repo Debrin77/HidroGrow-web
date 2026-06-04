@@ -3390,7 +3390,7 @@
       </div>
       <div id="setupPremiumEntornoMeteoWrap" class="setup-hidden setup-mt-12">
         <div class="setup-block-title setup-mb-8"><svg class="hc-ico hc-ico--ubicacion-mapa" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> Ubicación (meteorología)</div>
-        <p class="setup-field-hint setup-mb-8">Municipio de esta instalación para previsión, avisos y riego con clima exterior. Puedes cambiarlo después en Medir.</p>
+        <p class="setup-field-hint setup-mb-8" id="setupPremiumEntornoMeteoLead">Municipio de esta instalación para la pestaña <strong>Meteo</strong> (previsión 7 días y avisos). Obligatorio en camino propagador (interior o exterior). Puedes cambiarlo después en Medir.</p>
         <input type="text" id="setupPremiumCiudadMeteo" placeholder="Busca tu municipio"
           aria-label="Municipio para datos meteorológicos"
           class="setup-input-city"
@@ -5251,18 +5251,18 @@
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
   <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-dash-sala-reco"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-  <script src="js/hc-propagador-montaje.js?v=2026-06-03-sustrato-agua-ec"></script>
+  <script src="js/hc-propagador-montaje.js?v=2026-06-03-prop-agua-riego"></script>
   <script src="js/hc-premium-germ-plan.js?v=2026-06-03-sustrato-agua-ec"></script>
-  <script src="js/hc-germinacion-flow.js?v=2026-05-31-cal-prop"></script>
+  <script src="js/hc-germinacion-flow.js?v=2026-06-03-prop-agua-riego"></script>
   <script src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
   <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-germ-ahora-lite"></script>
-  <script src="js/hc-camino-fase.js?v=2026-05-31-sis-prop-sin-hidro"></script>
+  <script src="js/hc-camino-fase.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/hc-camino-cultivo.js?v=2026-05-31-dash-sala-reco"></script>
   <script src="js/hc-sistema-fase-camino.js?v=2026-05-31-sis-prop-resumen"></script>
-  <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-dash-sala-reco"></script>
+  <script src="js/hc-camino-flujo-ui.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-cajas-origen"></script>
   <script src="js/hc-premium-wizard.js?v=2026-06-03-nutriente-propagador"></script>
-  <script src="js/hc-setup-flow.js?v=2026-05-31-flujo-logico"></script>
+  <script src="js/hc-setup-flow.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
   <script src="js/hc-setup-wizard-core.js?v=2026-05-31-propagador-cultivo"></script>
   <script src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defaults"></script>
@@ -5278,7 +5278,7 @@
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
   <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast2"></script>
-  <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-sin-dup-medir"></script>
+  <script src="js/hc-setup-agua-sustrato.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-sala-plano"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>
@@ -5295,11 +5295,11 @@
   <script src="js/hc-setup-consejos.js?v=2026-05-31-plantas-sub-germ"></script>
   <script src="js/hc-premium-nutriente-germ.js?v=2026-06-03-nutriente-propagador"></script>
   <script src="js/calendario-logic.js?v=2026-05-31-cal-prop"></script>
-  <script src="js/meteo-forecast-meteo.js?v=13"></script>
-  <script src="js/meteo-forecast-dashboard.js?v=2026-06-03-pin-fix"></script>
+  <script src="js/meteo-forecast-meteo.js?v=2026-06-03-meteo-prop"></script>
+  <script src="js/meteo-forecast-dashboard.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/riego-calculo-helpers.js?v=2026-05-20-sombra-cultivo"></script>
   <script src="js/riego-calculo-calcular.js?v=2026-05-20-sombra-cultivo"></script>
-  <script src="js/meteo-alarm-app.js?v=2026-06-02-dwc-rdwc-only"></script>
+  <script src="js/meteo-alarm-app.js?v=2026-06-03-meteo-prop"></script>
   <script src="js/app-hc-medicion-toast.js?v=2026-06-03-medir-confirm"></script>
   <script src="js/hc-dash-operativa.js?v=2026-05-31-operativa"></script>
   <script src="js/app-hc-setup-onboarding.js?v=2026-05-31-meteo-lang"></script>

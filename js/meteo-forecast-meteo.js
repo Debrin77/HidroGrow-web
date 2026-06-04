@@ -517,7 +517,12 @@ function renderMeteoclimaticPanelMeteo(mc) {
   const box = document.getElementById('meteoMeteoclimaticBox');
   const inner = document.getElementById('meteoMeteoclimaticInner');
   if (!box || !inner) return;
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) {
+  const cfgMc = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgMc) &&
+    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgMc))
+  ) {
     box.classList.add('setup-hidden');
     inner.innerHTML = '';
     return;

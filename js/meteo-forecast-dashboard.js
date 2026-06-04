@@ -58,7 +58,12 @@ function updateDashboard() {
   try {
     applyInicioAmbienteExteriorVisibility();
   } catch (_) {}
-  if (!(typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior())) {
+  const cfgDash = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const intDash =
+    typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfgDash);
+  const meteoDash =
+    !intDash || (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgDash));
+  if (meteoDash) {
     fetchMeteoAlert();
   }
 
@@ -1386,12 +1391,15 @@ function clearMeteoAlertRetry() {
   }
 }
 
-/** Inicio: oculta condiciones meteorológicas y localidad si la instalación está en interior (Medir). */
+/** Inicio: condiciones de la zona (ocultas en interior salvo camino propagador, que usa meteo de municipio). */
 function applyInicioAmbienteExteriorVisibility() {
   const wrap = document.getElementById('dashBloqueAmbienteExterior');
   if (!wrap) return;
-  const int = typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior();
-  wrap.classList.toggle('setup-hidden', !!int);
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const int = typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
+  const mostrarZona =
+    !int || (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg));
+  wrap.classList.toggle('setup-hidden', !mostrarZona);
 }
 
 function programarReintentoMeteoAlert() {
@@ -1413,7 +1421,12 @@ async function fetchMeteoAlert() {
   const titleEl   = document.getElementById('meteoAlertTitle');
   const textEl    = document.getElementById('meteoAlertText');
 
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) {
+  const cfgAlert = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgAlert) &&
+    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgAlert))
+  ) {
     clearMeteoAlertRetry();
     _meteoAlertRetryStep = 0;
     try {

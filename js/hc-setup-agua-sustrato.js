@@ -1071,6 +1071,10 @@ function setUbicacionTorreMediciones(tipo) {
   actualizarVisibilidadPanelInteriorGrow();
   cargarInteriorGrowUI();
   applyMedirCollapseUI();
+  try {
+    if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
+    if (typeof refreshAvisoUbicacionExteriorPendiente === 'function') refreshAvisoUbicacionExteriorPendiente();
+  } catch (_) {}
   if (typeof updateDashboard === 'function') updateDashboard();
   try {
     actualizarVistaRiegoPorTipoInstalacion();
@@ -1426,6 +1430,26 @@ function refreshUbicacionInstalacionUI() {
 /**
  * Aviso explícito en Inicio y Meteo si la instalación está en exterior y faltan datos para clima/coords guardados en la instalación activa.
  */
+function refreshMedirLocalidadMeteoLeadUI() {
+  const lead = document.querySelector('#panelLocalidadMeteo .medir-localidad-lead');
+  if (!lead) return;
+  const cfg = state.configTorre || {};
+  const int =
+    typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
+  const prop =
+    typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg);
+  if (prop) {
+    lead.innerHTML =
+      'Camino <strong>propagador</strong>: indica el municipio donde está la instalación (interior o exterior). La pestaña <strong>Meteo</strong> mostrará la previsión de esa zona. También puedes definirlo en el <strong>asistente</strong> (paso Entorno).';
+  } else if (int) {
+    lead.innerHTML =
+      'En <strong>interior</strong> el clima del domo lo registras en Medir; el municipio es opcional para referencia en Meteo.';
+  } else {
+    lead.innerHTML =
+      'Si el sistema está en <strong>exterior</strong>, escribe tu pueblo para previsiones y avisos. También lo puedes definir en el <strong>asistente</strong> (engranaje).';
+  }
+}
+
 function refreshAvisoUbicacionExteriorPendiente() {
   const dashEl = document.getElementById('dashUbicacionExteriorPendiente');
   const meteoEl = document.getElementById('meteoUbicacionExteriorPendiente');
@@ -1433,7 +1457,9 @@ function refreshAvisoUbicacionExteriorPendiente() {
   const cfg = state.configTorre || {};
   const interior =
     typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
-  if (interior) {
+  const reqLoc =
+    typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg);
+  if (interior && !reqLoc) {
     [dashEl, meteoEl].forEach(el => {
       if (!el) return;
       el.innerHTML = '';
@@ -1450,11 +1476,18 @@ function refreshAvisoUbicacionExteriorPendiente() {
   const partes = [];
   if (faltaMun) partes.push('el <strong>municipio</strong> (clima y avisos)');
   if (faltaCoords) partes.push('las <strong>coordenadas</strong> en el mapa del paso de ubicación');
+  const ctxLbl = reqLoc
+    ? 'camino propagador'
+    : interior
+      ? 'interior'
+      : 'exterior';
   const msg = falta
     ? '<svg class="hc-ico hc-ico--inline" aria-hidden="true" focusable="false"><use href="#hc-i-pin-mapa"/></svg> ' +
-      '<span><strong>Ubicación incompleta</strong> (instalación en exterior): indica ' +
+      '<span><strong>Ubicación climática incompleta</strong> (' +
+      ctxLbl +
+      '): indica ' +
       (partes.length === 2 ? partes.join(' y ') : partes[0]) +
-      '. <strong>Medir</strong>, bloque superior, o <strong>asistente</strong> (engranaje) → ubicación.</span>'
+      '. <strong>Medir</strong> (bloque superior), pestaña <strong>Meteo</strong> o <strong>asistente</strong> → Entorno.</span>'
     : '';
   [dashEl, meteoEl].forEach(el => {
     if (!el) return;
@@ -1497,6 +1530,9 @@ window.persistLocalidadMeteo = persistLocalidadMeteo;
 function cargarLocalidadMeteoUI() {
   const el = document.getElementById('inputLocalidadMeteo');
   if (!el) return;
+  try {
+    if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
+  } catch (_) {}
   const v = (state.configTorre && state.configTorre.localidadMeteo) ? String(state.configTorre.localidadMeteo) : '';
   el.value = v;
   const btn = document.getElementById('btnMunicipioGrifoAMeteo');

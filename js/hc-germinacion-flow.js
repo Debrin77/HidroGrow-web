@@ -98,10 +98,12 @@
 
   var TAREAS_DIA_FASE = {
     propagador: {
-      semilla: 'Revisa humedad del papel/jiffy; T° 22–26 °C; anota si asoma humedad en la tapa.',
-      taproot: 'No toques la radícula; prepara cubos remojados pH 5,5.',
-      rockwool: 'Inserta con cuidado; cubo húmedo sin charco.',
-      domo: 'Ventila el domo 2× (5 min); guarda T° y HR; luz suave encendida.',
+      semilla:
+        'Mantén ~2–3 mm de agua con nutrientes en la bandeja (no seca); humedad en papel/jiffy; T° 22–26 °C.',
+      taproot:
+        'Misma capa fina en bandeja; no toques la radícula; prepara cubos remojados pH ~5,5.',
+      rockwool: 'Bandeja húmeda sin charco; inserta cubos con cuidado.',
+      domo: 'Ventila el domo 2× (5 min); comprueba que la bandeja no se haya secado; anota T° y HR.',
       netpot: 'Comprueba que la raíz no esté aplastada al meter arcilla.',
       dwc: 'Última revisión del domo antes del checklist al hidro definitivo.',
     },
@@ -1256,7 +1258,7 @@
       '<h2 class="hc-germ-hub-title">Germinación · camino al cubo</h2>' +
       '<p class="hc-germ-hub-sub">' +
       (camGerm === 'semilla_propagador'
-        ? '<strong>App de propagador:</strong> registro diario (T°, HR, nutrientes en agua) → al concluir por días → hidro → traslado'
+        ? '<strong>App de propagador:</strong> ~2–3 mm agua+nutrientes en bandeja (no seca) · registro diario (T°, HR) → hidro → traslado'
         : 'Prep + sala + sistema + depósito → <strong>6 fases</strong> en el cubo → traslado al ' +
           esc(tipo || 'DWC/RDWC')) +
       '</p>' +

@@ -8,9 +8,22 @@
   var ITEMS_PROPAGADOR = [
     { id: 'prop_domo', label: 'Domo / propagador montado', hint: 'Bandeja estable, tapa hermética y acceso para ventilar 2×/día.', accent: 'germ' },
     { id: 'prop_mat', label: 'Mat térmica bajo bandeja (si aplica)', hint: '22–26 °C en sustrato; termostato o termohigrómetro cerca.', accent: 'light' },
+    {
+      id: 'prop_agua_sustrato',
+      label: 'Bandeja con agua + nutrientes (~2–3 mm)',
+      hint:
+        'Al colocar el sustrato elegido (lana, jiffy, papel húmedo, coco…): capa fina en el fondo de la bandeja, sin encharcar. Revisa cada día que no se quede seca.',
+      accent: 'hydro',
+    },
+    {
+      id: 'prop_rockwool',
+      label: 'Sustrato y semillas colocados',
+      hint:
+        'Cada alvéolo/cubo con el sustrato del setup. Si usas lana 4×4, remoja pH ~5,5; en papel/jiffy prioriza humedad constante.',
+      accent: 'hydro',
+    },
     { id: 'prop_termo', label: 'Termo-higrómetro en zona de germinación', hint: 'HR 70–80 % bajo domo; anota en el registro diario.', accent: 'iot' },
     { id: 'prop_luz', label: 'Luz suave 18/6 (tenue)', hint: 'No LED de floración encima del domo; fluorescente o LED muy bajo.', accent: 'light' },
-    { id: 'prop_rockwool', label: 'Cubos lana 4×4 remojados pH 5,5', hint: 'Listos para fase 3 del camino; agua destilada u ósmosis.', accent: 'hydro' },
     { id: 'prop_higiene', label: 'Higiene: tijeras y superficie limpias', hint: 'Alcohol 70 % en herramientas; evita tocar radículas.', accent: 'tool' },
     { id: 'prop_vent', label: 'Ventilación del domo probada', hint: 'Abre 2× al día 3–5 min; sin corrientes frías directas.', accent: 'air' },
   ];
@@ -36,6 +49,7 @@
   var PROP_ICONS = {
     prop_domo: '🫧',
     prop_mat: '🔥',
+    prop_agua_sustrato: '💧',
     prop_termo: '🌡️',
     prop_luz: '💡',
     prop_rockwool: '🧊',
@@ -371,7 +385,7 @@
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
-      '<p class="hc-prop-inline-lead">Checklist del propagador. En <strong>Checklists de montaje</strong> (Inicio) conviene ir preparando la <strong>configuración de sala</strong>; el hidro DWC va después de germinar.</p>' +
+      '<p class="hc-prop-inline-lead">Checklist del propagador: al poner el <strong>sustrato elegido</strong>, llena la bandeja con <strong>agua y nutrientes ~2–3 mm</strong> (sin encharcar) y revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar. En <strong>Checklists de montaje</strong> (Inicio) puedes ir preparando la sala.</p>' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +

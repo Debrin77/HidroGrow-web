@@ -82,8 +82,23 @@
   function refreshPremiumEntornoMeteoUI() {
     const p = ensurePremiumSetup();
     const int = p.entorno !== 'exterior';
-    el('setupPremiumEntornoMeteoWrap')?.classList.toggle('setup-hidden', int);
-    el('setupPremiumEntornoMeteoHintInt')?.classList.toggle('setup-hidden', !int);
+    const reqLoc =
+      typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad();
+    el('setupPremiumEntornoMeteoWrap')?.classList.toggle('setup-hidden', int && !reqLoc);
+    const hintInt = el('setupPremiumEntornoMeteoHintInt');
+    if (hintInt) {
+      if (int && reqLoc) {
+        hintInt.classList.remove('setup-hidden');
+        hintInt.innerHTML =
+          'Aunque el propagador esté en <strong>interior</strong>, indica el <strong>municipio</strong> donde está la instalación: la pestaña <strong>Meteo</strong> usará la previsión de esa zona (calor, frío, lluvia) como referencia para ventilar el domo y planificar la sala.';
+      } else {
+        hintInt.classList.toggle('setup-hidden', !int);
+        if (int) {
+          hintInt.textContent =
+            'En interior la meteo exterior es opcional; puedes indicar municipio más adelante en Medir si lo necesitas.';
+        }
+      }
+    }
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     if (typeof setupData !== 'undefined' && !setupData.ciudad && cfg.ciudad) {
       setupData.ciudad = cfg.ciudad;
@@ -950,7 +965,11 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_2) {
-      if (ensurePremiumSetup().entorno === 'exterior') {
+      const pEnt = ensurePremiumSetup();
+      const needMeteoCity =
+        pEnt.entorno === 'exterior' ||
+        (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad());
+      if (needMeteoCity) {
         const sd = typeof setupData !== 'undefined' ? setupData : {};
         const hasCity =
           sd.ciudad &&
@@ -958,7 +977,12 @@
           Number.isFinite(sd.lon);
         if (!hasCity) {
           if (typeof showToast === 'function') {
-            showToast('Indica y confirma el municipio para datos meteorológicos', true);
+            showToast(
+              pEnt.entorno === 'exterior'
+                ? 'Indica y confirma el municipio para datos meteorológicos'
+                : 'En propagador (interior o exterior) confirma el municipio para la pestaña Meteo',
+              true
+            );
           }
           return false;
         }

@@ -25,7 +25,9 @@
   }
 
   var STEP_BANNERS = {
-    semilla_propagador: {},
+    semilla_propagador: {
+      3: '<strong>Entorno:</strong> interior o exterior. En ambos casos confirma el <strong>municipio</strong> para la pestaña Meteo (previsión de tu zona).',
+    },
     semilla_hidro: {
       1: '<strong>Camino:</strong> prep hidro → sala y montaje → DWC/RDWC → 6 fases en el cubo.',
       2: '<strong>Objetivo:</strong> semilla en net pot desde el inicio; el depósito se cierra antes de las 6 fases.',
@@ -323,7 +325,11 @@
       typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
     if (!f) return '';
     if (f === 'propagador') {
-      return '';
+      return (
+        '<strong>Propagador:</strong> mide T° y HR del domo en Medir. ' +
+        'Mantén la bandeja con <strong>~2–3 mm</strong> de agua con nutrientes (checklist); ' +
+        '<strong>no la dejes seca</strong>. El riego del depósito DWC llega tras configurar el hidro.'
+      );
     }
     if (f === 'germ_cubo') {
       return (
@@ -347,6 +353,9 @@
     cfg = cfg || cfgActiva();
     var ocultarSala =
       typeof hcOcultarTabSalaDuranteCamino === 'function' && hcOcultarTabSalaDuranteCamino(cfg);
+    var ocultarRiego =
+      typeof hcOcultarTabRiegoEnCaminoPropagador === 'function' &&
+      hcOcultarTabRiegoEnCaminoPropagador(cfg);
     var faseSistema =
       typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino(cfg);
     var tituloTab =
@@ -368,6 +377,22 @@
       }
     }
 
+    var btnRiego = el('btn-riego');
+    if (btnRiego) {
+      btnRiego.classList.toggle('hc-tab-camino-oculta', ocultarRiego);
+      btnRiego.disabled = !!ocultarRiego;
+      btnRiego.setAttribute('aria-hidden', ocultarRiego ? 'true' : 'false');
+      btnRiego.tabIndex = ocultarRiego ? -1 : 0;
+      if (ocultarRiego) {
+        btnRiego.setAttribute(
+          'title',
+          'Riego del depósito: disponible al configurar DWC/RDWC (propagador usa ~2–3 mm en bandeja)'
+        );
+      } else {
+        btnRiego.removeAttribute('title');
+      }
+    }
+
     var btnSistema = el('btn-sistema');
     if (btnSistema) {
       btnSistema.setAttribute('title', tituloTab);
@@ -380,6 +405,13 @@
     if (hintSistema) hintSistema.classList.toggle('setup-hidden', !!faseSistema);
     document.body.classList.toggle('hc-modo-propagador-sistema', !!faseSistema);
     document.body.classList.toggle('hc-modo-propagador-sin-sala', !!ocultarSala);
+    document.body.classList.toggle('hc-modo-propagador-sin-riego', !!ocultarRiego);
+
+    if (ocultarRiego && document.getElementById('tab-riego')?.classList.contains('active')) {
+      try {
+        if (typeof goTab === 'function') goTab('inicio');
+      } catch (_) {}
+    }
   }
 
   function propagadorSalaOcultaBannerHtml(cfg) {
@@ -469,6 +501,10 @@
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
     if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+    try {
+      if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
+      if (typeof refreshAvisoUbicacionExteriorPendiente === 'function') refreshAvisoUbicacionExteriorPendiente();
+    } catch (_) {}
   }
 
   var _tabsHooked = false;
@@ -519,6 +555,25 @@
           } catch (_) {}
         }, 280);
         return r;
+      }
+      if (
+        tab === 'riego' &&
+        typeof hcOcultarTabRiegoEnCaminoPropagador === 'function' &&
+        hcOcultarTabRiegoEnCaminoPropagador()
+      ) {
+        if (typeof showToast === 'function') {
+          showToast(
+            'En propagador no hay riego de depósito: usa ~2–3 mm de agua con nutrientes en la bandeja (checklist del propagador).',
+            false,
+            { durationMs: 5600 }
+          );
+        }
+        if (typeof hcOpenPropagadorMontajeChecklist === 'function') {
+          hcOpenPropagadorMontajeChecklist();
+          return prev('inicio');
+        }
+        tab = 'inicio';
+        return prev(tab);
       }
       return prev(tab);
     };

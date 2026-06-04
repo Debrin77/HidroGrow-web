@@ -325,7 +325,12 @@ function renderMeteoFlashBanner(relevantes, opts) {
 
 let _meteoFlashDashPromise = null;
 async function refreshMeteoAlarmFlashDashboard() {
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) {
+  const cfgFlash = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgFlash) &&
+    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgFlash))
+  ) {
     renderMeteoFlashBanner([]);
     return;
   }
@@ -478,7 +483,14 @@ function enviarNotificacionSiAcordado(titulo, cuerpo, icono) {
  */
 async function refrescarAvisosMeteoalarmEnSegundoPlano() {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) return;
+  const cfgBg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgBg) &&
+    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgBg))
+  ) {
+    return;
+  }
   try {
     const { relevantes, error } = await obtenerMeteoalarmParaTorre();
     if (!error && relevantes && relevantes.length) maybeNotificarMeteoalarmRelevantes(relevantes);
@@ -507,7 +519,12 @@ function maybeNotificarMeteoalarmRelevantes(relevantes) {
 async function renderMeteoPanelOficialMeteoalarmSiAplica() {
   const wrap = document.getElementById('meteoAvisosOficiales');
   if (!wrap) return;
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) {
+  const cfgMet = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgMet) &&
+    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgMet))
+  ) {
     wrap.classList.add('setup-hidden');
     wrap.innerHTML = '';
     return;
@@ -562,7 +579,19 @@ async function renderMeteoPanelOficialMeteoalarmSiAplica() {
 function renderMeteoPrevisionCultivoDia() {
   const wrap = document.getElementById('meteoPrevisionDia');
   if (!wrap) return;
+  const cfgPrev = (typeof state !== 'undefined' && state && state.configTorre) || {};
   const parts = [];
+  if (
+    typeof instalacionEsUbicacionInterior === 'function' &&
+    instalacionEsUbicacionInterior(cfgPrev) &&
+    typeof hcMeteoRequiereLocalidad === 'function' &&
+    hcMeteoRequiereLocalidad(cfgPrev)
+  ) {
+    parts.push(
+      '<div class="meteo-aviso-kicker meteo-aviso-kicker--spaced">Propagador en interior · zona meteorológica</div>',
+      '<div class="meteo-alerta-item ok"><span class="meteo-alerta-icon" aria-hidden="true">🌱</span><span>Previsión del <strong>municipio configurado</strong>: útil para olas de calor/frío y ventilar el domo. T° y HR del propagador en <strong>Medir</strong>.</span></div>'
+    );
+  }
   parts.push(
     '<div class="meteo-aviso-kicker meteo-aviso-kicker--spaced">Consejos para el cultivo (previsión de hoy)</div>'
   );
@@ -589,7 +618,12 @@ function renderMeteoPrevisionCultivoDia() {
 }
 
 async function renderMeteoAvisosPanelCompleto() {
-  if (typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior()) {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const int =
+    typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
+  const meteoZonaPropagador =
+    int && typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg);
+  if (int && !meteoZonaPropagador) {
     const wo = document.getElementById('meteoAvisosOficiales');
     const prev = document.getElementById('meteoPrevisionDia');
     const ali = document.getElementById('meteoAlertas');
@@ -615,6 +649,14 @@ async function renderMeteoAvisosPanelCompleto() {
       ali.classList.remove('setup-hidden');
     }
     return;
+  }
+  if (meteoZonaPropagador) {
+    const ali = document.getElementById('meteoAlertas');
+    if (ali) {
+      ali.innerHTML =
+        '<div class="meteo-alerta-item ok"><span class="meteo-alerta-icon" aria-hidden="true">📅</span><span>Previsión <strong>7 días</strong> y avisos de la <strong>localidad elegida</strong>. Complementa con el domo en <strong>Medir</strong>.</span></div>';
+      ali.classList.remove('setup-hidden');
+    }
   }
   await renderMeteoPanelOficialMeteoalarmSiAplica();
   renderMeteoPrevisionCultivoDia();

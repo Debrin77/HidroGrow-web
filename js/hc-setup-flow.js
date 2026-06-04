@@ -316,7 +316,12 @@
       const ciudadSec = document.getElementById('seccionCiudadUbicacion');
       if (ciudadSec) {
         const ext = p && p.entorno === 'exterior';
-        ciudadSec.classList.toggle('setup-hidden', !ext);
+        const reqLoc =
+          typeof hcMeteoRequiereLocalidad === 'function' &&
+          hcMeteoRequiereLocalidad(
+            (typeof state !== 'undefined' && state && state.configTorre) || {}
+          );
+        ciudadSec.classList.toggle('setup-hidden', !ext && !reqLoc);
       }
       renderSetupUbicacionRecap();
       if (typeof syncWizardLuzUI === 'function' && !premiumActive) syncWizardLuzUI();

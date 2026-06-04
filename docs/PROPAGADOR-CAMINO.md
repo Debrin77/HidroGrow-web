@@ -27,11 +27,11 @@ Asistente (7 pasos, sin sala/DWC)
 | Sala | `tab-sala` | `btn-sala` | **Oculta** (`hc-tab-camino-oculta`) hasta concluir germ |
 | Sistema | `tab-sistema` | `btn-sistema` | Título **Propagador**; panel fase `#hcSistemaFaseHost` |
 | Calendario | `tab-calendario` | `btn-calendario` | Hitos + registro diario |
-| Riego | `tab-riego` | `btn-riego` | Sin depósito DWC aún (tipo vacío) |
-| Meteo | `tab-meteo` | `btn-meteo` | Referencia exterior/interior del asistente |
+| Riego | `tab-riego` | `btn-riego` | **Oculta** hasta hidro/depósito; en propagador: capa ~2–3 mm en bandeja (checklist) |
+| Meteo | `tab-meteo` | `btn-meteo` | **Activa** con municipio (interior y exterior); previsión 7 días + avisos de la localidad |
 | Consejos / Ayuda / Historial | `tab-consejos` … | — | Sin bloqueo específico |
 
-Clases en `<body>` durante propagador: `hc-modo-propagador-sistema`, `hc-modo-propagador-sin-sala`, `hc-modo-fase-propagador`.
+Clases en `<body>` durante propagador: `hc-modo-propagador-sistema`, `hc-modo-propagador-sin-sala`, `hc-modo-propagador-sin-riego`, `hc-modo-fase-propagador`.
 
 ---
 

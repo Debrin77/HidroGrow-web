@@ -337,6 +337,28 @@
     return true;
   }
 
+  /**
+   * Riego DWC (bomba/ciclos del depósito) no aplica en propagador: solo capa fina en bandeja.
+   * La pestaña vuelve al cerrar hidro / tener depósito operativo.
+   */
+  function hcOcultarTabRiegoEnCaminoPropagador(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_propagador') return false;
+    if (typeof hcRecargaCompletaAplicaEnCamino === 'function') {
+      return !hcRecargaCompletaAplicaEnCamino(cfg);
+    }
+    return !hidroCerrado(cfg);
+  }
+
+  /**
+   * Camino propagador: municipio para Meteo (interior y exterior).
+   * La previsión de la zona ayuda a ventilar el domo y planificar sala aunque el cultivo sea en carpa.
+   */
+  function hcMeteoRequiereLocalidad(cfg) {
+    cfg = cfg || cfgActiva();
+    return cam(cfg) === 'semilla_propagador';
+  }
+
   function hcOcultarTabSalaDuranteGerm(cfg) {
     return hcOcultarTabSalaDuranteCamino(cfg);
   }
@@ -419,6 +441,8 @@
   global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;
   global.hcOcultarTabSalaDuranteCamino = hcOcultarTabSalaDuranteCamino;
   global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
+  global.hcOcultarTabRiegoEnCaminoPropagador = hcOcultarTabRiegoEnCaminoPropagador;
+  global.hcMeteoRequiereLocalidad = hcMeteoRequiereLocalidad;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;
