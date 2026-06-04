@@ -2146,6 +2146,12 @@ function guardarSetupYContinuarCore() {
   if (faseSalaPreGerm) {
     state.configTorre.salaPreGermConfigAt = new Date().toISOString();
     state.configTorre.hcSetupFase = 'germinacion';
+    if (typeof hcReiniciarPuestaMarchaTrasConfigSala === 'function') {
+      hcReiniciarPuestaMarchaTrasConfigSala(state.configTorre);
+    } else {
+      state.configTorre.puestaMarchaChecks = {};
+      state.configTorre.checklistInstalacionConfirmada = false;
+    }
     if (typeof hcDimsTorreDesdeConfig === 'function') {
       const dimsPg = hcDimsTorreDesdeConfig(state.configTorre, state.torre);
       state.configTorre.numNiveles = dimsPg.numNiveles;
@@ -2379,8 +2385,12 @@ function guardarSetupYContinuarCore() {
     return false;
   }
   try {
-    if (state.configTorre && !state.configTorre.puestaMarchaChecks) {
-      state.configTorre.puestaMarchaChecks = {};
+    if (state.configTorre) {
+      if (faseSalaPreGerm && typeof hcReiniciarPuestaMarchaTrasConfigSala === 'function') {
+        hcReiniciarPuestaMarchaTrasConfigSala(state.configTorre);
+      } else if (!state.configTorre.puestaMarchaChecks) {
+        state.configTorre.puestaMarchaChecks = {};
+      }
     }
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     if (typeof saveState === 'function') saveState();

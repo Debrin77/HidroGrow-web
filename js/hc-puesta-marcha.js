@@ -735,17 +735,39 @@
     return (def && def.accent) || 'neutral';
   }
 
-  function buildPmProgressHtml(prog, verificada, bloqueada) {
+  /** Propagador / germ sin hidro: el montaje de sala exige marcas manuales y botón «Verificada». */
+  function pmMontajeSinMarcadoAuto(cfg) {
+    cfg = cfg || getCfg();
+    if (
+      typeof hcPropagadorEquipSalaSinHidro === 'function' &&
+      hcPropagadorEquipSalaSinHidro(cfg)
+    ) {
+      return true;
+    }
+    if (
+      typeof hcMontajeEsSoloEquipamientoSala === 'function' &&
+      hcMontajeEsSoloEquipamientoSala(cfg)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  function buildPmProgressHtml(prog, verificada, bloqueada, cfg) {
+    cfg = cfg || getCfg();
     var pct = prog.total > 0 ? Math.round((prog.done / prog.total) * 100) : 0;
     var r = 15.5;
     var c = 2 * Math.PI * r;
     var off = c - (pct / 100) * c;
+    var sinAuto = pmMontajeSinMarcadoAuto(cfg);
     var badge = bloqueada
       ? 'Cerrado'
       : verificada
         ? 'Verificado'
-        : prog.done >= prog.total
-          ? 'Listo'
+        : prog.done >= prog.total && prog.total > 0
+          ? sinAuto
+            ? 'Confirmar'
+            : 'Listo'
           : 'En curso';
     var badgeCls =
       'hc-pm-progress-badge' +
@@ -1026,7 +1048,7 @@
       '<div class="hc-pm-shell hc-pm-shell--' +
       mode +
       '">' +
-      buildPmProgressHtml(prog, verificada, bloqueada) +
+      buildPmProgressHtml(prog, verificada, bloqueada, cfg) +
       buildPmGermContextHtml(cfg) +
       '<p class="hc-pm-lead">' +
       ventanaTxt +
@@ -1194,6 +1216,8 @@
   }
 
   function isAutoDone(item, cfg) {
+    cfg = cfg || getCfg();
+    if (pmMontajeSinMarcadoAuto(cfg)) return false;
     if (item.id === 'sistema') {
       return !!(cfg && cfg.checklistInstalacionConfirmada);
     }
@@ -1220,6 +1244,15 @@
       return true;
     }
     return false;
+  }
+
+  /** Tras guardar equipamiento de sala en propagador: no heredar verificación ni marcas previas. */
+  function hcReiniciarPuestaMarchaTrasConfigSala(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || null;
+    if (!cfg || typeof cfg !== 'object') return cfg;
+    cfg.puestaMarchaChecks = {};
+    cfg.checklistInstalacionConfirmada = false;
+    return cfg;
   }
 
   function refreshPuestaMarchaModalFoot(cfg, checks) {
@@ -1767,4 +1800,6 @@
   global.montajeEdicionBloqueada = montajeEdicionBloqueada;
   global.montajeVerificacionVigente = montajeVerificacionVigente;
   global.limpiarVerificacionMontajeSiHidroPendiente = limpiarVerificacionMontajeSiHidroPendiente;
+  global.hcReiniciarPuestaMarchaTrasConfigSala = hcReiniciarPuestaMarchaTrasConfigSala;
+  global.pmMontajeSinMarcadoAuto = pmMontajeSinMarcadoAuto;
 })(typeof window !== 'undefined' ? window : globalThis);

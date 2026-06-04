@@ -264,10 +264,12 @@
   function montajeSalaPreGermOk(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!salaPreGermConfigurada(cfg)) return false;
+    var checks = cfg.puestaMarchaChecks;
+    if (!checks || !checks.completedAt) return false;
     if (typeof montajeVerificacionVigente === 'function') {
       return montajeVerificacionVigente(cfg);
     }
-    return !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
+    return true;
   }
 
   function germinacionSeisFasesCompletas(cfg) {
