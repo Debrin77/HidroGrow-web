@@ -291,6 +291,18 @@
           };
         }
       }
+      if (cam === 'semilla_propagador') {
+        if (
+          typeof hcPropagadorAsistenteGermPendiente === 'function' &&
+          hcPropagadorAsistenteGermPendiente(cfg)
+        ) {
+          return {
+            label: 'Definir cultivo en el asistente',
+            action: 'abrirSetupCaminoPropagador',
+            etapa: 'asistente_camino',
+          };
+        }
+      }
       if (
         cam === 'semilla_propagador' &&
         typeof hcGerminacionActiva === 'function' &&
@@ -643,6 +655,9 @@
           } catch (_) {}
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
         }, 200);
+        break;
+      case 'abrirSetupCaminoPropagador':
+        if (typeof abrirSetupCaminoPropagador === 'function') abrirSetupCaminoPropagador();
         break;
       case 'abrirSetupFaseSala':
         if (typeof abrirSetupFaseSala === 'function') abrirSetupFaseSala();

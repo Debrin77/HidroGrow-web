@@ -1267,6 +1267,9 @@ function abrirSetupNuevaTorre() {
   try {
     if (typeof hcClearSetupSalaPreGermFlags === 'function') hcClearSetupSalaPreGermFlags();
   } catch (_) {}
+  try {
+    if (typeof hcForzarSetupPaginaCamino === 'function') hcForzarSetupPaginaCamino();
+  } catch (_) {}
   setupEsNuevaTorre = true;
   setupPagina =
     typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;

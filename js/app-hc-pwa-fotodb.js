@@ -80,10 +80,10 @@ window.addEventListener('appinstalled', () => {
 
 function hcSplashMinVisibleMs() {
   try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 200;
-    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 280;
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 0;
+    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 0;
   } catch (_) {}
-  return 500;
+  return 120;
 }
 const splashShownAtMs = Date.now();
 

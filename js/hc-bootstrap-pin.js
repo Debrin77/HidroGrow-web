@@ -139,13 +139,7 @@ function unlockAndInitApp() {
         appUnlockInProgress = false;
       }
     };
-    if (typeof requestAnimationFrame === 'function') {
-      requestAnimationFrame(function () {
-        requestAnimationFrame(runInit);
-      });
-    } else {
-      setTimeout(runInit, 0);
-    }
+    setTimeout(runInit, 0);
   } catch (e) {
     console.error('Error inicializando app tras PIN:', e);
     appUnlockInProgress = false;

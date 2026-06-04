@@ -384,6 +384,110 @@ function hidrogrowPersistStateIdle(s) {
   }
 }
 
+/** Reparación pesada de torre/slots — no bloquea el PIN (se agenda en idle). */
+function hidrogrowFinishLoadStateRepair(s, ctx) {
+  if (!s || !ctx) return;
+  let legacyPersist = !!ctx.legacyPersist;
+  try {
+    if (hidrogrowSincronizarRaizDesdeSlotActivo(s)) legacyPersist = true;
+    const cfgLoad = hidrogrowCfgAlCargar(s);
+    const dims = hidrogrowDimsTorreDesdeConfig(cfgLoad, s.torre);
+    let nivLoad = Math.max(1, dims.numNiveles || NUM_NIVELES);
+    const cesLoad = Math.max(1, dims.numCestas || NUM_CESTAS);
+    const celdaVacia = function () {
+      return {
+        variedad: '',
+        fecha: '',
+        notas: '',
+        origenPlanta: '',
+        fotos: [],
+        fotoKeys: [],
+      };
+    };
+    if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador') {
+      nivLoad = 1;
+      const row0 = (s.torre && s.torre[0]) || [];
+      const torrePropagadorOk = s.torre.length === 1 && row0.length === cesLoad;
+      if (!torrePropagadorOk) {
+        const flat = [];
+        for (let ni = 0; ni < (s.torre || []).length; ni++) {
+          const row = s.torre[ni] || [];
+          for (let ci = 0; ci < row.length; ci++) {
+            if (row[ci]) flat.push(row[ci]);
+          }
+        }
+        while (flat.length < cesLoad) flat.push(celdaVacia());
+        s.torre = [flat.slice(0, cesLoad)];
+        legacyPersist = true;
+      }
+      if (cfgLoad && typeof cfgLoad === 'object') {
+        cfgLoad.numNiveles = 1;
+        cfgLoad.numCestas = cesLoad;
+      }
+    }
+    while (s.torre.length < nivLoad) {
+      s.torre.push([]);
+    }
+    for (let ni = 0; ni < nivLoad; ni++) {
+      if (!s.torre[ni]) s.torre[ni] = [];
+      while (s.torre[ni].length < cesLoad) {
+        s.torre[ni].push(celdaVacia());
+      }
+    }
+    s.torre.forEach(function (nivel) {
+      (nivel || []).forEach(function (cell) {
+        asegurarCamposFilaTorre(cell);
+      });
+    });
+    if (cfgLoad && typeof cfgLoad === 'object') {
+      cfgLoad.numNiveles = nivLoad;
+      cfgLoad.numCestas = cesLoad;
+    }
+    if (s.configTorre && cfgLoad) {
+      s.configTorre.numNiveles = nivLoad;
+      s.configTorre.numCestas = cesLoad;
+    }
+    const idxSlotLoad = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
+    const slotLoad = Array.isArray(s.torres) && s.torres[idxSlotLoad] ? s.torres[idxSlotLoad] : null;
+    if (slotLoad && cfgLoad && hidrogrowSlotNecesitaSync(slotLoad, s, cfgLoad)) {
+      try {
+        slotLoad.config = JSON.parse(JSON.stringify(cfgLoad));
+        slotLoad.torre = JSON.parse(JSON.stringify(s.torre));
+      } catch (_) {
+        slotLoad.config = cfgLoad;
+        slotLoad.torre = s.torre;
+      }
+      legacyPersist = true;
+    }
+    if (legacyPersist) {
+      hidrogrowPersistStateIdle(s);
+    }
+  } catch (e) {
+    try {
+      console.warn('hidrogrowFinishLoadStateRepair', e);
+    } catch (_) {}
+  }
+  try {
+    if (typeof window !== 'undefined') window._hcLoadStateRepairDone = true;
+  } catch (_) {}
+}
+
+function hidrogrowInferPropagadorGermAsistenteGuardado(cfg) {
+  if (!cfg || typeof cfg !== 'object') return;
+  if (hidrogrowCaminoDesdeCfg(cfg) !== 'semilla_propagador') return;
+  if (cfg.hcPropagadorGermAsistenteGuardadoAt) return;
+  if (cfg.hcSetupFase === 'sala_pre_germ') return;
+  try {
+    if (
+      typeof validarPlanGerminacionCompleto === 'function' &&
+      validarPlanGerminacionCompleto(cfg, { requierePropagador: false }).ok
+    ) {
+      cfg.hcPropagadorGermAsistenteGuardadoAt =
+        cfg.hcPropagadorGermAsistenteGuardadoAt || new Date().toISOString();
+    }
+  } catch (_) {}
+}
+
 function loadState() {
   hidrogrowPurgarStorageLegacySilencioso();
   try {
@@ -424,85 +528,26 @@ function loadState() {
         s.torres = s.torres.filter((t) => hidrogrowTorreSlotEsReal(t));
         if (s.torres.length !== nAntes) legacyPersist = true;
       }
-      if (hidrogrowSincronizarRaizDesdeSlotActivo(s)) legacyPersist = true;
       const cfgLoad = hidrogrowCfgAlCargar(s);
       if (cfgLoad && typeof cfgLoad === 'object') {
-        try {
-          s.configTorre = JSON.parse(JSON.stringify(cfgLoad));
-        } catch (_) {
-          s.configTorre = cfgLoad;
-        }
-      }
-      const dims = hidrogrowDimsTorreDesdeConfig(cfgLoad, s.torre);
-      let nivLoad = Math.max(1, dims.numNiveles || NUM_NIVELES);
-      const cesLoad = Math.max(1, dims.numCestas || NUM_CESTAS);
-      const celdaVacia = () => ({
-        variedad: '',
-        fecha: '',
-        notas: '',
-        origenPlanta: '',
-        fotos: [],
-        fotoKeys: [],
-      });
-      if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador') {
-        nivLoad = 1;
-        const row0 = (s.torre && s.torre[0]) || [];
-        const torrePropagadorOk = s.torre.length === 1 && row0.length === cesLoad;
-        if (!torrePropagadorOk) {
-          const flat = [];
-          for (let ni = 0; ni < (s.torre || []).length; ni++) {
-            const row = s.torre[ni] || [];
-            for (let ci = 0; ci < row.length; ci++) {
-              if (row[ci]) flat.push(row[ci]);
-            }
-          }
-          while (flat.length < cesLoad) flat.push(celdaVacia());
-          s.torre = [flat.slice(0, cesLoad)];
+        s.configTorre = cfgLoad;
+        if (cfgLoad.hcSetupFase === 'sala_pre_germ') {
+          cfgLoad.hcSetupFase = 'germinacion';
           legacyPersist = true;
         }
-        if (cfgLoad && typeof cfgLoad === 'object') {
-          cfgLoad.numNiveles = 1;
-          cfgLoad.numCestas = cesLoad;
-        }
-      }
-      while (s.torre.length < nivLoad) {
-        s.torre.push([]);
-      }
-      for (let ni = 0; ni < nivLoad; ni++) {
-        if (!s.torre[ni]) s.torre[ni] = [];
-        while (s.torre[ni].length < cesLoad) {
-          s.torre[ni].push(celdaVacia());
-        }
-      }
-      s.torre.forEach((nivel) => {
-        (nivel || []).forEach((cell) => asegurarCamposFilaTorre(cell));
-      });
-      if (cfgLoad && typeof cfgLoad === 'object') {
-        cfgLoad.numNiveles = nivLoad;
-        cfgLoad.numCestas = cesLoad;
-      }
-      if (s.configTorre && cfgLoad) {
-        s.configTorre.numNiveles = nivLoad;
-        s.configTorre.numCestas = cesLoad;
-      }
-      const idxSlotLoad = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
-      const slotLoad = Array.isArray(s.torres) && s.torres[idxSlotLoad] ? s.torres[idxSlotLoad] : null;
-      if (slotLoad && cfgLoad && hidrogrowSlotNecesitaSync(slotLoad, s, cfgLoad)) {
-        try {
-          slotLoad.config = JSON.parse(JSON.stringify(cfgLoad));
-          slotLoad.torre = JSON.parse(JSON.stringify(s.torre));
-        } catch (_) {
-          slotLoad.config = cfgLoad;
-          slotLoad.torre = s.torre;
-        }
-        legacyPersist = true;
+        hidrogrowInferPropagadorGermAsistenteGuardado(cfgLoad);
       }
       if (s.modo) modoActual = s.modo;
       normalizarNotifOpcionesEnState(s);
-      let borradorPersist = false;
-      if (hidrogrowLimpiarBorradorSinInstalacion(s)) borradorPersist = true;
-      if (legacyPersist || borradorPersist) {
-        hidrogrowPersistStateIdle(s);
+      if (hidrogrowLimpiarBorradorSinInstalacion(s)) legacyPersist = true;
+      const repairCtx = { legacyPersist: legacyPersist };
+      const runRepair = function () {
+        hidrogrowFinishLoadStateRepair(s, repairCtx);
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runRepair, { timeout: 2800 });
+      } else {
+        setTimeout(runRepair, 32);
       }
       return s;
     }

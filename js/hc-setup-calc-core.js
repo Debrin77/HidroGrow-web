@@ -2375,6 +2375,12 @@ function guardarSetupYContinuarCore() {
   }
 
   try {
+    if (faseGermSetup && !faseSalaPreGerm && camPersist === 'semilla_propagador' && state.configTorre) {
+      state.configTorre.hcPropagadorGermAsistenteGuardadoAt = new Date().toISOString();
+      state.configTorre.hcSetupFase = 'germinacion';
+    }
+  } catch (_) {}
+  try {
     if (faseGermSetup && !faseSalaPreGerm) {
       state.hcPostSetupChecklistPendiente = false;
       state.hcInstalacionGuidadaActiva = true;

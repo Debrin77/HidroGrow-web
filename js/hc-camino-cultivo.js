@@ -197,6 +197,46 @@
     }
   }
 
+  /** Propagador: el asistente premium (camino → germ) aún no se guardó; no saltar a sala. */
+  function hcPropagadorAsistenteGermPendiente(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (String(cfg.hcSetupFase || '') === 'hidro') return false;
+    if (cfg.hcPropagadorGermAsistenteGuardadoAt) return false;
+    return true;
+  }
+
+  function hcForzarSetupPaginaCamino() {
+    hcClearSetupSalaPreGermFlags();
+    if (typeof state !== 'undefined' && state && state.configTorre) {
+      if (state.configTorre.hcSetupFase === 'sala_pre_germ') {
+        state.configTorre.hcSetupFase = 'germinacion';
+      }
+    }
+    setupPagina =
+      typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
+  }
+
+  /** Inicio / CTA: abrir siempre «¿Cómo empiezas el cultivo?» (no equipamiento de sala). */
+  function abrirSetupCaminoPropagador() {
+    hcForzarSetupPaginaCamino();
+    try {
+      if (typeof hcResetSetupWizardSession === 'function') {
+        hcResetSetupWizardSession({ keepPagina: true });
+      }
+    } catch (_) {}
+    hcForzarSetupPaginaCamino();
+    setupEsNuevaTorre = false;
+    var so = document.getElementById('setupOverlay');
+    if (!so) return;
+    so.classList.add('open');
+    try {
+      if (typeof renderSetupPage === 'function') renderSetupPage();
+      if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
+      if (typeof a11yDialogOpened === 'function') a11yDialogOpened(so);
+    } catch (_) {}
+  }
+
   function hcSetupEnFaseSalaPreGerm() {
     try {
       if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return false;
@@ -280,14 +320,13 @@
     var cam = getCaminoCultivo();
     var def = getCaminoDef(cam);
     if (!def || def.faseInicial !== 'germinacion') return false;
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+    if (hcSetupWizardEnBloquePremiumGerm()) return true;
     try {
       var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
       if (cfg && cfg.hcSetupFase === 'hidro') return false;
       if (cfg && cfg.hcSetupFase === 'sala_pre_germ') return false;
-      if (cfg && cfg.hcSetupFase === 'germinacion') return true;
     } catch (_) {}
-    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
-    if (cam === 'semilla_propagador' && hcSetupWizardEnBloquePremiumGerm()) return true;
     return false;
   }
 
@@ -735,6 +774,13 @@
     opts = opts || {};
     var cfg =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (
+      getCaminoCultivo(cfg) === 'semilla_propagador' &&
+      hcPropagadorAsistenteGermPendiente(cfg)
+    ) {
+      abrirSetupCaminoPropagador();
+      return;
+    }
     if (!hcSalaPreGermPermitida(cfg, opts)) {
       if (typeof showToast === 'function') {
         showToast('Aún no puedes configurar la sala. Revisa los pasos pendientes en Inicio.', true, {
@@ -1313,6 +1359,9 @@
   global.depositoListo = depositoListo;
   global.persistCaminoToConfig = persistCaminoToConfig;
   global.hcClearSetupSalaPreGermFlags = hcClearSetupSalaPreGermFlags;
+  global.hcPropagadorAsistenteGermPendiente = hcPropagadorAsistenteGermPendiente;
+  global.hcForzarSetupPaginaCamino = hcForzarSetupPaginaCamino;
+  global.abrirSetupCaminoPropagador = abrirSetupCaminoPropagador;
   global.abrirSetupFaseSala = abrirSetupFaseSala;
   global.abrirConfiguradorEquipamientoSalaPropagador = abrirConfiguradorEquipamientoSalaPropagador;
   global.abrirSetupFaseHidro = abrirSetupFaseHidro;
