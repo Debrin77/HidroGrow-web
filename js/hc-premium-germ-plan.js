@@ -146,7 +146,15 @@
     ensurePremiumGermFields(p);
     var cfg = getWizardCfg();
     var cap = capacidadDesdePropagadorInstalado(cfg);
-    if (!p.numSemillasGermManual) {
+    var prevInp = el('setupPremiumNumSemillasGerm');
+    if (prevInp && document.activeElement === prevInp) {
+      refreshPremiumGermPlanReq();
+      return;
+    }
+    if (prevInp && p.numSemillasGermManual) {
+      var nPrev = parseInt(String(prevInp.value || ''), 10);
+      if (Number.isFinite(nPrev) && nPrev >= 1) p.numSemillasGerm = Math.min(72, nPrev);
+    } else if (!p.numSemillasGermManual) {
       p.numSemillasGerm = sugerirNumSemillas(cfg, p);
     }
     var capHtml = '';
@@ -195,9 +203,9 @@
       '<div><label class="setup-field-label" for="setupPremiumNumSemillasGerm">Semillas</label>' +
       '<input type="number" id="setupPremiumNumSemillasGerm" class="setup-input-city" min="1" max="72" step="1" value="' +
       p.numSemillasGerm +
-      '" onchange="persistPremiumGermPlanFromUI(true)"></div>' +
+      '" onchange="persistPremiumGermPlanFromUI(true)" onblur="persistPremiumGermPlanFromUI(true)"></div>' +
       '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Bandeja</label>' +
-      '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermPlanFromUI(false)">' +
+      '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermBandejaFromUI()">' +
       bandOpts +
       '</select></div></div>' +
       '<label class="setup-field-label setup-mb-4">Sustrato</label>' +
@@ -240,19 +248,31 @@
 
   var _hcGermPlanUiFlushTimer = null;
 
-  function persistPremiumGermPlanFromUI(manualSemillas) {
+  function persistPremiumGermBandejaFromUI() {
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     if (!p) return;
-    var n = parseInt(String(el('setupPremiumNumSemillasGerm')?.value || p.numSemillasGerm || 6), 10);
-    p.numSemillasGerm = Math.min(72, Math.max(1, Number.isFinite(n) ? n : 6));
-    if (manualSemillas) p.numSemillasGermManual = true;
     p.bandejaGerm = String(el('setupPremiumBandejaGerm')?.value || p.bandejaGerm || 'auto');
-    if (!manualSemillas && p.bandejaGerm !== 'manual') {
-      p.numSemillasGermManual = false;
+    if (!p.numSemillasGermManual) {
       p.numSemillasGerm = sugerirNumSemillas(getWizardCfg(), p);
       var inp = el('setupPremiumNumSemillasGerm');
       if (inp) inp.value = String(p.numSemillasGerm);
     }
+    refreshPremiumGermPlanReq();
+    syncGermPlanATorreDraft();
+  }
+
+  function persistPremiumGermPlanFromUI(manualSemillas) {
+    var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
+    if (!p) return;
+    var inp = el('setupPremiumNumSemillasGerm');
+    var n = parseInt(String((inp && inp.value) || p.numSemillasGerm || 6), 10);
+    p.numSemillasGerm = Math.min(72, Math.max(1, Number.isFinite(n) ? n : 6));
+    if (inp && inp.value !== '') {
+      p.numSemillasGermManual = true;
+    } else if (manualSemillas) {
+      p.numSemillasGermManual = true;
+    }
+    p.bandejaGerm = String(el('setupPremiumBandejaGerm')?.value || p.bandejaGerm || 'auto');
     refreshPremiumGermPlanReq();
     syncGermPlanATorreDraft();
     if (_hcGermPlanUiFlushTimer) clearTimeout(_hcGermPlanUiFlushTimer);
@@ -332,20 +352,28 @@
     if (p.sustratoGerm === 'lana' || p.sustratoGerm === 'coco' || p.sustratoGerm === 'esponja') {
       cfg.sustrato = p.sustratoGerm === 'papel' ? 'esponja' : p.sustratoGerm;
     }
+    var nSem = Math.min(72, Math.max(1, Math.round(Number(p.numSemillasGerm) || 1)));
+    cfg.premiumSetup.numSemillasGermManual = !!p.numSemillasGermManual;
     if (typeof ensureGerminacionFlow === 'function' && typeof origenEsSemilla === 'function' && origenEsSemilla(cfg)) {
       var g = ensureGerminacionFlow(cfg);
-      g.numSemillas = Math.min(72, Math.max(1, Math.round(Number(p.numSemillasGerm) || 1)));
-      g.semillasActivas = g.numSemillas;
+      g.numSemillas = nSem;
+      g.semillasActivas = nSem;
       g.sustratoGerm = p.sustratoGerm;
     }
-    cfg.numSemillasGerm = p.numSemillasGerm;
+    cfg.numSemillasGerm = nSem;
     cfg.sustratoGerm = p.sustratoGerm;
     if (
       typeof getCaminoCultivo === 'function' &&
       getCaminoCultivo(cfg) === 'semilla_propagador' &&
       typeof hcAjustarTorrePropagadorSemillas === 'function'
     ) {
-      hcAjustarTorrePropagadorSemillas(cfg, g.numSemillas);
+      try {
+        hcAjustarTorrePropagadorSemillas(cfg, nSem);
+      } catch (eTor) {
+        try {
+          console.warn('hcAjustarTorrePropagadorSemillas', eTor);
+        } catch (_) {}
+      }
     }
     if (typeof persistPremiumNutrienteGermToConfig === 'function') {
       persistPremiumNutrienteGermToConfig(cfg);
@@ -635,6 +663,7 @@
 
   global.renderPremiumGermPlanUI = renderPremiumGermPlanUI;
   global.persistPremiumGermPlanFromUI = persistPremiumGermPlanFromUI;
+  global.persistPremiumGermBandejaFromUI = persistPremiumGermBandejaFromUI;
   global.persistPremiumGermPlanFromUIImmediate = persistPremiumGermPlanFromUIImmediate;
   global.persistPremiumGermPlanToConfig = persistPremiumGermPlanToConfig;
   global.syncPremiumGermPlanFromConfig = syncPremiumGermPlanFromConfig;

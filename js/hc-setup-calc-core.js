@@ -2069,8 +2069,21 @@ function guardarSetupYContinuarCore() {
     if (camPersist) state.configTorre.caminoCultivo = camPersist;
   } catch (errPremium) {
     console.error('persistPremiumSetupToConfig', errPremium);
-    showToast('Error al guardar equipamiento o sala. Revisa el paso «Espacio y equipamiento».', true);
-    setupPagina = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
+    var det = errPremium && (errPremium.message || String(errPremium))
+      ? String(errPremium.message).replace(/\s+/g, ' ').trim().slice(0, 100)
+      : '';
+    showToast(
+      det
+        ? 'No se pudo guardar: ' + det
+        : 'Error al guardar equipamiento o sala. Revisa el paso «Espacio y equipamiento».',
+      true,
+      { durationMs: 7000 }
+    );
+    if (faseGermSetup && typeof SETUP_PAGE_PREMIUM_3 !== 'undefined') {
+      setupPagina = SETUP_PAGE_PREMIUM_3;
+    } else {
+      setupPagina = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
+    }
     renderSetupPage();
     return false;
   }

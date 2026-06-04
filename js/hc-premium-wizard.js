@@ -775,8 +775,13 @@
       p.consejosModoUi = getConsejosModoSetupActivo();
       setupData.consejosModoUi = p.consejosModoUi;
     }
-    if (opts.lite) return;
-    if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(false);
+    if (opts.lite) {
+      if (el('setupPremiumNumSemillasGerm') && typeof persistPremiumGermPlanFromUI === 'function') {
+        persistPremiumGermPlanFromUI(true);
+      }
+      return;
+    }
+    if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
     if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
   }
 
@@ -911,7 +916,10 @@
     cfg.premiumSetup = JSON.parse(JSON.stringify(p));
     if (p.caminoCultivo) cfg.caminoCultivo = p.caminoCultivo;
     cfg.faseCultivoAmbiental = p.faseSala;
-    if (p.entorno === 'interior') {
+    const skipSalaCalcInterior =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
+    if (p.entorno === 'interior' && !skipSalaCalcInterior) {
       cfg.growRoomAnchoM = p.anchoM;
       cfg.growRoomLargoM = p.largoM;
       cfg.growRoomAltoM = p.altoM;
@@ -919,10 +927,16 @@
       cfg.growRoomExtractorM3h = p.extractorM3h;
       cfg.growRoomFase = p.faseSala;
       cfg.growRoomTentPreset = p.tentPreset || '';
-      const r = calcularPremiumSalaInterno();
-      if (!r.error) {
-        cfg.growRoomLedObjW = r.ledObj;
-        cfg.growRoomExtractorObjM3h = r.m3hObj;
+      try {
+        const r = calcularPremiumSalaInterno();
+        if (!r.error) {
+          cfg.growRoomLedObjW = r.ledObj;
+          cfg.growRoomExtractorObjM3h = r.m3hObj;
+        }
+      } catch (eSala) {
+        try {
+          console.warn('calcularPremiumSalaInterno en persist', eSala);
+        } catch (_) {}
       }
       cfg.carpaReflectante = !!p.carpaReflectante;
     }
