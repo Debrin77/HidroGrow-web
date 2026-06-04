@@ -1004,7 +1004,7 @@
     }
     return (
       '<div class="hc-pm-germ-ctx setup-box-info setup-mb-12" role="note">' +
-      '<strong>Solo montaje de sala.</strong> No marques «sistema hidro configurado» ni tuberías del depósito: eso va en el asistente <strong>DWC/RDWC</strong> tras las 6 fases.' +
+      '<strong>Solo montaje de sala (propagador).</strong> No marques depósito ni tuberías: el circuito <strong>DWC/RDWC</strong> se configura al <strong>trasplantar</strong>, tras las 6 fases de germinación.' +
       (nom
         ? '<br>Genética en germinación: <strong>' + esc(nom) + '</strong> · ' + n + ' semilla(s) orientativas para cestas.'
         : '') +
@@ -1059,18 +1059,29 @@
     return renderPmCard(it, cfg, checks, 'modal');
   }
 
+  function pmExcluirMontajeCircuitoHidro(cfg) {
+    cfg = cfg || getCfg();
+    if (
+      typeof hcPropagadorEquipSalaSinHidro === 'function' &&
+      hcPropagadorEquipSalaSinHidro(cfg)
+    ) {
+      return true;
+    }
+    var cam =
+      typeof getCaminoCultivo === 'function'
+        ? getCaminoCultivo(cfg)
+        : cfg.caminoCultivo ||
+          (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+          '';
+    var tipo = String(cfg.tipoInstalacion || '').toLowerCase();
+    return cam === 'semilla_hidro' && tipo !== 'dwc' && tipo !== 'rdwc';
+  }
+
   function buildItemsForConfig(cfg) {
     cfg = cfg || getCfg();
     var items = ITEMS_BASE.slice();
-    var cam =
-      cfg.caminoCultivo ||
-      (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
-      '';
-    var esperaHidro =
-      (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
-      cfg.tipoInstalacion !== 'dwc' &&
-      cfg.tipoInstalacion !== 'rdwc';
-    if (esperaHidro) {
+    var excluirHidro = pmExcluirMontajeCircuitoHidro(cfg);
+    if (excluirHidro) {
       items = items.filter(function (it) {
         return it.id !== 'sistema' && it.id !== 'fugas';
       });
@@ -1152,7 +1163,7 @@
       });
     });
 
-    if (esperaHidro) {
+    if (excluirHidro) {
       return items;
     }
 

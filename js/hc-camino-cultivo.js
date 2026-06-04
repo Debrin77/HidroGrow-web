@@ -213,14 +213,14 @@
     return dest;
   }
 
-  /** Propagador sin DWC cerrado: configurar sala sin medidor/bombas del depósito. */
+  /**
+   * Propagador: montaje/config de sala sin circuito hidro (DWC, tuberías, depósito).
+   * El hidro entra al cerrar germinación y abrir el asistente DWC/RDWC (hcSetupFase === 'hidro').
+   */
   function hcPropagadorEquipSalaSinHidro(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
-    if (typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)) {
-      return false;
-    }
-    return true;
+    return String(cfg.hcSetupFase || 'germinacion') !== 'hidro';
   }
 
   /** Asistente premium aún en bloque germinación (antes de geometría/hidro). */
@@ -423,6 +423,9 @@
   /** DWC/RDWC y matriz aún no cerrados (solo montaje de equipamiento de sala). */
   function hcMontajeEsSoloEquipamientoSala(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) === 'semilla_propagador') {
+      return hcPropagadorEquipSalaSinHidro(cfg);
+    }
     if (typeof hcCaminoEsSemilla === 'function' && !hcCaminoEsSemilla(getCaminoCultivo(cfg))) {
       return false;
     }
@@ -792,8 +795,8 @@
     cfg = cfg || {};
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var tipo = String(cfg.tipoInstalacion || '').trim();
-    if (cam === 'semilla_propagador' && tipo !== 'dwc' && tipo !== 'rdwc') {
-      return false;
+    if (cam === 'semilla_propagador') {
+      if (String(cfg.hcSetupFase || 'germinacion') !== 'hidro') return false;
     }
     if (cfg.checklistInstalacionConfirmada === true) {
       if (tipo === 'dwc' || tipo === 'rdwc') return true;
