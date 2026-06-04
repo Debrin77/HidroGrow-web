@@ -1652,6 +1652,8 @@
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+    if (typeof hcRefreshDashTorreCultivoResumen === 'function') hcRefreshDashTorreCultivoResumen(cfg);
     if (typeof showToast === 'function') {
       var cam =
         cfg.caminoCultivo ||

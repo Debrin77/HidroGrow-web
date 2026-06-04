@@ -668,6 +668,22 @@
     ) {
       return false;
     }
+    if (typeof global.salaPreGermConfigurada === 'function' && global.salaPreGermConfigurada(cfg)) {
+      if (typeof global.getCamposEquipamientoFaltantes === 'function') {
+        var faltOk = global.getCamposEquipamientoFaltantes(cfg);
+        if (!faltOk || !faltOk.length) return false;
+      } else {
+        return false;
+      }
+    }
+    if (typeof global.salaConfiguradaCamino === 'function' && global.salaConfiguradaCamino(cfg)) {
+      if (typeof global.getCamposEquipamientoFaltantes === 'function') {
+        var faltCfg = global.getCamposEquipamientoFaltantes(cfg);
+        if (!faltCfg || !faltCfg.length) return false;
+      } else {
+        return false;
+      }
+    }
     if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {
       return true;
     }

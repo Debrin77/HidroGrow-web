@@ -2482,6 +2482,10 @@ function guardarSetupYContinuarCore() {
       if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
       if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
       if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+      if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
+        hcRefreshDashTorreCultivoResumen(state.configTorre);
+      }
       if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       if (

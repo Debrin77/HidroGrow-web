@@ -292,6 +292,139 @@
     return null;
   }
 
+  var DASH_TORRE_CULTIVO_LABELS_DEFAULT = [
+    'Plantas',
+    'Días media',
+    'Cosechar',
+    'Días cosecha',
+  ];
+
+  function hcGuardarDashTorreCultivoLabelsDefault() {
+    var summary = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
+    if (!summary || summary.dataset.hcDashLabelsSaved === '1') return;
+    var labels = summary.querySelectorAll('.torre-mini-label');
+    for (var i = 0; i < labels.length && i < DASH_TORRE_CULTIVO_LABELS_DEFAULT.length; i++) {
+      labels[i].dataset.hcDefaultLabel = labels[i].textContent;
+    }
+    var titleEl = summary.querySelector('.card-title');
+    if (titleEl) titleEl.dataset.hcDefaultHtml = titleEl.innerHTML;
+    summary.dataset.hcDashLabelsSaved = '1';
+  }
+
+  function hcRestaurarDashTorreCultivoLabelsDefault() {
+    var summary = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
+    if (!summary || summary.dataset.hcDashLabelsSaved !== '1') return;
+    var labels = summary.querySelectorAll('.torre-mini-label');
+    labels.forEach(function (el) {
+      if (el.dataset.hcDefaultLabel) el.textContent = el.dataset.hcDefaultLabel;
+    });
+    var titleEl = summary.querySelector('.card-title');
+    if (titleEl && titleEl.dataset.hcDefaultHtml) titleEl.innerHTML = titleEl.dataset.hcDefaultHtml;
+  }
+
+  /** Inicio: bloque «Cultivo e instalación» con semillas/fase propagador (no ocultar ni dejar en 0 plantas). */
+  function hcRefreshDashTorreCultivoResumen(cfg) {
+    cfg = cfg || cfgActiva();
+    var summary = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
+    if (!summary) return;
+    var usarGerm =
+      typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg);
+    summary.classList.remove('setup-hidden');
+    if (!usarGerm) {
+      summary.classList.remove('torre-summary--propagador');
+      hcRestaurarDashTorreCultivoLabelsDefault();
+      return;
+    }
+    try {
+      if (typeof hcSyncGerminacionPlanCultivo === 'function') hcSyncGerminacionPlanCultivo(cfg);
+    } catch (_) {}
+    hcGuardarDashTorreCultivoLabelsDefault();
+    summary.classList.add('torre-summary--propagador');
+    var fase = getSistemaFaseCamino(cfg);
+    var esProp = fase === 'propagador';
+    var titleEl = summary.querySelector('.card-title');
+    if (titleEl) {
+      if (esProp) {
+        titleEl.innerHTML =
+          '<svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-plant"/></svg> Germinación en propagador';
+        summary.setAttribute('aria-label', 'Ir a propagador y plan de germinación');
+      } else if (fase === 'germ_cubo') {
+        titleEl.innerHTML =
+          '<svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-plant"/></svg> Germinación en cubo';
+        summary.setAttribute('aria-label', 'Ir a germinación en cubo');
+      }
+    }
+    var labelTexts = esProp
+      ? ['Semillas', 'Día cultivo', 'Fase actual', 'Traslado hidro']
+      : ['Cubos', 'Día cultivo', 'Fase actual', 'Siguiente paso'];
+    var labels = summary.querySelectorAll('.torre-mini-label');
+    for (var li = 0; li < labels.length && li < labelTexts.length; li++) {
+      labels[li].textContent = labelTexts[li];
+    }
+    var plantas =
+      typeof hcCollectPlantasInstalacionActiva === 'function'
+        ? hcCollectPlantasInstalacionActiva()
+        : [];
+    var nSem = numSemillasCaminoGerm(cfg);
+    var nPlantas = plantas.length > 0 ? plantas.length : nSem > 0 ? nSem : 0;
+    var g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+    var diaN = 1;
+    if (g.startedAt) {
+      var d0 = new Date(g.startedAt);
+      d0.setHours(0, 0, 0, 0);
+      var hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      diaN = Math.max(1, Math.floor((hoy - d0) / 86400000) + 1);
+    }
+    var diasObj =
+      typeof diasObjetivoConclusionGerm === 'function'
+        ? diasObjetivoConclusionGerm(cfg, g)
+        : 12;
+    var faseTxt = etiquetaFaseGermCorta(cfg);
+    var elP = document.getElementById('dashPlantas');
+    var elD = document.getElementById('dashDias');
+    var elC = document.getElementById('dashCosecha');
+    var elX = document.getElementById('dashProxCosecha');
+    if (elP) elP.textContent = String(nPlantas);
+    if (elD) elD.textContent = g.startedAt ? 'Día ' + diaN : 'Sin iniciar';
+    if (elC) {
+      var faseCorta =
+        typeof hcGerminacionFaseActualId === 'function'
+          ? hcGerminacionFaseActualId(cfg)
+          : 'semilla';
+      var mapCorta = {
+        semilla: 'Semilla',
+        taproot: 'Radícula',
+        rockwool: 'Lana',
+        domo: 'Domo',
+        netpot: 'Net pot',
+        dwc: 'Hidro',
+      };
+      elC.textContent = mapCorta[faseCorta] || faseTxt || '—';
+    }
+    if (elX) {
+      if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
+        elX.textContent = 'Listo';
+      } else if (g.startedAt && diasObj > 0) {
+        var rest = Math.max(0, diasObj - diaN);
+        elX.textContent = rest > 0 ? '~' + rest + ' d' : 'Pronto';
+      } else {
+        elX.textContent = '6 fases';
+      }
+    }
+    var planSt = typeof getPlanGermEstado === 'function' ? getPlanGermEstado(cfg) : null;
+    if (planSt && planSt.nombreVar && titleEl && esProp) {
+      summary.setAttribute(
+        'title',
+        planSt.nombreVar +
+          (nPlantas ? ' · ' + nPlantas + ' semilla(s)' : '') +
+          ' · ' +
+          faseTxt
+      );
+    }
+  }
+
   function hcDashTorreInfoPropagador(cfg) {
     cfg = cfg || cfgActiva();
     if (!hcMostrarSistemaPropagador(cfg)) return null;
@@ -440,6 +573,7 @@
   global.hcOperativaFaseCamino = hcOperativaFaseCamino;
   global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
   global.hcDashTorreInfoPropagador = hcDashTorreInfoPropagador;
+  global.hcRefreshDashTorreCultivoResumen = hcRefreshDashTorreCultivoResumen;
   global.hcMetaListaInstalacionTorre = hcMetaListaInstalacionTorre;
   global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
   global.hcRecargaCompletaAplicaEnCamino = hcRecargaCompletaAplicaEnCamino;

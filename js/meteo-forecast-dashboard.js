@@ -106,6 +106,16 @@ function updateDashboard() {
     if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
   } catch (_) {}
 
+  try {
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') {
+      refreshDashSalaEquipRecoBanner(cfgDash);
+    }
+  } catch (_) {}
+
+  try {
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+  } catch (_) {}
+
 }
 
 function getRecentMedicionesForWeekly(limit) {
@@ -273,8 +283,11 @@ function refreshDashTilesGerminacion(cfg) {
 
   const grid = document.querySelector('.dash-medicion-y-cultivo .params-grid');
   if (grid) grid.classList.add('params-grid--germ');
-  const cultivoBtn = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
-  if (cultivoBtn) cultivoBtn.classList.add('setup-hidden');
+  try {
+    if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
+      hcRefreshDashTorreCultivoResumen(cfg);
+    }
+  } catch (_) {}
 
   ['EC', 'PH', 'Temp', 'Vol'].forEach(function (slot) {
     const tile = document.getElementById('tile' + slot);
@@ -407,6 +420,18 @@ function updateDashTorre() {
   const elC = document.getElementById('dashCosecha');
   const elX = document.getElementById('dashProxCosecha');
   if (!elP || !elD || !elC || !elX) return;
+  const cfgTorre = state.configTorre || {};
+  try {
+    if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
+      hcRefreshDashTorreCultivoResumen(cfgTorre);
+    }
+  } catch (_) {}
+  if (
+    typeof hcDashUsaTilesGerminacion === 'function' &&
+    hcDashUsaTilesGerminacion(cfgTorre)
+  ) {
+    return;
+  }
   if (typeof getNivelesActivos !== 'function' || typeof getEstado !== 'function') return;
 
   let plantas = 0, totalDias = 0, plantasConFecha = 0, cosechas = 0, proxDias = 999;
