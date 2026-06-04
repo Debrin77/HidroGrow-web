@@ -3465,10 +3465,24 @@
 
     <div class="setup-page" id="spagePremium4">
       <div class="setup-title">Clima, luz y fotoperiodo</div>
-      <div id="setupPremiumNutrienteGermSection" class="setup-hidden setup-mb-16">
+      <div id="setupPremiumNutrienteGermSection" class="setup-mb-16 hc-prop-nutriente-block" aria-label="Nutriente propagador">
         <div class="setup-block-title">Nutriente · bandeja propagador <span class="setup-required-tag">obligatorio</span></div>
-        <p id="setupPremiumNutrienteGermHint" class="setup-field-hint setup-mb-8"></p>
-        <div id="setupPremiumNutrienteGermSelectWrap" class="setup-mb-8"></div>
+        <p id="setupPremiumNutrienteGermHint" class="setup-field-hint setup-mb-8">Elige el abono (línea veg / A+B) para la solución de la bandeja del domo.</p>
+        <div id="setupPremiumNutrienteGermSelectWrap" class="setup-mb-8">
+          <label class="setup-field-label" for="setupPremiumNutrienteGermSelect">Línea de abono (veg / A+B) <span class="setup-required-tag">obligatorio</span></label>
+          <select id="setupPremiumNutrienteGermSelect" class="setup-input-city setup-mb-8" onchange="typeof onPremiumNutrienteGermSelectChange==='function'&&onPremiumNutrienteGermSelectChange()">
+            <option value="canna_aqua">Canna Aqua Vega · A+B</option>
+            <option value="advanced_ph_perfect">Advanced Nutrients pH Perfect · Grow</option>
+            <option value="plagron_hydro">Plagron Hydro A+B</option>
+            <option value="ghe_flora">GHE Flora Series</option>
+            <option value="biobizz_bio_grow">BioBizz Bio Grow</option>
+            <option value="hesi_hidro">Hesi Hydro · Grow</option>
+            <option value="atami_bcuzz_hydro">Atami B'cuzz Hydro</option>
+            <option value="top_crop_hydro">Top Crop Hydro</option>
+            <option value="campeador">Campeador Grow</option>
+            <option value="house_garden_aqua">House &amp; Garden Aqua Flakes</option>
+          </select>
+        </div>
         <div id="setupPremiumNutrienteGermEcBanner" class="setup-box-info setup-mb-8" role="status"></div>
         <div class="setup-mb-8">
           <label class="setup-field-label" for="setupPremiumNutrienteGermVolL">Volumen de solución en bandeja (L)</label>
@@ -5210,7 +5224,7 @@
 <script src="js/hc-bootstrap-config.js?v=2026-05-31-perf-fix"></script>
 <script src="js/hc-bootstrap-state.js?v=2026-05-31-flow-fix"></script>
 <script src="js/hc-bootstrap-pin.js?v=2026-05-31-perf-root"></script>
-<script src="js/app-hc-pwa-fotodb.js?v=2026-05-31-flow-fix"></script>
+<script src="js/app-hc-pwa-fotodb.js?v=2026-05-31-splash-pin-fix"></script>
 <script src="js/backup-capacitor.js"></script>
 <script src="js/genetics-db.js?v=2026-05-31-breeder"></script>
 <script src="js/hc-genetics-breeder.js?v=2026-05-31-breeder"></script>
@@ -5230,7 +5244,8 @@
 <script src="js/meteo-alarm-parse.js?v=1"></script>
 <script src="js/hc-medir-operativa.js?v=2026-06-03-medir-prop-guardar"></script>
 <script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-flow-fix"></script>
-<script src="js/hc-bootstrap-onboarding.js?v=2026-06-03-setup-data-fix"></script>
+<script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-bienvenida-fix"></script>
+<script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-bienvenida-fix"></script>
 <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
 <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
 <script src="js/hc-medir-sala-layout.js?v=2026-06-03-semillas-inicio-sala"></script>
@@ -5257,7 +5272,7 @@
 <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-perf-root"></script>
 <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
 <script src="js/hc-propagador-montaje.js?v=2026-06-03-sala-equip-solo"></script>
-<script src="js/hc-premium-nutriente-germ.js?v=2026-05-31-nutriente-paso4"></script>
+<script src="js/hc-premium-nutriente-germ.js?v=2026-05-31-nutriente-paso4b"></script>
 <script src="js/hc-premium-germ-plan.js?v=2026-05-31-perf-root"></script>
 <script src="js/hc-germinacion-flow.js?v=2026-06-03-nutriente-propagador-persist"></script>
 <script defer src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
@@ -5275,7 +5290,7 @@
 <script defer src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defer"></script>
 <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
 <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-propagador-cultivo"></script>
-<script src="js/hc-setup-wizard-pages.js?v=2026-05-31-perf2"></script>
+<script src="js/hc-setup-wizard-pages.js?v=2026-05-31-nutriente-paso4b"></script>
 <script src="js/hc-setup-calc-core.js?v=2026-05-31-perf-root"></script>
 <script defer src="js/hc-setup-rotacion.js?v=2026-05-31-perf-root"></script>
 <script defer src="js/hc-setup-compat-modal.js?v=2026-06-02-icons-full"></script>
@@ -5320,6 +5335,5 @@
 <script defer src="js/hc-multi-system-ux.js?v=2026-05-31-perf-root"></script>
 <script defer src="js/hc-salas-plan.js?v=2026-05-31-perf-root"></script>
 <script defer src="js/hc-puesta-marcha.js?v=2026-06-03-montaje-sala-manual"></script>
-<script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-perf-root"></script>
 </body>
 </html>

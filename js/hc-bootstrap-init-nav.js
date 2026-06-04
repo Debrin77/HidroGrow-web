@@ -65,6 +65,9 @@ async function resetApp() {
   }
 
   try {
+    sessionStorage.setItem('hc_forzar_bienvenida_tras_reset', '1');
+  } catch (_) {}
+  try {
     if (typeof hidrogrowLimpiarAlmacenamientoCompleto === 'function') {
       hidrogrowLimpiarAlmacenamientoCompleto({ skipIndexedDb: true });
     }
@@ -381,14 +384,16 @@ function initApp() {
       } catch (_) {}
     }, 3000);
     try {
-      if (typeof hcAbrirAsistenteCaminoSiSinInstalacion === 'function') {
+      if (typeof mostrarBienvenidaOContinuarArranque === 'function') {
+        requestAnimationFrame(function () {
+          mostrarBienvenidaOContinuarArranque();
+        });
+      } else if (typeof hcAbrirAsistenteCaminoSiSinInstalacion === 'function') {
         requestAnimationFrame(function () {
           try {
             hcAbrirAsistenteCaminoSiSinInstalacion();
           } catch (_) {}
         });
-      } else if (typeof mostrarBienvenidaOContinuarArranque === 'function') {
-        requestAnimationFrame(mostrarBienvenidaOContinuarArranque);
       }
     } catch (_) {}
     setTimeout(function () {

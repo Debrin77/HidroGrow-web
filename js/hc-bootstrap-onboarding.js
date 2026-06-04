@@ -388,7 +388,7 @@ function tabBarCoachYaDescartado() {
 
 /** Sin instalación real: abrir asistente en «¿Cómo empiezas el cultivo?» (spage0). */
 function hcAbrirAsistenteCaminoSiSinInstalacion() {
-  hcOcultarOverlaysOnboardingUi();
+  if (document.body.classList.contains('hc-welcome-open')) return;
   try {
     if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
       return;
@@ -417,7 +417,56 @@ function lanzarSetupOChecklistSiCorresponde() {
   hcAbrirAsistenteCaminoSiSinInstalacion();
 }
 
+function hcDebeMostrarBienvenida(opts) {
+  opts = opts || {};
+  if (opts.force) return true;
+  try {
+    if (sessionStorage.getItem('hc_forzar_bienvenida_tras_reset') === '1') return true;
+  } catch (_) {}
+  try {
+    if (localStorage.getItem(HC_BIENVENIDA_KEY) === '1') return false;
+  } catch (_) {}
+  if (hayDatosHidrocultivoRelevantes()) return false;
+  return true;
+}
+
+function abrirOverlayBienvenida() {
+  const ov = document.getElementById('welcomeOverlay');
+  if (!ov) return false;
+  ov.classList.remove('setup-hidden');
+  ov.setAttribute('aria-hidden', 'false');
+  try {
+    applyWelcomeScrollLock(true);
+    document.body.classList.add('hc-welcome-open');
+  } catch (_) {}
+  try {
+    initWelcomeValueCarousel();
+  } catch (_) {}
+  hcScrollWelcomeToTopDeferred();
+  try {
+    document.addEventListener('keydown', _welcomeGuideOnKeydown);
+  } catch (_) {}
+  return true;
+}
+
 function mostrarBienvenidaOContinuarArranque(opts) {
+  opts = opts || {};
+  if (opts.force) {
+    try {
+      localStorage.removeItem(HC_BIENVENIDA_KEY);
+    } catch (_) {}
+  }
+  if (hcDebeMostrarBienvenida(opts)) {
+    if (abrirOverlayBienvenida()) {
+      try {
+        sessionStorage.removeItem('hc_forzar_bienvenida_tras_reset');
+      } catch (_) {}
+      return;
+    }
+  }
+  try {
+    sessionStorage.removeItem('hc_forzar_bienvenida_tras_reset');
+  } catch (_) {}
   hcAbrirAsistenteCaminoSiSinInstalacion();
 }
 

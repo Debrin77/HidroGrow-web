@@ -10066,10 +10066,21 @@ html.hc-theme-dark .hc-germ-prop-hint {
 #spagePremium3.hc-germ-ahora-page .equip-catalog-group-hint {
   display: none !important;
 }
-#spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSection {
+.hc-prop-nutriente-block {
+  display: none;
+}
+#spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSection,
+#spagePremium4.hc-prop-nutriente-page .hc-prop-nutriente-block,
+#setupOverlay.open #spagePremium4.active.hc-prop-nutriente-page .hc-prop-nutriente-block {
   display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
 }
 #spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSelectWrap,
+#spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSelect,
 #spagePremium4.hc-prop-nutriente-page #nutrientesGridPremiumGerm {
   display: block;
 }

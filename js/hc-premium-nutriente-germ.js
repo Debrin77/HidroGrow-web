@@ -43,18 +43,11 @@
   }
 
   function isPremiumNutrienteGermActivo(cfg) {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador') return true;
     if (
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()
-    ) {
-      return true;
-    }
-    if (
-      typeof setupPagina !== 'undefined' &&
-      typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
-      setupPagina === SETUP_PAGE_PREMIUM_4 &&
-      typeof getCaminoCultivo === 'function' &&
-      getCaminoCultivo(cfg) === 'semilla_propagador'
     ) {
       return true;
     }
@@ -313,7 +306,8 @@
 
   function renderPremiumNutrienteGermSelect() {
     var wrap = el('setupPremiumNutrienteGermSelectWrap');
-    if (!wrap) return;
+    var selExisting = el('setupPremiumNutrienteGermSelect');
+    if (!wrap && !selExisting) return;
     var list = getListaNutrientesPremiumGerm();
     if (!list.length && Array.isArray(NUTRIENTES_DB)) {
       list = filtrarNutrientesGermLista(
@@ -326,6 +320,11 @@
       typeof setupNutriente !== 'undefined' && setupNutriente
         ? setupNutriente
         : ensurePremiumNutrienteGermFields().nutrienteGerm || 'canna_aqua';
+    if (selExisting && selExisting.options && selExisting.options.length > 0) {
+      selExisting.value = sel;
+      if (!selExisting.value) selExisting.value = 'canna_aqua';
+      return;
+    }
     var opts = list
       .map(function (n) {
         return (
@@ -339,12 +338,14 @@
         );
       })
       .join('');
-    wrap.innerHTML =
-      '<label class="setup-field-label" for="setupPremiumNutrienteGermSelect">Línea de abono (veg / A+B) <span class="setup-required-tag">obligatorio</span></label>' +
-      '<select id="setupPremiumNutrienteGermSelect" class="setup-input-city setup-mb-8" onchange="typeof onPremiumNutrienteGermSelectChange===\'function\'&&onPremiumNutrienteGermSelectChange()">' +
-      opts +
-      '</select>';
-    wrap.classList.remove('setup-hidden');
+    if (wrap) {
+      wrap.innerHTML =
+        '<label class="setup-field-label" for="setupPremiumNutrienteGermSelect">Línea de abono (veg / A+B) <span class="setup-required-tag">obligatorio</span></label>' +
+        '<select id="setupPremiumNutrienteGermSelect" class="setup-input-city setup-mb-8" onchange="typeof onPremiumNutrienteGermSelectChange===\'function\'&&onPremiumNutrienteGermSelectChange()">' +
+        opts +
+        '</select>';
+      wrap.classList.remove('setup-hidden');
+    }
   }
 
   function onPremiumNutrienteGermSelectChange() {
@@ -551,11 +552,18 @@
 
   function refreshPremiumNutrienteGermSection() {
     var sec = el('setupPremiumNutrienteGermSection');
+    var page4 = el('spagePremium4');
     var show = isPremiumNutrienteGermActivo(getCfgNutriente());
     if (sec) {
       sec.classList.toggle('setup-hidden', !show);
-      if (show) sec.classList.remove('setup-hidden');
+      if (show) {
+        sec.classList.remove('setup-hidden');
+        sec.setAttribute('aria-hidden', 'false');
+      } else {
+        sec.setAttribute('aria-hidden', 'true');
+      }
     }
+    if (page4) page4.classList.toggle('hc-prop-nutriente-page', !!show);
     if (!show) return;
     syncPremiumNutrienteGermFromConfig();
     renderPremiumNutrienteGermSelect();

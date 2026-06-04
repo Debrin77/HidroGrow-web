@@ -106,6 +106,17 @@ function renderSetupPage() {
       ) {
         renderEquipamientoPremiumUI();
       }
+      if (
+        typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
+        setupPagina === SETUP_PAGE_PREMIUM_4
+      ) {
+        if (typeof applyPremiumPropagadorPaso4Chrome === 'function') {
+          applyPremiumPropagadorPaso4Chrome();
+        }
+        if (typeof refreshPremiumNutrienteGermSection === 'function') {
+          refreshPremiumNutrienteGermSection();
+        }
+      }
     }, 0);
   }
   if (setupPagina === SETUP_PAGE_EQUIP) {
