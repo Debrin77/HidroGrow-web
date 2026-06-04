@@ -497,6 +497,14 @@
         console.warn('refreshDashSalaEquipRecoBanner', e);
       } catch (_) {}
     }
+    try {
+      if (
+        typeof global.renderCalendario === 'function' &&
+        document.getElementById('tab-calendario')?.classList.contains('active')
+      ) {
+        global.renderCalendario();
+      }
+    } catch (_) {}
   }
 
   global.salaEquipInicioCompleto = salaEquipInicioCompleto;

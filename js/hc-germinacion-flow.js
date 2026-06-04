@@ -302,8 +302,20 @@
   function registroHoyHecho(g) {
     if (!Array.isArray(g.registroDiario)) return false;
     var iso = hoyIso();
+    return registroHechoEnFecha(g, iso);
+  }
+
+  function registroHechoEnFecha(g, fechaIsoOrDate) {
+    if (!Array.isArray(g.registroDiario) || !g.registroDiario.length) return false;
+    var iso = '';
+    if (typeof fechaIsoOrDate === 'string') {
+      iso = fechaIsoOrDate.slice(0, 10);
+    } else if (fechaIsoOrDate instanceof Date) {
+      iso = fechaIsoOrDate.toISOString().slice(0, 10);
+    }
+    if (!iso) return false;
     return g.registroDiario.some(function (r) {
-      return r && r.fechaIso === iso;
+      return r && String(r.fechaIso || '').slice(0, 10) === iso;
     });
   }
 
@@ -538,6 +550,11 @@
     } catch (_) {}
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
+    try {
+      if (typeof renderCalendario === 'function' && document.getElementById('tab-calendario')?.classList.contains('active')) {
+        renderCalendario();
+      }
     } catch (_) {}
   }
 
@@ -1689,18 +1706,34 @@
 
   function hcGerminacionMarcarCalendarioGrid(addEvento, mes, anio) {
     if (!hcGerminacionActiva()) return;
-    var g = ensureGerminacionFlow(cfgActiva());
+    var cfg = cfgActiva();
+    var g = ensureGerminacionFlow(cfg);
     if (!g.startedAt) return;
     var start = new Date(g.startedAt);
     start.setHours(0, 0, 0, 0);
     var hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
+    var camCal = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var diasMes = new Date(anio, mes + 1, 0).getDate();
     for (var d = 1; d <= diasMes; d++) {
       var dt = new Date(anio, mes, d);
       dt.setHours(0, 0, 0, 0);
-      if (dt >= start && dt <= hoy) {
+      if (dt < start || dt > hoy) continue;
+      var iso = dt.toISOString().slice(0, 10);
+      var hecho = registroHechoEnFecha(g, iso);
+      if (camCal === 'semilla_propagador') {
+        addEvento(
+          d,
+          'germinacion',
+          hecho ? '#059669' : '#ca8a04',
+          hecho ? '📊 Medición domo' : '📊 Medir domo (pend.)'
+        );
+        addEvento(d, 'germinacion', '#10b981', '🌱 Propagador');
+      } else {
         addEvento(d, 'germinacion', '#059669', '🌱 Germinación activa');
+        if (!hecho && dt.getTime() === hoy.getTime()) {
+          addEvento(d, 'germinacion', '#ca8a04', '📝 Registro pendiente');
+        }
       }
     }
   }
@@ -1736,7 +1769,58 @@
       }
     }
 
+    if (
+      camCal === 'semilla_propagador' &&
+      !concl &&
+      typeof salaEquipInicioCompleto === 'function' &&
+      !salaEquipInicioCompleto(cfg)
+    ) {
+      var faltSala = [];
+      if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+        faltSala.push('equipamiento de sala');
+      } else if (typeof getCamposEquipamientoFaltantes === 'function') {
+        var eqF = getCamposEquipamientoFaltantes(cfg);
+        if (eqF && eqF.length) faltSala.push('completar catálogo (' + eqF.map(function (x) { return x.label; }).join(', ') + ')');
+      }
+      if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+        faltSala.push('checklist de montaje');
+      }
+      ev.push({
+        tipo: 'camino',
+        icono: '🏠',
+        titulo: 'RECOMENDADO · Sala de cultivo',
+        desc:
+          'Monta y registra la sala (carpa, LED, propagador dentro…) antes o durante la germinación. ' +
+          (faltSala.length ? 'Pendiente: ' + faltSala.join(' y ') + '.' : 'Abre el configurador desde Inicio.'),
+        action: 'sala_reco',
+      });
+    }
+
     if (diff === 0 && paso) {
+      if (camCal === 'semilla_propagador') {
+        var planMed =
+          typeof getGerminacionDashTilesPlan === 'function'
+            ? getGerminacionDashTilesPlan(cfg)
+            : { tiles: [] };
+        var medTxt = (planMed.tiles || [])
+          .map(function (t) {
+            return t.label + (t.unit ? ' (' + t.unit + ')' : '');
+          })
+          .join(', ');
+        ev.push({
+          tipo: 'germinacion',
+          icono: '📊',
+          titulo: registroHoyHecho(g)
+            ? 'Medición domo · registrada hoy'
+            : 'Medición diaria · domo propagador',
+          desc: registroHoyHecho(g)
+            ? 'Tienes registro de hoy en germinación. Puedes volver a medir en Medir si cambia el clima.'
+            : 'Registra en <strong>Medir</strong>: ' +
+              (medTxt || 'T°, HR, VPD del domo') +
+              '. También puedes anotar observaciones en Inicio → Germinación.',
+          action: 'medicion',
+        });
+      }
       ev.push({
         tipo: 'germinacion',
         icono: '🌱',
@@ -1749,7 +1833,11 @@
             ? 'Seguimiento diario; las 6 fases son orientativas. '
             : '') +
           tareaDiaFase(paso.id, modo) +
-          (registroHoyHecho(g) ? '' : ' · Registra el día en Inicio → Germinación.'),
+          (registroHoyHecho(g)
+            ? ''
+            : camCal === 'semilla_propagador'
+              ? ' · Anota el día en Inicio → Germinación.'
+              : ' · Registra el día en Inicio → Germinación.'),
         action: 'inicio',
       });
       if (paso.id === 'domo' || paso.id === 'semilla' || paso.id === 'taproot') {
@@ -1760,7 +1848,7 @@
           desc: 'Abre 5 min por la mañana y al atardecer; evita condensación y moho.',
         });
       }
-      if (!registroHoyHecho(g)) {
+      if (!registroHoyHecho(g) && camCal !== 'semilla_propagador') {
         ev.push({
           tipo: 'germinacion',
           icono: '📝',
@@ -1910,6 +1998,7 @@
   global.hcGerminacionRenderSetupPreview = hcGerminacionRenderSetupPreview;
   global.hcGerminacionActivarDesdeSetup = hcGerminacionActivarDesdeSetup;
   global.hcGerminacionEventosCalendario = hcGerminacionEventosCalendario;
+  global.registroHechoEnFecha = registroHechoEnFecha;
   global.hcGerminacionMarcarCalendarioGrid = hcGerminacionMarcarCalendarioGrid;
   global.hcGerminacionRefrescarCalendario = hcGerminacionRefrescarCalendario;
   global.setModoGerminacion = setModoGerminacion;

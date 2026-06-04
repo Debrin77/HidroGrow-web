@@ -60,6 +60,20 @@ function escCalHtml(s) {
     .replace(/>/g, '&gt;');
 }
 
+/** Germinación en propagador (semilla_propagador): calendario centrado en Medir domo, no depósito DWC. */
+function hcCalendarioModoPropagadorGerm() {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+  if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+  if (typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg)) return true;
+  return false;
+}
+
+function hcCalendarioRecoSalaPropagadorPendiente() {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  return typeof hcMostrarRecoEquipSalaInicio === 'function' && hcMostrarRecoEquipSalaInicio(cfg);
+}
+
 function renderCalendarioContexto() {
   const host = document.getElementById('calContextBanner');
   if (!host) return;
@@ -94,6 +108,27 @@ function renderCalendarioContexto() {
         ' salas: faltan «' +
         plan.pendingNames.slice(0, 3).map(escCalHtml).join('», «') +
         '». Añádelas con <strong>Nuevo sistema</strong>.</span>'
+    );
+  }
+
+  if (hcCalendarioRecoSalaPropagadorPendiente()) {
+    const pasoReco =
+      typeof getSalaRecoPasoInicio === 'function' ? getSalaRecoPasoInicio(ctx.cfg) : 'equip';
+    const pasoTxt =
+      pasoReco === 'montaje'
+        ? 'Paso 2: checklist de montaje físico'
+        : 'Paso 1: equipamiento de sala (carpa, LED, propagador…)';
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--reco-sala">' +
+        '<strong>RECOMENDADO</strong> · Monta la sala de cultivo antes o durante la germinación. ' +
+        pasoTxt +
+        '. <button type="button" class="btn-link cal-context-link" onclick="irARecoSalaPropagadorCalendario()">Abrir configuración</button></span>'
+    );
+  }
+
+  if (hcCalendarioModoPropagadorGerm() && typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(ctx.cfg)) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--prop-germ">🌱 Germinación en propagador: el calendario prioriza la <strong>medición diaria del domo</strong> en Medir (T°, HR, VPD). El depósito hidro aparece al cerrar el traslado.</span>'
     );
   }
 
@@ -150,6 +185,38 @@ function getUltimaMedicionCalendarioFecha() {
 
 function getRecordatorioMedicionDiariaCalendario() {
   if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) return null;
+
+  if (hcCalendarioModoPropagadorGerm()) {
+    const cfgGerm = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof hcGerminacionActiva === 'function' && !hcGerminacionActiva(cfgGerm)) return null;
+    const g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfgGerm) : null;
+    if (!g || !g.startedAt) return null;
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const medidoHoy =
+      typeof registroHechoEnFecha === 'function' && registroHechoEnFecha(g, hoy);
+    const fechaObjetivo = new Date(hoy.getTime() + (medidoHoy ? 86400000 : 0));
+    const titulo = medidoHoy
+      ? 'Medición domo · registrada hoy'
+      : 'Medición domo · pendiente hoy';
+    const desc = medidoHoy
+      ? 'Tienes registro de germinación de hoy. Mañana vuelve a medir el clima del domo en Medir.'
+      : 'Durante la germinación, registra cada día T°, HR y VPD del domo en Medir (observaciones opcionales en Inicio → Germinación).';
+    return {
+      fecha: fechaObjetivo,
+      evento: {
+        tipo: 'germinacion',
+        icono: '📊',
+        color: medidoHoy ? '#059669' : '#ca8a04',
+        label: '📊 ' + titulo,
+        titulo,
+        desc,
+        action: 'medicion',
+      },
+    };
+  }
+
   const nPlantas =
     typeof contarPlantasTorreConVariedad === 'function' ? contarPlantasTorreConVariedad() : 0;
   const hayContexto =
@@ -245,12 +312,18 @@ function generarEventos(fecha) {
   const margenRec = Math.max(2, Math.min(4, Math.round(diObjRec * 0.14)));
   const fmtUbicPlantaCal = (n, ci) => formatoUbicacionEnRegistro(tCal, n + 1, ci + 1);
   const recMed = getRecordatorioMedicionDiariaCalendario();
+  const modoPropGerm = hcCalendarioModoPropagadorGerm();
+  const recargaAplica =
+    typeof hcRecargaCompletaAplicaEnCamino === 'function'
+      ? hcRecargaCompletaAplicaEnCamino(state.configTorre || {})
+      : true;
 
   if (recMed && recMed.fecha.getTime() === d.getTime()) {
     eventos.push(recMed.evento);
   }
 
   // ── Control diario — rutina completa por fase ─────────────────────────
+  if (!modoPropGerm) {
   let descControl = null;
   if (typeof buildControlDiarioCalendarioTexto === 'function') {
     try {
@@ -273,8 +346,9 @@ function generarEventos(fecha) {
     titulo: 'Control diario — monitorización',
     desc: descControl,
   });
+  }
 
-  if (diffDias === 0 && typeof getEstadoControlSistema === 'function') {
+  if (!modoPropGerm && diffDias === 0 && typeof getEstadoControlSistema === 'function') {
     try {
       const estCtrl = getEstadoControlSistema();
       const pendSem = (estCtrl.semanal || []).filter(function (x) { return !x.ok; });
@@ -333,7 +407,7 @@ function generarEventos(fecha) {
   }
 
   // ── Recarga del depósito (intervalo ~diasObjetivo: volumen, tipo NFT/torre/DWC/RDWC, mediciones, reposición) ──
-  if (state.ultimaRecarga) {
+  if (recargaAplica && state.ultimaRecarga) {
     const diasDesdeRecarga = Math.round((d - new Date(state.ultimaRecarga)) / 86400000);
     if (
       diasDesdeRecarga >= diObjRec - margenRec &&
@@ -370,7 +444,7 @@ function generarEventos(fecha) {
         desc: descRec,
       });
     }
-  } else {
+  } else if (recargaAplica) {
     const drift =
       evalRecCal && Number.isFinite(evalRecCal.diasRestantes)
         ? Math.max(1, evalRecCal.diasRestantes)
@@ -652,6 +726,10 @@ function renderCalendario() {
   }
 
   // Recargas: intervalo adaptativo (misma base que Medir / evaluarFatigaRecargaOculta)
+  const recargaAplicaGrid =
+    typeof hcRecargaCompletaAplicaEnCamino === 'function'
+      ? hcRecargaCompletaAplicaEnCamino(state.configTorre || {})
+      : true;
   const evalRecGrid =
     typeof evaluarFatigaRecargaOculta === 'function' ? evaluarFatigaRecargaOculta() : null;
   const diObjGrid =
@@ -663,7 +741,7 @@ function renderCalendario() {
   const baseMs =
     typeof parseUltimaRecargaCompletaDayMs === 'function' ? parseUltimaRecargaCompletaDayMs() : null;
 
-  if (baseMs != null) {
+  if (recargaAplicaGrid && baseMs != null) {
     const base = new Date(baseMs);
     base.setHours(0, 0, 0, 0);
     for (let n = 1; n <= 24; n++) {
@@ -677,7 +755,7 @@ function renderCalendario() {
         );
       }
     }
-  } else {
+  } else if (recargaAplicaGrid) {
     const hayCtxRecargaCal =
       (typeof contarPlantasTorreConVariedad === 'function' && contarPlantasTorreConVariedad() > 0) ||
       !!getUltimaMedicionCalendarioFecha() ||
@@ -751,7 +829,7 @@ function renderCalendario() {
   }
 
   // Limpieza — cada 30 días
-  if (state.ultimaRecarga) {
+  if (recargaAplicaGrid && state.ultimaRecarga) {
     let base = new Date(state.ultimaRecarga);
     for (let i = 1; i <= 4; i++) {
       const lim = new Date(base.getTime() + i * 30 * 86400000);
@@ -886,7 +964,9 @@ function renderCalendario() {
           ? ' role="button" tabindex="0" onclick="irChecklistDesdeCalendario()" onkeydown="a11yKeyActivate(event, irChecklistDesdeCalendario)" aria-label="Ir a Historial y abrir checklist"'
           : e.action === 'medicion'
             ? ' role="button" tabindex="0" onclick="irAMedicionesDesdeCalendario()" onkeydown="a11yKeyActivate(event, irAMedicionesDesdeCalendario)" aria-label="Ir a Mediciones"'
-            : '') +
+            : e.action === 'sala_reco'
+              ? ' role="button" tabindex="0" onclick="irARecoSalaPropagadorCalendario()" onkeydown="a11yKeyActivate(event, irARecoSalaPropagadorCalendario)" aria-label="Configurar sala recomendada"'
+              : '') +
         '>' +
         '<div class="cal-prox-badge" style="--ev:' + e.color + '">' +
         '<div class="cal-prox-badge-dia">' + e.dia + '</div>' +
@@ -948,6 +1028,23 @@ function irAGerminacionDesdeCalendario() {
   } catch (_) {}
 }
 
+function irARecoSalaPropagadorCalendario() {
+  try {
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    const paso =
+      typeof getSalaRecoPasoInicio === 'function' ? getSalaRecoPasoInicio(cfg) : 'equip';
+    if (paso === 'montaje' && typeof hcOpenPuestaMarchaChecklist === 'function') {
+      hcOpenPuestaMarchaChecklist();
+      return;
+    }
+    if (typeof abrirConfiguradorEquipamientoSalaPropagador === 'function') {
+      abrirConfiguradorEquipamientoSalaPropagador();
+      return;
+    }
+    if (typeof goTab === 'function') goTab('inicio');
+  } catch (_) {}
+}
+
 
 function seleccionarDiaCal(fecha) {
   calDiaSeleccionado = fecha;
@@ -982,9 +1079,11 @@ function mostrarEventosDia(fecha) {
         ${e.tipo === 'nutriente'
           ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irChecklistDesdeCalendario()">Ir a Historial → Checklist</button>'
           : e.action === 'medicion'
-            ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAMedicionesDesdeCalendario()">Ir a Mediciones</button>'
-            : e.action === 'inicio' || e.tipo === 'germinacion'
-              ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAGerminacionDesdeCalendario()">Ir a Germinación (Inicio)</button>'
+            ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAMedicionesDesdeCalendario()">Ir a Medir</button>'
+            : e.action === 'sala_reco'
+              ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irARecoSalaPropagadorCalendario()">Configurar sala (RECOMENDADO)</button>'
+              : e.action === 'inicio' || (e.tipo === 'germinacion' && e.action !== 'medicion')
+                ? '<button type="button" class="btn btn-primary evento-cta-checklist" onclick="irAGerminacionDesdeCalendario()">Ir a Germinación (Inicio)</button>'
           : ''}
       </div>
     </div>

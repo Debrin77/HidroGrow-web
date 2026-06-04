@@ -17463,6 +17463,8 @@ html.hc-theme-dark .nft-deposito-cifras-fixed {
 .cal-context-chip--plan { border-left: 3px solid #7c3aed; }
 .cal-context-chip--iot { border-left: 3px solid #0d9488; }
 .cal-context-chip--pm { border-left: 3px solid #d97706; }
+.cal-context-chip--reco-sala { border-left: 3px solid #ca8a04; }
+.cal-context-chip--prop-germ { border-left: 3px solid #059669; }
 .cal-context-link {
   font-size: inherit;
   padding: 0;
