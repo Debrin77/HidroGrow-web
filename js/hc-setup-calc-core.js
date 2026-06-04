@@ -1980,8 +1980,14 @@ function guardarSetupYContinuarCore() {
     if (p.largoM != null) out.growRoomLargoM = p.largoM;
     return out;
   })();
+  var salaPreGermEquipMin =
+    faseSalaPreGerm &&
+    typeof hcSetupSalaPreGermPropagadorEquip === 'function' &&
+    hcSetupSalaPreGermPropagadorEquip();
   if (
     ubicEffGuardar === 'interior' &&
+    !faseSalaPreGerm &&
+    !salaPreGermEquipMin &&
     !(typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
       window.salaTieneMedidasDesdeEquipamiento(cfgSalaParaGuardar)) &&
     typeof validarPremiumSetupPaso === 'function' &&
@@ -2067,6 +2073,13 @@ function guardarSetupYContinuarCore() {
     setupPagina = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
     renderSetupPage();
     return false;
+  }
+  if (
+    faseSalaPreGerm &&
+    typeof hcRestaurarCfgCaminoGerminacionTrasSetupSala === 'function'
+  ) {
+    hcRestaurarCfgCaminoGerminacionTrasSetupSala(state.configTorre, cfgPrevWizard);
+    if (camPersist) state.configTorre.caminoCultivo = camPersist;
   }
   if (faseGermSetup) {
     try {
@@ -2242,7 +2255,7 @@ function guardarSetupYContinuarCore() {
     state.configTorre.numCestas = cestas;
   } else if (isDwc && typeof redimensionarMatrizTorreDwcPreservando === 'function') {
     redimensionarMatrizTorreDwcPreservando(state.configTorre, niveles, cestas);
-  } else {
+  } else if (!faseSalaPreGerm) {
     state.torre = [];
     for (let n = 0; n < niveles; n++) {
       state.torre.push([]);
@@ -2337,8 +2350,12 @@ function guardarSetupYContinuarCore() {
       state.hcPostSetupChecklistPendiente = false;
       state.hcInstalacionGuidadaActiva = true;
     } else if (faseSalaPreGerm) {
-      state.hcPostSetupChecklistPendiente = false;
-      state.hcInstalacionGuidadaActiva = false;
+      state.hcPostSetupChecklistPendiente = true;
+      if (typeof activarInstalacionGuidadaPostSetup === 'function') {
+        activarInstalacionGuidadaPostSetup();
+      } else {
+        state.hcInstalacionGuidadaActiva = true;
+      }
     } else {
       state.hcPostSetupChecklistPendiente = true;
       if (typeof activarInstalacionGuidadaPostSetup === 'function') activarInstalacionGuidadaPostSetup();
@@ -2439,9 +2456,6 @@ function guardarSetupYContinuarCore() {
   const camGuardado =
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
   if (salaPreGermGuardada) {
-    try {
-      delete window._hcSalaPreGermRecienGuardada;
-    } catch (_) {}
     if (typeof hcNotifyInstalacionGuardada === 'function') {
       hcNotifyInstalacionGuardada({
         nombre: nombreGuardado,
@@ -2453,7 +2467,7 @@ function guardarSetupYContinuarCore() {
     } else if (typeof showToast === 'function') {
       setTimeout(function () {
         showToast(
-          '✅ Equipamiento de sala guardado. El checklist de montaje está en la pestaña Sala.',
+          '✅ Equipamiento de sala guardado. Abre el checklist de montaje en la pestaña Sala.',
           false,
           { durationMs: 6200, zIndex: 10400, prominent: true }
         );
@@ -2468,6 +2482,8 @@ function guardarSetupYContinuarCore() {
       if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
       if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
       if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       if (
         typeof renderCalendario === 'function' &&
         document.getElementById('tab-calendario')?.classList.contains('active')
@@ -2476,7 +2492,14 @@ function guardarSetupYContinuarCore() {
       }
       if (typeof updateDashboard === 'function') updateDashboard();
     } catch (_) {}
-    if (typeof goTab === 'function') goTab('inicio');
+    if (typeof iniciarFlujoInstalacionPostSetup === 'function') {
+      iniciarFlujoInstalacionPostSetup();
+    } else {
+      try {
+        delete window._hcSalaPreGermRecienGuardada;
+      } catch (_) {}
+      if (typeof goTab === 'function') goTab('sala');
+    }
     return true;
   }
 

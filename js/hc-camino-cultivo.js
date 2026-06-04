@@ -187,6 +187,32 @@
     return !!cfg.salaPreGermConfigAt;
   }
 
+  /** Tras guardar solo equipamiento de sala: no pisar propagador, germinación ni camino. */
+  function hcRestaurarCfgCaminoGerminacionTrasSetupSala(dest, src) {
+    if (!dest || !src || typeof dest !== 'object' || typeof src !== 'object') return dest;
+    var keys = [
+      'caminoCultivo',
+      'germinacionFlow',
+      'propagadorMontajeChecks',
+      'preparacionGermHidroChecks',
+      'enraizadoMontajeChecks',
+      'semillero',
+      'sustratoGerm',
+      'hcGermPlan',
+      'variedadGerminacion',
+    ];
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (src[k] == null) continue;
+      try {
+        dest[k] = JSON.parse(JSON.stringify(src[k]));
+      } catch (_) {
+        dest[k] = src[k];
+      }
+    }
+    return dest;
+  }
+
   /** Propagador sin DWC cerrado: configurar sala sin medidor/bombas del depósito. */
   function hcPropagadorEquipSalaSinHidro(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
@@ -566,8 +592,13 @@
       return;
     }
     try {
-      if (typeof hcResetSetupWizardSession === 'function') {
-        hcResetSetupWizardSession({ keepNuevaFlag: true, keepPagina: true });
+      if (typeof syncSetupEquipamientoDesdeConfig === 'function') {
+        syncSetupEquipamientoDesdeConfig(cfg);
+      }
+      if (cfg.equipamientoInstalado && typeof setupData !== 'undefined') {
+        setupData.equipamientoInstaladoDraft = JSON.parse(
+          JSON.stringify(cfg.equipamientoInstalado)
+        );
       }
     } catch (_) {}
     if (typeof window !== 'undefined') window._hcSetupSalaPreGermSession = true;
@@ -581,6 +612,15 @@
     if (so) {
       so.classList.add('open');
       if (typeof renderSetupPage === 'function') renderSetupPage();
+      if (typeof cargarPremiumSetupUI === 'function') {
+        cargarPremiumSetupUI(setupPagina);
+      }
+      if (typeof applySalaPreGermEquipMinimalChrome === 'function') {
+        applySalaPreGermEquipMinimalChrome();
+      }
+      if (typeof renderEquipamientoPremiumUI === 'function') {
+        renderEquipamientoPremiumUI();
+      }
       if (typeof a11yDialogOpened === 'function') a11yDialogOpened(so);
     } else if (typeof abrirSetup === 'function') {
       abrirSetup();
@@ -1083,6 +1123,7 @@
   global.getSetupSkippedPagesForCamino = getSetupSkippedPagesForCamino;
   global.getSetupSkippedPagesForSalaPreGerm = getSetupSkippedPagesForSalaPreGerm;
   global.hcSalaPreGermPermitida = hcSalaPreGermPermitida;
+  global.hcRestaurarCfgCaminoGerminacionTrasSetupSala = hcRestaurarCfgCaminoGerminacionTrasSetupSala;
   global.hcMontajeEsSoloEquipamientoSala = hcMontajeEsSoloEquipamientoSala;
   global.hcCultivoMatrizDisponible = hcCultivoMatrizDisponible;
   global.cultivoMatrizListo = cultivoMatrizListo;
