@@ -49,7 +49,7 @@ function hcFinishResetHeavyWork() {
     }
   } catch (_) {}
   if (typeof showToast === 'function') {
-    showToast('🔄 Sistema restablecido · como al abrir la app por primera vez', false, { durationMs: 4800 });
+    showToast('🔄 Sistema restablecido', false, { durationMs: 4800 });
   }
 }
 

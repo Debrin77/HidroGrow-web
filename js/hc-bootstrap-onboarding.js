@@ -138,29 +138,37 @@ function initWelcomeValueCarousel() {
   setTimeout(() => { try { update(); } catch (_) {} }, 80);
 }
 
+/** Bienvenida + coach «Barra inferior» desactivados: no bloquean arranque ni reset. */
+function hcOcultarOverlaysOnboardingUi() {
+  _clearTabCoachRetryTimer();
+  try {
+    localStorage.setItem(HC_BIENVENIDA_KEY, '1');
+    localStorage.setItem(HC_TAB_BAR_COACH_KEY, '1');
+  } catch (_) {}
+  const wov = document.getElementById('welcomeOverlay');
+  if (wov) {
+    wov.classList.add('setup-hidden');
+    wov.setAttribute('aria-hidden', 'true');
+  }
+  try {
+    document.body.classList.remove('hc-welcome-open');
+    document.body.classList.remove('hc-tab-coach-open');
+  } catch (_) {}
+  try {
+    applyWelcomeScrollLock(false);
+  } catch (_) {}
+  try {
+    document.removeEventListener('keydown', _welcomeGuideOnKeydown);
+  } catch (_) {}
+  const tbc = document.getElementById('hcTabBarCoach');
+  if (tbc) tbc.classList.add('setup-hidden');
+}
+
 /**
  * Muestra el coach de la barra de pestañas (fase 2) si no se descartó y no hay bienvenida ni asistente encima.
  */
 function tryShowTabBarCoachDeferred(attempt) {
   _tabCoachRetryTimer = null;
-  const max = 28;
-  const n = typeof attempt === 'number' ? attempt : 0;
-  let dismissed = false;
-  try { dismissed = localStorage.getItem(HC_TAB_BAR_COACH_KEY) === '1'; } catch (_) {}
-  if (dismissed) return;
-  if (document.body.classList.contains('hc-welcome-open')) {
-    if (n < max) _tabCoachRetryTimer = setTimeout(() => tryShowTabBarCoachDeferred(n + 1), 420);
-    return;
-  }
-  const so = document.getElementById('setupOverlay');
-  if (so && so.classList.contains('open')) {
-    if (n < max) _tabCoachRetryTimer = setTimeout(() => tryShowTabBarCoachDeferred(n + 1), 420);
-    return;
-  }
-  const el = document.getElementById('hcTabBarCoach');
-  if (!el) return;
-  el.classList.remove('setup-hidden');
-  try { document.body.classList.add('hc-tab-coach-open'); } catch (_) {}
 }
 
 function hcDebeEvitarReabrirAsistenteTrasSetup() {
@@ -178,15 +186,7 @@ function hcDebeEvitarReabrirAsistenteTrasSetup() {
 }
 
 function scheduleTabBarCoach(delayMs) {
-  if (typeof hcDebeEvitarReabrirAsistenteTrasSetup === 'function' && hcDebeEvitarReabrirAsistenteTrasSetup()) {
-    return;
-  }
-  let dismissed = false;
-  try { dismissed = localStorage.getItem(HC_TAB_BAR_COACH_KEY) === '1'; } catch (_) {}
-  if (dismissed) return;
   _clearTabCoachRetryTimer();
-  const d = typeof delayMs === 'number' ? delayMs : 900;
-  _tabCoachRetryTimer = setTimeout(() => tryShowTabBarCoachDeferred(0), d);
 }
 
 /** Primera instalación: aún no hay config guardada (solo plantilla), sin historial de mezcla/medición ni plantas en esquema. */
@@ -313,41 +313,9 @@ function applyWelcomeScrollLock(open) {
 }
 
 function resetBienvenidaParaPruebas() {
-  try { localStorage.removeItem(HC_BIENVENIDA_KEY); } catch (_) {}
-  try {
-    const ov = document.getElementById('welcomeOverlay');
-    if (!ov) {
-      if (typeof showToast === 'function') showToast('No se encontró la bienvenida', true);
-      return;
-    }
-    if (!ov.classList.contains('setup-hidden')) {
-      if (typeof showToast === 'function') showToast('La bienvenida ya está abierta');
-      return;
-    }
-    // Apertura forzada para pruebas en móvil: evita bloqueos por reglas de "ya hay datos".
-    ov.classList.remove('setup-hidden');
-    ov.setAttribute('aria-hidden', 'false');
-    hcScrollWelcomeToTopDeferred();
-    try {
-      const tSaved = localStorage.getItem(HC_WELCOME_THEME_PREVIEW_KEY);
-      setWelcomeTheme(tSaved === 'dark' ? 'dark' : 'light');
-    } catch (_) {
-      setWelcomeTheme('light');
-    }
-    try { document.body.classList.add('hc-welcome-open'); } catch (_) {}
-    applyWelcomeScrollLock(true);
-    try { initWelcomeValueCarousel(); } catch (_) {}
-    try { document.addEventListener('keydown', _welcomeGuideOnKeydown); } catch (_) {}
-    try {
-      const nb = document.getElementById('welcomeBtnEmpezar');
-      if (nb && typeof nb.focus === 'function') setTimeout(() => nb.focus(), 50);
-    } catch (_) {}
-    const abierta = !ov.classList.contains('setup-hidden');
-    if (typeof showToast === 'function') {
-      showToast(abierta ? 'Guia de bienvenida reabierta' : 'No se pudo reabrir la bienvenida', !abierta);
-    }
-  } catch (_) {
-    if (typeof showToast === 'function') showToast('No se pudo reabrir la bienvenida', true);
+  hcOcultarOverlaysOnboardingUi();
+  if (typeof showToast === 'function') {
+    showToast('La guía de bienvenida ya no se muestra en arranque', false);
   }
 }
 
@@ -435,56 +403,20 @@ function lanzarSetupOChecklistSiCorresponde() {
   try {
     if (state && state.hcPostSetupChecklistPendiente) return;
   } catch (_) {}
-  // Tras la bienvenida: primero el coach de la barra («Entendido»); al cerrarlo se abre el asistente (ver dismissTabBarCoach).
-  if (tabBarCoachYaDescartado()) {
-    setTimeout(() => {
-      try {
-        const so = document.getElementById('setupOverlay');
-        if (so && so.classList.contains('open')) return;
-      } catch (_) {}
-      if (typeof hcDebeEvitarReabrirAsistenteTrasSetup === 'function' && hcDebeEvitarReabrirAsistenteTrasSetup()) return;
-      if (typeof abrirSetup === 'function') abrirSetup();
-    }, 450);
-  }
-  // No abrir el checklist automáticamente en cada arranque.
+  setTimeout(function () {
+    try {
+      const so = document.getElementById('setupOverlay');
+      if (so && so.classList.contains('open')) return;
+    } catch (_) {}
+    if (typeof hcDebeEvitarReabrirAsistenteTrasSetup === 'function' && hcDebeEvitarReabrirAsistenteTrasSetup()) {
+      return;
+    }
+    if (typeof abrirSetup === 'function') abrirSetup();
+  }, 450);
 }
 
 function mostrarBienvenidaOContinuarArranque(opts) {
-  const forceShow = !!(opts && opts.forceShow);
-  let visto = false;
-  try { visto = localStorage.getItem(HC_BIENVENIDA_KEY) === '1'; } catch (_) {}
-  if (visto && !forceShow) {
-    lanzarSetupOChecklistSiCorresponde();
-    scheduleTabBarCoach(1100);
-    return;
-  }
-  if (!forceShow && hayDatosHidrocultivoRelevantes()) {
-    try { localStorage.setItem(HC_BIENVENIDA_KEY, '1'); } catch (_) {}
-    lanzarSetupOChecklistSiCorresponde();
-    scheduleTabBarCoach(1100);
-    return;
-  }
-  const ov = document.getElementById('welcomeOverlay');
-  if (ov) {
-    hcScrollAppToTop();
-    ov.classList.remove('setup-hidden');
-    ov.setAttribute('aria-hidden', 'false');
-    try { document.body.classList.add('hc-welcome-open'); } catch (_) {}
-    applyWelcomeScrollLock(true);
-    try { initWelcomeValueCarousel(); } catch (_) {}
-    try {
-      const tSaved = localStorage.getItem(HC_WELCOME_THEME_PREVIEW_KEY);
-      setWelcomeTheme(tSaved === 'dark' ? 'dark' : 'light');
-    } catch (_) {
-      setWelcomeTheme('light');
-    }
-    try { document.addEventListener('keydown', _welcomeGuideOnKeydown); } catch (_) {}
-    try {
-      const nb = document.getElementById('welcomeBtnEmpezar');
-      if (nb && typeof nb.focus === 'function') setTimeout(() => nb.focus(), 50);
-    } catch (_) {}
-    return;
-  }
+  hcOcultarOverlaysOnboardingUi();
   lanzarSetupOChecklistSiCorresponde();
 }
 
@@ -492,23 +424,10 @@ function mostrarBienvenidaOContinuarArranque(opts) {
  * @param {{ skipLanzarSetup?: boolean }} [opts] — si el usuario elige abrir el asistente desde la guía, evitar doble `abrirSetup`.
  */
 function cerrarBienvenidaPrimeraVez(opts) {
-  const chk = document.getElementById('welcomeChkNoMas');
-  const recordarCerrar = !chk || chk.checked;
-  if (recordarCerrar) {
-    try { localStorage.setItem(HC_BIENVENIDA_KEY, '1'); } catch (_) {}
-  }
-  const ov = document.getElementById('welcomeOverlay');
-  if (ov) {
-    ov.classList.add('setup-hidden');
-    ov.setAttribute('aria-hidden', 'true');
-  }
-  try { document.body.classList.remove('hc-welcome-open'); } catch (_) {}
-  applyWelcomeScrollLock(false);
-  try { document.removeEventListener('keydown', _welcomeGuideOnKeydown); } catch (_) {}
+  hcOcultarOverlaysOnboardingUi();
   if (!opts || !opts.skipLanzarSetup) {
     lanzarSetupOChecklistSiCorresponde();
   }
-  scheduleTabBarCoach(1300);
 }
 
 function dismissTabContextHint(which) {
@@ -1073,3 +992,12 @@ function iniciarFlujoSistemaAntesChecklistPostSetup() {
   }, 120);
 }
 
+try {
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hcOcultarOverlaysOnboardingUi);
+    } else {
+      hcOcultarOverlaysOnboardingUi();
+    }
+  }
+} catch (_) {}
