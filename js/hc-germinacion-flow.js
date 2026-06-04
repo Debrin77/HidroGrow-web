@@ -504,6 +504,21 @@
       g.sustratoGerm = cfg.premiumSetup.sustratoGerm;
     }
     if (cfg.sustratoGerm) g.sustratoGerm = cfg.sustratoGerm;
+    var premN = cfg.premiumSetup || {};
+    var nid = String(g.nutrienteId || premN.nutrienteGerm || cfg.nutriente || '').trim();
+    if (nid) {
+      g.nutrienteId = nid;
+      cfg.nutriente = nid;
+      if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = premN;
+      cfg.premiumSetup.nutrienteGerm = nid;
+    }
+    var volN = Number(
+      g.nutrienteGermVolL != null ? g.nutrienteGermVolL : premN.nutrienteGermVolL
+    );
+    if (Number.isFinite(volN) && volN > 0) {
+      g.nutrienteGermVolL = volN;
+      cfg.premiumSetup.nutrienteGermVolL = volN;
+    }
     hcGerminacionSyncEquipDesdeInstalado(cfg);
   }
 

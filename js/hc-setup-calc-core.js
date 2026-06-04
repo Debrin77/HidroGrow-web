@@ -2084,11 +2084,29 @@ function guardarSetupYContinuarCore() {
   if (faseGermSetup) {
     try {
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+      if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+        persistPremiumNutrienteGermFromUI();
+      }
+      if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+        persistPremiumNutrienteGermToConfig(state.configTorre);
+      }
       if (typeof persistPremiumGermPlanToConfig === 'function') {
         persistPremiumGermPlanToConfig(state.configTorre);
       }
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(state.configTorre);
+      }
+      if (
+        typeof validarPremiumNutrienteGerm === 'function' &&
+        !validarPremiumNutrienteGerm()
+      ) {
+        setupPagina =
+          typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5;
+        renderSetupPage();
+        if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') {
+          hcScrollSetupWizardAlFalloGuardado();
+        }
+        return false;
       }
       if (typeof validarPlanGerminacionCompleto === 'function') {
         const vPlan = validarPlanGerminacionCompleto(state.configTorre, { requierePropagador: true });

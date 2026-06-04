@@ -1632,6 +1632,19 @@ function hcConsejosCultivoVisibles(consejos) {
 function hcPlantasInstalacionSubtitulo(cfg, plantas) {
   plantas = plantas || [];
   cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const faseSis =
+    typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+  if (faseSis === 'propagador' && typeof hcNumSemillasGermConfig === 'function') {
+    const nProp = hcNumSemillasGermConfig(cfg);
+    if (nProp >= 1) {
+      return (
+        nProp +
+        ' semilla' +
+        (nProp === 1 ? '' : 's') +
+        ' en plan de germinación'
+      );
+    }
+  }
   if (plantas.length > 0) {
     return (
       plantas.length +
@@ -1641,8 +1654,6 @@ function hcPlantasInstalacionSubtitulo(cfg, plantas) {
       (plantas.length === 1 ? '' : 's')
     );
   }
-  const faseSis =
-    typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
   const enGermCamino =
     faseSis === 'propagador' ||
     faseSis === 'germ_cubo' ||
@@ -1671,6 +1682,11 @@ function hcPlantasInstalacionSubtitulo(cfg, plantas) {
 
 function refreshPlantasInstalacionResumen() {
   const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  try {
+    if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
+      hcRepararSemillasPropagadorAlCargar(cfg);
+    }
+  } catch (_) {}
   const plantas =
     typeof hcCollectPlantasInstalacionActiva === 'function'
       ? hcCollectPlantasInstalacionActiva()

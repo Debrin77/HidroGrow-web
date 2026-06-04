@@ -329,6 +329,9 @@
     ) {
       hcAjustarTorrePropagadorSemillas(cfg, g.numSemillas);
     }
+    if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+      persistPremiumNutrienteGermToConfig(cfg);
+    }
   }
 
   function requiereValidacionPlanGerm(cfg) {
@@ -375,12 +378,25 @@
       var cu = getCultivoDB(variedad);
       if (cu && cu.nombre) nombreVar = cu.nombre;
     }
+    var nutrienteId =
+      typeof getNutrienteGermIdFromCfg === 'function' ? getNutrienteGermIdFromCfg(cfg) : '';
+    var nutrienteNombre =
+      typeof etiquetaNutrienteGermConfig === 'function'
+        ? etiquetaNutrienteGermConfig(cfg)
+        : '';
+    var nutrienteVolL =
+      typeof getNutrienteGermVolLFromCfg === 'function'
+        ? getNutrienteGermVolLFromCfg(cfg)
+        : 0;
     return {
       variedad: variedad,
       nombreVar: nombreVar || variedad,
       numSemillas: Number.isFinite(n) && n >= 1 ? n : 0,
       sustrato: sustrato,
       propagador: propagador,
+      nutrienteId: nutrienteId,
+      nutrienteNombre: nutrienteNombre,
+      nutrienteVolL: nutrienteVolL,
     };
   }
 
@@ -390,11 +406,14 @@
       return { ok: true, missing: [], message: '' };
     }
     var st = getPlanGermEstado(cfg);
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var missing = [];
     if (!st.variedad) missing.push('genética');
     if (!st.numSemillas || st.numSemillas < 1) missing.push('número de semillas');
     if (!st.sustrato) missing.push('sustrato en propagador');
-    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador' && !st.nutrienteId) {
+      missing.push('nutriente en bandeja del domo');
+    }
     if (opts.requierePropagador !== false && cam === 'semilla_propagador' && !st.propagador) {
       missing.push('propagador/domo en catálogo');
     }
@@ -425,6 +444,9 @@
       if (sub) p.sustratoGerm = String(sub.value || p.sustratoGerm || 'lana');
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
+    if (typeof persistNutrienteGermDesdePropModal === 'function') {
+      persistNutrienteGermDesdePropModal(cfg);
+    }
     try {
       var nSem =
         typeof hcNumSemillasGermConfig === 'function' ? hcNumSemillasGermConfig(cfg) : n;
@@ -465,7 +487,7 @@
     return (
       '<section class="hc-prop-plan-block setup-mb-12" id="hcPropPlanGermBlock" aria-label="Plan de germinación">' +
       '<div class="setup-block-title">Plan de germinación <span class="setup-required-tag">obligatorio</span></div>' +
-      '<p class="setup-field-hint setup-mb-8">Antes de cerrar el checklist: define genética, cuántas semillas y sustrato. Se verán en <strong>Sistema → Propagador</strong>.</p>' +
+      '<p class="setup-field-hint setup-mb-8">Antes de cerrar el checklist: genética, semillas, sustrato y <strong>abono de bandeja</strong>. Se guardan en la instalación y en <strong>Sistema → Propagador</strong>.</p>' +
       '<div class="' +
       alertCls +
       ' setup-mb-8" id="hcPropPlanGermStatus" role="status">' +
@@ -476,6 +498,8 @@
           st.numSemillas +
           ' semilla(s) · ' +
           etiquetaSustratoGerm(st.sustrato) +
+          (st.nutrienteNombre ? ' · ' + esc(st.nutrienteNombre) : '') +
+          (st.nutrienteVolL ? ' · ' + st.nutrienteVolL + ' L bandeja' : '') +
           (st.propagador ? '' : ' · <em>sin domo en catálogo</em>')
         : '<strong>Pendiente:</strong> ' +
           esc(v.message) +
@@ -504,6 +528,9 @@
         );
       }).join('') +
       '</select></div></div>' +
+      (typeof renderHcPropNutrienteGermFields === 'function'
+        ? renderHcPropNutrienteGermFields(cfg)
+        : '') +
       '<div class="setup-grid-2 setup-grid-gap-6 hc-prop-plan-sus-grid setup-hidden" aria-hidden="true">' +
       sustratoBtns +
       '</div></section>'

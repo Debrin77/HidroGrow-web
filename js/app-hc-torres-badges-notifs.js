@@ -888,6 +888,12 @@ function cargarEstadoTorre(idx, opts) {
       } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
         hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
       }
+      if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+        syncPremiumNutrienteGermFromConfig(state.configTorre);
+      }
+      if (typeof hcGerminacionSyncDesdePremium === 'function') {
+        hcGerminacionSyncDesdePremium(state.configTorre);
+      }
     } catch (ePropTorre) {
       try {
         console.warn('hcRepararSemillasPropagadorAlCargar cargarEstadoTorre', ePropTorre);

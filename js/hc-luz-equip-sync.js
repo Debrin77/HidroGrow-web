@@ -390,8 +390,8 @@
       montajeDet.classList.toggle('setup-hidden', pasoEquip || pasoListo);
       montajeDet.classList.toggle('sala-montaje-details--paso-activo', pasoMontaje);
       montajeDet.classList.remove('sala-montaje-details--bloqueado');
-      if (pasoMontaje) {
-        if (!montajeDet.dataset.hcMontajeUserOpened) montajeDet.open = false;
+      if (pasoMontaje && !montajeDet.dataset.hcMontajeUserOpened) {
+        montajeDet.open = false;
       } else if (pasoListo) {
         montajeDet.open = false;
       }
@@ -454,7 +454,7 @@
         host.innerHTML =
           '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
           '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-          '✓ <strong>Montaje de sala verificado.</strong> El resumen de equipamiento y el checklist quedan abajo por si quieres revisarlos.' +
+          '✓ <strong>Montaje de sala verificado.</strong> Abajo tienes el <strong>resumen del equipamiento</strong> instalado.' +
           '</p>' +
           '<div class="sala-propagador-flujo-actions">' +
           '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Revisar checklist</button> ' +

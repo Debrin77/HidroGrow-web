@@ -31,6 +31,11 @@
 
   function htmlNutrientesGerm(g, ctxLabel) {
     ctxLabel = ctxLabel || 'germinación';
+    var cfg = cfgActiva();
+    var planHtml =
+      typeof htmlResumenNutrienteGermConfig === 'function'
+        ? htmlResumenNutrienteGermConfig(cfg)
+        : '';
     var rows = [];
     if (g && Array.isArray(g.nutrientesAplicados)) rows = g.nutrientesAplicados.slice(0, 12);
     if (g && Array.isArray(g.registroDiario)) {
@@ -47,13 +52,22 @@
       });
     }
     if (!rows.length) {
+      if (planHtml) {
+        return (
+          planHtml +
+          '<p class="hc-sis-prop-nut-empty setup-field-hint">Aún no hay aplicaciones anotadas en el registro diario de ' +
+          esc(ctxLabel) +
+          '.</p>'
+        );
+      }
       return (
         '<p class="hc-sis-prop-nut-empty setup-field-hint">Sin nutrientes anotados en el registro diario de ' +
         esc(ctxLabel) +
-        '.</p>'
+        '. Configúralo en el asistente (paso Nutriente y clima domo) o en el checklist del propagador.</p>'
       );
     }
     return (
+      (planHtml || '') +
       '<ul class="hc-sis-prop-nut-list">' +
       rows
         .map(function (n) {
