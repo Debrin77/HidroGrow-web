@@ -95,7 +95,7 @@ No se omiten geometría ni **DWC/RDWC** (`SETUP_PAGE_PREMIUM_END`). Se omiten so
 
 Orden orientativo: camino → objetivo → entorno → **espacio y prep** → clima/luz → genética/método → detalle → **instalación hidro** → guardar.
 
-**Equipamiento (paso espacio):** bloque obligatorio «Prep germinación en cubo» = medidor EC/pH + bomba de aire del **depósito** (la semilla germina en net pot dentro del DWC/RDWC). Bandeja propagador grande = bloque **opcional** (mini domo/calor sobre la maceta), no el mismo camino que «Semilla en propagador».
+**Equipamiento (paso espacio):** bloque obligatorio «Prep germinación en cubo» = medidor EC/pH + bomba de aire del **depósito** (la semilla germina en net pot dentro del DWC/RDWC). Bloque **opcional** «microclima por maceta» = catálogo **Cúpula individual (por maceta)** (3 referencias + manual), badge **1 por maceta/cesta** — no la bandeja propagador de 10 modelos. Mat térmica sigue opcional (calor bajo maceta/depósito). Checklist prep: ítem `ph_domo_mini`.
 
 Ciencia y oscuridad / foto vs auto: [GERMINACION-SEMILLA-REFERENCIA.md](./GERMINACION-SEMILLA-REFERENCIA.md).
 

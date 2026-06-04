@@ -145,7 +145,8 @@
     return {};
   }
 
-  function renderEquipSelect(catId, selectIdOrEl, onchangeName) {
+  function renderEquipSelect(catId, selectIdOrEl, onchangeName, opts) {
+    opts = opts || {};
     const sel =
       selectIdOrEl && typeof selectIdOrEl === 'object' && selectIdOrEl.nodeType === 1
         ? selectIdOrEl
@@ -153,8 +154,9 @@
     if (!sel) return;
     const cfg = getWizardEquipCfg();
     const cur = (ensureEquipInstalado(cfg)[catId] || {}).id || '';
-    const limit =
-      typeof window !== 'undefined' && window.EQUIP_TOP_ES_LIMIT != null
+    const limit = opts.perMaceta
+      ? 4
+      : typeof window !== 'undefined' && window.EQUIP_TOP_ES_LIMIT != null
         ? window.EQUIP_TOP_ES_LIMIT
         : 10;
     const topFn =
@@ -173,7 +175,9 @@
     sel.replaceChildren();
     const opt0 = document.createElement('option');
     opt0.value = '';
-    opt0.textContent = '— Manual / otro modelo —';
+    opt0.textContent = opts.perMaceta
+      ? '— Sin cúpula / otro método —'
+      : '— Manual / otro modelo —';
     sel.appendChild(opt0);
     list.forEach(function (e) {
       const opt = document.createElement('option');
@@ -215,12 +219,15 @@
     return 'interior';
   }
 
-  function renderEquipCatalogCard(host, cat, key, inst, prefix) {
+  function renderEquipCatalogCard(host, cat, key, inst, prefix, group) {
     const cur = inst[key];
     const selId = prefix + key;
     const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
     const card = document.createElement('div');
     card.className = 'equip-catalog-card' + (cur && cur.marca ? ' equip-catalog-card--picked' : '');
+    if (key === 'cupula_maceta' || cat.perMaceta) {
+      card.classList.add('equip-catalog-card--per-maceta');
+    }
     const head = document.createElement('div');
     head.className = 'equip-catalog-head';
     if (typeof window.hcVisualIconSvg === 'function') {
@@ -233,6 +240,12 @@
       head.appendChild(document.createTextNode(cat.icon || '•'));
     }
     head.appendChild(document.createTextNode(' ' + (cat.label || key)));
+    if (key === 'cupula_maceta' || cat.perMaceta) {
+      const per = document.createElement('span');
+      per.className = 'equip-catalog-per-maceta';
+      per.textContent = '1 por maceta/cesta';
+      head.appendChild(per);
+    }
     if (cat.indispensable) {
       head.appendChild(document.createTextNode(' '));
       const req = document.createElement('span');
@@ -245,7 +258,9 @@
       rec.className = 'equip-catalog-rec';
       var origRec =
         typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
-      if (key === 'propagador' && origRec === 'semilla') {
+      if (key === 'cupula_maceta' || (group && group.id === 'germ_opcional_hidro' && key === 'mat_termica_germ')) {
+        rec.textContent = 'opcional';
+      } else if (key === 'propagador' && origRec === 'semilla') {
         rec.textContent = 'recomendado con semilla';
         card.classList.add('equip-catalog-card--reco-origen');
       } else if (key === 'propagador' && origRec === 'clon') {
@@ -278,7 +293,9 @@
       card.appendChild(hintP);
     }
     host.appendChild(card);
-    renderEquipSelect(key, sel, 'seleccionarEquipamientoPremium');
+    renderEquipSelect(key, sel, 'seleccionarEquipamientoPremium', {
+      perMaceta: !!(key === 'cupula_maceta' || cat.perMaceta),
+    });
   }
 
   function renderEquipCatalogInto(host, idPrefix) {
@@ -317,7 +334,8 @@
       head.innerHTML =
         '<span class="equip-catalog-group-icon" aria-hidden="true">' + (group.icon || '•') + '</span>' +
         '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>' +
-        (group.required ? '<span class="equip-catalog-group-req">Ahora</span>' : '');
+        (group.required ? '<span class="equip-catalog-group-req">Ahora</span>' : '') +
+        (group.optional ? '<span class="equip-catalog-group-opt">Opcional</span>' : '');
       section.appendChild(head);
       if (group.hint) {
         const hintP = document.createElement('p');
@@ -330,7 +348,7 @@
       (group.keys || []).forEach(function (key) {
         const cat = cats[key];
         if (!cat) return;
-        renderEquipCatalogCard(grid, cat, key, inst, prefix);
+        renderEquipCatalogCard(grid, cat, key, inst, prefix, group);
       });
       if (grid.childNodes.length) {
         section.appendChild(grid);
@@ -354,6 +372,14 @@
     );
   }
 
+  function isSemillaHidroEquipWizard() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (cam !== 'semilla_hidro') return false;
+    return (
+      typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()
+    );
+  }
+
   function renderEquipOrigenGermBanner() {
     const banner = el('setupPremiumEquipGermReco');
     if (!banner) return;
@@ -366,6 +392,29 @@
       typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : 'semilla';
     const cfg = getWizardEquipCfg();
     const inst = ensureEquipInstalado(cfg);
+    if (origen === 'semilla' && isSemillaHidroEquipWizard()) {
+      banner.classList.remove('setup-hidden');
+      banner.className = 'setup-box-info setup-mb-8';
+      var pH = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+      var planH =
+        Number.isFinite(pH.numSemillasGerm) && pH.sustratoGerm
+          ? ' Plan: <strong>' +
+            pH.numSemillasGerm +
+            ' semilla(s)</strong> en <strong>' +
+            (typeof etiquetaSustratoGerm === 'function'
+              ? etiquetaSustratoGerm(pH.sustratoGerm)
+              : pH.sustratoGerm) +
+            '</strong> (bloque de abajo).'
+          : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
+      var cupH = !!(inst.cupula_maceta && inst.cupula_maceta.id);
+      banner.innerHTML =
+        '<strong>Semilla en hidro:</strong> germinas en el <strong>cubo DWC/RDWC</strong> (net pot en el depósito).' +
+        planH +
+        ' Opcional abajo: <strong>cúpula individual por maceta</strong> — no bandeja propagador.' +
+        (cupH ? ' Has anotado una cúpula por maceta.' : '') +
+        ' Seguimiento en <strong>Inicio → Germinación</strong>.';
+      return;
+    }
     if (origen === 'semilla') {
       banner.classList.remove('setup-hidden');
       const tieneProp = !!(inst.propagador && inst.propagador.id);

@@ -20878,6 +20878,37 @@ button.toggle-switch:focus-visible {
   background: linear-gradient(135deg, #22c55e, #0d9488);
   color: #fff;
 }
+.equip-catalog-group-opt {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+}
+.equip-catalog-per-maceta {
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(14, 165, 233, 0.15);
+  color: #0369a1;
+  vertical-align: middle;
+}
+.equip-catalog-group[data-equip-group="germ_opcional_hidro"] {
+  border-color: rgba(14, 165, 233, 0.35);
+  background: linear-gradient(180deg, rgba(240, 249, 255, 0.85), rgba(248, 250, 252, 0.6));
+}
+.equip-catalog-card--per-maceta {
+  border-color: rgba(14, 165, 233, 0.4);
+}
 .equip-catalog-group-hint {
   margin: 0 0 10px;
   font-size: 12px;

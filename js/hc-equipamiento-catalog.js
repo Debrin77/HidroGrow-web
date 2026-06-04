@@ -177,6 +177,18 @@ const EQUIP_CATEGORIAS = {
     ],
     hint: 'Bandeja con domo: 22–26 °C, HR 70–80 %, ventilar 2×/día. Imprescindible para germinar semilla antes del cubo rockwool.',
   },
+  /** Semilla en hidro (DWC/RDWC): una cúpula por maceta, no bandeja propagador multicelda. */
+  cupula_maceta: {
+    id: 'cupula_maceta',
+    label: 'Cúpula individual (por maceta)',
+    icon: '🪴',
+    entorno: 'both',
+    indispensable: false,
+    recommended: false,
+    perMaceta: true,
+    campos: [{ key: 'diametroCm', label: 'Ø aprox. (cm)', type: 'number' }],
+    hint: 'Una unidad por cada net pot/cesta en el DWC/RDWC (no es propagador de 24–77 celdas). Oscuridad + HR los primeros días; quítala cuando el brote aguante.',
+  },
   mat_termica_germ: {
     id: 'mat_termica_germ',
     label: 'Mat térmica (germinador)',
@@ -461,6 +473,13 @@ const EQUIPAMIENTO_CATALOG = [
   { id: 'sj_dark_prop', categoria: 'propagador', marca: 'Secret Jardin', modelo: 'Dark Propagator', top_es: true, rank: 10,
     specs: { tipo: 'domo opaco', bandejas: 1 }, nota: 'Opacidad · raíz más sana en germinación.' },
 
+  { id: 'cupula_cloche_10', categoria: 'cupula_maceta', marca: 'Genérico', modelo: 'Cloche / vaso domo 10–12 cm', top_es: true, rank: 1,
+    specs: { diametroCm: 10 }, nota: '1 unidad por maceta en DWC/RDWC.' },
+  { id: 'cupula_garland_lid', categoria: 'cupula_maceta', marca: 'Garland', modelo: 'Tapa ventilada (1 planta)', top_es: true, rank: 2,
+    specs: { diametroCm: 12 }, nota: 'Mini domo puntual, no bandeja completa.' },
+  { id: 'cupula_diy_botella', categoria: 'cupula_maceta', marca: 'DIY', modelo: 'Botella cortada / vaso', top_es: true, rank: 3,
+    specs: { diametroCm: 8 }, nota: 'Opción casera por cesta.' },
+
   { id: 'garland_mat_25', categoria: 'mat_termica_germ', marca: 'Garland', modelo: 'Heat Mat 25W', top_es: true, rank: 1,
     specs: { watts: 25 }, nota: '25 W · bandeja pequeña / domo.' },
   { id: 'garland_mat_45', categoria: 'mat_termica_germ', marca: 'Garland', modelo: 'Heat Mat 45W', top_es: true, rank: 2,
@@ -588,7 +607,12 @@ function getEquipCatalogGroups(entorno) {
     ];
   }
 
-  if (camino === 'semilla_hidro' && faseGerm) {
+  var hidroGermEquip =
+    camino === 'semilla_hidro' &&
+    (faseGerm ||
+      (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()));
+
+  if (hidroGermEquip) {
     return [
       Object.assign({}, EQUIP_PREP_HIDRO_GROUP, {
         required: true,
@@ -596,15 +620,16 @@ function getEquipCatalogGroups(entorno) {
           EQUIP_PREP_HIDRO_GROUP.hint +
           ' Debajo: sala (carpa, LED) y circuito hidro del asistente.',
       }),
-      Object.assign({}, EQUIP_GERMINACION_GROUP, {
+      {
         id: 'germ_opcional_hidro',
-        label: 'Opcional (no sustituye el cubo)',
-        icon: '🫧',
-        keys: ['propagador', 'mat_termica_germ'],
+        label: 'Opcional · microclima por maceta',
+        icon: '🪴',
+        keys: ['cupula_maceta', 'mat_termica_germ'],
         required: false,
+        optional: true,
         hint:
-          'Solo si quieres mini domo o calor extra sobre la maceta. En este camino la germinación es en el hidro, no en bandeja aparte.',
-      }),
+          'No sustituye germinar en el cubo. Si usas cúpula: una por cada net pot/cesta (DWC/RDWC), no bandeja propagador de muchas celdas.',
+      },
     ].concat(
       base.map(function (g) {
         return Object.assign({}, g, { required: g.id === 'sala' || g.id === 'hidro' });
@@ -612,7 +637,11 @@ function getEquipCatalogGroups(entorno) {
     );
   }
 
-  if (origen === 'semilla' || camino === 'semilla_propagador' || camino === 'semilla_hidro') {
+  if (camino === 'semilla_hidro') {
+    return base;
+  }
+
+  if (origen === 'semilla' || camino === 'semilla_propagador') {
     const germGrp = Object.assign({}, EQUIP_GERMINACION_GROUP, {
       label: faseGerm || propagadorSoloAhora
         ? 'Germinación — imprescindible ahora'

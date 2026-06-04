@@ -85,6 +85,17 @@ test('checklist 7: fecha siembra en inicio y calendario', () => {
   assert.match(plan, /fechaSiembraGerm/);
 });
 
+test('equipamiento hidro: cúpula por maceta, no propagador en grupo opcional', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /cupula_maceta/);
+  assert.match(cat, /germ_opcional_hidro[\s\S]*keys:\s*\['cupula_maceta',\s*'mat_termica_germ'\]/);
+  assert.match(cat, /hidroGermEquip/);
+  const wiz = read('js/hc-equipamiento-wizard.js');
+  assert.match(wiz, /isSemillaHidroEquipWizard/);
+  assert.match(wiz, /cúpula individual por maceta/);
+  assert.match(wiz, /equip-catalog-per-maceta/);
+});
+
 test('documentación semilla hidro presente', () => {
   const doc = read('docs/SEMILLA-HIDRO-CAMINO.md');
   assert.match(doc, /semilla_hidro/);
