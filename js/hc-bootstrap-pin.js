@@ -7,6 +7,8 @@
 // ══════════════════════════════════════════════════
 let pinEntry = '';
 let appBootstrapped = false;
+/** Evita que lockAppWithPin pise un desbloqueo en curso. */
+let appUnlockInProgress = false;
 
 function getAuthRememberMinutes() {
   try {
@@ -77,7 +79,8 @@ function hasValidAuthSession() {
 }
 
 function unlockAndInitApp() {
-  if (appBootstrapped) return;
+  if (appBootstrapped || appUnlockInProgress) return;
+  appUnlockInProgress = true;
   const pinEl = document.getElementById('pinScreen');
   const appEl = document.getElementById('app');
   try {
@@ -100,18 +103,41 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
+        if (typeof initApp !== 'function') {
+          throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
+        }
         initApp();
       } catch (eInit) {
-        appBootstrapped = false;
+        try {
+          console.error('initApp tras PIN', eInit);
+        } catch (_) {}
+        /* Mantener la app visible: un fallo parcial no debe devolver al teclado PIN. */
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        try {
+          if (typeof showToast === 'function') {
+            var det =
+              eInit && (eInit.message || String(eInit))
+                ? String(eInit.message).replace(/\s+/g, ' ').trim().slice(0, 120)
+                : '';
+            showToast(
+              det
+                ? 'Arranque incompleto: ' + det + ' · Recarga (Ctrl+F5).'
+                : 'Arranque incompleto. Recarga la página (Ctrl+F5).',
+              true,
+              { durationMs: 7000 }
+            );
+          }
+        } catch (_) {}
         if (appEl) {
           appEl.classList.remove('hc-app-booting');
-          appEl.inert = true;
+          appEl.inert = false;
         }
-        if (pinEl) {
-          pinEl.style.display = '';
-          a11yAttachFocusTrap(pinEl);
-        }
-        throw eInit;
+        return;
+      } finally {
+        appUnlockInProgress = false;
+        if (appEl) appEl.classList.remove('hc-app-booting');
       }
     };
     if (typeof requestAnimationFrame === 'function') {
@@ -123,6 +149,7 @@ function unlockAndInitApp() {
     }
   } catch (e) {
     console.error('Error inicializando app tras PIN:', e);
+    appUnlockInProgress = false;
     appBootstrapped = false;
     if (appEl) appEl.inert = true;
     if (pinEl) {
@@ -145,6 +172,7 @@ function unlockAndInitApp() {
 }
 
 function lockAppWithPin() {
+  if (appBootstrapped || appUnlockInProgress) return;
   const appEl = document.getElementById('app');
   const pinEl = document.getElementById('pinScreen');
   const statusEl = document.getElementById('pinAuthStatus');

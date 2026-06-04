@@ -169,68 +169,125 @@ function hcFinishInitAppHeavyWork() {
 
 function initApp() {
   try {
-    if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
-  } catch (_) {}
-  updateClock();
-  setInterval(updateClock, 30000);
-  const modoSel = document.getElementById('modoSelector');
-  if (modoSel) {
-    modoSel.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('active'));
-    const modoBtn = document.getElementById('modo-' + modoActual);
-    if (modoBtn) modoBtn.classList.add('active');
-  }
-  try {
-    if (typeof window !== 'undefined' && window._hcPreinitTorreDone) {
-      /* datos ya cargados en segundo plano durante el PIN */
-    } else {
-      hcCargarTorreActivaEnMemoria({ deferUi: true });
-      if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
-    }
-  } catch (eTorres) {
-    try {
-      console.error('initTorres/cargarEstadoTorre en initApp', eTorres);
-    } catch (_) {}
-  }
-  applyBootCollapsedUI();
-  try {
-    actualizarHeaderTorre();
-  } catch (eHdr) {
-    try {
-      console.error('header en initApp', eHdr);
-    } catch (_) {}
-  }
-  mostrarBtnNotificaciones();
-  setInterval(updateDashboard, 300000);
-  setTimeout(programarRecordatorios, 2000);
-  setTimeout(() => {
-    void refrescarAvisosMeteoalarmEnSegundoPlano();
-  }, 4500);
-  setTimeout(actualizarBadgesNutriente, 100);
-  setTimeout(() => {
     try {
       if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
     } catch (_) {}
-    mostrarBienvenidaOContinuarArranque();
-  }, 520);
-  setTimeout(() => {
     try {
-      if (state && state.hcPostSetupChecklistPendiente && typeof actualizarPostSetupChecklistRail === 'function') {
-        actualizarPostSetupChecklistRail();
+      if (typeof initTorres === 'function') initTorres();
+    } catch (eTorInit) {
+      try {
+        console.error('initTorres en initApp', eTorInit);
+      } catch (_) {}
+      try {
+        if (!state || typeof state !== 'object') {
+          state = typeof initState === 'function' ? initState() : { torres: [], torre: [], torreActiva: 0 };
+        }
+      } catch (_) {}
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
+    const modoSel = document.getElementById('modoSelector');
+    if (modoSel) {
+      modoSel.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('active'));
+      const modoBtn = document.getElementById('modo-' + modoActual);
+      if (modoBtn) modoBtn.classList.add('active');
+    }
+    try {
+      if (typeof window !== 'undefined' && window._hcPreinitTorreDone) {
+        /* datos ya cargados en segundo plano durante el PIN */
+      } else {
+        hcCargarTorreActivaEnMemoria({ deferUi: true });
+        if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
       }
+    } catch (eTorres) {
+      try {
+        console.error('cargarEstadoTorre en initApp', eTorres);
+      } catch (_) {}
+    }
+    applyBootCollapsedUI();
+    try {
+      actualizarHeaderTorre();
+    } catch (eHdr) {
+      try {
+        console.error('header en initApp', eHdr);
+      } catch (_) {}
+    }
+    try {
+      mostrarBtnNotificaciones();
     } catch (_) {}
-  }, 1400);
-  abrirFotoDB().then(() => migrarFotosAIDB()).catch(e => console.warn('Migración IDB:', e));
+    setInterval(function () {
+      try {
+        updateDashboard();
+      } catch (_) {}
+    }, 300000);
+    setTimeout(function () {
+      try {
+        programarRecordatorios();
+      } catch (_) {}
+    }, 2000);
+    setTimeout(function () {
+      try {
+        void refrescarAvisosMeteoalarmEnSegundoPlano();
+      } catch (_) {}
+    }, 4500);
+    setTimeout(function () {
+      try {
+        actualizarBadgesNutriente();
+      } catch (_) {}
+    }, 100);
+    setTimeout(function () {
+      try {
+        if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
+      } catch (_) {}
+      try {
+        mostrarBienvenidaOContinuarArranque();
+      } catch (_) {}
+    }, 520);
+    setTimeout(function () {
+      try {
+        if (state && state.hcPostSetupChecklistPendiente && typeof actualizarPostSetupChecklistRail === 'function') {
+          actualizarPostSetupChecklistRail();
+        }
+      } catch (_) {}
+    }, 1400);
+    try {
+      abrirFotoDB()
+        .then(function () {
+          try {
+            migrarFotosAIDB();
+          } catch (_) {}
+        })
+        .catch(function (e) {
+          try {
+            console.warn('Migración IDB:', e);
+          } catch (_) {}
+        });
+    } catch (_) {}
 
-  if (!window._a11yEscapeBound) {
-    window._a11yEscapeBound = true;
-    document.addEventListener('keydown', a11yEscapeTopDialog);
+    if (!window._a11yEscapeBound) {
+      window._a11yEscapeBound = true;
+      document.addEventListener('keydown', a11yEscapeTopDialog);
+    }
+    try {
+      if (typeof initHidroCultivoTabBarA11y === 'function') initHidroCultivoTabBarA11y();
+    } catch (_) {}
+    try {
+      if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
+    } catch (_) {}
+    try {
+      if (typeof initHistorialTabBarA11y === 'function') initHistorialTabBarA11y();
+    } catch (_) {}
+    try {
+      if (typeof window._hcSyncHistorialTabTabIndex === 'function') window._hcSyncHistorialTabTabIndex();
+    } catch (_) {}
+
+    setTimeout(hcFinishInitAppHeavyWork, 0);
+  } catch (e) {
+    try {
+      console.error('initApp', e);
+    } catch (_) {}
+    throw e;
   }
-  if (typeof initHidroCultivoTabBarA11y === 'function') initHidroCultivoTabBarA11y();
-  if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
-  if (typeof initHistorialTabBarA11y === 'function') initHistorialTabBarA11y();
-  if (typeof window._hcSyncHistorialTabTabIndex === 'function') window._hcSyncHistorialTabTabIndex();
-
-  setTimeout(hcFinishInitAppHeavyWork, 0);
 }
 
 /**
@@ -238,6 +295,7 @@ function initApp() {
  * No altera el comportamiento de los toggles durante la sesión.
  */
 function applyBootCollapsedUI() {
+  if (!state || typeof state !== 'object') return;
   try {
     if (!state.notifOpciones || typeof state.notifOpciones !== 'object') state.notifOpciones = {};
     state.notifOpciones.panelInicioColapsado = true;
@@ -462,10 +520,12 @@ function goTabDeferredWork(tab) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio') updateDashboard();
-  try {
-    if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
-  } catch (_) {}
-  if (tab === 'meteo') { cargarMeteo(); window._meteoObsoleto = false; }
+  if (tab === 'meteo') {
+    try {
+      cargarMeteo();
+      window._meteoObsoleto = false;
+    } catch (_) {}
+  }
   if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
   if (tab === 'sistema') {
     const modoFase =
@@ -520,6 +580,11 @@ function goTabDeferredWork(tab) {
   try {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   } catch (_) {}
+  requestAnimationFrame(function () {
+    try {
+      if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
+    } catch (_) {}
+  });
 }
 
 function goTab(tab) {

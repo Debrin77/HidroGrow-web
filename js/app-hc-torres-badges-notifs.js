@@ -626,7 +626,14 @@ function cargarEstadoTorre(idx, opts) {
   state.torre       = hcClonePlainData(t.torre, []);
   state.mediciones  = hcClonePlainData(t.mediciones, []);
   state.registro    = hcClonePlainData(t.registro, []);
-  state.configTorre = hcClonePlainData(hcNormalizarConfigSegunTipo(t.config).config, null);
+  try {
+    state.configTorre = hcClonePlainData(hcNormalizarConfigSegunTipo(t.config).config, null);
+  } catch (eNorm) {
+    try {
+      console.warn('hcNormalizarConfigSegunTipo', eNorm);
+    } catch (_) {}
+    state.configTorre = hcClonePlainData(t.config, null);
+  }
   if (state.configTorre) {
     if (typeof hidrogrowMigrarConfigInstalacion === 'function') hidrogrowMigrarConfigInstalacion(state.configTorre);
     if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(state.configTorre);

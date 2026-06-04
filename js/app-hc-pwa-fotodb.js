@@ -107,7 +107,7 @@ window.onload = () => {
 
     // Si el usuario autenticó antes de terminar el splash (p. ej. versión anterior con PIN visible encima),
     // no volver a lockAppWithPin: con «recordar 0 min» hasValidAuthSession es false y congelaría la app ya iniciada.
-    if (appBootstrapped) return;
+    if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
 
     // Arranque protegido: sesión configurable (si expira, biometría -> PIN).
     if (hasValidAuthSession()) {
@@ -116,7 +116,7 @@ window.onload = () => {
     }
     lockAppWithPin();
     setTimeout(async () => {
-      if (appBootstrapped) return;
+      if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
       const statusEl = document.getElementById('pinAuthStatus');
       const ok = await tryBiometricUnlock();
       if (appBootstrapped) return;
