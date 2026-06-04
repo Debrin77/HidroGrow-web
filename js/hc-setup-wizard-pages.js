@@ -221,9 +221,24 @@ function hcScrollSetupWizardAlFalloGuardado() {
 function setupNext() {
   if (setupPagina === SETUP_PAGE_WELCOME) {
     setupPagina =
-      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : SETUP_PAGE_ORIGEN;
+      typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
     renderSetupPage();
     return;
+  }
+  if (setupPagina === SETUP_PAGE_ORIGEN) {
+    try {
+      if (typeof validarPremiumSetupPaso === 'function' && !validarPremiumSetupPaso(SETUP_PAGE_ORIGEN)) {
+        return;
+      }
+    } catch (eValCam) {
+      try {
+        console.error('validar camino setup', eValCam);
+      } catch (_) {}
+      if (typeof showToast === 'function') {
+        showToast('Elige una ruta de cultivo (semilla, clon o madre)', true);
+      }
+      return;
+    }
   }
   if (setupPagina === SETUP_PAGE_PREMIUM_END) {
     if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {

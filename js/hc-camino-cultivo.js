@@ -107,6 +107,14 @@
   function seleccionarCaminoCultivo(caminoId) {
     var def = getCaminoDef(caminoId);
     if (!def) return;
+    if (typeof setupData === 'undefined') {
+      try {
+        if (typeof showToast === 'function') {
+          showToast('Cargando asistente… espera un momento y vuelve a pulsar', true);
+        }
+      } catch (_) {}
+      return;
+    }
     var p = ensurePremiumCamino();
     if (!p) return;
     p.caminoCultivo = def.id;

@@ -2255,12 +2255,20 @@ function iniciarConfiguracionTorre() {
   if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
     setupEsNuevaTorre = true;
   }
-  if (setupEsNuevaTorre && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
+  var germSinHidro =
+    typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+  if (
+    setupEsNuevaTorre &&
+    !germSinHidro &&
+    setupTipoInstalacion !== 'dwc' &&
+    setupTipoInstalacion !== 'rdwc'
+  ) {
     showToast('Elige DWC o RDWC antes de continuar', true);
     return;
   }
   setupTipoTorre = 'custom';
-  setupPagina = SETUP_PAGE_PREMIUM_START;
+  setupPagina =
+    typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : SETUP_PAGE_PREMIUM_START;
   renderSetupPage();
 }
 

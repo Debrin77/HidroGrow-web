@@ -183,9 +183,14 @@ function hcFinishInitAppHeavyWork() {
     if (typeof refreshTabsOperativaCamino === 'function') {
       refreshTabsOperativaCamino({ visibilidadOnly: true });
     }
-    if (tab === 'inicio' && typeof updateDashboard === 'function') {
+    var setupAbierto = false;
+    try {
+      var so = document.getElementById('setupOverlay');
+      setupAbierto = !!(so && so.classList.contains('open'));
+    } catch (_) {}
+    if (!setupAbierto && tab === 'inicio' && typeof updateDashboard === 'function') {
       updateDashboard();
-    } else if (typeof goTabDeferredWork === 'function') {
+    } else if (!setupAbierto && typeof goTabDeferredWork === 'function') {
       goTabDeferredWork(tab);
     }
   } catch (eDash) {
@@ -309,7 +314,13 @@ function initApp() {
       if (modoBtn) modoBtn.classList.add('active');
     }
     try {
-      if (typeof window !== 'undefined' && window._hcPreinitTorreDone) {
+      const hayInst =
+        typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+      if (!hayInst) {
+        if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+          hcPrepararEstadoSinInstalacionEnMemoria();
+        }
+      } else if (typeof window !== 'undefined' && window._hcPreinitTorreDone) {
         /* datos ya cargados en segundo plano durante el PIN */
       } else {
         hcCargarTorreActivaEnMemoria({ deferUi: true });
@@ -340,17 +351,17 @@ function initApp() {
       try {
         programarRecordatorios();
       } catch (_) {}
-    }, 2000);
+    }, 12000);
     setTimeout(function () {
       try {
         void refrescarAvisosMeteoalarmEnSegundoPlano();
       } catch (_) {}
-    }, 4500);
+    }, 15000);
     setTimeout(function () {
       try {
         actualizarBadgesNutriente();
       } catch (_) {}
-    }, 100);
+    }, 3000);
     try {
       if (typeof hcAbrirAsistenteCaminoSiSinInstalacion === 'function') {
         requestAnimationFrame(function () {
@@ -369,19 +380,21 @@ function initApp() {
         }
       } catch (_) {}
     }, 1400);
-    try {
-      abrirFotoDB()
-        .then(function () {
-          try {
-            migrarFotosAIDB();
-          } catch (_) {}
-        })
-        .catch(function (e) {
-          try {
-            console.warn('Migración IDB:', e);
-          } catch (_) {}
-        });
-    } catch (_) {}
+    setTimeout(function () {
+      try {
+        abrirFotoDB()
+          .then(function () {
+            try {
+              migrarFotosAIDB();
+            } catch (_) {}
+          })
+          .catch(function (e) {
+            try {
+              console.warn('Migración IDB:', e);
+            } catch (_) {}
+          });
+      } catch (_) {}
+    }, 8000);
 
     if (!window._a11yEscapeBound) {
       window._a11yEscapeBound = true;

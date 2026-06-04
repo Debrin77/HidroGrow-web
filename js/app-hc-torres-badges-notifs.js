@@ -1266,7 +1266,7 @@ function abrirSetupNuevaTorre() {
   } catch (_) {}
   setupEsNuevaTorre = true;
   setupPagina =
-    typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0;
+    typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
   setupTipoInstalacion = '';
   setupTipoTorre = 'custom';
   setupEquipamiento = new Set(['difusor']);
@@ -1284,17 +1284,29 @@ function abrirSetupNuevaTorre() {
   }
 
   const so = document.getElementById('setupOverlay');
+  if (!so) return;
   so.classList.add('open');
   try {
     if (typeof hcResetSetupFormForNewInstall === 'function') hcResetSetupFormForNewInstall();
   } catch (_) {}
-  renderNutrientesGrid();
-  updateTorreBuilder();
   renderSetupPage();
   try {
     if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
   } catch (_) {}
   a11yDialogOpened(so);
+  var runSetupHeavy = function () {
+    try {
+      renderNutrientesGrid();
+    } catch (_) {}
+    try {
+      updateTorreBuilder();
+    } catch (_) {}
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(runSetupHeavy, { timeout: 1500 });
+  } else {
+    setTimeout(runSetupHeavy, 0);
+  }
 
   // Actualizar el título para indicar que es una torre nueva
   setTimeout(() => {

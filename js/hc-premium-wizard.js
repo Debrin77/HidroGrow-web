@@ -13,7 +13,12 @@
   }
 
   function ensurePremiumSetup() {
-    if (typeof setupData === 'undefined') return {};
+    if (typeof setupData === 'undefined') {
+      try {
+        console.warn('setupData no cargado — recarga con caché limpia');
+      } catch (_) {}
+      return {};
+    }
     if (!setupData.premium) {
       setupData.premium = {
         objetivo: 'autocultivo',

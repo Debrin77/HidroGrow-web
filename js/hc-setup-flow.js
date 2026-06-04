@@ -44,10 +44,8 @@
 
   function getSetupSkippedPages() {
     const skip = new Set();
-    // spage0 «¿Cómo empiezas el cultivo?» solo en instalación nueva; en reconfig se omite.
-    if (!(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {
-      skip.add(typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0);
-    }
+    // spage0 solo «Empezar asistente»; la elección de camino es spagePremiumOrigen (paso 1).
+    skip.add(typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0);
     if (typeof getSetupSkippedPagesForCamino === 'function') {
       getSetupSkippedPagesForCamino().forEach(function (p) {
         skip.add(p);
