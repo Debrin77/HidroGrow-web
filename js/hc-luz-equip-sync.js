@@ -265,10 +265,16 @@
   }
 
   function refreshLuzOrigenUI(cfg) {
-    cfg = cfg || getCfg();
-    syncLuzDesdeEquipamiento(cfg);
-    renderLuzOrigenEquipBlock(cfg);
-    if (typeof global.cargarInteriorGrowUI === 'function') global.cargarInteriorGrowUI();
+    try {
+      cfg = cfg || getCfg();
+      syncLuzDesdeEquipamiento(cfg);
+      renderLuzOrigenEquipBlock(cfg);
+      if (typeof global.cargarInteriorGrowUI === 'function') global.cargarInteriorGrowUI();
+    } catch (e) {
+      try {
+        console.warn('refreshLuzOrigenUI', e);
+      } catch (_) {}
+    }
   }
 
   function montajeRecomendadoAplica(cfg) {
@@ -326,39 +332,41 @@
   }
 
   function applySalaMontajeRecomendadoUi(cfg) {
-    cfg = cfg || getCfg();
-    var det = el('sistemaMontajeChecksDetails');
-    if (!det) return;
-    var show = montajeRecomendadoAplica(cfg);
-    det.classList.toggle('sala-montaje-details--recomendado', show);
+    try {
+      cfg = cfg || getCfg();
+      var det = el('sistemaMontajeChecksDetails');
+      if (!det) return;
+      var show = montajeRecomendadoAplica(cfg);
+      det.classList.toggle('sala-montaje-details--recomendado', show);
 
-    var badge = el('salaMontajeBadgeReco');
-    if (badge) badge.classList.toggle('setup-hidden', !show);
+      var badge = el('salaMontajeBadgeReco');
+      if (badge) badge.classList.toggle('setup-hidden', !show);
 
-    var lead = el('salaMontajeRecoLead');
-    if (lead) {
-      lead.classList.toggle('setup-hidden', !show);
-      if (show) {
-        lead.textContent =
-          'Montar la sala antes de germinar en el propagador mejora luz, clima y ventilación. ' +
-          'Al acabar la germinación, el traslado al hidro será más rápido si ya completaste los pasos 1 y 2 de abajo.';
+      var lead = el('salaMontajeRecoLead');
+      if (lead) {
+        lead.classList.toggle('setup-hidden', !show);
+        if (show) {
+          lead.textContent =
+            'Montar la sala antes de germinar en el propagador mejora luz, clima y ventilación. ' +
+            'Al acabar la germinación, el traslado al hidro será más rápido si ya completaste los pasos 1 y 2 de abajo.';
+        }
       }
-    }
-    renderSalaMontajePrerequisito(cfg);
+      renderSalaMontajePrerequisito(cfg);
 
-    if (show && !det.open && !det.dataset.hcMontajeUserClosed) {
-      var pm = cfg.puestaMarchaChecks;
-      if (!pm || !pm.completedAt) det.open = true;
-    }
-  }
-
-  function onInteriorLuzTipoManual(tipo) {
-    var cfg = getCfg();
-    cfg._luzManual = true;
-    if (typeof global.setInteriorLuzTipo === 'function') global.setInteriorLuzTipo(tipo);
-    else {
-      cfg.luz = tipo;
-      if (typeof global.cargarInteriorGrowUI === 'function') global.cargarInteriorGrowUI();
+      if (show && !det.open && !det.dataset.hcMontajeUserClosed) {
+        var pm = cfg.puestaMarchaChecks;
+        if (!pm || !pm.completedAt) {
+          setTimeout(function () {
+            try {
+              if (!det.dataset.hcMontajeUserClosed) det.open = true;
+            } catch (_) {}
+          }, 0);
+        }
+      }
+    } catch (e) {
+      try {
+        console.warn('applySalaMontajeRecomendadoUi', e);
+      } catch (_) {}
     }
   }
 
@@ -368,7 +376,6 @@
   global.refreshLuzOrigenUI = refreshLuzOrigenUI;
   global.applySalaMontajeRecomendadoUi = applySalaMontajeRecomendadoUi;
   global.toggleLuzOrigenManual = toggleLuzOrigenManual;
-  global.onInteriorLuzTipoManual = onInteriorLuzTipoManual;
   global.tieneEquipLuzRelevante = tieneEquipLuzRelevante;
 })(
   typeof window !== 'undefined' ? window : this

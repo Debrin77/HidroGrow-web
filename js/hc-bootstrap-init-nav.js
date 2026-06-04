@@ -101,12 +101,18 @@ function initApp() {
     if (modoBtn) modoBtn.classList.add('active');
   }
   // Multi-instalación antes del primer render (state.torres, nombre en UI, esquema)
-  initTorres();
-  if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
-    reconciliarSlotTorreActivaAntesDeCargar();
-    cargarEstadoTorre(state.torreActiva || 0);
-  } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
-    hcPrepararEstadoSinInstalacionEnMemoria();
+  try {
+    initTorres();
+    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+      reconciliarSlotTorreActivaAntesDeCargar();
+      cargarEstadoTorre(state.torreActiva || 0);
+    } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+      hcPrepararEstadoSinInstalacionEnMemoria();
+    }
+  } catch (eTorres) {
+    try {
+      console.error('initTorres/cargarEstadoTorre en initApp', eTorres);
+    } catch (_) {}
   }
   applyBootCollapsedUI();
   try {
@@ -119,19 +125,43 @@ function initApp() {
   try {
     if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
   } catch (_) {}
-  updateTorreStats();
-  updateDashboard();
-  initConfigUI();
+  try {
+    updateTorreStats();
+    updateDashboard();
+  } catch (eDash) {
+    try {
+      console.error('dashboard en initApp', eDash);
+    } catch (_) {}
+  }
+  try {
+    initConfigUI();
+  } catch (eCfg) {
+    try {
+      console.error('initConfigUI en initApp', eCfg);
+    } catch (_) {}
+  }
   try {
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
   } catch (_) {}
   setInterval(updateDashboard, 300000);
 
-  actualizarHeaderTorre();
-  actualizarVistaRiegoPorTipoInstalacion();
+  try {
+    actualizarHeaderTorre();
+    actualizarVistaRiegoPorTipoInstalacion();
+  } catch (eHdr) {
+    try {
+      console.error('header/riego en initApp', eHdr);
+    } catch (_) {}
+  }
 
   // Aplicar configuración de torre si existe
-  aplicarConfigTorre();
+  try {
+    aplicarConfigTorre();
+  } catch (eCfgTorre) {
+    try {
+      console.error('aplicarConfigTorre en initApp', eCfgTorre);
+    } catch (_) {}
+  }
   try {
     if (
       typeof getCaminoCultivo === 'function' &&

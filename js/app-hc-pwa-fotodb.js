@@ -9,7 +9,7 @@
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js?v=2026-05-31-light-ledger')
+    navigator.serviceWorker.register('service-worker.js?v=2026-05-31-pin-fix')
       .then(reg => console.log('[HidroGrow] SW registrado:', reg.scope))
       .catch(err => console.warn('[HidroGrow] SW error:', err));
   });
@@ -67,10 +67,11 @@ window.addEventListener('appinstalled', () => {
 const SPLASH_MIN_VISIBLE_MS = 2600;
 const splashShownAtMs = Date.now();
 
-const hideSplash = () => {
+function hideSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) splash.style.display = 'none';
-};
+}
+window.hideSplash = hideSplash;
 
 async function waitSplashMinimumVisible() {
   const elapsed = Date.now() - splashShownAtMs;

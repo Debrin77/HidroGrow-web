@@ -388,15 +388,21 @@
   }
 
   function initMedirSalaLayout() {
-    buildSalaSubTabs();
-    buildMedirFlow();
-    ensureGuiaWrap();
-    wrapAmbienteCollapsible();
-    mountAmbienteInMedirFlow();
-    salaSubTab(salaSubActive);
-    refreshSalaSubTabsCaminoUi();
-    refreshSalaEquipMontaje();
-    refreshSistemaCultivoExtras();
+    try {
+      buildSalaSubTabs();
+      buildMedirFlow();
+      ensureGuiaWrap();
+      wrapAmbienteCollapsible();
+      mountAmbienteInMedirFlow();
+      salaSubTab(salaSubActive);
+      refreshSalaSubTabsCaminoUi();
+      refreshSalaEquipMontaje();
+      refreshSistemaCultivoExtras();
+    } catch (e) {
+      try {
+        console.warn('initMedirSalaLayout', e);
+      } catch (_) {}
+    }
   }
 
   window.salaSubTab = salaSubTab;

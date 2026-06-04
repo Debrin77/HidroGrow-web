@@ -1535,12 +1535,17 @@ function cargarInteriorGrowUI() {
   renderInteriorGrowSyncHint();
 }
 
-function setInteriorLuzTipo(tipo) {
+function setInteriorLuzTipo(tipo, opts) {
   if (!state.configTorre) state.configTorre = {};
   const ok = ['natural', 'led', 'mixto', 'fluorescente', 'hps', 'sin_luz'];
   state.configTorre.luz = ok.includes(tipo) ? tipo : 'led';
+  if (opts && opts.manual) state.configTorre._luzManual = true;
   cargarInteriorGrowUI();
   persistInteriorGrow();
+}
+
+function onInteriorLuzTipoManual(tipo) {
+  setInteriorLuzTipo(tipo, { manual: true });
 }
 
 function onInteriorHorasLuzRangeInput() {

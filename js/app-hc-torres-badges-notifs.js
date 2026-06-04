@@ -319,6 +319,13 @@ function hcRefreshDashSinInstalacionUi() {
 
 // Inicializar sistema de torres (sin crear «Mi instalación» por defecto)
 function initTorres() {
+  if (!state || typeof state !== 'object') {
+    try {
+      state = typeof initState === 'function' ? initState() : { torres: [], torre: [], torreActiva: 0 };
+    } catch (_) {
+      state = { torres: [], torre: [], torreActiva: 0 };
+    }
+  }
   if (!Array.isArray(state.torres)) state.torres = [];
   hcMigrarLegacyTorresSiProcede();
   if (!Array.isArray(state.torres)) state.torres = [];

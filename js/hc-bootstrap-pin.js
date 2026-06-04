@@ -81,8 +81,18 @@ function unlockAndInitApp() {
   const pinEl = document.getElementById('pinScreen');
   const appEl = document.getElementById('app');
   try {
+    if (typeof hideSplash === 'function') hideSplash();
+    else {
+      const splash = document.getElementById('splashScreen');
+      if (splash) splash.style.display = 'none';
+    }
     a11yDetachFocusTrap(pinEl);
-    if (appEl) appEl.inert = false;
+    if (appEl) {
+      appEl.inert = false;
+      appEl.removeAttribute('inert');
+      appEl.style.display = '';
+      appEl.style.visibility = 'visible';
+    }
     if (pinEl) pinEl.style.display = 'none';
     if (getAuthRememberMinutes() > 0) localStorage.setItem(AUTH_TS_KEY, String(Date.now()));
     else localStorage.removeItem(AUTH_TS_KEY);
