@@ -526,12 +526,17 @@
    */
   function hcRecargaCompletaAplicaEnCamino(cfg) {
     cfg = cfg || cfgActiva();
-    if (cam(cfg) !== 'semilla_propagador') return true;
-    if (typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)) {
-      return true;
+    if (cam(cfg) === 'semilla_propagador') {
+      return !!(
+        typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)
+      );
     }
-    if (typeof depositoListo === 'function' && depositoListo(cfg)) return true;
-    return false;
+    if (cam(cfg) === 'semilla_hidro') {
+      if (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /** Texto para Inicio cuando la tarjeta de recarga completa no aplica (propagador). */

@@ -232,10 +232,28 @@ function hcFinishInitAppHeavyWork() {
     try {
       if (
         typeof getCaminoCultivo === 'function' &&
-        getCaminoCultivo(state.configTorre || {}) === 'semilla_propagador' &&
-        typeof hcSyncGerminacionPlanCultivo === 'function'
+        getCaminoCultivo(state.configTorre || {}) === 'semilla_propagador'
       ) {
-        hcSyncGerminacionPlanCultivo(state.configTorre);
+        var dimsDirty = false;
+        if (typeof hidrogrowDimsTorreDesdeConfig === 'function' && state.configTorre) {
+          const dimsBoot = hidrogrowDimsTorreDesdeConfig(state.configTorre, state.torre);
+          if (
+            state.configTorre.numNiveles !== dimsBoot.numNiveles ||
+            state.configTorre.numCestas !== dimsBoot.numCestas
+          ) {
+            dimsDirty = true;
+          }
+          state.configTorre.numNiveles = dimsBoot.numNiveles;
+          state.configTorre.numCestas = dimsBoot.numCestas;
+          if (Array.isArray(state.torre) && state.torre.length > 1) {
+            state.torre = [state.torre[0] || []];
+            dimsDirty = true;
+          }
+        }
+        if (typeof hcSyncGerminacionPlanCultivo === 'function') {
+          hcSyncGerminacionPlanCultivo(state.configTorre);
+        }
+        if (dimsDirty && typeof saveState === 'function') saveState();
       }
       if (tab === 'sistema') {
         try {

@@ -2146,6 +2146,11 @@ function guardarSetupYContinuarCore() {
   if (faseSalaPreGerm) {
     state.configTorre.salaPreGermConfigAt = new Date().toISOString();
     state.configTorre.hcSetupFase = 'germinacion';
+    if (typeof hcDimsTorreDesdeConfig === 'function') {
+      const dimsPg = hcDimsTorreDesdeConfig(state.configTorre, state.torre);
+      state.configTorre.numNiveles = dimsPg.numNiveles;
+      state.configTorre.numCestas = dimsPg.numCestas;
+    }
     try {
       if (typeof window !== 'undefined') {
         window._hcSetupSalaPreGermSession = false;

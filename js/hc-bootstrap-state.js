@@ -26,10 +26,102 @@ function hidrogrowPurgarStorageLegacySilencioso() {
   } catch (_) {}
 }
 
+function hidrogrowCaminoDesdeCfg(cfg) {
+  if (!cfg || typeof cfg !== 'object') return '';
+  if (cfg.caminoCultivo) return String(cfg.caminoCultivo);
+  if (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) {
+    return String(cfg.premiumSetup.caminoCultivo);
+  }
+  return '';
+}
+
+function hidrogrowNumSemillasGermCfg(cfg) {
+  cfg = cfg || {};
+  const g = cfg.germinacionFlow || {};
+  if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) {
+    return Math.min(72, Math.round(g.numSemillas));
+  }
+  const prem = cfg.premiumSetup || {};
+  if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+    return Math.min(72, Math.round(prem.numSemillasGerm));
+  }
+  return 0;
+}
+
+/** Filas × cestas al cargar (propagador = 1×N; disponible antes de hc-camino-cultivo.js). */
+function hidrogrowDimsTorreDesdeConfig(cfg, torre) {
+  cfg = cfg || {};
+  torre = torre || [];
+  if (hidrogrowCaminoDesdeCfg(cfg) === 'semilla_propagador') {
+    let c = hidrogrowNumSemillasGermCfg(cfg) || 1;
+    if (torre[0] && torre[0].length) c = Math.max(c, torre[0].length);
+    return { numNiveles: 1, numCestas: Math.min(72, Math.max(1, c)) };
+  }
+  return {
+    numNiveles: Math.max(1, parseInt(String(cfg.numNiveles || NUM_NIVELES), 10) || NUM_NIVELES),
+    numCestas: Math.max(1, parseInt(String(cfg.numCestas || NUM_CESTAS), 10) || NUM_CESTAS),
+  };
+}
+
+/** Instalación real del usuario (no solo plantilla vacía en memoria). */
+function hidrogrowInstalacionPersistible(st) {
+  if (!st || typeof st !== 'object') return false;
+  if (Array.isArray(st.torres) && st.torres.length > 0) return true;
+  const cfg = st.configTorre;
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.hcPlantillaAutogenerada) return false;
+  if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
+  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.germinacionFlow) return true;
+  if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return true;
+  if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
+  if (cfg.checklistInstalacionConfirmada === true) return true;
+  const torre = st.torre;
+  if (Array.isArray(torre)) {
+    for (let n = 0; n < torre.length; n++) {
+      const row = torre[n];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        if (row[c] && String(row[c].variedad || '').trim()) return true;
+      }
+    }
+  }
+  return false;
+}
+
+/** Reconstruye `state.torres[0]` desde config/torre en raíz si el guardado perdió el array. */
+function hidrogrowAsegurarTorresSlotEnSnapshot(st) {
+  if (!st || typeof st !== 'object') return;
+  if (Array.isArray(st.torres) && st.torres.length > 0) return;
+  if (!hidrogrowInstalacionPersistible(st)) return;
+  const cfg = st.configTorre;
+  if (!cfg || typeof cfg !== 'object') return;
+  const idx = Number.isFinite(st.torreActiva) ? st.torreActiva : 0;
+  const nombre =
+    String(cfg.nombreTorre || cfg.nombre || '').trim() ||
+    (cfg.caminoCultivo === 'semilla_propagador' ? 'Germinación · propagador' : 'Instalación');
+  st.torres = [
+    {
+      id: cfg.id || Date.now(),
+      nombre: nombre,
+      emoji: cfg.caminoCultivo === 'semilla_propagador' ? '🫧' : '🌿',
+      config: JSON.parse(JSON.stringify(cfg)),
+      torre: JSON.parse(JSON.stringify(Array.isArray(st.torre) ? st.torre : [])),
+      modoActual: st.modo || 'vegetativo',
+      mediciones: Array.isArray(st.mediciones) ? st.mediciones : [],
+      registro: Array.isArray(st.registro) ? st.registro : [],
+      ultimaMedicion: st.ultimaMedicion || null,
+      ultimaRecarga: st.ultimaRecarga != null ? st.ultimaRecarga : null,
+      recargaSnoozeHasta: st.recargaSnoozeHasta != null ? st.recargaSnoozeHasta : null,
+      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
+    },
+  ];
+  st.torreActiva = idx;
+}
+
 /** Sin instalación guardada: no rehidratar borrador de equipamiento/sistema. */
 function hidrogrowLimpiarBorradorSinInstalacion(st) {
   if (!st || typeof st !== 'object') return false;
-  if (Array.isArray(st.torres) && st.torres.length > 0) return false;
+  if (hidrogrowInstalacionPersistible(st)) return false;
   let changed = false;
   if (st.configTorre) {
     delete st.configTorre;
@@ -58,11 +150,12 @@ function hidrogrowLimpiarBorradorSinInstalacion(st) {
   return changed;
 }
 
-/** Snapshot para localStorage: solo persiste sistema/equipamiento si hay instalación. */
+/** Snapshot para localStorage: conserva instalación propagador aunque falte el array `torres`. */
 function hidrogrowPrepararSnapshotPersistencia(st) {
   if (!st || typeof st !== 'object') return st;
   const clone = JSON.parse(JSON.stringify(st));
-  if (!Array.isArray(clone.torres) || !clone.torres.length) {
+  hidrogrowAsegurarTorresSlotEnSnapshot(clone);
+  if (!hidrogrowInstalacionPersistible(clone)) {
     hidrogrowLimpiarBorradorSinInstalacion(clone);
   }
   return clone;
@@ -140,26 +233,45 @@ function loadState() {
         console.warn('State corrupto — reiniciando');
         return initState();
       }
-      while (s.torre.length < NUM_NIVELES) {
-        s.torre.push(
-          Array(NUM_CESTAS)
-            .fill(null)
-            .map(() => ({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] }))
-        );
-      }
-      s.torre.forEach((nivel, n) => {
-        while (nivel.length < NUM_CESTAS) {
-          nivel.push({ variedad: '', fecha: '', notas: '', origenPlanta: '', fotos: [], fotoKeys: [] });
-        }
-      });
-      s.torre.forEach(nivel => {
-        (nivel || []).forEach(cell => asegurarCamposFilaTorre(cell));
-      });
-      if (s.modo) modoActual = s.modo;
       let legacyPersist = false;
       if (typeof hidrogrowMigrarStateCompleto === 'function') {
         legacyPersist = !!hidrogrowMigrarStateCompleto(s);
       }
+      hidrogrowAsegurarTorresSlotEnSnapshot(s);
+      const cfgLoad =
+        s.configTorre ||
+        (s.torres && s.torres[s.torreActiva != null ? s.torreActiva : 0] && s.torres[s.torreActiva != null ? s.torreActiva : 0].config);
+      const dims = hidrogrowDimsTorreDesdeConfig(cfgLoad, s.torre);
+      const nivLoad = Math.max(1, dims.numNiveles || NUM_NIVELES);
+      const cesLoad = Math.max(1, dims.numCestas || NUM_CESTAS);
+      if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador' && s.torre.length > 1) {
+        s.torre = [s.torre[0] || []];
+      }
+      const celdaVacia = () => ({
+        variedad: '',
+        fecha: '',
+        notas: '',
+        origenPlanta: '',
+        fotos: [],
+        fotoKeys: [],
+      });
+      while (s.torre.length < nivLoad) {
+        s.torre.push([]);
+      }
+      for (let ni = 0; ni < nivLoad; ni++) {
+        if (!s.torre[ni]) s.torre[ni] = [];
+        while (s.torre[ni].length < cesLoad) {
+          s.torre[ni].push(celdaVacia());
+        }
+      }
+      s.torre.forEach((nivel) => {
+        (nivel || []).forEach((cell) => asegurarCamposFilaTorre(cell));
+      });
+      if (cfgLoad && typeof cfgLoad === 'object') {
+        cfgLoad.numNiveles = nivLoad;
+        cfgLoad.numCestas = cesLoad;
+      }
+      if (s.modo) modoActual = s.modo;
       normalizarNotifOpcionesEnState(s);
       let borradorPersist = false;
       if (hidrogrowLimpiarBorradorSinInstalacion(s)) borradorPersist = true;
@@ -372,6 +484,9 @@ function initState() {
 
 function saveState() {
   try {
+    if (state && typeof hidrogrowAsegurarTorresSlotEnSnapshot === 'function') {
+      hidrogrowAsegurarTorresSlotEnSnapshot(state);
+    }
     // Multi-torre: la copia en state.torres[idx] es la que se rehidrata al abrir la app.
     // Sin esto, guardar solo state.torre (p. ej. tras editar una cesta) deja el slot obsoleto
     // y al recargar cargarEstadoTorre() sobrescribe la torre vacía → desaparecen plantas y el Diario.

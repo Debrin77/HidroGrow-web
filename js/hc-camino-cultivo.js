@@ -193,6 +193,7 @@
     var keys = [
       'caminoCultivo',
       'germinacionFlow',
+      'premiumSetup',
       'propagadorMontajeChecks',
       'preparacionGermHidroChecks',
       'enraizadoMontajeChecks',
@@ -200,6 +201,8 @@
       'sustratoGerm',
       'hcGermPlan',
       'variedadGerminacion',
+      'numNiveles',
+      'numCestas',
     ];
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i];
@@ -484,6 +487,40 @@
     return true;
   }
 
+  function hcNumSemillasGermConfig(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof getPlanGermEstado === 'function') {
+      var st = getPlanGermEstado(cfg);
+      if (st.numSemillas >= 1) return Math.min(72, Math.round(st.numSemillas));
+    }
+    var g = cfg.germinacionFlow || {};
+    if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) {
+      return Math.min(72, Math.round(g.numSemillas));
+    }
+    var prem = cfg.premiumSetup || {};
+    if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+      return Math.min(72, Math.round(prem.numSemillasGerm));
+    }
+    return 0;
+  }
+
+  /** Filas × cestas según camino (propagador = 1×N semillas, no 5×5 por defecto). */
+  function hcDimsTorreDesdeConfig(cfg, torre) {
+    cfg = cfg || {};
+    torre = torre || [];
+    if (getCaminoCultivo(cfg) === 'semilla_propagador') {
+      var c = hcNumSemillasGermConfig(cfg) || 1;
+      if (torre[0] && torre[0].length) {
+        c = Math.max(c, torre[0].length);
+      }
+      return { numNiveles: 1, numCestas: Math.min(72, Math.max(1, c)) };
+    }
+    return {
+      numNiveles: Math.max(1, parseInt(String(cfg.numNiveles || 5), 10) || 5),
+      numCestas: Math.max(1, parseInt(String(cfg.numCestas || 5), 10) || 5),
+    };
+  }
+
   /** Matriz 1×N en propagador: genética + sustrato visibles en Cultivo / plantas en instalación. */
   function hcInicializarTorreGerminacionPropagador(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
@@ -495,7 +532,11 @@
     if (typeof ensureGerminacionFlow === 'function') ensureGerminacionFlow(cfg);
     var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
     if (!sug) return false;
-    var n = sug.numPlantas;
+    var existentes = 0;
+    if (typeof state !== 'undefined' && state && state.torre && state.torre[0]) {
+      existentes = state.torre[0].length;
+    }
+    var n = Math.max(sug.numPlantas, hcNumSemillasGermConfig(cfg), existentes);
     var vid = String(sug.variedadId || '').trim();
     var hoy =
       typeof hoyIso === 'function'
@@ -551,7 +592,11 @@
       }
       if (conVar) break;
     }
-    if (!conVar || !torre.length || !(torre[0] && torre[0].length)) {
+    var dims = hcDimsTorreDesdeConfig(cfg, torre);
+    cfg.numNiveles = dims.numNiveles;
+    cfg.numCestas = dims.numCestas;
+    var filasOk = torre.length === 1 && torre[0] && torre[0].length >= dims.numCestas;
+    if (!conVar || !filasOk) {
       hcInicializarTorreGerminacionPropagador(cfg);
     }
   }
@@ -1134,6 +1179,8 @@
   global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
   global.hcInicializarTorreGerminacionPropagador = hcInicializarTorreGerminacionPropagador;
   global.hcSyncGerminacionPlanCultivo = hcSyncGerminacionPlanCultivo;
+  global.hcDimsTorreDesdeConfig = hcDimsTorreDesdeConfig;
+  global.hcNumSemillasGermConfig = hcNumSemillasGermConfig;
   global.hcAplicarGerminacionATorreTrasHidro = hcAplicarGerminacionATorreTrasHidro;
   global.getCaminoResumenPasos = getCaminoResumenPasos;
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;

@@ -194,6 +194,20 @@ function hcTorreTienePlantasAsignadas(torreMat) {
 function hcEsSlotInstalacionFantasma(t) {
   if (!t || typeof t !== 'object') return true;
   const cfg = t.config;
+  const cam =
+    cfg &&
+    (cfg.caminoCultivo ||
+      (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+      '');
+  if (cam === 'semilla_propagador') return false;
+  if (
+    cfg &&
+    (cfg.salaPreGermConfigAt ||
+      cfg.germinacionFlow ||
+      (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt))
+  ) {
+    return false;
+  }
   if (cfg && cfg.checklistInstalacionConfirmada === true) return false;
   if (cfg && cfg.nutriente && !cfg.hcPlantillaAutogenerada) return false;
   const hasMed = Array.isArray(t.mediciones) && t.mediciones.length > 0;
@@ -694,9 +708,20 @@ function cargarEstadoTorre(idx, opts) {
   modoActual = typeof normalizeTorreModoActual === 'function'
     ? normalizeTorreModoActual(t.modoActual)
     : (MODOS_CULTIVO[t.modoActual] ? t.modoActual : 'vegetativo');
-  // Asegurar estructura COMPLETA siempre — rellenar niveles y cestas que falten
-  const nivR = state.configTorre?.numNiveles || NUM_NIVELES;
-  const cesR = state.configTorre?.numCestas  || NUM_CESTAS;
+  // Asegurar estructura COMPLETA — en propagador 1×N semillas (no 5×5 por defecto)
+  const dimsTorre =
+    typeof hcDimsTorreDesdeConfig === 'function'
+      ? hcDimsTorreDesdeConfig(state.configTorre, state.torre)
+      : {
+          numNiveles: state.configTorre?.numNiveles || NUM_NIVELES,
+          numCestas: state.configTorre?.numCestas || NUM_CESTAS,
+        };
+  const nivR = dimsTorre.numNiveles;
+  const cesR = dimsTorre.numCestas;
+  if (state.configTorre) {
+    state.configTorre.numNiveles = nivR;
+    state.configTorre.numCestas = cesR;
+  }
   if (!state.torre) state.torre = [];
   // Añadir niveles que falten
   while (state.torre.length < nivR) state.torre.push([]);
