@@ -862,6 +862,7 @@
       }
       refreshPremiumEntornoUI();
       if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+      if (typeof applySalaPreGermEquipMinimalChrome === 'function') applySalaPreGermEquipMinimalChrome();
       calcularPremiumSala();
     }
     if (typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' && pagina === SETUP_PAGE_PREMIUM_4) {
@@ -1019,6 +1020,12 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
+      if (
+        typeof hcSetupSalaPreGermPropagadorEquip === 'function' &&
+        hcSetupSalaPreGermPropagadorEquip()
+      ) {
+        return true;
+      }
       if (typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
           window.salaTieneMedidasDesdeEquipamiento()) {
         return true;

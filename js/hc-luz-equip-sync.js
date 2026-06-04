@@ -567,7 +567,8 @@
     return 'done';
   }
 
-  function hcMostrarRecoEquipSalaInicio(cfg) {
+  /** Falta abrir el configurador de equipamiento de sala (no incluye checklist de montaje). */
+  function hcFaltaConfigurarSalaEquipPropagador(cfg) {
     cfg = cfg || getCfg();
     if (typeof global.getCaminoCultivo !== 'function') return false;
     if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
@@ -583,7 +584,18 @@
     if (typeof global.hcGerminacionActiva === 'function' && !global.hcGerminacionActiva(cfg)) {
       return false;
     }
-    return !salaEquipInicioCompleto(cfg);
+    if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {
+      return true;
+    }
+    if (typeof global.getCamposEquipamientoFaltantes === 'function') {
+      var falt = global.getCamposEquipamientoFaltantes(cfg);
+      if (falt && falt.length) return true;
+    }
+    return false;
+  }
+
+  function hcMostrarRecoEquipSalaInicio(cfg) {
+    return hcFaltaConfigurarSalaEquipPropagador(cfg);
   }
 
   function renderDashSalaEquipRecoBanner(cfg) {
@@ -666,6 +678,7 @@
 
   global.salaEquipInicioCompleto = salaEquipInicioCompleto;
   global.getSalaRecoPasoInicio = getSalaRecoPasoInicio;
+  global.hcFaltaConfigurarSalaEquipPropagador = hcFaltaConfigurarSalaEquipPropagador;
   global.hcMostrarRecoEquipSalaInicio = hcMostrarRecoEquipSalaInicio;
   global.refreshDashSalaEquipRecoBanner = refreshDashSalaEquipRecoBanner;
 })(

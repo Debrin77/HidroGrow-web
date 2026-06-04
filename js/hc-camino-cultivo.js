@@ -599,7 +599,7 @@
     if (typeof showToast === 'function') {
       showToast(
         opts.duranteGerminacion
-          ? 'Elige carpa, LED, extractor y deja el propagador dentro de la sala. Luego revisa el checklist en Sala.'
+          ? 'Elige carpa, LED, extractor y propagador. Al guardar, el checklist de montaje está en Sala.'
           : 'Solo equipamiento de sala (carpa, LED, extractor). El fotoperiodo y el DWC/RDWC ya los definiste o irán después.',
         false,
         { durationMs: 6800 }

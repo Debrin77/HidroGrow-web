@@ -430,8 +430,11 @@ function hcNotifyInstalacionGuardada(opts) {
   const cam = String(opts.camino || '').trim();
   const faseGerm = !!opts.faseGerm;
   const salaPre = !!opts.salaPreGerm;
+  const soloEquipSala = !!opts.soloEquipSala;
   let msg = nombre ? '✅ «' + nombre + '» guardada' : '✅ Instalación guardada';
-  if (salaPre) {
+  if (salaPre && soloEquipSala) {
+    msg = '✅ Equipamiento de sala guardado · checklist en pestaña Sala';
+  } else if (salaPre) {
     msg += ' · Montaje de sala y luego las 6 fases';
   } else if (faseGerm && cam === 'semilla_hidro') {
     msg += ' · Prep hidro → sala → 6 fases en Inicio';
@@ -445,7 +448,11 @@ function hcNotifyInstalacionGuardada(opts) {
     showToast(msg, false, { durationMs: 8200, zIndex: 10400, prominent: true });
   }, delayMs);
   try {
-    if (typeof hcMostrarBannerSalaPostSetup === 'function' && (salaPre || !faseGerm || cam === 'semilla_hidro')) {
+    if (
+      typeof hcMostrarBannerSalaPostSetup === 'function' &&
+      !soloEquipSala &&
+      (salaPre || !faseGerm || cam === 'semilla_hidro')
+    ) {
       hcMostrarBannerSalaPostSetup(nombre, { camino: cam, faseGerm: faseGerm });
     }
   } catch (_) {}

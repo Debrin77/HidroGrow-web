@@ -88,12 +88,13 @@
     var map = STEP_BANNERS[cam];
     var html = map && map[pagina] ? map[pagina] : '';
     if (
-      typeof hcSetupEnFaseSalaPreGerm === 'function' &&
-      hcSetupEnFaseSalaPreGerm() &&
+      typeof hcSetupSalaPreGermPropagadorEquip === 'function' &&
+      hcSetupSalaPreGermPropagadorEquip() &&
       pagina === (typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4)
     ) {
-      html =
-        '<strong>Solo sala (1 paso):</strong> carpa, LED, extractor y medidor. Sin repetir fotoperiodo ni catálogo completo.';
+      box.classList.add('setup-hidden');
+      box.innerHTML = '';
+      return;
     }
     if (!html) {
       box.classList.add('setup-hidden');
@@ -147,6 +148,56 @@
     [plan, genPref, genSec].forEach(function (node) {
       if (node && node.parentNode === host) host.appendChild(node);
     });
+  }
+
+  function hcSetupSalaPreGermPropagadorEquip() {
+    return (
+      typeof hcSetupEnFaseSalaPreGerm === 'function' &&
+      hcSetupEnFaseSalaPreGerm() &&
+      getCam() === 'semilla_propagador'
+    );
+  }
+
+  function applySalaPreGermEquipMinimalChrome() {
+    var show = hcSetupSalaPreGermPropagadorEquip();
+    var page3 = el('spagePremium3');
+    var overlay = el('setupOverlay');
+    if (overlay) overlay.classList.toggle('hc-sala-pre-germ-equip', !!show);
+    if (page3) page3.classList.toggle('hc-sala-pre-germ-equip-page', !!show);
+    var t3 = page3 ? page3.querySelector('.setup-title') : null;
+    if (t3) {
+      t3.textContent = show ? 'Equipamiento de la sala' : 'Espacio y equipamiento';
+    }
+    var hideIds = [
+      'setupPremium3Subtitle',
+      'setupPremiumEquipOrigenBanner',
+      'setupPremiumEquipGermReco',
+      'setupPremium3EquipBlockTitle',
+      'setupPremium3EquipHint',
+      'setupPremiumEquipFaltantes',
+      'setupPremiumSalaInterior',
+      'setupPremiumExteriorHint',
+      'setupPremiumGermAhoraHost',
+      'setupCaminoStepBanner',
+      'setupRoadmapMini',
+      'setupGuiaPanel',
+    ];
+    hideIds.forEach(function (id) {
+      var node = el(id);
+      if (!node) return;
+      if (show) {
+        node.classList.add('setup-hidden');
+        if (id === 'setupPremium3Subtitle' || id === 'setupPremium3EquipHint') node.textContent = '';
+      }
+    });
+    if (!show && typeof refreshPremiumEntornoUI === 'function') {
+      refreshPremiumEntornoUI();
+    }
+    var camBanner = el('setupCaminoStepBanner');
+    if (camBanner && show) {
+      camBanner.classList.add('setup-hidden');
+      camBanner.innerHTML = '';
+    }
   }
 
   function applyGermAhoraMinimalChrome(showGerm) {
@@ -217,6 +268,7 @@
       t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
     }
     applyGermAhoraMinimalChrome(showGerm);
+    applySalaPreGermEquipMinimalChrome();
     if (typeof applyPremiumPropagadorPaso4Chrome === 'function') applyPremiumPropagadorPaso4Chrome();
     if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
@@ -521,6 +573,8 @@
   global.refreshSetupCaminoStepBanner = refreshSetupCaminoStepBanner;
   global.getSetupStepLabelForPage = getSetupStepLabelForPage;
   global.syncPremiumGermSectionPlacement = syncPremiumGermSectionPlacement;
+  global.hcSetupSalaPreGermPropagadorEquip = hcSetupSalaPreGermPropagadorEquip;
+  global.applySalaPreGermEquipMinimalChrome = applySalaPreGermEquipMinimalChrome;
   global.applyPremiumPropagadorPaso4Chrome = applyPremiumPropagadorPaso4Chrome;
   global.refreshTabsOperativaCamino = refreshTabsOperativaCamino;
   global.renderTrasladoSalaBannerHtml = renderTrasladoSalaBannerHtml;

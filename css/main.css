@@ -21963,6 +21963,30 @@ html.hc-theme-dark .hc-btn-puesta-marcha--ok {
 .sala-cultivo-equip-mount--propagador {
   gap: 12px;
 }
+/* Configurador sala desde Inicio (propagador): solo catálogo, sin textos largos */
+.hc-sala-pre-germ-equip .setup-header .setup-steps,
+.hc-sala-pre-germ-equip .setup-header #setupRoadmapMini,
+.hc-sala-pre-germ-equip .setup-header #setupGuiaPanel {
+  display: none !important;
+}
+.hc-sala-pre-germ-equip-page #setupPremium3Subtitle,
+.hc-sala-pre-germ-equip-page #setupPremiumEquipOrigenBanner,
+.hc-sala-pre-germ-equip-page #setupPremiumEquipGermReco,
+.hc-sala-pre-germ-equip-page #setupPremium3EquipBlockTitle,
+.hc-sala-pre-germ-equip-page #setupPremium3EquipHint,
+.hc-sala-pre-germ-equip-page #setupPremiumEquipFaltantes,
+.hc-sala-pre-germ-equip-page #setupPremiumSalaInterior,
+.hc-sala-pre-germ-equip-page #setupPremiumExteriorHint,
+.hc-sala-pre-germ-equip-page #setupPremiumGermAhoraHost {
+  display: none !important;
+}
+.hc-sala-pre-germ-equip-page .setup-title {
+  margin-bottom: 8px;
+  font-size: 1.15rem;
+}
+.hc-sala-pre-germ-equip-page #setupPremiumEquipGrid {
+  margin-top: 0;
+}
 .sala-propagador-flujo {
   margin: 0 0 4px;
 }

@@ -2336,6 +2336,9 @@ function guardarSetupYContinuarCore() {
     if (faseGermSetup && !faseSalaPreGerm) {
       state.hcPostSetupChecklistPendiente = false;
       state.hcInstalacionGuidadaActiva = true;
+    } else if (faseSalaPreGerm) {
+      state.hcPostSetupChecklistPendiente = false;
+      state.hcInstalacionGuidadaActiva = false;
     } else {
       state.hcPostSetupChecklistPendiente = true;
       if (typeof activarInstalacionGuidadaPostSetup === 'function') activarInstalacionGuidadaPostSetup();
@@ -2345,7 +2348,7 @@ function guardarSetupYContinuarCore() {
     window._hcPostSetupPrevListo = false;
   } catch (_) {}
   try {
-    window._hcChecklistGuidedFlow = true;
+    window._hcChecklistGuidedFlow = !faseSalaPreGerm;
   } catch (_) {}
 
   const savedOk = saveState();
@@ -2381,13 +2384,15 @@ function guardarSetupYContinuarCore() {
     try {
       if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
     } catch (_) {}
-    updateTorreStats();
-    updateDashboard();
+    if (typeof updateTorreStats === 'function') updateTorreStats();
+    if (typeof updateDashboard === 'function') updateDashboard();
     try {
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     } catch (_) {}
     try {
-      if (typeof hcShowPendingSalasReminder === 'function') hcShowPendingSalasReminder();
+      if (typeof hcShowPendingSalasReminder === 'function' && !faseSalaPreGerm) {
+        hcShowPendingSalasReminder();
+      }
     } catch (_) {}
   }
 
@@ -2433,6 +2438,46 @@ function guardarSetupYContinuarCore() {
     state.configTorre.hcSetupFase === 'germinacion';
   const camGuardado =
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
+  if (salaPreGermGuardada) {
+    try {
+      delete window._hcSalaPreGermRecienGuardada;
+    } catch (_) {}
+    if (typeof hcNotifyInstalacionGuardada === 'function') {
+      hcNotifyInstalacionGuardada({
+        nombre: nombreGuardado,
+        salaPreGerm: true,
+        soloEquipSala: true,
+        faseGerm: false,
+        camino: camGuardado,
+      });
+    } else if (typeof showToast === 'function') {
+      setTimeout(function () {
+        showToast(
+          '✅ Equipamiento de sala guardado. El checklist de montaje está en la pestaña Sala.',
+          false,
+          { durationMs: 6200, zIndex: 10400, prominent: true }
+        );
+      }, 220);
+    }
+    try {
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+      if (typeof renderSalaPropagadorFlujoGuiado === 'function') renderSalaPropagadorFlujoGuiado();
+      if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (
+        typeof renderCalendario === 'function' &&
+        document.getElementById('tab-calendario')?.classList.contains('active')
+      ) {
+        renderCalendario();
+      }
+      if (typeof updateDashboard === 'function') updateDashboard();
+    } catch (_) {}
+    if (typeof goTab === 'function') goTab('inicio');
+    return true;
+  }
+
   if (typeof hcNotifyInstalacionGuardada === 'function') {
     hcNotifyInstalacionGuardada({
       nombre: nombreGuardado,
@@ -2469,7 +2514,7 @@ function guardarSetupYContinuarCore() {
   try {
     if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
   } catch (_) {}
-  // Tras configurar: montaje de sala → cultivo → checklist depósito (orden estricto).
+  // Tras configurar instalación completa: montaje → cultivo → checklist depósito.
   if (typeof iniciarFlujoInstalacionPostSetup === 'function') {
     iniciarFlujoInstalacionPostSetup();
   } else if (typeof iniciarFlujoSistemaAntesChecklistPostSetup === 'function') {

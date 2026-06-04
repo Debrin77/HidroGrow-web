@@ -1774,26 +1774,25 @@
     if (
       camCal === 'semilla_propagador' &&
       !concl &&
-      typeof salaEquipInicioCompleto === 'function' &&
-      !salaEquipInicioCompleto(cfg)
+      typeof hcFaltaConfigurarSalaEquipPropagador === 'function' &&
+      hcFaltaConfigurarSalaEquipPropagador(cfg)
     ) {
-      var faltSala = [];
-      if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
-        faltSala.push('equipamiento de sala');
-      } else if (typeof getCamposEquipamientoFaltantes === 'function') {
+      var faltSala = ['equipamiento de sala'];
+      if (typeof getCamposEquipamientoFaltantes === 'function') {
         var eqF = getCamposEquipamientoFaltantes(cfg);
-        if (eqF && eqF.length) faltSala.push('completar catálogo (' + eqF.map(function (x) { return x.label; }).join(', ') + ')');
-      }
-      if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
-        faltSala.push('checklist de montaje');
+        if (eqF && eqF.length) {
+          faltSala = ['completar catálogo (' + eqF.map(function (x) { return x.label; }).join(', ') + ')'];
+        }
       }
       ev.push({
         tipo: 'camino',
         icono: '🏠',
         titulo: 'RECOMENDADO · Sala de cultivo',
         desc:
-          'Monta y registra la sala (carpa, LED, propagador dentro…) antes o durante la germinación. ' +
-          (faltSala.length ? 'Pendiente: ' + faltSala.join(' y ') + '.' : 'Abre el configurador desde Inicio.'),
+          'Registra carpa, LED, extractor y propagador en el configurador (Inicio o Sala). ' +
+          'Pendiente: ' +
+          faltSala.join(' y ') +
+          '.',
         action: 'sala_reco',
       });
     }

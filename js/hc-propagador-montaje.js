@@ -390,9 +390,9 @@
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +
       (verificada &&
-      typeof salaListaAntesDeGerminacion === 'function' &&
-      !salaListaAntesDeGerminacion(cfg)
-        ? '<button type="button" class="btn btn-secondary btn-sm hc-prop-cta-sala" style="margin-left:8px" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button>'
+      typeof hcFaltaConfigurarSalaEquipPropagador === 'function' &&
+      hcFaltaConfigurarSalaEquipPropagador(cfg)
+        ? '<button type="button" class="btn btn-secondary btn-sm hc-prop-cta-sala" style="margin-left:8px" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar equipamiento de sala</button>'
         : '') +
       '</div>'
     );
@@ -696,19 +696,21 @@
     }
 
     var salaCfgStatus = salaCfg
-      ? '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ok">✓ Configuración de sala guardada en el asistente</p>'
-      : '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ready">Pendiente: configurar sala en el asistente</p>';
+      ? '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ok">✓ Equipamiento de sala registrado</p>'
+      : '<p class="hc-montaje-inicio-card-status hc-montaje-inicio-card-status--ready">Pendiente: equipamiento en el configurador</p>';
     var salaActions = '';
     if (!salaCfg) {
       salaActions +=
-        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala (asistente)</button> ' +
-        '<button type="button" class="btn btn-secondary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">Checklist montaje (tras configurar)</button> ';
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar equipamiento de sala</button> ';
     } else {
+      salaActions +=
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Revisar equipamiento</button> ';
+    }
+    if (salaCfg) {
       salaActions +=
         '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
         (sala.verificada ? 'Revisar checklist sala' : 'Checklist montaje de sala') +
-        '</button> ' +
-        '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Revisar configuración de sala</button> ';
+        '</button> ';
     }
     salaActions +=
       '<button type="button" class="btn btn-secondary btn-sm" onclick="goTab(\'sala\');setTimeout(function(){var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d)d.open=true},300)">Ir a Sala</button>';

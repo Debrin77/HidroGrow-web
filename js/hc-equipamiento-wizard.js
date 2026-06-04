@@ -411,6 +411,13 @@
     }
     const equipSec = el('setupPremiumEquipSection');
     if (equipSec) equipSec.classList.remove('setup-hidden');
+    const salaPreGermMin =
+      typeof hcSetupSalaPreGermPropagadorEquip === 'function' &&
+      hcSetupSalaPreGermPropagadorEquip();
+    if (salaPreGermMin && salaSec) salaSec.classList.add('setup-hidden');
+    if (typeof applySalaPreGermEquipMinimalChrome === 'function') {
+      applySalaPreGermEquipMinimalChrome();
+    }
   }
 
   function renderEquipFaltantesHint() {
