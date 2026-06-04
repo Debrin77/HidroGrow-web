@@ -1230,7 +1230,7 @@
         '</strong> Configura carpa, LED y extractor' +
         (camGerm === 'semilla_propagador' ? ' si quieres antes del traslado' : ' antes de las 6 fases') +
         '. ' +
-        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button></div>';
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'?abrirConfiguradorEquipamientoSalaPropagador():(typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala())">Configurar sala</button></div>';
     } else if (bloqueoSala === 'sala_montaje') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +

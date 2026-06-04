@@ -325,7 +325,7 @@
         '<strong>' +
         (cam === 'semilla_propagador' ? 'Germinación concluida · Sala (opcional)' : 'Configura la sala') +
         '</strong> Carpa, LED y extractor si quieres antes del traslado al hidro. ' +
-        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button></div>'
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'?abrirConfiguradorEquipamientoSalaPropagador():(typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala())">Configurar sala</button></div>'
       );
     }
     return (

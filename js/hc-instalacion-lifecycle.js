@@ -746,8 +746,17 @@
     var cam = String(opts.camino || (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgBan) : ''));
     var cuerpo = 'Checklist de montaje abajo.';
     if (germBan && cam === 'semilla_propagador') {
-      cuerpo =
-        'La sala se configura <strong>después de las 6 fases</strong>. Ahora: checklist del propagador en Inicio.';
+      if (typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfgBan)) {
+        cuerpo = 'Verifica el checklist de montaje de sala abajo.';
+      } else if (
+        typeof propagadorMontajeCompleto === 'function' &&
+        propagadorMontajeCompleto(cfgBan)
+      ) {
+        cuerpo =
+          'Puedes configurar la sala (carpa, LED, extractor) cuando quieras durante la germinación.';
+      } else {
+        cuerpo = 'Primero completa el checklist del propagador en Inicio.';
+      }
     } else if (germBan && cam === 'semilla_hidro') {
       cuerpo =
         'Tras el prep hidro: <strong>configura la sala</strong> aquí y el montaje antes de las 6 fases.';

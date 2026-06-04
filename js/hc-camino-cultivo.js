@@ -254,7 +254,7 @@
     return montajeSalaPreGermOk(cfg);
   }
 
-  /** Propagador: sala después de las 6 fases. Hidro directo: sala antes de germinar. */
+  /** Propagador: sala opcional tras checklist propagador (también tras germinación concluida). Hidro: sala antes de germinar. */
   function hcGerminacionBloqueadaPorSala(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!hcCaminoRequiereSalaPreGerm(cfg)) return false;
@@ -388,19 +388,13 @@
 
   function hcSalaPreGermPermitida(cfg, opts) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    opts = opts || {};
     var cam = getCaminoCultivo(cfg);
     if (cam === 'semilla_propagador') {
-      if (opts.duranteGerminacion) {
-        if (
-          typeof propagadorMontajeCompleto === 'function' &&
-          propagadorMontajeCompleto(cfg)
-        ) {
-          return true;
-        }
-        if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
-          return true;
-        }
+      if (
+        typeof propagadorMontajeCompleto === 'function' &&
+        propagadorMontajeCompleto(cfg)
+      ) {
+        return true;
       }
       return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     }
@@ -571,9 +565,12 @@
     var cfg =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
     if (!hcSalaPreGermPermitida(cfg, opts)) {
+      var camBloq = getCaminoCultivo(cfg);
       if (typeof showToast === 'function') {
         showToast(
-          'Completa las 6 fases en Inicio → Germinación antes de configurar la sala.',
+          camBloq === 'semilla_propagador'
+            ? 'Completa el checklist del propagador en Inicio antes de configurar la sala.'
+            : 'Aún no puedes configurar la sala. Revisa los pasos pendientes en Inicio.',
           true,
           { durationMs: 6200 }
         );
@@ -581,7 +578,14 @@
       try {
         if (typeof goTab === 'function') goTab('inicio');
         setTimeout(function () {
-          document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (
+            camBloq === 'semilla_propagador' &&
+            typeof hcOpenPropagadorMontajeChecklist === 'function'
+          ) {
+            hcOpenPropagadorMontajeChecklist();
+          } else {
+            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
         }, 200);
       } catch (_) {}
       return;

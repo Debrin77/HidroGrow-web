@@ -2492,7 +2492,7 @@ function guardarSetupYContinuarCore() {
       var msgGerm =
         camGuardado === 'semilla_hidro'
           ? '✅ Guardado · checklist prep hidro → sala → sistema → 6 fases'
-          : '✅ Guardado · checklist propagador → 6 fases en Inicio (sala después)';
+          : '✅ Guardado · checklist propagador → registro en Inicio (sala cuando quieras)';
       showToast(
         salaPreGermGuardada
           ? '✅ Sala guardada · checklist de montaje y luego las 6 fases'
