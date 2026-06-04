@@ -256,10 +256,21 @@
     g.modo = getModoGerminacion(cfg, g);
   }
 
-  function diasDesdeInicio(g) {
-    if (!g.startedAt) return 0;
+  function getFechaInicioGerminacion(g, cfg) {
+    cfg = cfg || cfgActiva();
+    g = g || ensureGerminacionFlow(cfg);
+    if (typeof leerFechaSiembraGermDesdeCfg === 'function') {
+      var f = leerFechaSiembraGermDesdeCfg(cfg);
+      if (f) return f;
+    }
+    return String(g.fechaSiembraGerm || g.startedAt || '').slice(0, 10);
+  }
+
+  function diasDesdeInicio(g, cfg) {
+    var iso = getFechaInicioGerminacion(g, cfg);
+    if (!iso) return 0;
     try {
-      var a = new Date(g.startedAt);
+      var a = new Date(iso + 'T12:00:00');
       var b = new Date();
       a.setHours(0, 0, 0, 0);
       b.setHours(0, 0, 0, 0);
@@ -269,14 +280,14 @@
     }
   }
 
-  function diasEnFaseActual(g, idx) {
+  function diasEnFaseActual(g, idx, cfg) {
     if (idx == null || idx < 0) return 0;
     var iso = null;
     if (idx <= 0) {
-      iso = g.startedAt;
+      iso = getFechaInicioGerminacion(g, cfg);
     } else {
       var prev = g.pasos[PASOS[idx - 1].id];
-      iso = (prev && prev.doneAt) || g.startedAt;
+      iso = (prev && prev.doneAt) || getFechaInicioGerminacion(g, cfg);
     }
     if (!iso) return 0;
     try {
@@ -395,6 +406,7 @@
         equip: {},
         variedadId: '',
         startedAt: '',
+        fechaSiembraGerm: '',
         trasladoAt: '',
         ultimaDomo: null,
         registroDiario: [],
@@ -442,8 +454,8 @@
     if (g.concluidaAt) return true;
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_propagador') {
-      if (!g.startedAt) return false;
-      var dias = diasDesdeInicio(g) + 1;
+      if (!getFechaInicioGerminacion(g, cfg)) return false;
+      var dias = diasDesdeInicio(g, cfg) + 1;
       return dias >= diasObjetivoConclusionGerm(cfg, g);
     }
     return fasesCompletadas(g);
@@ -479,7 +491,14 @@
         moved = true;
       }
     });
-    if (moved && !g.startedAt) g.startedAt = hoyIso();
+    if (moved && !getFechaInicioGerminacion(g, cfg)) {
+      if (typeof aplicarFechaSiembraGermEnCfg === 'function') {
+        aplicarFechaSiembraGermEnCfg(cfg, hoyIso());
+      } else {
+        g.startedAt = hoyIso();
+        g.fechaSiembraGerm = g.startedAt;
+      }
+    }
   }
 
   function hcGerminacionSyncDesdePremium(cfg) {
@@ -507,7 +526,20 @@
     const g = ensureGerminacionFlow(cfg);
     g.modo = getModoGerminacion(cfg, g);
     if (!g.trasladoAt) g.activo = true;
-    if (!g.startedAt && g.activo) g.startedAt = hoyIso();
+    var premSync = cfg.premiumSetup || {};
+    var fechaSync =
+      typeof leerFechaSiembraGermDesdeCfg === 'function' ? leerFechaSiembraGermDesdeCfg(cfg) : '';
+    if (fechaSync) {
+      g.fechaSiembraGerm = fechaSync;
+      premSync.fechaSiembraGerm = fechaSync;
+      g.startedAt = fechaSync;
+    } else if (g.startedAt && !g.fechaSiembraGerm) {
+      g.fechaSiembraGerm = String(g.startedAt).slice(0, 10);
+      premSync.fechaSiembraGerm = g.fechaSiembraGerm;
+    } else if (!g.startedAt && g.activo && premSync.fechaSiembraGerm) {
+      g.startedAt = premSync.fechaSiembraGerm;
+      g.fechaSiembraGerm = premSync.fechaSiembraGerm;
+    }
     if (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) {
       g.variedadId = cfg.premiumSetup.variedadGerminacion;
     }
@@ -569,7 +601,7 @@
   /** Anillo del hub en propagador: avance por días hacia el objetivo genética (no las 6 fases). */
   function pctProgresoPropagadorDias(cfg, g) {
     g = g || ensureGerminacionFlow(cfg);
-    if (!g.startedAt) return 0;
+    if (!getFechaInicioGerminacion(g, cfg)) return 0;
     if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return 100;
     var obj = diasObjetivoConclusionGerm(cfg, g);
     if (obj < 1) return 0;
@@ -654,7 +686,7 @@
             if (typeof abrirChecklist === 'function') setTimeout(function () { abrirChecklist(false); }, 400);
           }
         } else if (bloqueo === 'plan_germ') {
-          showToast('Define genética, semillas y sustrato en el checklist del propagador.', true);
+          showToast('Define genética, semillas, sustrato y fecha de siembra en el checklist del propagador.', true);
           if (typeof hcOpenPropagadorMontajeChecklist === 'function') hcOpenPropagadorMontajeChecklist();
         } else {
           showToast('Primero completa el checklist del propagador o prep hidro (arriba).', true);
@@ -680,8 +712,17 @@
       if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
       return;
     }
+    if (!getFechaInicioGerminacion(g, cfg)) {
+      if (typeof showToast === 'function') {
+        showToast(
+          'Indica la fecha de siembra en el sustrato (asistente o checklist del propagador).',
+          true,
+          { durationMs: 5200 }
+        );
+      }
+      return;
+    }
     g.pasos[paso.id] = { doneAt: hoyIso(), fecha: hoyDisplay(), hora: horaDisplay() };
-    if (!g.startedAt) g.startedAt = hoyIso();
     persistirGerminacion();
     const sig = idx < PASOS.length - 1 ? PASOS[idx + 1] : null;
     mostrarCelebracionFase(paso, sig);
@@ -1312,7 +1353,16 @@
       esc(modo) +
       '">' +
       esc(modoLbl) +
-      '</span> · día <strong>' +
+      '</span>' +
+      (function () {
+        var fIni = getFechaInicioGerminacion(g, cfg);
+        var fTxt =
+          fIni && typeof formatearFechaSiembraGermDisplay === 'function'
+            ? formatearFechaSiembraGermDisplay(fIni)
+            : '';
+        return fTxt ? ' · siembra <strong>' + esc(fTxt) + '</strong>' : '';
+      })() +
+      ' · día <strong>' +
       diaN +
       '</strong> del seguimiento</p>' +
       (camGerm === 'semilla_propagador'
@@ -1766,8 +1816,9 @@
     if (!hcGerminacionActiva()) return;
     var cfg = cfgActiva();
     var g = ensureGerminacionFlow(cfg);
-    if (!g.startedAt) return;
-    var start = new Date(g.startedAt);
+    var isoIni = getFechaInicioGerminacion(g, cfg);
+    if (!isoIni) return;
+    var start = new Date(isoIni + 'T12:00:00');
     start.setHours(0, 0, 0, 0);
     var hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
@@ -1942,7 +1993,8 @@
       }
     }
 
-    if (g.startedAt && g.variedadId) {
+    var isoHitos = getFechaInicioGerminacion(g, cfg);
+    if (isoHitos && g.variedadId) {
       var hitos =
         typeof getGerminacionDiasHitos === 'function'
           ? getGerminacionDiasHitos(g.variedadId)
@@ -1951,7 +2003,7 @@
         typeof getGerminacionSpecPorVariedad === 'function'
           ? getGerminacionSpecPorVariedad(g.variedadId)
           : {};
-      var start = new Date(g.startedAt);
+      var start = new Date(isoHitos + 'T12:00:00');
       start.setHours(0, 0, 0, 0);
       var emergD = hitos && hitos.emerg ? hitos.emerg : parseRangoDiasMedio(spec.emerg);
       var plantD = hitos && hitos.planton ? hitos.planton : parseRangoDiasMedio(spec.planton);
@@ -2039,8 +2091,17 @@
       setupData.premium.origenPlanta = 'semilla';
     }
     hcGerminacionSyncDesdePremium(cfg);
-    ensureGerminacionFlow(cfg).activo = true;
-    ensureGerminacionFlow(cfg).startedAt = hoyIso();
+    var gAct = ensureGerminacionFlow(cfg);
+    gAct.activo = true;
+    var premAct = cfg.premiumSetup || {};
+    var fechaAct =
+      typeof leerFechaSiembraGermDesdeCfg === 'function' ? leerFechaSiembraGermDesdeCfg(cfg) : '';
+    if (fechaAct && typeof aplicarFechaSiembraGermEnCfg === 'function') {
+      aplicarFechaSiembraGermEnCfg(cfg, fechaAct);
+    } else if (fechaAct) {
+      gAct.fechaSiembraGerm = fechaAct;
+      gAct.startedAt = fechaAct;
+    }
   }
 
   var refreshDashGerminacionHub = renderDashGerminacionHub;
@@ -2054,6 +2115,8 @@
   global.hcGerminacionAbrirChecklistTraslado = hcGerminacionAbrirChecklistTraslado;
   global.hcGerminacionRenderSetupPreview = hcGerminacionRenderSetupPreview;
   global.hcGerminacionActivarDesdeSetup = hcGerminacionActivarDesdeSetup;
+  global.getFechaInicioGerminacion = getFechaInicioGerminacion;
+  global.diasDesdeInicioGerminacion = diasDesdeInicio;
   global.hcGerminacionEventosCalendario = hcGerminacionEventosCalendario;
   global.registroHechoEnFecha = registroHechoEnFecha;
   global.hcGerminacionMarcarCalendarioGrid = hcGerminacionMarcarCalendarioGrid;

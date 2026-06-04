@@ -59,6 +59,66 @@
     return document.getElementById(id);
   }
 
+  function hoyIsoGerm() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function normalizarFechaSiembraGermInput(val) {
+    var s = String(val || '').trim().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return '';
+    var d = new Date(s + 'T12:00:00');
+    if (isNaN(d.getTime())) return '';
+    var hoy = new Date();
+    hoy.setHours(12, 0, 0, 0);
+    if (d > hoy) return hoyIsoGerm();
+    return s;
+  }
+
+  function formatearFechaSiembraGermDisplay(iso) {
+    iso = normalizarFechaSiembraGermInput(iso);
+    if (!iso) return '';
+    try {
+      var p = iso.split('-');
+      return p[2] + '/' + p[1] + '/' + p[0];
+    } catch (_) {
+      return iso;
+    }
+  }
+
+  function leerFechaSiembraGermDesdeCfg(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var prem = cfg.premiumSetup || {};
+    var g =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+    return normalizarFechaSiembraGermInput(
+      prem.fechaSiembraGerm || g.fechaSiembraGerm || g.startedAt || cfg.fechaSiembraGerm || ''
+    );
+  }
+
+  function aplicarFechaSiembraGermEnCfg(cfg, iso) {
+    if (!cfg || typeof cfg !== 'object') return '';
+    iso = normalizarFechaSiembraGermInput(iso);
+    if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
+    if (!iso) {
+      delete cfg.premiumSetup.fechaSiembraGerm;
+      delete cfg.fechaSiembraGerm;
+      if (cfg.germinacionFlow) delete cfg.germinacionFlow.fechaSiembraGerm;
+      return '';
+    }
+    cfg.premiumSetup.fechaSiembraGerm = iso;
+    cfg.fechaSiembraGerm = iso;
+    if (typeof setupData !== 'undefined' && setupData.premium) {
+      setupData.premium.fechaSiembraGerm = iso;
+    }
+    if (typeof ensureGerminacionFlow === 'function') {
+      var g = ensureGerminacionFlow(cfg);
+      g.fechaSiembraGerm = iso;
+      g.startedAt = iso;
+      if (!g.trasladoAt) g.activo = true;
+    }
+    return iso;
+  }
+
   /**
    * Abono de bandeja del domo: lee UI + config y escribe siempre en cfg (no depende de otros módulos).
    */
@@ -125,6 +185,7 @@
     if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) p.numSemillasGerm = 6;
     if (!p.sustratoGerm) p.sustratoGerm = 'lana';
     if (!p.bandejaGerm) p.bandejaGerm = 'auto';
+    if (p.fechaSiembraGerm) p.fechaSiembraGerm = normalizarFechaSiembraGermInput(p.fechaSiembraGerm);
     return p;
   }
 
@@ -216,6 +277,11 @@
       sec.querySelectorAll('[data-sustrato-germ]').forEach(function (btn) {
         btn.classList.toggle('selected', btn.getAttribute('data-sustrato-germ') === p.sustratoGerm);
       });
+      var fechaInpUpd = el('setupPremiumFechaSiembraGerm');
+      if (fechaInpUpd && document.activeElement !== fechaInpUpd) {
+        fechaInpUpd.value = p.fechaSiembraGerm || '';
+        fechaInpUpd.max = hoyIsoGerm();
+      }
       refreshPremiumGermPlanReq();
       return;
     }
@@ -290,6 +356,15 @@
       '<div id="setupPremiumGermSustratoAguaHost" class="setup-mb-8">' +
       sustratoAguaHtml +
       '</div>' +
+      '<div class="setup-mb-8 hc-germ-fecha-siembra-block">' +
+      '<label class="setup-field-label" for="setupPremiumFechaSiembraGerm">Fecha: semillas en el sustrato y propagador listo</label>' +
+      '<input type="date" id="setupPremiumFechaSiembraGerm" class="setup-input-city" max="' +
+      hoyIsoGerm() +
+      '" value="' +
+      (p.fechaSiembraGerm || '') +
+      '" onchange="persistPremiumGermPlanFromUI(true)" onblur="persistPremiumGermPlanFromUI(true)" aria-describedby="setupPremiumFechaSiembraHint">' +
+      '<p id="setupPremiumFechaSiembraHint" class="setup-field-hint setup-mt-4">Día <strong>1</strong> del seguimiento. Los plazos por genética (fases y conclusión) se calculan desde esta fecha, no desde hoy al abrir la app.</p>' +
+      '</div>' +
       '<p id="setupPremiumGermPlanReq" class="setup-field-hint setup-hidden" role="note"></p>';
     refreshPremiumGermPlanReq();
   }
@@ -305,6 +380,12 @@
       req.textContent = 'Indica al menos 1 semilla.';
       return;
     }
+    if (!p.fechaSiembraGerm) {
+      req.classList.remove('setup-hidden');
+      req.className = 'setup-field-hint setup-mb-4';
+      req.textContent = 'Indica la fecha en que pones las semillas en el sustrato (propagador preparado).';
+      return;
+    }
     req.classList.add('setup-hidden');
     req.textContent = '';
   }
@@ -316,6 +397,7 @@
       return o.id === id;
     });
     p.sustratoGerm = ok ? id : 'lana';
+    if (!p.fechaSiembraGerm) p.fechaSiembraGerm = hoyIsoGerm();
     var sec = el('setupPremiumGermPlanSection');
     if (sec && sec.querySelector('[data-sustrato-germ]')) {
       sec.querySelectorAll('[data-sustrato-germ]').forEach(function (btn) {
@@ -359,6 +441,11 @@
       p.numSemillasGermManual = true;
     }
     p.bandejaGerm = String(el('setupPremiumBandejaGerm')?.value || p.bandejaGerm || 'auto');
+    var fechaInp = el('setupPremiumFechaSiembraGerm');
+    if (fechaInp) {
+      p.fechaSiembraGerm = normalizarFechaSiembraGermInput(fechaInp.value);
+      if (fechaInp.value && fechaInp.value !== p.fechaSiembraGerm) fechaInp.value = p.fechaSiembraGerm;
+    }
     refreshPremiumGermPlanReq();
     syncGermPlanATorreDraft();
     var so = document.getElementById('setupOverlay');
@@ -391,7 +478,9 @@
     cfg.premiumSetup.numSemillasGerm = p.numSemillasGerm;
     cfg.premiumSetup.sustratoGerm = p.sustratoGerm;
     cfg.premiumSetup.bandejaGerm = p.bandejaGerm;
+    cfg.premiumSetup.fechaSiembraGerm = p.fechaSiembraGerm;
     cfg.sustratoGerm = p.sustratoGerm;
+    aplicarFechaSiembraGermEnCfg(cfg, p.fechaSiembraGerm);
     if (p.sustratoGerm === 'lana' || p.sustratoGerm === 'coco') {
       cfg.sustrato = p.sustratoGerm;
     } else if (p.sustratoGerm === 'esponja') {
@@ -428,6 +517,8 @@
       p.sustratoGerm = cfg.germinacionFlow.sustratoGerm;
     }
     if (cfg.sustratoGerm) p.sustratoGerm = cfg.sustratoGerm;
+    var fechaCfg = leerFechaSiembraGermDesdeCfg(cfg);
+    if (fechaCfg) p.fechaSiembraGerm = fechaCfg;
     ensurePremiumGermFields(p);
   }
 
@@ -440,7 +531,9 @@
     cfg.premiumSetup.numSemillasGermManual = !!p.numSemillasGermManual;
     cfg.premiumSetup.sustratoGerm = p.sustratoGerm;
     cfg.premiumSetup.bandejaGerm = p.bandejaGerm;
+    cfg.premiumSetup.fechaSiembraGerm = p.fechaSiembraGerm;
     cfg.sustratoGerm = p.sustratoGerm;
+    aplicarFechaSiembraGermEnCfg(cfg, p.fechaSiembraGerm);
     if (p.sustratoGerm === 'lana' || p.sustratoGerm === 'coco' || p.sustratoGerm === 'esponja') {
       cfg.sustrato = p.sustratoGerm === 'papel' ? 'esponja' : p.sustratoGerm;
     }
@@ -527,11 +620,14 @@
       typeof getNutrienteGermVolLFromCfg === 'function'
         ? getNutrienteGermVolLFromCfg(cfg)
         : 0;
+    var fechaSiembra = leerFechaSiembraGermDesdeCfg(cfg);
     return {
       variedad: variedad,
       nombreVar: nombreVar || variedad,
       numSemillas: Number.isFinite(n) && n >= 1 ? n : 0,
       sustrato: sustrato,
+      fechaSiembraGerm: fechaSiembra,
+      fechaSiembraDisplay: formatearFechaSiembraGermDisplay(fechaSiembra),
       propagador: propagador,
       nutrienteId: nutrienteId,
       nutrienteNombre: nutrienteNombre,
@@ -561,6 +657,9 @@
     if (!st.variedad) missing.push('genética');
     if (!st.numSemillas || st.numSemillas < 1) missing.push('número de semillas');
     if (!st.sustrato) missing.push('sustrato en propagador');
+    if ((cam === 'semilla_propagador' || cam === 'semilla_hidro') && !st.fechaSiembraGerm) {
+      missing.push('fecha de siembra en sustrato');
+    }
     if (opts.requierePropagador !== false && cam === 'semilla_propagador' && !st.propagador) {
       missing.push('propagador/domo en catálogo');
     }
@@ -590,6 +689,8 @@
       p.numSemillasGermManual = true;
       var sub = el('hcPropSustratoGerm');
       if (sub) p.sustratoGerm = String(sub.value || p.sustratoGerm || 'lana');
+      var fechaProp = el('hcPropFechaSiembraGerm');
+      if (fechaProp) p.fechaSiembraGerm = normalizarFechaSiembraGermInput(fechaProp.value);
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') {
       persistPremiumGermPlanToConfig(cfg, { adjustTorre: true });
@@ -651,6 +752,7 @@
           etiquetaSustratoGerm(st.sustrato) +
           (st.nutrienteNombre ? ' · ' + esc(st.nutrienteNombre) : '') +
           (st.nutrienteVolL ? ' · ' + st.nutrienteVolL + ' L bandeja' : '') +
+          (st.fechaSiembraDisplay ? ' · siembra ' + esc(st.fechaSiembraDisplay) : '') +
           (st.propagador ? '' : ' · <em>sin domo en catálogo</em>')
         : '<strong>Pendiente:</strong> ' +
           esc(v.message) +
@@ -678,7 +780,14 @@
           '</option>'
         );
       }).join('') +
-      '</select></div></div>' +
+      '</select></div>' +
+      '<div><label class="setup-field-label" for="hcPropFechaSiembraGerm">Fecha en sustrato</label>' +
+      '<input type="date" id="hcPropFechaSiembraGerm" class="setup-input-city" max="' +
+      hoyIsoGerm() +
+      '" value="' +
+      (st.fechaSiembraGerm || '') +
+      '" onchange="persistHcPropPlanFromModal();hcPropPlanRefreshModalBody()" aria-describedby="hcPropFechaSiembraHint">' +
+      '<p id="hcPropFechaSiembraHint" class="setup-field-hint setup-mt-4">Día 1 del calendario genético.</p></div></div>' +
       (typeof renderHcPropNutrienteGermFields === 'function'
         ? renderHcPropNutrienteGermFields(cfg)
         : '') +
@@ -752,6 +861,12 @@
       if (typeof showToast === 'function') showToast('Elige el sustrato del propagador (lana, jiffy, papel…)', true);
       return false;
     }
+    if (!p.fechaSiembraGerm) {
+      if (typeof showToast === 'function') {
+        showToast('Indica la fecha en que pones las semillas en el sustrato', true);
+      }
+      return false;
+    }
     return true;
   }
 
@@ -788,4 +903,8 @@
   global.updatePropagadorMontajeFoot = updatePropagadorMontajeFoot;
   global.hcGerminacionBloqueadaPorPlanDatos = hcGerminacionBloqueadaPorPlanDatos;
   global.requiereValidacionPlanGerm = requiereValidacionPlanGerm;
+  global.leerFechaSiembraGermDesdeCfg = leerFechaSiembraGermDesdeCfg;
+  global.aplicarFechaSiembraGermEnCfg = aplicarFechaSiembraGermEnCfg;
+  global.formatearFechaSiembraGermDisplay = formatearFechaSiembraGermDisplay;
+  global.normalizarFechaSiembraGermInput = normalizarFechaSiembraGermInput;
 })(typeof window !== 'undefined' ? window : globalThis);

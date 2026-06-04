@@ -191,7 +191,11 @@ function getRecordatorioMedicionDiariaCalendario() {
     if (typeof hcGerminacionActiva === 'function' && !hcGerminacionActiva(cfgGerm)) return null;
     const g =
       typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfgGerm) : null;
-    if (!g || !g.startedAt) return null;
+    var fechaIni =
+      typeof getFechaInicioGerminacion === 'function'
+        ? getFechaInicioGerminacion(g, cfgGerm)
+        : g && g.startedAt;
+    if (!g || !fechaIni) return null;
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
     const medidoHoy =

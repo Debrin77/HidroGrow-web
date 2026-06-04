@@ -695,8 +695,12 @@
         ? diasObjetivoConclusionGerm(cfg, g)
         : 12;
     var diaN = 1;
-    if (g.startedAt) {
-      var d0 = new Date(g.startedAt);
+    var isoIni =
+      typeof getFechaInicioGerminacion === 'function'
+        ? getFechaInicioGerminacion(g, cfg)
+        : g.startedAt;
+    if (isoIni) {
+      var d0 = new Date(isoIni + 'T12:00:00');
       d0.setHours(0, 0, 0, 0);
       var hoy = new Date();
       hoy.setHours(0, 0, 0, 0);

@@ -369,8 +369,12 @@
     var g =
       typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
     var diaN = 1;
-    if (g.startedAt) {
-      var d0 = new Date(g.startedAt);
+    var isoIni =
+      typeof getFechaInicioGerminacion === 'function'
+        ? getFechaInicioGerminacion(g, cfg)
+        : g.startedAt;
+    if (isoIni) {
+      var d0 = new Date(isoIni + 'T12:00:00');
       d0.setHours(0, 0, 0, 0);
       var hoy = new Date();
       hoy.setHours(0, 0, 0, 0);
@@ -386,7 +390,7 @@
     var elC = document.getElementById('dashCosecha');
     var elX = document.getElementById('dashProxCosecha');
     if (elP) elP.textContent = String(nPlantas);
-    if (elD) elD.textContent = g.startedAt ? 'Día ' + diaN : 'Sin iniciar';
+    if (elD) elD.textContent = isoIni ? 'Día ' + diaN : 'Sin fecha siembra';
     if (elC) {
       var faseCorta =
         typeof hcGerminacionFaseActualId === 'function'
@@ -405,7 +409,7 @@
     if (elX) {
       if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
         elX.textContent = 'Listo';
-      } else if (g.startedAt && diasObj > 0) {
+      } else if (isoIni && diasObj > 0) {
         var rest = Math.max(0, diasObj - diaN);
         elX.textContent = rest > 0 ? '~' + rest + ' d' : 'Pronto';
       } else {
