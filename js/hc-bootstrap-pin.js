@@ -92,12 +92,35 @@ function unlockAndInitApp() {
       appEl.removeAttribute('inert');
       appEl.style.display = '';
       appEl.style.visibility = 'visible';
+      appEl.classList.add('hc-app-booting');
     }
     if (pinEl) pinEl.style.display = 'none';
     if (getAuthRememberMinutes() > 0) localStorage.setItem(AUTH_TS_KEY, String(Date.now()));
     else localStorage.removeItem(AUTH_TS_KEY);
-    initApp();
     appBootstrapped = true;
+    const runInit = function () {
+      try {
+        initApp();
+      } catch (eInit) {
+        appBootstrapped = false;
+        if (appEl) {
+          appEl.classList.remove('hc-app-booting');
+          appEl.inert = true;
+        }
+        if (pinEl) {
+          pinEl.style.display = '';
+          a11yAttachFocusTrap(pinEl);
+        }
+        throw eInit;
+      }
+    };
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(runInit);
+      });
+    } else {
+      setTimeout(runInit, 0);
+    }
   } catch (e) {
     console.error('Error inicializando app tras PIN:', e);
     appBootstrapped = false;

@@ -378,6 +378,9 @@
 
     refreshMedirSalaAmbienteMedirUi(cfg);
     refreshMedirAsistentePropagadorBtn(activo);
+    if (typeof refreshSalaPanelesDuplicadosMedirUi === 'function') {
+      refreshSalaPanelesDuplicadosMedirUi(cfg);
+    }
   }
 
   function refreshMedirAsistentePropagadorBtn(activo) {

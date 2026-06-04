@@ -87,27 +87,104 @@ function resetApp() {
   showToast('🔄 Datos restablecidos · bienvenida y configuración como al abrir la app por primera vez');
 }
 
+/** Carga torres + datos en memoria (sin pintar UI pesada). */
+function hcCargarTorreActivaEnMemoria(opts) {
+  const deferUi = !(opts && opts.deferUi === false);
+  initTorres();
+  if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+    reconciliarSlotTorreActivaAntesDeCargar();
+    cargarEstadoTorre(state.torreActiva || 0, deferUi ? { deferUi: true } : undefined);
+  } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+    hcPrepararEstadoSinInstalacionEnMemoria();
+  }
+}
+
+/** Mientras el PIN está visible: adelantar lectura de localStorage. */
+function hcPreinitTorreStateWhileLocked() {
+  if (typeof window !== 'undefined' && window._hcPreinitTorreDone) return;
+  try {
+    hcCargarTorreActivaEnMemoria({ deferUi: true });
+    if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
+  } catch (e) {
+    try {
+      console.warn('hcPreinitTorreStateWhileLocked', e);
+    } catch (_) {}
+  }
+}
+
+function hcFinishInitAppHeavyWork() {
+  const appEl = document.getElementById('app');
+  try {
+    if (typeof hcApplyCargarTorreUiPendiente === 'function') hcApplyCargarTorreUiPendiente();
+    try {
+      renderTorre();
+    } catch (eRenderTorre) {
+      try {
+        console.error('renderTorre en initApp', eRenderTorre);
+      } catch (_) {}
+    }
+    try {
+      if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
+    } catch (_) {}
+    try {
+      updateTorreStats();
+      updateDashboard();
+    } catch (eDash) {
+      try {
+        console.error('dashboard en initApp', eDash);
+      } catch (_) {}
+    }
+    try {
+      initConfigUI();
+    } catch (eCfg) {
+      try {
+        console.error('initConfigUI en initApp', eCfg);
+      } catch (_) {}
+    }
+    try {
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    } catch (_) {}
+    try {
+      actualizarVistaRiegoPorTipoInstalacion();
+    } catch (eHdr) {
+      try {
+        console.error('riego en initApp', eHdr);
+      } catch (_) {}
+    }
+    try {
+      if (
+        typeof getCaminoCultivo === 'function' &&
+        getCaminoCultivo(state.configTorre || {}) === 'semilla_propagador' &&
+        typeof hcSyncGerminacionPlanCultivo === 'function'
+      ) {
+        hcSyncGerminacionPlanCultivo(state.configTorre);
+      }
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+    } catch (_) {}
+    if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
+  } finally {
+    if (appEl) appEl.classList.remove('hc-app-booting');
+  }
+}
+
 function initApp() {
   try {
     if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
   } catch (_) {}
   updateClock();
   setInterval(updateClock, 30000);
-  // Modo de cultivos (lechuga / mixto / …): solo estado; no hay selector en Cultivo e instalación (evita confusión con «Editar ficha»).
   const modoSel = document.getElementById('modoSelector');
   if (modoSel) {
     modoSel.querySelectorAll('.modo-btn').forEach(b => b.classList.remove('active'));
     const modoBtn = document.getElementById('modo-' + modoActual);
     if (modoBtn) modoBtn.classList.add('active');
   }
-  // Multi-instalación antes del primer render (state.torres, nombre en UI, esquema)
   try {
-    initTorres();
-    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
-      reconciliarSlotTorreActivaAntesDeCargar();
-      cargarEstadoTorre(state.torreActiva || 0);
-    } else if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
-      hcPrepararEstadoSinInstalacionEnMemoria();
+    if (typeof window !== 'undefined' && window._hcPreinitTorreDone) {
+      /* datos ya cargados en segundo plano durante el PIN */
+    } else {
+      hcCargarTorreActivaEnMemoria({ deferUi: true });
+      if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
     }
   } catch (eTorres) {
     try {
@@ -116,70 +193,19 @@ function initApp() {
   }
   applyBootCollapsedUI();
   try {
-    renderTorre();
-  } catch (eRenderTorre) {
-    try {
-      console.error('renderTorre en initApp', eRenderTorre);
-    } catch (_) {}
-  }
-  try {
-    if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
-  } catch (_) {}
-  try {
-    updateTorreStats();
-    updateDashboard();
-  } catch (eDash) {
-    try {
-      console.error('dashboard en initApp', eDash);
-    } catch (_) {}
-  }
-  try {
-    initConfigUI();
-  } catch (eCfg) {
-    try {
-      console.error('initConfigUI en initApp', eCfg);
-    } catch (_) {}
-  }
-  try {
-    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-  } catch (_) {}
-  setInterval(updateDashboard, 300000);
-
-  try {
     actualizarHeaderTorre();
-    actualizarVistaRiegoPorTipoInstalacion();
   } catch (eHdr) {
     try {
-      console.error('header/riego en initApp', eHdr);
+      console.error('header en initApp', eHdr);
     } catch (_) {}
   }
-
-  // Aplicar configuración de torre si existe
-  try {
-    aplicarConfigTorre();
-  } catch (eCfgTorre) {
-    try {
-      console.error('aplicarConfigTorre en initApp', eCfgTorre);
-    } catch (_) {}
-  }
-  try {
-    if (
-      typeof getCaminoCultivo === 'function' &&
-      getCaminoCultivo(state.configTorre || {}) === 'semilla_propagador' &&
-      typeof hcSyncGerminacionPlanCultivo === 'function'
-    ) {
-      hcSyncGerminacionPlanCultivo(state.configTorre);
-    }
-    if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
-  } catch (_) {}
   mostrarBtnNotificaciones();
-  if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
+  setInterval(updateDashboard, 300000);
   setTimeout(programarRecordatorios, 2000);
-  setTimeout(() => { void refrescarAvisosMeteoalarmEnSegundoPlano(); }, 4500);
-  // Badges DESPUÉS de cargar config y torre
+  setTimeout(() => {
+    void refrescarAvisosMeteoalarmEnSegundoPlano();
+  }, 4500);
   setTimeout(actualizarBadgesNutriente, 100);
-
-  // Primera vez: bienvenida (una sola) y luego asistente o checklist si aplica
   setTimeout(() => {
     try {
       if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
@@ -203,6 +229,8 @@ function initApp() {
   if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
   if (typeof initHistorialTabBarA11y === 'function') initHistorialTabBarA11y();
   if (typeof window._hcSyncHistorialTabTabIndex === 'function') window._hcSyncHistorialTabTabIndex();
+
+  setTimeout(hcFinishInitAppHeavyWork, 0);
 }
 
 /**
@@ -537,6 +565,14 @@ function goTab(tab) {
 }
 
 function irMedirMunicipioClima() {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  const salaMeteoOculto =
+    typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+    hcSalaOcultarPanelesDuplicadosMedir(cfg);
+  if (salaMeteoOculto) {
+    goTab('meteo');
+    return;
+  }
   goTab('sala');
   setTimeout(() => {
     const panel = document.getElementById('panelLocalidadMeteo');

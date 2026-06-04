@@ -14717,6 +14717,29 @@ html.hc-theme-dark .sala-montaje-prereq-title {
 html.hc-theme-dark .sala-montaje-prereq-warn {
   color: #fbbf24;
 }
+/* Arranque tras PIN: shell visible de inmediato; torre/dashboard en el siguiente frame */
+#app.hc-app-booting {
+  cursor: wait;
+}
+#app.hc-app-booting .tab-content.active {
+  opacity: 0.72;
+  pointer-events: none;
+}
+#app.hc-app-booting::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 12000;
+  background: linear-gradient(90deg, transparent, var(--accent, #22c55e), transparent);
+  animation: hc-app-booting-bar 0.9s ease-in-out infinite;
+}
+@keyframes hc-app-booting-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
 .dash-sala-equip-reco {
   margin: 0 0 12px;
 }

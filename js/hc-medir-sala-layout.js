@@ -282,8 +282,41 @@
     return true;
   }
 
+  var SALA_PANELES_DUPLICADOS_MEDIR = [
+    'configPanel',
+    'panelGrowRoomSala',
+    'panelConfigInteriorGrow',
+    'panelLocalidadMeteo',
+  ];
+
+  function refreshSalaPanelesDuplicadosMedirUi(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var ocultar =
+      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+      hcSalaOcultarPanelesDuplicadosMedir(cfg);
+    SALA_PANELES_DUPLICADOS_MEDIR.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('setup-hidden', ocultar);
+      el.setAttribute('aria-hidden', ocultar ? 'true' : 'false');
+    });
+    var stabAgua = document.getElementById('stab-agua');
+    if (stabAgua) {
+      var label = ocultar ? 'Equipamiento' : 'Agua y ubicación';
+      var icon = ocultar ? '#hc-i-plug' : '#hc-i-droplet';
+      stabAgua.innerHTML =
+        '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="' +
+        icon +
+        '"/></svg> ' +
+        label;
+    }
+    var shell = document.getElementById('tabSalaMount');
+    if (shell) shell.classList.toggle('sala-sub-shell--solo-equip', ocultar);
+  }
+
   function refreshSalaSubTabsCaminoUi(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    refreshSalaPanelesDuplicadosMedirUi(cfg);
     var showRecarga = salaRecargaSubTabVisible(cfg);
     var btnRec = document.getElementById('stab-recarga');
     var panelRec = document.getElementById('salaPanelRecarga');
@@ -407,6 +440,7 @@
 
   window.salaSubTab = salaSubTab;
   window.refreshSalaSubTabsCaminoUi = refreshSalaSubTabsCaminoUi;
+  window.refreshSalaPanelesDuplicadosMedirUi = refreshSalaPanelesDuplicadosMedirUi;
   window.goTabSala = function (sub) {
     if (typeof goTab === 'function') goTab('sala');
     setTimeout(function () {

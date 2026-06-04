@@ -485,11 +485,24 @@ function gestionarCambioVersionEnArranque() {
 
     const transition = String((prev || 'none') + '->' + APP_BUILD_VERSION);
     const yaGuardada = localStorage.getItem(AUTO_RESTORE_POINT_TRANSITION_KEY) === transition;
-    if (!yaGuardada) {
-      crearPuntoRestauracionLocal({ reason: 'before-version-upgrade', fromVersion: prev || null, toVersion: APP_BUILD_VERSION });
-    }
-
     localStorage.setItem(APP_BUILD_VERSION_KEY, APP_BUILD_VERSION);
+    if (!yaGuardada) {
+      const backupOpts = {
+        reason: 'before-version-upgrade',
+        fromVersion: prev || null,
+        toVersion: APP_BUILD_VERSION,
+      };
+      const runBackup = function () {
+        try {
+          crearPuntoRestauracionLocal(backupOpts);
+        } catch (_) {}
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runBackup, { timeout: 4000 });
+      } else {
+        setTimeout(runBackup, 50);
+      }
+    }
     showToast('ℹ️ Nueva versión detectada. Recomendado: Exportar copia de seguridad ahora.');
   } catch (_) {}
 }

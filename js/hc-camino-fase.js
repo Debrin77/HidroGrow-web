@@ -334,6 +334,19 @@
     return hcOcultarTabSalaDuranteCamino(cfg);
   }
 
+  /**
+   * Propagador sin hidro cerrado: en Sala no repetir bloques de Medir (ambiente, ubicación/luz, grow room).
+   * Equipamiento + checklist de montaje siguen en Sala.
+   */
+  function hcSalaOcultarPanelesDuplicadosMedir(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_propagador') return false;
+    if (typeof hcRecargaCompletaAplicaEnCamino === 'function' && hcRecargaCompletaAplicaEnCamino(cfg)) {
+      return false;
+    }
+    return true;
+  }
+
   function hcMedirEnfocadoGerminacion(cfg) {
     cfg = cfg || cfgActiva();
     var f = getSistemaFaseCamino(cfg);
@@ -398,6 +411,7 @@
   global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;
   global.hcOcultarTabSalaDuranteCamino = hcOcultarTabSalaDuranteCamino;
   global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
+  global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;
   global.montajeSalaOkCamino = montajeSalaOkCamino;

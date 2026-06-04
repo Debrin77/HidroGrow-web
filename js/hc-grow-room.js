@@ -193,7 +193,14 @@
     set('growRoomExtractorM3h', cfg.growRoomExtractorM3h);
     if (el('growRoomFase') && cfg.growRoomFase) el('growRoomFase').value = cfg.growRoomFase;
     const panel = el('panelGrowRoomSala');
-    if (panel) panel.classList.remove('setup-hidden');
+    if (panel) {
+      var ocultarGrow =
+        typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+        hcSalaOcultarPanelesDuplicadosMedir(cfg);
+      panel.classList.toggle('setup-hidden', !!ocultarGrow);
+      panel.setAttribute('aria-hidden', ocultarGrow ? 'true' : 'false');
+      if (!ocultarGrow) panel.classList.remove('setup-hidden');
+    }
     calcularGrowRoom();
     if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
   }

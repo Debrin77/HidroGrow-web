@@ -64,7 +64,7 @@ window.addEventListener('appinstalled', () => {
   showToast('✅ HidroGrow instalada correctamente');
 });
 
-const SPLASH_MIN_VISIBLE_MS = 2600;
+const SPLASH_MIN_VISIBLE_MS = 1400;
 const splashShownAtMs = Date.now();
 
 function hideSplash() {
@@ -101,6 +101,7 @@ window.onload = () => {
 
   // Secuencia recomendada: splash de marca breve -> desbloqueo (biometría/PIN).
   (async () => {
+    scheduleHcPreinitWhilePin();
     await waitSplashMinimumVisible();
     hideSplash();
 
@@ -129,6 +130,24 @@ window.onload = () => {
     }, 150);
   })();
 };
+
+function scheduleHcPreinitWhilePin() {
+  const run = function () {
+    try {
+      if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
+      if (typeof hcPreinitTorreStateWhileLocked === 'function') hcPreinitTorreStateWhileLocked();
+    } catch (e) {
+      try {
+        console.warn('scheduleHcPreinitWhilePin', e);
+      } catch (_) {}
+    }
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 2200 });
+  } else {
+    setTimeout(run, 80);
+  }
+}
 
 // ══════════════════════════════════════════════════
 // FOTODB — IndexedDB para fotos (sin límite de tamaño)

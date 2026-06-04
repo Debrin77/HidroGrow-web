@@ -593,7 +593,33 @@ function guardarEstadoTorreActual() {
   return true;
 }
 
-function cargarEstadoTorre(idx) {
+function aplicarCargarTorreUiDesdeEstado() {
+  if (state.configTorre?.sustrato) state.configSustrato = state.configTorre.sustrato;
+  aplicarConfigTorre();
+  cargarUbicacionMedicionesUI();
+  cargarInteriorGrowUI();
+  if (typeof applyMedirCollapseUI === 'function') applyMedirCollapseUI();
+  cargarLocalidadMeteoUI();
+  try {
+    refreshUbicacionInstalacionUI();
+  } catch (_) {}
+  syncRiegoAvanzadoUI();
+  if (
+    document.getElementById('tab-sala')?.classList.contains('active') ||
+    document.getElementById('tab-mediciones')?.classList.contains('active')
+  ) {
+    initConfigUI();
+  }
+  try {
+    if (typeof updateRecargaBar === 'function') updateRecargaBar();
+  } catch (_) {}
+  try {
+    if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
+  } catch (_) {}
+}
+
+function cargarEstadoTorre(idx, opts) {
+  const deferUi = !!(opts && opts.deferUi);
   const t = state.torres[idx];
   if (!t) return;
   // Restaurar datos de esta torre
@@ -663,23 +689,17 @@ function cargarEstadoTorre(idx) {
   try {
     if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
   } catch (eRiegoSync) {}
-  // Aplicar constantes de la config de esta torre
-  if (state.configTorre?.sustrato) state.configSustrato = state.configTorre.sustrato;
-  aplicarConfigTorre();
-  cargarUbicacionMedicionesUI();
-  cargarInteriorGrowUI();
-  if (typeof applyMedirCollapseUI === 'function') applyMedirCollapseUI();
-  cargarLocalidadMeteoUI();
-  try { refreshUbicacionInstalacionUI(); } catch (_) {}
-  syncRiegoAvanzadoUI();
-  if (document.getElementById('tab-sala')?.classList.contains('active') ||
-    document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
-  try {
-    if (typeof updateRecargaBar === 'function') updateRecargaBar();
-  } catch (_) {}
-  try {
-    if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
-  } catch (_) {}
+  if (deferUi) {
+    if (typeof window !== 'undefined') window._hcCargarTorreUiPendiente = true;
+    return;
+  }
+  aplicarCargarTorreUiDesdeEstado();
+}
+
+function hcApplyCargarTorreUiPendiente() {
+  if (typeof window === 'undefined' || !window._hcCargarTorreUiPendiente) return;
+  window._hcCargarTorreUiPendiente = false;
+  aplicarCargarTorreUiDesdeEstado();
 }
 
 function actualizarHeaderTorre() {

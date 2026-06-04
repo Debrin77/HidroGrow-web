@@ -1086,7 +1086,18 @@ function setUbicacionTorreMediciones(tipo) {
 function actualizarVisibilidadPanelInteriorGrow() {
   const p = document.getElementById('panelConfigInteriorGrow');
   if (!p) return;
-  const int = (state.configTorre || {}).ubicacion === 'interior';
+  const cfg = state.configTorre || {};
+  if (
+    typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+    hcSalaOcultarPanelesDuplicadosMedir(cfg)
+  ) {
+    p.style.display = 'none';
+    p.classList.add('setup-hidden');
+    p.setAttribute('aria-hidden', 'true');
+    applyMedirCollapseUI();
+    return;
+  }
+  const int = cfg.ubicacion === 'interior';
   p.style.display = int ? 'block' : 'none';
   if (int) p.classList.remove('setup-hidden');
   cargarUbicacionMedicionesUI();
