@@ -186,8 +186,20 @@
   }
 
   /** Sesión del asistente: solo sala (carpa, LED, extractor…) antes de las 6 fases. */
+  /** Quita modo «solo sala» del asistente (nueva instalación o reconfigurar camino). */
+  function hcClearSetupSalaPreGermFlags(cfg) {
+    try {
+      if (typeof window !== 'undefined') delete window._hcSetupSalaPreGermSession;
+    } catch (_) {}
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || null;
+    if (cfg && typeof cfg === 'object' && cfg.hcSetupFase === 'sala_pre_germ') {
+      cfg.hcSetupFase = 'germinacion';
+    }
+  }
+
   function hcSetupEnFaseSalaPreGerm() {
     try {
+      if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return false;
       if (typeof window !== 'undefined' && window._hcSetupSalaPreGermSession) return true;
       var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
       return !!(cfg && cfg.hcSetupFase === 'sala_pre_germ');
@@ -1300,6 +1312,7 @@
   global.germinacionListaParaConfigHidro = germinacionListaParaConfigHidro;
   global.depositoListo = depositoListo;
   global.persistCaminoToConfig = persistCaminoToConfig;
+  global.hcClearSetupSalaPreGermFlags = hcClearSetupSalaPreGermFlags;
   global.abrirSetupFaseSala = abrirSetupFaseSala;
   global.abrirConfiguradorEquipamientoSalaPropagador = abrirConfiguradorEquipamientoSalaPropagador;
   global.abrirSetupFaseHidro = abrirSetupFaseHidro;

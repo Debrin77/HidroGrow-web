@@ -338,6 +338,7 @@
   global.setupFlowCanSkipUbicacion = setupFlowCanSkipUbicacion;
   global.setupFlowCanSkipEquip = setupFlowCanSkipEquip;
   global.setupFlowAdvancePage = setupFlowAdvancePage;
+  global.getSetupSkippedPages = getSetupSkippedPages;
   global.getSetupVisiblePages = getSetupVisiblePages;
   global.getSetupDisplayStepInfo = getSetupDisplayStepInfo;
   global.applySetupFlowCondensedUI = applySetupFlowCondensedUI;

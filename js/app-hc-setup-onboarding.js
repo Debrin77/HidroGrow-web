@@ -82,6 +82,15 @@ function hcResetSetupWizardSession(opts) {
   if (!opts.keepPagina) {
     setupPagina = 0;
   }
+  try {
+    if (typeof hcClearSetupSalaPreGermFlags === 'function') {
+      hcClearSetupSalaPreGermFlags(
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null
+      );
+    } else if (typeof window !== 'undefined') {
+      delete window._hcSetupSalaPreGermSession;
+    }
+  } catch (_) {}
   const info = document.getElementById('setupPlantasSeleccionadas');
   const texto = document.getElementById('setupPlantasTexto');
   if (info) info.classList.add('setup-hidden');

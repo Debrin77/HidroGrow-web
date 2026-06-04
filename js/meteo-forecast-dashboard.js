@@ -7,9 +7,16 @@
 // DASHBOARD — LÓGICA
 // ══════════════════════════════════════════════════
 
-function updateDashboard() {
+var _hcDashRefreshAt = 0;
+
+function updateDashboard(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const nowMs = Date.now();
+  if (opts.lite && nowMs - _hcDashRefreshAt < 600) return;
+  _hcDashRefreshAt = nowMs;
+
   try {
-    if (typeof sincronizarUltimaMedicionYRecargaDesdeTorreActiva === 'function') {
+    if (!opts.lite && typeof sincronizarUltimaMedicionYRecargaDesdeTorreActiva === 'function') {
       sincronizarUltimaMedicionYRecargaDesdeTorreActiva();
     }
   } catch (eSync) {}
@@ -48,6 +55,19 @@ function updateDashboard() {
     }
   } else if (usaTilesGerm) {
     refreshDashTilesGerminacion(cfgDash);
+  }
+
+  if (opts.lite) {
+    try {
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+    } catch (_) {}
+    try {
+      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    } catch (_) {}
+    try {
+      if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
+    } catch (_) {}
+    return;
   }
 
   // Torre stats
@@ -115,9 +135,6 @@ function updateDashboard() {
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
   } catch (_) {}
 
-  try {
-    if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
-  } catch (_) {}
 }
 
 function getRecentMedicionesForWeekly(limit) {

@@ -25,6 +25,17 @@ function hcSetupRedirectSiPaginaOmitida() {
 }
 
 function renderSetupPage() {
+  if (
+    typeof setupEsNuevaTorre !== 'undefined' &&
+    setupEsNuevaTorre &&
+    typeof SETUP_PAGE_ORIGEN !== 'undefined' &&
+    setupPagina !== SETUP_PAGE_ORIGEN &&
+    typeof getSetupSkippedPages === 'function'
+  ) {
+    try {
+      if (getSetupSkippedPages().has(setupPagina)) setupPagina = SETUP_PAGE_ORIGEN;
+    } catch (_) {}
+  }
   if (hcSetupRedirectSiPaginaOmitida()) {
     renderSetupPage();
     return;

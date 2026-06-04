@@ -8,6 +8,7 @@
 function hcResetSessionUiFlags() {
   try {
     if (typeof window === 'undefined') return;
+    if (typeof hcInvalidateTabDomCache === 'function') hcInvalidateTabDomCache();
     window._hcMedirSalaLayoutDone = false;
     window._hcMedirSalaLayoutScheduled = false;
     window._hcPreinitTorreDone = false;
@@ -638,7 +639,42 @@ function scrollTabBarToActive(btn) {
   });
 }
 
-function goTabDeferredWork(tab) {
+var _hcTabPanelsCache = null;
+var _hcTabBtnsCache = null;
+var _hcGoTabWorkGen = 0;
+var _hcTabPersistTimer = null;
+var _hcTabHeavyLast = {};
+
+function hcInvalidateTabDomCache() {
+  _hcTabPanelsCache = null;
+  _hcTabBtnsCache = null;
+}
+
+function hcScheduleTabPersist() {
+  if (_hcTabPersistTimer) clearTimeout(_hcTabPersistTimer);
+  _hcTabPersistTimer = setTimeout(function () {
+    _hcTabPersistTimer = null;
+    try {
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+    } catch (_) {}
+    try {
+      if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
+    } catch (_) {}
+  }, 500);
+}
+
+function goTabDeferredWorkLite(tab) {
+  if (tab === 'inicio') {
+    try {
+      if (typeof updateDashboard === 'function') updateDashboard({ lite: true });
+    } catch (_) {}
+  }
+  if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
+  if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
+}
+
+function goTabDeferredWorkHeavy(tab, gen) {
+  if (gen !== _hcGoTabWorkGen) return;
   if (
     (tab === 'mediciones' || tab === 'sala') &&
     typeof hcInitMedirSalaLayout === 'function' &&
@@ -650,7 +686,7 @@ function goTabDeferredWork(tab) {
     } catch (_) {}
   }
   if (tab === 'mediciones') {
-    cargarUltimaMedicion();
+    if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
     if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
@@ -671,14 +707,18 @@ function goTabDeferredWork(tab) {
     }
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
-  if (tab === 'inicio') updateDashboard();
+  if (tab === 'inicio' && typeof updateDashboard === 'function') updateDashboard();
   if (tab === 'meteo') {
     try {
       cargarMeteo();
       window._meteoObsoleto = false;
     } catch (_) {}
   }
-  if (tab === 'calendario') { calFecha = new Date(); calDiaSeleccionado = null; renderCalendario(); }
+  if (tab === 'calendario') {
+    calFecha = new Date();
+    calDiaSeleccionado = null;
+    if (typeof renderCalendario === 'function') renderCalendario();
+  }
   if (tab === 'sistema') {
     const modoFase =
       typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino();
@@ -687,26 +727,34 @@ function goTabDeferredWork(tab) {
       else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
         hcRefreshSistemaPropagadorPanel();
       }
-    } else {
+    } else if (typeof renderTorre === 'function') {
       renderTorre();
       if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
-      requestAnimationFrame(() => {
+      requestAnimationFrame(function () {
+        if (gen !== _hcGoTabWorkGen) return;
         try {
           const w = document.getElementById('torreSVGWrap');
-          if (w && w.querySelector('.torre-loading-placeholder')) renderTorre();
+          if (w && w.querySelector('.torre-loading-placeholder') && typeof renderTorre === 'function') {
+            renderTorre();
+          }
         } catch (_) {}
       });
-      renderCompatGrid();
-      calcularRotacion();
+      if (typeof renderCompatGrid === 'function') renderCompatGrid();
+      if (typeof calcularRotacion === 'function') calcularRotacion();
       const postSetupCultivos =
         typeof state !== 'undefined' && state && state.hcPostSetupChecklistPendiente;
-      if (!postSetupCultivos) {
-        setTimeout(() => abrirTutorialTorrePestanaSiPrimeraVez(), 520);
+      if (!postSetupCultivos && typeof abrirTutorialTorrePestanaSiPrimeraVez === 'function') {
+        setTimeout(function () {
+          if (gen === _hcGoTabWorkGen) abrirTutorialTorrePestanaSiPrimeraVez();
+        }, 520);
       }
     }
   }
-  if (tab === 'historial') { histDatos = null; cargarHistorial(); }
-  if (tab === 'consejos') renderConsejos();
+  if (tab === 'historial') {
+    histDatos = null;
+    if (typeof cargarHistorial === 'function') cargarHistorial();
+  }
+  if (tab === 'consejos' && typeof renderConsejos === 'function') renderConsejos();
   if (tab === 'ayuda') {
     try {
       document.getElementById('tab-ayuda')?.scrollTo(0, 0);
@@ -716,27 +764,52 @@ function goTabDeferredWork(tab) {
     } catch (_) {}
   }
   if (tab === 'riego') {
-    sincronizarInputsRiego();
-    initDiaRiego();
-    actualizarVistaRiegoPorTipoInstalacion();
-    try { refreshUbicacionInstalacionUI(); } catch (_) {}
+    if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
+    if (typeof initDiaRiego === 'function') initDiaRiego();
+    if (typeof actualizarVistaRiegoPorTipoInstalacion === 'function') {
+      actualizarVistaRiegoPorTipoInstalacion();
+    }
+    try {
+      if (typeof refreshUbicacionInstalacionUI === 'function') refreshUbicacionInstalacionUI();
+    } catch (_) {}
     var riegoNow = Date.now();
     var riegoStale =
       !window._hcRiegoTabCalcAt || riegoNow - window._hcRiegoTabCalcAt > 45000;
-    calcularRiego({ forceRefresh: !!riegoStale });
+    if (typeof calcularRiego === 'function') calcularRiego({ forceRefresh: !!riegoStale });
     window._hcRiegoTabCalcAt = riegoNow;
     window._riegoObsoleto = false;
   }
-  if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
-  if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
   try {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   } catch (_) {}
-  requestAnimationFrame(function () {
-    try {
-      if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
-    } catch (_) {}
-  });
+  try {
+    if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
+  } catch (_) {}
+  _hcTabHeavyLast[tab] = Date.now();
+}
+
+function goTabDeferredWork(tab) {
+  var gen = _hcGoTabWorkGen;
+  var now = Date.now();
+  var lastHeavy = _hcTabHeavyLast[tab] || 0;
+  var skipHeavy =
+    tab !== 'sistema' &&
+    tab !== 'historial' &&
+    tab !== 'calendario' &&
+    now - lastHeavy < 12000;
+
+  goTabDeferredWorkLite(tab);
+
+  if (skipHeavy) return;
+
+  var runHeavy = function () {
+    goTabDeferredWorkHeavy(tab, gen);
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(runHeavy, { timeout: 180 });
+  } else {
+    setTimeout(runHeavy, 0);
+  }
 }
 
 function goTab(tab) {
@@ -765,11 +838,19 @@ function goTab(tab) {
     }
   }
 
-  document.querySelectorAll('.tab-panel').forEach(p => {
+  if (!_hcTabPanelsCache) {
+    _hcTabPanelsCache = Array.prototype.slice.call(document.querySelectorAll('.tab-panel'));
+  }
+  if (!_hcTabBtnsCache) {
+    _hcTabBtnsCache = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+  }
+  _hcTabPanelsCache.forEach(function (p) {
     p.classList.remove('active');
     p.setAttribute('aria-hidden', 'true');
   });
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  _hcTabBtnsCache.forEach(function (b) {
+    b.classList.remove('active');
+  });
   const panel = document.getElementById('tab-' + tab);
   if (panel) {
     panel.classList.add('active');
@@ -788,12 +869,10 @@ function goTab(tab) {
   } catch (_) {}
 
   var tabWork = tab;
+  var gen = ++_hcGoTabWorkGen;
   requestAnimationFrame(function () {
-    try {
-      guardarEstadoTorreActual();
-    } catch (_) {}
-    if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
-    else if (typeof saveState === 'function') saveState();
+    if (gen !== _hcGoTabWorkGen) return;
+    hcScheduleTabPersist();
     goTabDeferredWork(tabWork);
   });
 }
