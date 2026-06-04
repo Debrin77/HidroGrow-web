@@ -55,11 +55,8 @@
 
   function isPremiumNutrienteGermActivo(cfg) {
     var cam = caminoRequiereNutrienteBandeja(cfg);
-    if (cam === 'semilla_propagador') return true;
-    if (
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm()
-    ) {
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return true;
+    if (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()) {
       return true;
     }
     return caminoUsaNutrienteBandejaPropagador(cfg);
@@ -770,10 +767,7 @@
     if (!cfg || typeof cfg !== 'object') return '';
     var cam = caminoRequiereNutrienteBandeja(cfg);
     if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') {
-      if (
-        typeof hcCaminoSemillaPropagadorSetupGerm !== 'function' ||
-        !hcCaminoSemillaPropagadorSetupGerm()
-      ) {
+      if (typeof hcCaminoSemillaGermEnSetup !== 'function' || !hcCaminoSemillaGermEnSetup()) {
         return getNutrienteGermIdFromCfg(cfg);
       }
     }

@@ -10042,6 +10042,27 @@ html.hc-theme-dark .hc-germ-hub-sub,
 html.hc-theme-dark .hc-germ-hub-var {
   color: var(--muted);
 }
+.hc-germ-fecha-siembra-block {
+  margin: 10px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.hc-germ-fecha-siembra-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.hc-germ-fecha-input {
+  flex: 1 1 160px;
+  min-width: 0;
+  max-width: 100%;
+}
+.hc-germ-fecha-siembra-hint {
+  margin: 8px 0 0;
+}
 .hc-germ-prop-hint {
   margin: 10px 0 0;
   padding: 10px 12px;

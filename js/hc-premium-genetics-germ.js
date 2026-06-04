@@ -34,7 +34,9 @@
   }
 
   function paginaGeneticaGermSetup() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     if (
+      cam === 'semilla_propagador' &&
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()
     ) {

@@ -257,8 +257,7 @@
     var sec = ensureGermPlanHost();
     if (!sec) return;
     var show =
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm();
+      typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup();
     if (!show) {
       sec.classList.add('setup-hidden');
       sec.innerHTML = '';
@@ -845,20 +844,33 @@
   }
 
   function validarPremiumGermPlan() {
-    if (
-      typeof hcCaminoSemillaPropagadorSetupGerm !== 'function' ||
-      !hcCaminoSemillaPropagadorSetupGerm()
-    ) {
+    if (typeof hcCaminoSemillaGermEnSetup !== 'function' || !hcCaminoSemillaGermEnSetup()) {
       return true;
     }
     persistPremiumGermPlanFromUIImmediate(true);
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) {
-      if (typeof showToast === 'function') showToast('Indica cuántas semillas vas a germinar en el propagador', true);
+      if (typeof showToast === 'function') {
+        showToast(
+          cam === 'semilla_hidro'
+            ? 'Indica cuántas semillas germinarás en el cubo'
+            : 'Indica cuántas semillas vas a germinar en el propagador',
+          true
+        );
+      }
       return false;
     }
     if (!p.sustratoGerm) {
-      if (typeof showToast === 'function') showToast('Elige el sustrato del propagador (lana, jiffy, papel…)', true);
+      if (typeof showToast === 'function') {
+        showToast(
+          cam === 'semilla_hidro'
+            ? 'Elige el sustrato (lana, jiffy, papel…)'
+            : 'Elige el sustrato del propagador (lana, jiffy, papel…)',
+          true
+        );
+      }
       return false;
     }
     if (!p.fechaSiembraGerm) {

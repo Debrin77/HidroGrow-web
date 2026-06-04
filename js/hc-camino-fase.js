@@ -492,13 +492,22 @@
    */
   function hcMeteoRequiereLocalidad(cfg) {
     cfg = cfg || cfgActiva();
-    return cam(cfg) === 'semilla_propagador';
+    var c = cam(cfg);
+    return c === 'semilla_propagador' || c === 'semilla_hidro';
   }
 
-  /** Meteo accesible aunque el depósito aún no esté operativo (camino propagador). */
+  /** Meteo accesible aunque el depósito aún no esté operativo (caminos semilla en prep). */
   function hcMeteoTabPermitidaSinOperativa(cfg) {
     cfg = cfg || cfgActiva();
-    return cam(cfg) === 'semilla_propagador';
+    var c = cam(cfg);
+    if (c === 'semilla_propagador') return true;
+    if (c === 'semilla_hidro') {
+      return (
+        typeof hcRecargaCompletaAplicaEnCamino === 'function' &&
+        !hcRecargaCompletaAplicaEnCamino(cfg)
+      );
+    }
+    return false;
   }
 
   /**

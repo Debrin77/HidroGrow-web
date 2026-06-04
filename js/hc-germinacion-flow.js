@@ -301,6 +301,76 @@
     }
   }
 
+  function renderHubFechaSiembraEditor(cfg, g) {
+    var camGerm =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro') return '';
+    var iso = getFechaInicioGerminacion(g, cfg);
+    var max = hoyIso();
+    var concl =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    return (
+      '<div class="hc-germ-fecha-siembra-block" role="group" aria-label="Fecha de siembra en sustrato">' +
+      '<label class="hc-germ-reg-lbl" for="hcGermFechaSiembraInicio">Fecha de siembra en sustrato</label>' +
+      '<div class="hc-germ-fecha-siembra-row">' +
+      '<input type="date" id="hcGermFechaSiembraInicio" class="param-input dash-quick-input hc-germ-fecha-input" max="' +
+      esc(max) +
+      '" value="' +
+      esc(iso) +
+      '"' +
+      (concl ? ' disabled' : '') +
+      ' onchange="persistFechaSiembraGermDesdeInicio()" onblur="persistFechaSiembraGermDesdeInicio()">' +
+      (concl
+        ? ''
+        : '<button type="button" class="btn btn-secondary btn-sm" onclick="persistFechaSiembraGermDesdeInicio()">Guardar fecha</button>') +
+      '</div>' +
+      '<p class="setup-field-hint hc-germ-fecha-siembra-hint">Día <strong>1</strong> del seguimiento y del calendario según tu genética. Puedes corregirla aquí sin reabrir el asistente.</p>' +
+      '</div>'
+    );
+  }
+
+  function persistFechaSiembraGermDesdeInicio() {
+    var cfg = cfgActiva();
+    var inp = document.getElementById('hcGermFechaSiembraInicio');
+    if (!inp) return;
+    var iso =
+      typeof normalizarFechaSiembraGermInput === 'function'
+        ? normalizarFechaSiembraGermInput(inp.value)
+        : String(inp.value || '').slice(0, 10);
+    if (!iso) {
+      if (typeof showToast === 'function') {
+        showToast('Indica la fecha en que pusiste las semillas en el sustrato.', true);
+      }
+      return;
+    }
+    if (inp.value !== iso) inp.value = iso;
+    if (typeof aplicarFechaSiembraGermEnCfg === 'function') {
+      aplicarFechaSiembraGermEnCfg(cfg, iso);
+    } else {
+      var g = ensureGerminacionFlow(cfg);
+      g.fechaSiembraGerm = iso;
+      g.startedAt = iso;
+      if (!cfg.premiumSetup) cfg.premiumSetup = {};
+      cfg.premiumSetup.fechaSiembraGerm = iso;
+    }
+    if (typeof ensurePremiumSetup === 'function') {
+      var p = ensurePremiumSetup();
+      if (p) p.fechaSiembraGerm = iso;
+    }
+    persistirGerminacion();
+    refreshDashGerminacionHub();
+    if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+    if (typeof hcGerminacionRefrescarCalendario === 'function') hcGerminacionRefrescarCalendario();
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    if (typeof showToast === 'function') {
+      var fTxt =
+        typeof formatearFechaSiembraGermDisplay === 'function'
+          ? formatearFechaSiembraGermDisplay(iso)
+          : iso;
+      showToast('✓ Siembra ' + fTxt + ' · día ' + (diasDesdeInicio(ensureGerminacionFlow(cfg), cfg) + 1), false);
+    }
+  }
+
   function renderFasesCalendarioBlock(g, idx, diaN, allDone) {
     if (allDone || typeof renderGerminacionFasesCalendarioHtml !== 'function') return '';
     var ref = g.variedadId || '';
@@ -1365,12 +1435,16 @@
       ' · día <strong>' +
       diaN +
       '</strong> del seguimiento</p>' +
+      renderHubFechaSiembraEditor(cfg, g) +
       (camGerm === 'semilla_propagador'
         ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
           '<strong>Guía de 6 fases (opcional):</strong> el cierre de germinación va por <strong>días según genética</strong> (~' +
           diasObjetivoConclusionGerm(cfg, g) +
           ') o el botón «Dar por concluida» más abajo. No hace falta marcar todas las fases del rail.</p>'
-        : '') +
+        : camGerm === 'semilla_hidro'
+          ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
+            '<strong>6 fases obligatorias:</strong> marca cada paso del rail antes del checklist de traslado. El anillo muestra el % de fases completadas.</p>'
+          : '') +
       (modoGerminacionFijadoPorCamino(cfg)
         ? '<p class="hc-germ-modo-fijo setup-field-hint">Modo fijado por tu camino en el asistente.</p>'
         : '<div class="hc-germ-modo-toggle" role="group" aria-label="Modo de germinación">' +
@@ -1439,7 +1513,11 @@
       '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
       '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
       '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
-      '<p class="setup-field-hint hc-germ-nut-hint">Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).</p>' +
+      '<p class="setup-field-hint hc-germ-nut-hint">' +
+      (modo === 'hidro_directo'
+        ? 'Opcional: lo que añadiste al agua del cubo de germinación.'
+        : 'Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).') +
+      '</p>' +
       '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
       '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
       (camGerm === 'semilla_propagador'
@@ -1499,7 +1577,11 @@
             '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
             esc(tipo) +
             ' →</button>' +
-            '<p class="hc-germ-traslado-foot">Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.</p></div>'
+            '<p class="hc-germ-traslado-foot">' +
+            (camGerm === 'semilla_hidro'
+              ? 'Siguiente: confirma el traslado en la matriz (DWC/RDWC ya configurado en el asistente inicial).'
+              : 'Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.') +
+            '</p></div>'
           : '') +
       '</div>';
     try {
@@ -2053,10 +2135,7 @@
   function hcGerminacionRenderSetupPreview() {
     var sec = document.getElementById('setupPremiumGerminacionPasos');
     if (!sec) return;
-    if (
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm()
-    ) {
+    if (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()) {
       sec.innerHTML = '';
       return;
     }
@@ -2126,6 +2205,7 @@
   global.toggleGermEquip = toggleGermEquip;
   global.guardarMedicionDomo = guardarMedicionDomo;
   global.guardarRegistroGerminacionDiario = guardarRegistroGerminacionDiario;
+  global.persistFechaSiembraGermDesdeInicio = persistFechaSiembraGermDesdeInicio;
   global.hcGermActualizarNumSemillas = hcGermActualizarNumSemillas;
   global.hcGermActualizarSemillasActivas = hcGermActualizarSemillasActivas;
   function hcGerminacionFaseActualId(cfg) {

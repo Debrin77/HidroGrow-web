@@ -31,6 +31,7 @@ Módulo central: `hc-camino-fase.js` · Panel: `hc-sistema-fase-camino.js`
 - Orden en Sistema (**Prep hidro**): checklist prep → sala → montaje → depósito listo → **6 fases** en Inicio.
 - Luego **Germinación en cubo**: mismo registro/nutrientes; esquema completo tras checklist traslado.
 - Medir: depósito del cubo + microclima.
+- Mapa detallado: **[SEMILLA-HIDRO-CAMINO.md](./SEMILLA-HIDRO-CAMINO.md)**.
 
 ---
 
@@ -68,9 +69,12 @@ La sala LED completa en propagador se configura **después** de las 6 fases.
 - **Semilla hidro**: DWC y sala en el primer asistente; fase prep solo checklist + montaje + depósito.
 - **Esqueje / Madre**: sin fases de semilla; matriz bloqueada mientras `getSistemaFaseCamino()` devuelve fase.
 
-## Mapa detallado propagador
+## Mapas detallados por camino semilla
 
-Pantallas, IDs DOM, checklist de prueba y mejoras UX: **[PROPAGADOR-CAMINO.md](./PROPAGADOR-CAMINO.md)**.
+| Camino | Documento |
+|--------|-----------|
+| Propagador | **[PROPAGADOR-CAMINO.md](./PROPAGADOR-CAMINO.md)** |
+| Semilla en hidro | **[SEMILLA-HIDRO-CAMINO.md](./SEMILLA-HIDRO-CAMINO.md)** |
 
 ## Archivos
 

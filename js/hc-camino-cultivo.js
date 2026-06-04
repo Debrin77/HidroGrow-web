@@ -312,13 +312,20 @@
     return setupPagina >= start && setupPagina <= end;
   }
 
-  /** Semilla en propagador: fase 1 del asistente = solo domo/mat, sin sala ni hidro. */
-  function hcCaminoSemillaPropagadorSetupGerm() {
-    if (getCaminoCultivo() !== 'semilla_propagador') return false;
+  /** Semilla (propagador o hidro): bloque premium de germinación en el asistente inicial. */
+  function hcCaminoSemillaGermEnSetup() {
+    var cam = getCaminoCultivo();
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
     if (hcSetupEnFaseSalaPreGerm()) return false;
     if (hcSetupEnFaseGerminacion()) return true;
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
     return hcSetupWizardEnBloquePremiumGerm();
+  }
+
+  /** Semilla en propagador: fase 1 del asistente = solo domo/mat, sin sala ni hidro. */
+  function hcCaminoSemillaPropagadorSetupGerm() {
+    if (getCaminoCultivo() !== 'semilla_propagador') return false;
+    return hcCaminoSemillaGermEnSetup();
   }
 
   /** Durante el wizard o con instalación en fase germinación (sin hidro cerrado). */
@@ -936,6 +943,9 @@
       if (getCaminoCultivo() === 'semilla_propagador') {
         return typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5;
       }
+      if (getCaminoCultivo() === 'semilla_hidro') {
+        return typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+      }
       return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
     }
     var total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
@@ -1362,6 +1372,7 @@
   global.refreshCaminoCultivoUI = refreshCaminoCultivoUI;
   global.hcSetupEnFaseGerminacion = hcSetupEnFaseGerminacion;
   global.hcSetupEnFaseSalaPreGerm = hcSetupEnFaseSalaPreGerm;
+  global.hcCaminoSemillaGermEnSetup = hcCaminoSemillaGermEnSetup;
   global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;

@@ -76,8 +76,7 @@
 
   function ocultarBannerRutaGermAhora() {
     return (
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm()
+      typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()
     );
   }
 
