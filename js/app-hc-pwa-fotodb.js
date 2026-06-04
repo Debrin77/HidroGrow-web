@@ -64,7 +64,13 @@ window.addEventListener('appinstalled', () => {
   showToast('✅ HidroGrow instalada correctamente');
 });
 
-const SPLASH_MIN_VISIBLE_MS = 1400;
+function hcSplashMinVisibleMs() {
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 450;
+    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 500;
+  } catch (_) {}
+  return 900;
+}
 const splashShownAtMs = Date.now();
 
 function hideSplash() {
@@ -74,62 +80,106 @@ function hideSplash() {
 window.hideSplash = hideSplash;
 
 async function waitSplashMinimumVisible() {
+  const minMs = hcSplashMinVisibleMs();
   const elapsed = Date.now() - splashShownAtMs;
-  if (elapsed >= SPLASH_MIN_VISIBLE_MS) return;
-  await new Promise(resolve => setTimeout(resolve, SPLASH_MIN_VISIBLE_MS - elapsed));
+  if (elapsed >= minMs) return;
+  await new Promise(function (resolve) {
+    setTimeout(resolve, minMs - elapsed);
+  });
 }
 
 // Failsafe para WebView: evita splash infinito si window.onload no llega.
 setTimeout(hideSplash, 6000);
 
-window.onload = () => {
-  gestionarCambioVersionEnArranque();
-
-  // ── Registrar listeners del PIN (evitar onclick inline) ──────────────────
-  document.querySelectorAll('.pin-key[data-digit]').forEach(key => {
-    key.addEventListener('click', () => pinPress(key.dataset.digit));
+function hcBindPinScreenListeners() {
+  document.querySelectorAll('.pin-key[data-digit]').forEach(function (key) {
+    if (key.dataset.hcPinBound === '1') return;
+    key.dataset.hcPinBound = '1';
+    key.addEventListener('click', function () {
+      pinPress(key.dataset.digit);
+    });
   });
-  document.getElementById('pinDelBtn')?.addEventListener('click', pinDel);
+  var delBtn = document.getElementById('pinDelBtn');
+  if (delBtn && delBtn.dataset.hcPinBound !== '1') {
+    delBtn.dataset.hcPinBound = '1';
+    delBtn.addEventListener('click', pinDel);
+  }
+  if (!window._hcPinKeydownBound) {
+    window._hcPinKeydownBound = true;
+    document.addEventListener('keydown', function (e) {
+      var pinScr = document.getElementById('pinScreen');
+      if (!pinScr || pinScr.style.display === 'none') return;
+      if (e.key >= '0' && e.key <= '9') pinPress(e.key);
+      if (e.key === 'Backspace') pinDel();
+    });
+  }
+}
 
-  // ── Soporte teclado físico para el PIN ────────────────────────────────────
-  document.addEventListener('keydown', e => {
-    const pinScr = document.getElementById('pinScreen');
-    if (!pinScr || pinScr.style.display === 'none') return;
-    if (e.key >= '0' && e.key <= '9') pinPress(e.key);
-    if (e.key === 'Backspace') pinDel();
-  });
+function hcRunAppBootSequence() {
+  if (window._hcAppBootSequenceStarted) return;
+  window._hcAppBootSequenceStarted = true;
+  hcBindPinScreenListeners();
 
-  // Secuencia recomendada: splash de marca breve -> desbloqueo (biometría/PIN).
-  (async () => {
+  (async function () {
     scheduleHcPreinitWhilePin();
     await waitSplashMinimumVisible();
     hideSplash();
 
-    // Si el usuario autenticó antes de terminar el splash (p. ej. versión anterior con PIN visible encima),
-    // no volver a lockAppWithPin: con «recordar 0 min» hasValidAuthSession es false y congelaría la app ya iniciada.
     if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
 
-    // Arranque protegido: sesión configurable (si expira, biometría -> PIN).
     if (hasValidAuthSession()) {
       unlockAndInitApp();
       return;
     }
     lockAppWithPin();
-    setTimeout(async () => {
-      if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
-      const statusEl = document.getElementById('pinAuthStatus');
-      const ok = await tryBiometricUnlock();
+    setTimeout(async function () {
+      if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) {
+        return;
+      }
+      var statusEl = document.getElementById('pinAuthStatus');
+      var ok = await tryBiometricUnlock();
       if (appBootstrapped) return;
       if (ok) {
         unlockAndInitApp();
       } else {
-        const pinErr = document.getElementById('pinErr');
+        var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
-        if (statusEl) statusEl.textContent = 'Biometría no disponible. Introduce tu PIN.';
+        if (statusEl) {
+          statusEl.textContent = 'Biometría no disponible. Introduce tu PIN.';
+        }
       }
     }, 150);
   })();
-};
+}
+
+function hcScheduleVersionCheckOnIdle() {
+  var run = function () {
+    try {
+      if (typeof gestionarCambioVersionEnArranque === 'function') {
+        gestionarCambioVersionEnArranque();
+      }
+    } catch (_) {}
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(run, { timeout: 5000 });
+  } else {
+    setTimeout(run, 800);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function () {
+    hcScheduleVersionCheckOnIdle();
+    hcRunAppBootSequence();
+  });
+} else {
+  hcScheduleVersionCheckOnIdle();
+  hcRunAppBootSequence();
+}
+
+window.addEventListener('load', function () {
+  if (!window._hcAppBootSequenceStarted) hcRunAppBootSequence();
+});
 
 function scheduleHcPreinitWhilePin() {
   const run = function () {
@@ -142,10 +192,14 @@ function scheduleHcPreinitWhilePin() {
       } catch (_) {}
     }
   };
+  var delay = 120;
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) delay = 1800;
+  } catch (_) {}
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: 2200 });
+    requestIdleCallback(run, { timeout: delay });
   } else {
-    setTimeout(run, 80);
+    setTimeout(run, Math.min(delay, 400));
   }
 }
 

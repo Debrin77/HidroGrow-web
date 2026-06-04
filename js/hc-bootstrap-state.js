@@ -64,11 +64,32 @@ function hidrogrowCfgAlCargar(s) {
 }
 
 /** Copia instalación activa del slot a state.torre / configTorre (fuente de verdad al abrir). */
+function hidrogrowRaizDesincronizadaDeSlot(s, slot) {
+  if (!s || !slot) return false;
+  const cfgRaiz = s.configTorre && typeof s.configTorre === 'object' ? s.configTorre : {};
+  if (hidrogrowSlotNecesitaSync(slot, { torre: s.torre }, cfgRaiz)) return true;
+  const sm = s.mediciones;
+  const tm = slot.mediciones;
+  if (Array.isArray(tm) !== Array.isArray(sm)) return true;
+  if (Array.isArray(tm) && tm.length !== (sm ? sm.length : 0)) return true;
+  const sr = s.registro;
+  const tr = slot.registro;
+  if (Array.isArray(tr) !== Array.isArray(sr)) return true;
+  if (Array.isArray(tr) && tr.length !== (sr ? sr.length : 0)) return true;
+  const umS = s.ultimaMedicion && s.ultimaMedicion.fecha ? s.ultimaMedicion.fecha : '';
+  const umT = slot.ultimaMedicion && slot.ultimaMedicion.fecha ? slot.ultimaMedicion.fecha : '';
+  if (umS !== umT) return true;
+  if ((s.ultimaRecarga ?? null) !== (slot.ultimaRecarga ?? null)) return true;
+  if ((s.recargaSnoozeHasta ?? null) !== (slot.recargaSnoozeHasta ?? null)) return true;
+  return false;
+}
+
 function hidrogrowSincronizarRaizDesdeSlotActivo(s) {
   if (!s || !Array.isArray(s.torres) || !s.torres.length) return false;
   const idx = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
   const slot = s.torres[idx];
   if (!slot || !hidrogrowTorreSlotEsReal(slot)) return false;
+  if (!hidrogrowRaizDesincronizadaDeSlot(s, slot)) return false;
   try {
     if (slot.config && typeof slot.config === 'object') {
       s.configTorre = JSON.parse(JSON.stringify(slot.config));
@@ -326,6 +347,41 @@ function hidrogrowLimpiarAlmacenamientoCompleto(opts) {
   }
 }
 
+/** Evita clonar/guardar el slot activo en cada arranque si ya coincide con la raíz. */
+function hidrogrowSlotNecesitaSync(slot, s, cfg) {
+  if (!slot || !s || !cfg) return false;
+  const sc = slot.config;
+  if (!sc || typeof sc !== 'object') return true;
+  if (sc.numCestas !== cfg.numCestas || sc.numNiveles !== cfg.numNiveles) return true;
+  if (sc.caminoCultivo !== cfg.caminoCultivo) return true;
+  const st = slot.torre;
+  const rt = s.torre;
+  if (!Array.isArray(st) || !Array.isArray(rt)) return true;
+  if (st.length !== rt.length) return true;
+  for (let i = 0; i < rt.length; i++) {
+    const sr = st[i] || [];
+    const rr = rt[i] || [];
+    if (sr.length !== rr.length) return true;
+  }
+  return false;
+}
+
+function hidrogrowPersistStateIdle(s) {
+  const snap = hidrogrowPrepararSnapshotPersistencia(s);
+  const persist = function () {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(snap));
+    } catch (e) {
+      console.warn('No se pudo persistir saneamiento de estado', e);
+    }
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(persist, { timeout: 3500 });
+  } else {
+    setTimeout(persist, 0);
+  }
+}
+
 function loadState() {
   hidrogrowPurgarStorageLegacySilencioso();
   try {
@@ -377,16 +433,21 @@ function loadState() {
         fotoKeys: [],
       });
       if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador') {
-        const flat = [];
-        for (let ni = 0; ni < (s.torre || []).length; ni++) {
-          const row = s.torre[ni] || [];
-          for (let ci = 0; ci < row.length; ci++) {
-            if (row[ci]) flat.push(row[ci]);
-          }
-        }
-        while (flat.length < cesLoad) flat.push(celdaVacia());
-        s.torre = [flat.slice(0, cesLoad)];
         nivLoad = 1;
+        const row0 = (s.torre && s.torre[0]) || [];
+        const torrePropagadorOk = s.torre.length === 1 && row0.length === cesLoad;
+        if (!torrePropagadorOk) {
+          const flat = [];
+          for (let ni = 0; ni < (s.torre || []).length; ni++) {
+            const row = s.torre[ni] || [];
+            for (let ci = 0; ci < row.length; ci++) {
+              if (row[ci]) flat.push(row[ci]);
+            }
+          }
+          while (flat.length < cesLoad) flat.push(celdaVacia());
+          s.torre = [flat.slice(0, cesLoad)];
+          legacyPersist = true;
+        }
         if (cfgLoad && typeof cfgLoad === 'object') {
           cfgLoad.numNiveles = 1;
           cfgLoad.numCestas = cesLoad;
@@ -414,7 +475,7 @@ function loadState() {
       }
       const idxSlotLoad = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
       const slotLoad = Array.isArray(s.torres) && s.torres[idxSlotLoad] ? s.torres[idxSlotLoad] : null;
-      if (slotLoad && cfgLoad) {
+      if (slotLoad && cfgLoad && hidrogrowSlotNecesitaSync(slotLoad, s, cfgLoad)) {
         try {
           slotLoad.config = JSON.parse(JSON.stringify(cfgLoad));
           slotLoad.torre = JSON.parse(JSON.stringify(s.torre));
@@ -429,11 +490,7 @@ function loadState() {
       let borradorPersist = false;
       if (hidrogrowLimpiarBorradorSinInstalacion(s)) borradorPersist = true;
       if (legacyPersist || borradorPersist) {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(hidrogrowPrepararSnapshotPersistencia(s)));
-        } catch (e) {
-          console.warn('No se pudo persistir saneamiento de estado', e);
-        }
+        hidrogrowPersistStateIdle(s);
       }
       return s;
     }

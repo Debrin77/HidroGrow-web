@@ -882,22 +882,33 @@ function cargarEstadoTorre(idx, opts) {
     typeof getCaminoCultivo === 'function' &&
     getCaminoCultivo(state.configTorre) === 'semilla_propagador'
   ) {
-    try {
-      if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
-        hcRepararSemillasPropagadorAlCargar(state.configTorre);
-      } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
-        hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
-      }
-      if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
-        syncPremiumNutrienteGermFromConfig(state.configTorre);
-      }
-      if (typeof hcGerminacionSyncDesdePremium === 'function') {
-        hcGerminacionSyncDesdePremium(state.configTorre);
-      }
-    } catch (ePropTorre) {
+    var runPropagadorTorreSync = function () {
       try {
-        console.warn('hcRepararSemillasPropagadorAlCargar cargarEstadoTorre', ePropTorre);
-      } catch (_) {}
+        if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
+          hcRepararSemillasPropagadorAlCargar(state.configTorre);
+        } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
+          hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
+        }
+        if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+          syncPremiumNutrienteGermFromConfig(state.configTorre);
+        }
+        if (typeof hcGerminacionSyncDesdePremium === 'function') {
+          hcGerminacionSyncDesdePremium(state.configTorre);
+        }
+      } catch (ePropTorre) {
+        try {
+          console.warn('hcRepararSemillasPropagadorAlCargar cargarEstadoTorre', ePropTorre);
+        } catch (_) {}
+      }
+    };
+    if (deferUi) {
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runPropagadorTorreSync, { timeout: 2800 });
+      } else {
+        setTimeout(runPropagadorTorreSync, 120);
+      }
+    } else {
+      runPropagadorTorreSync();
     }
   }
   // Restaurar toldo / día de riego; plantas y edad vía sincronizarInputsRiego (torre activa + slot guardado)
