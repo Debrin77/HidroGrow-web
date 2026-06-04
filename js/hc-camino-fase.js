@@ -98,6 +98,12 @@
     var c = cam(cfg);
 
     if (c === 'semilla_propagador') {
+      if (
+        typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
+        hidrogrowPropagadorEnFaseGermSinHidro(cfg)
+      ) {
+        return 'propagador';
+      }
       if (!hidroCerrado(cfg)) return 'propagador';
       return null;
     }

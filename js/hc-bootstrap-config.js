@@ -235,7 +235,7 @@ const COMPATIBILIDAD = {
 /** Sistemas hidropónicos soportados (cannabis — referencia cultivadores y fabricantes). */
 const HIDROGROW_SISTEMAS = ['dwc', 'rdwc'];
 
-/** Camino semilla + propagador aún sin circuito DWC/RDWC cerrado. */
+/** Camino semilla + propagador: sin circuito DWC/RDWC hasta germinación concluida y asistente hidro cerrado. */
 function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
   const cam =
@@ -244,9 +244,18 @@ function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
     (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
     '';
   if (cam !== 'semilla_propagador') return false;
-  if (cfg.hcSetupFase === 'hidro') return false;
+  if (
+    typeof germinacionConcluida === 'function' &&
+    !germinacionConcluida(cfg)
+  ) {
+    return true;
+  }
+  if (cfg.hcSetupFase !== 'hidro') return true;
   const t = String(cfg.tipoInstalacion || '').toLowerCase();
-  if ((t === 'dwc' || t === 'rdwc') && cfg.checklistInstalacionConfirmada === true) {
+  if (
+    (t === 'dwc' || t === 'rdwc') &&
+    cfg.checklistInstalacionConfirmada === true
+  ) {
     return false;
   }
   return true;

@@ -389,7 +389,12 @@
 
   function hcCaminoRequiereConfigHidroPendiente(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    if (!hcCaminoEsSemilla(getCaminoCultivo(cfg))) return false;
+    var cam = getCaminoCultivo(cfg);
+    if (cam === 'semilla_propagador') {
+      if (!germinacionListaParaConfigHidro(cfg)) return false;
+      return !hidroInstalacionCerrada(cfg);
+    }
+    if (!hcCaminoEsSemilla(cam)) return false;
     if (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc') {
       if (cfg.checklistInstalacionConfirmada === true) return false;
       if (cfg.hcSetupFase === 'hidro') return false;
@@ -901,13 +906,18 @@
   function hidroInstalacionCerrada(cfg) {
     cfg = cfg || {};
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    var tipo = String(cfg.tipoInstalacion || '').trim();
+    var tipo = String(cfg.tipoInstalacion || '').trim().toLowerCase();
     if (cam === 'semilla_propagador') {
+      if (typeof germinacionConcluida === 'function' && !germinacionConcluida(cfg)) {
+        return false;
+      }
       if (String(cfg.hcSetupFase || 'germinacion') !== 'hidro') return false;
+      return (
+        (tipo === 'dwc' || tipo === 'rdwc') && cfg.checklistInstalacionConfirmada === true
+      );
     }
     if (cfg.checklistInstalacionConfirmada === true) {
       if (tipo === 'dwc' || tipo === 'rdwc') return true;
-      if (cam === 'semilla_propagador') return false;
       return true;
     }
     if (tipo !== 'dwc' && tipo !== 'rdwc') return false;
@@ -962,7 +972,45 @@
             done: montajeSalaPreGermOk(cfg),
             action: 'irMontaje',
           },
+          {
+            id: 'fases6',
+            label: '6 fases (' + fasesN + '/6)',
+            done: fasesN >= 6,
+            action: 'irGerminacion',
+            hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
+          },
         ];
+        if (
+          typeof germinacionConcluida === 'function' &&
+          germinacionConcluida(cfg)
+        ) {
+          pasos = pasos.concat([
+            {
+              id: 'traslado',
+              label: 'Checklist traslado',
+              done: !!g.checklistTrasladoOk,
+              action: 'irGerminacion',
+            },
+            {
+              id: 'hidro',
+              label: 'DWC/RDWC cerrado',
+              done: hidroInstalacionCerrada(cfg),
+              action: 'abrirSetupFaseHidro',
+            },
+            {
+              id: 'cultivo',
+              label: 'Cultivo en matriz',
+              done: cultivoMatrizListo(),
+              action: 'irCultivo',
+            },
+            {
+              id: 'deposito',
+              label: 'Primer llenado depósito',
+              done: depositoListo(cfg),
+              action: 'abrirChecklist',
+            },
+          ]);
+        }
       } else {
         pasos = [
           {
@@ -1003,33 +1051,33 @@
             hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
           },
         ];
+        pasos = pasos.concat([
+          {
+            id: 'traslado',
+            label: 'Checklist traslado',
+            done: !!g.checklistTrasladoOk,
+            action: 'irGerminacion',
+          },
+          {
+            id: 'hidro',
+            label: 'Sistema definitivo',
+            done: hidroInstalacionCerrada(cfg),
+            action: 'abrirSetupFaseHidro',
+          },
+          {
+            id: 'cultivo',
+            label: 'Cultivo en matriz',
+            done: cultivoMatrizListo(),
+            action: 'irCultivo',
+          },
+          {
+            id: 'deposito',
+            label: 'Primer llenado depósito',
+            done: depositoListo(cfg),
+            action: 'abrirChecklist',
+          },
+        ]);
       }
-      pasos = pasos.concat([
-        {
-          id: 'traslado',
-          label: 'Checklist traslado',
-          done: !!g.checklistTrasladoOk,
-          action: 'irGerminacion',
-        },
-        {
-          id: 'hidro',
-          label: cam === 'semilla_hidro' ? 'Sistema definitivo' : 'DWC/RDWC cerrado',
-          done: hidroInstalacionCerrada(cfg),
-          action: 'abrirSetupFaseHidro',
-        },
-        {
-          id: 'cultivo',
-          label: 'Cultivo en matriz',
-          done: cultivoMatrizListo(),
-          action: 'irCultivo',
-        },
-        {
-          id: 'deposito',
-          label: 'Primer llenado depósito',
-          done: depositoListo(cfg),
-          action: 'abrirChecklist',
-        },
-      ]);
     } else if (cam === 'esqueje_hidro') {
       pasos = [
         {
@@ -1223,6 +1271,7 @@
   global.hcGerminacionBloqueada = hcGerminacionBloqueada;
   global.hcCaminoEsSemilla = hcCaminoEsSemilla;
   global.hcCaminoRequiereConfigHidroPendiente = hcCaminoRequiereConfigHidroPendiente;
+  global.hidroInstalacionCerrada = hidroInstalacionCerrada;
   global.germinacionListaParaConfigHidro = germinacionListaParaConfigHidro;
   global.depositoListo = depositoListo;
   global.persistCaminoToConfig = persistCaminoToConfig;

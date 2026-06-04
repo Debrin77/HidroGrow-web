@@ -2821,7 +2821,10 @@ function aplicarConfigTorre() {
   if (!state.configTorre.tipoInstalacion) {
     const enFaseCamino =
       typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(state.configTorre);
-    if (!enFaseCamino) state.configTorre.tipoInstalacion = 'dwc';
+    const propSinHidro =
+      typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
+      hidrogrowPropagadorEnFaseGermSinHidro(state.configTorre);
+    if (!enFaseCamino && !propSinHidro) state.configTorre.tipoInstalacion = 'dwc';
   }
   try {
     if (typeof hcSyncGerminacionPlanCultivo === 'function') {

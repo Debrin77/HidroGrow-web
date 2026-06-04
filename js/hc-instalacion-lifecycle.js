@@ -79,6 +79,71 @@
     return lc.fase !== 'operativa' && lc.fase !== 'sin_config' && !lc.legacyOperativa;
   }
 
+  function propagadorGermSinHidro(cfg) {
+    return (
+      typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
+      hidrogrowPropagadorEnFaseGermSinHidro(cfg)
+    );
+  }
+
+  /** Rail instalación: propagador + sala + 6 fases (sin pasos DWC/depósito hasta cerrar germ). */
+  function getInstalacionLifecyclePropagadorGerm(cfg, st, legacy) {
+    var pasos = [
+      { id: 'prop', label: 'Propagador', chip: '1 · Propagador', done: false, current: false, blocked: false },
+      { id: 'sala', label: 'Sala y montaje', chip: '2 · Sala', done: false, current: false, blocked: false },
+      { id: 'germ', label: 'Germinación (6 fases)', chip: '3 · Germinación', done: false, current: false, blocked: false },
+    ];
+    var propOk =
+      typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg);
+    var salaOk =
+      typeof salaPreGermConfigurada === 'function' &&
+      salaPreGermConfigurada(cfg) &&
+      typeof montajeSalaPreGermOk === 'function' &&
+      montajeSalaPreGermOk(cfg);
+    var germOk =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    pasos[0].done = propOk;
+    pasos[1].done = salaOk;
+    pasos[2].done = germOk;
+    var fase = 'germinacion';
+    var pasoIdx = 2;
+    if (!propOk) {
+      pasos[0].current = true;
+      fase = 'montaje_pendiente';
+      pasoIdx = 0;
+    } else if (!salaOk) {
+      pasos[1].current = true;
+      fase = 'montaje_pendiente';
+      pasoIdx = 1;
+    } else if (!germOk) {
+      pasos[2].current = true;
+      fase = 'germinacion';
+      pasoIdx = 2;
+    } else if (
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(cfg)
+    ) {
+      fase = 'montaje_pendiente';
+      pasoIdx = 2;
+    }
+    var doneCount = pasos.filter(function (p) { return p.done; }).length;
+    return {
+      fase: fase,
+      pasos: pasos,
+      pasoActual: pasoIdx,
+      porcentaje: Math.round((doneCount / pasos.length) * 100),
+      operativaDiaria: false,
+      legacyOperativa: legacy,
+      bloqueaChecklistDeposito: true,
+      esPrimeraInstalacion: true,
+      esPropagadorSinHidro: true,
+      siguientePaso:
+        typeof hcSiguientePasoInstalacion === 'function'
+          ? hcSiguientePasoInstalacion(cfg, fase)
+          : getSiguientePaso(fase),
+    };
+  }
+
   function getInstalacionLifecycle(cfgOpt, stateOpt) {
     var cfg = cfgOpt || cfgActiva();
     var st = stateOpt || (typeof state !== 'undefined' ? state : {});
@@ -92,6 +157,12 @@
     if (!instalacionEstaConfigurada(cfg)) {
       fase = 'sin_config';
       pasos[0].current = true;
+    } else if (
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(cfg) === 'semilla_propagador' &&
+      propagadorGermSinHidro(cfg)
+    ) {
+      return getInstalacionLifecyclePropagadorGerm(cfg, st, legacy);
     } else if (legacy) {
       fase = 'operativa';
       pasos.forEach(function (p) { p.done = true; });
