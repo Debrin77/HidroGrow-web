@@ -351,14 +351,17 @@ function initApp() {
         actualizarBadgesNutriente();
       } catch (_) {}
     }, 100);
-    setTimeout(function () {
-      try {
-        if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
-      } catch (_) {}
-      try {
-        mostrarBienvenidaOContinuarArranque();
-      } catch (_) {}
-    }, 520);
+    try {
+      if (typeof hcAbrirAsistenteCaminoSiSinInstalacion === 'function') {
+        requestAnimationFrame(function () {
+          try {
+            hcAbrirAsistenteCaminoSiSinInstalacion();
+          } catch (_) {}
+        });
+      } else if (typeof mostrarBienvenidaOContinuarArranque === 'function') {
+        requestAnimationFrame(mostrarBienvenidaOContinuarArranque);
+      }
+    } catch (_) {}
     setTimeout(function () {
       try {
         if (state && state.hcPostSetupChecklistPendiente && typeof actualizarPostSetupChecklistRail === 'function') {

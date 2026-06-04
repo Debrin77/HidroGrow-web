@@ -440,11 +440,25 @@ function updateDashTorre() {
   if (!elP || !elD || !elC || !elX) return;
   const cfgTorre = state.configTorre || {};
   try {
-    if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
-      hcRepararSemillasPropagadorAlCargar(cfgTorre);
-    }
     if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
       hcRefreshDashTorreCultivoResumen(cfgTorre);
+    }
+    if (typeof hcRepararSemillasPropagadorAlCargar === 'function' && !window._hcRepararSemDashScheduled) {
+      window._hcRepararSemDashScheduled = true;
+      const runRepair = function () {
+        window._hcRepararSemDashScheduled = false;
+        try {
+          hcRepararSemillasPropagadorAlCargar(cfgTorre);
+          if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
+            hcRefreshDashTorreCultivoResumen(cfgTorre);
+          }
+        } catch (_) {}
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runRepair, { timeout: 2500 });
+      } else {
+        setTimeout(runRepair, 80);
+      }
     }
   } catch (_) {}
   if (

@@ -377,53 +377,20 @@ function hcPrepararEstadoSinInstalacionEnMemoria() {
 }
 
 function hcCopyDashSinInstalacion(cfg) {
-  cfg = cfg || (state && state.configTorre) || {};
-  let cam = '';
-  try {
-    if (typeof getCaminoCultivo === 'function') cam = getCaminoCultivo(cfg) || '';
-  } catch (_) {}
-  if (!cam && cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) {
-    cam = cfg.premiumSetup.caminoCultivo;
-  }
-  if (!cam) {
-    try {
-      const stored = localStorage.getItem('hc_bienvenida_v2026_7_camino');
-      if (stored) cam = stored;
-    } catch (_) {}
-  }
-  if (cam === 'semilla_propagador') {
-    return {
-      label: 'Germinación en propagador',
-      lead: 'Configura tu propagador, genética y plan de semillas con el asistente.',
-      btn: 'Configurar propagador',
-    };
-  }
-  if (cam === 'semilla_hidro') {
-    return {
-      label: 'Instalación seleccionada',
-      lead: 'Configura germinación en hidro y tu sistema con el asistente.',
-      btn: 'Configurar instalación',
-    };
-  }
   return {
-    label: 'Instalación seleccionada',
-    lead: 'Configura tu primer DWC o RDWC con el asistente.',
-    btn: 'Configurar instalación',
+    label: 'Primera configuración',
+    lead: 'Abre el asistente y elige cómo empiezas el cultivo (semilla, clon o madre).',
+    btn: 'Abrir asistente',
   };
 }
 
 function hcAbrirPrimeraInstalacion() {
-  const copy = hcCopyDashSinInstalacion();
+  if (typeof hcAbrirAsistenteCaminoSiSinInstalacion === 'function') {
+    hcAbrirAsistenteCaminoSiSinInstalacion();
+    return;
+  }
   if (typeof abrirSetupNuevaTorre === 'function') {
     abrirSetupNuevaTorre();
-    try {
-      if (
-        copy.btn === 'Configurar propagador' &&
-        typeof seleccionarCaminoCultivo === 'function'
-      ) {
-        seleccionarCaminoCultivo('semilla_propagador');
-      }
-    } catch (_) {}
     return;
   }
   if (typeof abrirSetup === 'function') abrirSetup();
@@ -1298,7 +1265,8 @@ function abrirSetupNuevaTorre() {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession({ keepNuevaFlag: true });
   } catch (_) {}
   setupEsNuevaTorre = true;
-  setupPagina = typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
+  setupPagina =
+    typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0;
   setupTipoInstalacion = '';
   setupTipoTorre = 'custom';
   setupEquipamiento = new Set(['difusor']);

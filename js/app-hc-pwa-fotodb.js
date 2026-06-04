@@ -182,6 +182,11 @@ window.addEventListener('load', function () {
 });
 
 function scheduleHcPreinitWhilePin() {
+  try {
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+      return;
+    }
+  } catch (_) {}
   const run = function () {
     try {
       if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
@@ -192,14 +197,10 @@ function scheduleHcPreinitWhilePin() {
       } catch (_) {}
     }
   };
-  var delay = 120;
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) delay = 1800;
-  } catch (_) {}
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: delay });
+    requestIdleCallback(run, { timeout: 1200 });
   } else {
-    setTimeout(run, Math.min(delay, 400));
+    setTimeout(run, 200);
   }
 }
 

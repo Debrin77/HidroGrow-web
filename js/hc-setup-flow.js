@@ -44,8 +44,10 @@
 
   function getSetupSkippedPages() {
     const skip = new Set();
-    // La bienvenida DWC/RDWC ya no es el primer paso: origen de planta → premium → tipo → geometría.
-    skip.add(typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0);
+    // spage0 «¿Cómo empiezas el cultivo?» solo en instalación nueva; en reconfig se omite.
+    if (!(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {
+      skip.add(typeof SETUP_PAGE_WELCOME !== 'undefined' ? SETUP_PAGE_WELCOME : 0);
+    }
     if (typeof getSetupSkippedPagesForCamino === 'function') {
       getSetupSkippedPagesForCamino().forEach(function (p) {
         skip.add(p);

@@ -192,16 +192,9 @@ function scheduleTabBarCoach(delayMs) {
 /** Primera instalación: aún no hay config guardada (solo plantilla), sin historial de mezcla/medición ni plantas en esquema. */
 function hcEsPrimeraVezAsistenteInstalacion() {
   try {
-    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
-      return false;
-    }
-    const cfg = state.configTorre;
-    const plantilla = !!(cfg && cfg.hcPlantillaAutogenerada);
-    const hayConfig = !!(cfg && !plantilla);
-    const hayPlantas =
-      typeof getNivelesActivos === 'function' &&
-      getNivelesActivos().some(n => state.torre[n] && state.torre[n].some(c => c && c.variedad));
-    return !hayConfig && !state.ultimaRecarga && !state.ultimaMedicion && !hayPlantas;
+    return (
+      typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()
+    );
   } catch (_) {
     return false;
   }
@@ -393,8 +386,14 @@ function tabBarCoachYaDescartado() {
   }
 }
 
-function lanzarSetupOChecklistSiCorresponde() {
-  if (!hcEsPrimeraVezAsistenteInstalacion()) return;
+/** Sin instalación real: abrir asistente en «¿Cómo empiezas el cultivo?» (spage0). */
+function hcAbrirAsistenteCaminoSiSinInstalacion() {
+  hcOcultarOverlaysOnboardingUi();
+  try {
+    if (typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario()) {
+      return;
+    }
+  } catch (_) {}
   try {
     if (typeof hcDebeEvitarReabrirAsistenteTrasSetup === 'function' && hcDebeEvitarReabrirAsistenteTrasSetup()) {
       return;
@@ -403,21 +402,23 @@ function lanzarSetupOChecklistSiCorresponde() {
   try {
     if (state && state.hcPostSetupChecklistPendiente) return;
   } catch (_) {}
-  setTimeout(function () {
-    try {
-      const so = document.getElementById('setupOverlay');
-      if (so && so.classList.contains('open')) return;
-    } catch (_) {}
-    if (typeof hcDebeEvitarReabrirAsistenteTrasSetup === 'function' && hcDebeEvitarReabrirAsistenteTrasSetup()) {
-      return;
-    }
-    if (typeof abrirSetup === 'function') abrirSetup();
-  }, 450);
+  try {
+    const so = document.getElementById('setupOverlay');
+    if (so && so.classList.contains('open')) return;
+  } catch (_) {}
+  if (typeof abrirSetupNuevaTorre === 'function') {
+    abrirSetupNuevaTorre();
+    return;
+  }
+  if (typeof abrirSetup === 'function') abrirSetup();
+}
+
+function lanzarSetupOChecklistSiCorresponde() {
+  hcAbrirAsistenteCaminoSiSinInstalacion();
 }
 
 function mostrarBienvenidaOContinuarArranque(opts) {
-  hcOcultarOverlaysOnboardingUi();
-  lanzarSetupOChecklistSiCorresponde();
+  hcAbrirAsistenteCaminoSiSinInstalacion();
 }
 
 /**
