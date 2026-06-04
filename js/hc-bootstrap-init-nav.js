@@ -263,7 +263,17 @@ function hcFinishInitAppHeavyWork() {
             dimsDirty = true;
           }
         }
-        if (typeof hcSyncGerminacionPlanCultivo === 'function') {
+        var needGermSync =
+          dimsDirty ||
+          (typeof hcPropagadorTorreNecesitaAjuste === 'function' &&
+            state.configTorre &&
+            hcPropagadorTorreNecesitaAjuste(
+              state.configTorre,
+              typeof hcNumSemillasGermConfig === 'function'
+                ? hcNumSemillasGermConfig(state.configTorre)
+                : 0
+            ));
+        if (needGermSync && typeof hcSyncGerminacionPlanCultivo === 'function') {
           hcSyncGerminacionPlanCultivo(state.configTorre);
         }
         if (dimsDirty && typeof saveState === 'function') saveState();

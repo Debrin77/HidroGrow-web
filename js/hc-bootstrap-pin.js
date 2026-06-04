@@ -103,10 +103,19 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
-        if (typeof initApp !== 'function') {
-          throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
-        }
-        initApp();
+        var intentosInit = 0;
+        var runInit = function () {
+          if (typeof initApp !== 'function') {
+            intentosInit++;
+            if (intentosInit > 120) {
+              throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
+            }
+            setTimeout(runInit, 50);
+            return;
+          }
+          initApp();
+        };
+        runInit();
       } catch (eInit) {
         try {
           console.error('initApp tras PIN', eInit);

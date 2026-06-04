@@ -144,6 +144,19 @@
     sec.classList.remove('setup-hidden');
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
     ensurePremiumGermFields(p);
+    if (sec.querySelector('#setupPremiumNumSemillasGerm')) {
+      var inpUpd = el('setupPremiumNumSemillasGerm');
+      if (inpUpd && document.activeElement !== inpUpd) {
+        inpUpd.value = String(p.numSemillasGerm);
+      }
+      var selBand = el('setupPremiumBandejaGerm');
+      if (selBand && p.bandejaGerm) selBand.value = p.bandejaGerm;
+      sec.querySelectorAll('[data-sustrato-germ]').forEach(function (btn) {
+        btn.classList.toggle('selected', btn.getAttribute('data-sustrato-germ') === p.sustratoGerm);
+      });
+      refreshPremiumGermPlanReq();
+      return;
+    }
     var cfg = getWizardCfg();
     var cap = capacidadDesdePropagadorInstalado(cfg);
     var prevInp = el('setupPremiumNumSemillasGerm');
@@ -241,7 +254,18 @@
       return o.id === id;
     });
     p.sustratoGerm = ok ? id : 'lana';
-    renderPremiumGermPlanUI();
+    var sec = el('setupPremiumGermPlanSection');
+    if (sec && sec.querySelector('[data-sustrato-germ]')) {
+      sec.querySelectorAll('[data-sustrato-germ]').forEach(function (btn) {
+        btn.classList.toggle('selected', btn.getAttribute('data-sustrato-germ') === p.sustratoGerm);
+      });
+      var aguaHost = el('setupPremiumGermSustratoAguaHost');
+      if (aguaHost && typeof renderSustratoGermAguaEcBlockHtml === 'function') {
+        aguaHost.innerHTML = renderSustratoGermAguaEcBlockHtml(p.sustratoGerm, 'semilla', { compact: false });
+      }
+    } else {
+      renderPremiumGermPlanUI();
+    }
     syncGermPlanATorreDraft();
     if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
@@ -275,11 +299,11 @@
     p.bandejaGerm = String(el('setupPremiumBandejaGerm')?.value || p.bandejaGerm || 'auto');
     refreshPremiumGermPlanReq();
     syncGermPlanATorreDraft();
+    var so = document.getElementById('setupOverlay');
+    if (so && so.classList.contains('open')) return;
     if (_hcGermPlanUiFlushTimer) clearTimeout(_hcGermPlanUiFlushTimer);
     _hcGermPlanUiFlushTimer = setTimeout(function () {
       _hcGermPlanUiFlushTimer = null;
-      var so = document.getElementById('setupOverlay');
-      if (so && so.classList.contains('open')) return;
       if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
       if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
     }, 600);
@@ -327,10 +351,15 @@
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     if (!p) return;
     var prem = cfg.premiumSetup || {};
+    if (prem.numSemillasGermManual === true) p.numSemillasGermManual = true;
     if (Number.isFinite(prem.numSemillasGerm)) p.numSemillasGerm = prem.numSemillasGerm;
     if (prem.sustratoGerm) p.sustratoGerm = prem.sustratoGerm;
     if (prem.bandejaGerm) p.bandejaGerm = prem.bandejaGerm;
-    if (cfg.germinacionFlow && Number.isFinite(cfg.germinacionFlow.numSemillas)) {
+    if (
+      !p.numSemillasGermManual &&
+      cfg.germinacionFlow &&
+      Number.isFinite(cfg.germinacionFlow.numSemillas)
+    ) {
       p.numSemillasGerm = cfg.germinacionFlow.numSemillas;
     }
     if (cfg.germinacionFlow && cfg.germinacionFlow.sustratoGerm) {
@@ -340,12 +369,13 @@
     ensurePremiumGermFields(p);
   }
 
-  function persistPremiumGermPlanToConfig(cfg) {
+  function persistPremiumGermPlanToConfig(cfg, opts) {
+    opts = opts || {};
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     if (!p || !cfg) return;
-    persistPremiumGermPlanFromUIImmediate(!!p.numSemillasGermManual);
     if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
     cfg.premiumSetup.numSemillasGerm = p.numSemillasGerm;
+    cfg.premiumSetup.numSemillasGermManual = !!p.numSemillasGermManual;
     cfg.premiumSetup.sustratoGerm = p.sustratoGerm;
     cfg.premiumSetup.bandejaGerm = p.bandejaGerm;
     cfg.sustratoGerm = p.sustratoGerm;
@@ -353,7 +383,6 @@
       cfg.sustrato = p.sustratoGerm === 'papel' ? 'esponja' : p.sustratoGerm;
     }
     var nSem = Math.min(72, Math.max(1, Math.round(Number(p.numSemillasGerm) || 1)));
-    cfg.premiumSetup.numSemillasGermManual = !!p.numSemillasGermManual;
     if (typeof ensureGerminacionFlow === 'function' && typeof origenEsSemilla === 'function' && origenEsSemilla(cfg)) {
       var g = ensureGerminacionFlow(cfg);
       g.numSemillas = nSem;
@@ -361,12 +390,7 @@
       g.sustratoGerm = p.sustratoGerm;
     }
     cfg.numSemillasGerm = nSem;
-    cfg.sustratoGerm = p.sustratoGerm;
-    if (
-      typeof getCaminoCultivo === 'function' &&
-      getCaminoCultivo(cfg) === 'semilla_propagador' &&
-      typeof hcAjustarTorrePropagadorSemillas === 'function'
-    ) {
+    if (opts.adjustTorre && typeof hcAjustarTorrePropagadorSemillas === 'function') {
       try {
         hcAjustarTorrePropagadorSemillas(cfg, nSem);
       } catch (eTor) {
@@ -375,7 +399,7 @@
         } catch (_) {}
       }
     }
-    if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+    if (opts.syncNutrient !== false && typeof persistPremiumNutrienteGermToConfig === 'function') {
       persistPremiumNutrienteGermToConfig(cfg);
     }
   }
@@ -489,16 +513,13 @@
       var sub = el('hcPropSustratoGerm');
       if (sub) p.sustratoGerm = String(sub.value || p.sustratoGerm || 'lana');
     }
-    if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg, { adjustTorre: true });
+    }
     if (typeof persistNutrienteGermDesdePropModal === 'function') {
       persistNutrienteGermDesdePropModal(cfg);
     }
     try {
-      var nSem =
-        typeof hcNumSemillasGermConfig === 'function' ? hcNumSemillasGermConfig(cfg) : n;
-      if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
-        hcAjustarTorrePropagadorSemillas(cfg, nSem);
-      }
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       if (typeof saveState === 'function') saveState();
       if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();

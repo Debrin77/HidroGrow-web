@@ -856,30 +856,47 @@
 
     if (pagina === SETUP_PAGE_PREMIUM_3) {
       var cam3 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
+      var soloPropagadorP3 =
+        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+        hcCaminoSemillaPropagadorSetupGerm();
       if (cam3 && needsPremiumClimaPresetApply(cam3, p)) {
         aplicarPremiumClimaPorCamino(cam3, { force: true });
-      } else {
+      } else if (!soloPropagadorP3) {
         refreshPremiumClimaCaminoUI();
       }
-      refreshPremiumEntornoUI();
-      refreshPremiumMetodoUI();
+      if (!soloPropagadorP3) {
+        refreshPremiumEntornoUI();
+        refreshPremiumMetodoUI();
+      }
       seleccionarPremiumGenetica(p.geneticaPref || 'foto');
-      refreshPremiumGerminacionUI();
+      if (!soloPropagadorP3) refreshPremiumGerminacionUI();
       if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
-      if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
+      if (
+        !soloPropagadorP3 &&
+        p.entorno !== 'exterior' &&
+        typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function'
+      ) {
         syncSalaMedidasDesdeEquipamientoInstalado();
       }
-      if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+      if (typeof renderEquipamientoPremiumUI === 'function') {
+        renderEquipamientoPremiumUI(soloPropagadorP3 ? { lite: true } : undefined);
+      }
       if (typeof applySalaPreGermEquipMinimalChrome === 'function') applySalaPreGermEquipMinimalChrome();
-      calcularPremiumSala();
-      refreshPremiumClimaResumen();
-      if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
-      if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
-      if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+      if (!soloPropagadorP3) calcularPremiumSala();
+      if (!soloPropagadorP3) refreshPremiumClimaResumen();
+      if (!soloPropagadorP3 && typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
+      if (!soloPropagadorP3 && typeof renderSemilleroPerfilPanel === 'function') {
+        renderSemilleroPerfilPanel();
+      }
+      if (!soloPropagadorP3 && typeof refreshPremiumSemilleroVis === 'function') {
+        refreshPremiumSemilleroVis();
+      }
       if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
-      if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
-      refreshPremiumMetodoOrigenHint();
-      refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
+      if (!soloPropagadorP3 && typeof enhancePremiumVisualUI === 'function') {
+        enhancePremiumVisualUI(p.origenPlanta || 'semilla');
+      }
+      if (!soloPropagadorP3) refreshPremiumMetodoOrigenHint();
+      if (!soloPropagadorP3) refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
       syncPremiumMetodoGenPlacement();
       if (typeof syncPremiumGermPlanFromConfig === 'function') syncPremiumGermPlanFromConfig(cfg);
       if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
@@ -955,7 +972,9 @@
     if (typeof syncVariedadGermATorre === 'function') {
       syncVariedadGermATorre(p.variedadGerminacion || '');
     }
-    if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg, { adjustTorre: true, syncNutrient: false });
+    }
     if (typeof persistPremiumNutrienteGermToConfig === 'function') persistPremiumNutrienteGermToConfig(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
     if (typeof setupData !== 'undefined' && setupData.ciudad) {
@@ -979,10 +998,17 @@
   }
 
   function validarPremiumSetupPaso(pagina) {
+    const propagadorGerm =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
     const lite =
       pagina === SETUP_PAGE_ORIGEN ||
       pagina === SETUP_PAGE_PREMIUM_1 ||
-      pagina === SETUP_PAGE_PREMIUM_2;
+      pagina === SETUP_PAGE_PREMIUM_2 ||
+      (propagadorGerm && pagina === SETUP_PAGE_PREMIUM_3) ||
+      (propagadorGerm &&
+        typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
+        pagina === SETUP_PAGE_PREMIUM_4);
     persistPremiumSetupFromUI({ lite: lite });
     if (pagina === SETUP_PAGE_ORIGEN) {
       const cam =

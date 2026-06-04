@@ -601,18 +601,42 @@
    * Propagador: matriz 1×N alineada con numSemillas (Inicio / Plantas en instalación / esquema).
    * Aplana filas DWC antiguas (p. ej. 3×3=9) a una sola fila de N alvéolos.
    */
-  function hcAjustarTorrePropagadorSemillas(cfg, nObjetivo) {
-    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+  function hcPropagadorTorreNecesitaAjuste(cfg, nObjetivo) {
     if (typeof state === 'undefined' || !state) return false;
-    if (typeof persistPremiumGermPlanToConfig === 'function') {
-      persistPremiumGermPlanToConfig(cfg);
-    }
-    if (typeof ensureGerminacionFlow === 'function') ensureGerminacionFlow(cfg);
     var n = Math.min(
       72,
       Math.max(1, Math.round(Number(nObjetivo) || hcNumSemillasGermConfig(cfg) || 1))
     );
+    var torre = state.torre || [];
+    var flat = 0;
+    for (var fi = 0; fi < torre.length; fi++) {
+      flat += (torre[fi] && torre[fi].length) || 0;
+    }
+    return (
+      torre.length !== 1 ||
+      flat !== n ||
+      (cfg.numNiveles || 1) !== 1 ||
+      (cfg.numCestas || 0) !== n
+    );
+  }
+
+  function hcAjustarTorrePropagadorSemillas(cfg, nObjetivo, opts) {
+    opts = opts || {};
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (typeof state === 'undefined' || !state) return false;
+    if (cfg._hcAjustandoTorrePropagador) return false;
+    cfg._hcAjustandoTorrePropagador = true;
+    var n = Math.min(
+      72,
+      Math.max(1, Math.round(Number(nObjetivo) || hcNumSemillasGermConfig(cfg) || 1))
+    );
+    if (!opts.force && !hcPropagadorTorreNecesitaAjuste(cfg, n)) {
+      delete cfg._hcAjustandoTorrePropagador;
+      return false;
+    }
+    try {
+    if (typeof ensureGerminacionFlow === 'function') ensureGerminacionFlow(cfg);
     var prem = cfg.premiumSetup || {};
     if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = prem;
     prem.numSemillasGerm = n;
@@ -662,6 +686,9 @@
     cfg.numCestas = n;
     cfg.germinacionEnPropagador = true;
     return true;
+    } finally {
+      delete cfg._hcAjustandoTorrePropagador;
+    }
   }
 
   /**
@@ -671,23 +698,10 @@
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
     if (typeof state === 'undefined' || !state) return false;
-    if (typeof persistPremiumGermPlanToConfig === 'function') {
-      persistPremiumGermPlanToConfig(cfg);
-    }
     var n = hcNumSemillasGermConfig(cfg);
     if (!n || n < 1) return false;
-    var torre = state.torre || [];
-    var flat = 0;
-    for (var fi = 0; fi < torre.length; fi++) {
-      flat += (torre[fi] && torre[fi].length) || 0;
-    }
-    var need =
-      torre.length !== 1 ||
-      flat !== n ||
-      (cfg.numNiveles || 1) !== 1 ||
-      (cfg.numCestas || 0) !== n;
-    if (!need) return false;
-    return hcAjustarTorrePropagadorSemillas(cfg, n);
+    if (!hcPropagadorTorreNecesitaAjuste(cfg, n)) return false;
+    return hcAjustarTorrePropagadorSemillas(cfg, n, { force: true });
   }
 
   /** Filas × cestas según camino (propagador = 1×N semillas, no 5×5 por defecto). */
@@ -1377,6 +1391,7 @@
   global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
   global.hcInicializarTorreGerminacionPropagador = hcInicializarTorreGerminacionPropagador;
   global.hcAjustarTorrePropagadorSemillas = hcAjustarTorrePropagadorSemillas;
+  global.hcPropagadorTorreNecesitaAjuste = hcPropagadorTorreNecesitaAjuste;
   global.hcRepararSemillasPropagadorAlCargar = hcRepararSemillasPropagadorAlCargar;
   global.hcSyncGerminacionPlanCultivo = hcSyncGerminacionPlanCultivo;
   global.hcDimsTorreDesdeConfig = hcDimsTorreDesdeConfig;

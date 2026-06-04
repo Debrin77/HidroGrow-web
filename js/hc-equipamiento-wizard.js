@@ -395,10 +395,13 @@
     banner.innerHTML = '';
   }
 
-  function renderEquipamientoPremiumUI() {
+  function renderEquipamientoPremiumUI(opts) {
+    opts = opts || {};
     renderEquipOrigenGermBanner();
     renderEquipCatalogInto(el('setupPremiumEquipGrid'), 'setupPremiumEquip_');
-    renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
+    if (!opts.lite) {
+      renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
+    }
     renderEquipFaltantesHint();
     const cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';

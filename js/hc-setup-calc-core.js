@@ -2061,9 +2061,6 @@ function guardarSetupYContinuarCore() {
     if (typeof persistPremiumSetupToConfig === 'function') {
       persistPremiumSetupToConfig(state.configTorre);
     }
-    if (typeof persistEquipamientoToConfig === 'function') {
-      persistEquipamientoToConfig(state.configTorre);
-    }
     camPersist =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : caminoSave;
     if (camPersist) state.configTorre.caminoCultivo = camPersist;
@@ -2104,7 +2101,7 @@ function guardarSetupYContinuarCore() {
         persistPremiumNutrienteGermToConfig(state.configTorre);
       }
       if (typeof persistPremiumGermPlanToConfig === 'function') {
-        persistPremiumGermPlanToConfig(state.configTorre);
+        persistPremiumGermPlanToConfig(state.configTorre, { adjustTorre: true });
       }
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(state.configTorre);
