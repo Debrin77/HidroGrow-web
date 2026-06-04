@@ -1057,6 +1057,7 @@ function cargarUbicacionMedicionesUI() {
   });
   const wrap = document.getElementById('wrapLuzOrigenMediciones');
   if (wrap) wrap.style.display = u === 'interior' ? 'block' : 'none';
+  if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI();
 }
 
 function setUbicacionTorreMediciones(tipo) {

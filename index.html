@@ -1086,9 +1086,12 @@
               <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
             </button>
             <div class="config-section-collapse-body medir-luz-origen-body" id="collapseBodyLuzOrigen">
-            <div class="medir-grid-2-gap-8 medir-mb-12">
+            <div id="luzOrigenEquipMount" class="luz-origen-equip-mount setup-hidden" aria-live="polite"></div>
+            <p id="luzOrigenManualLabel" class="luz-origen-manual-label setup-hidden"></p>
+            <div id="luzOrigenTipoManualWrap" class="luz-origen-manual-wrap">
+            <div class="medir-grid-2-gap-8 medir-mb-12" id="luzOrigenTipoGrid">
               <button type="button" class="config-option" id="opt-interior-luz-natural" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('natural')" aria-label="Luz natural ventana">
+                onclick="onInteriorLuzTipoManual('natural')" aria-label="Luz natural ventana">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">Natural</span>
@@ -1096,7 +1099,7 @@
                 </span>
               </button>
               <button type="button" class="config-option" id="opt-interior-luz-led" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('led')" aria-label="LED full spectrum">
+                onclick="onInteriorLuzTipoManual('led')" aria-label="LED full spectrum">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">LED</span>
@@ -1104,7 +1107,7 @@
                 </span>
               </button>
               <button type="button" class="config-option" id="opt-interior-luz-mixto" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('mixto')" aria-label="Luz natural más LED">
+                onclick="onInteriorLuzTipoManual('mixto')" aria-label="Luz natural más LED">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">Natural + LED</span>
@@ -1112,7 +1115,7 @@
                 </span>
               </button>
               <button type="button" class="config-option" id="opt-interior-luz-fluorescente" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('fluorescente')" aria-label="Fluorescente T5">
+                onclick="onInteriorLuzTipoManual('fluorescente')" aria-label="Fluorescente T5">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">T5 / CFL</span>
@@ -1120,7 +1123,7 @@
                 </span>
               </button>
               <button type="button" class="config-option" id="opt-interior-luz-hps" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('hps')" aria-label="HPS halogenuro">
+                onclick="onInteriorLuzTipoManual('hps')" aria-label="HPS halogenuro">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">HPS / HM</span>
@@ -1128,13 +1131,14 @@
                 </span>
               </button>
               <button type="button" class="config-option" id="opt-interior-luz-sin" role="radio" aria-checked="false"
-                onclick="setInteriorLuzTipo('sin_luz')" aria-label="Sin luz adecuada">
+                onclick="onInteriorLuzTipoManual('sin_luz')" aria-label="Sin luz adecuada">
                 <span class="config-option-radio" aria-hidden="true"></span>
                 <span class="config-option-body">
                   <span class="config-option-title">Sin luz</span>
                   <span class="config-option-desc">No recomendado</span>
                 </span>
               </button>
+            </div>
             </div>
             <div class="medir-mb-4">
               <div class="medir-horas-label" id="labelInteriorHorasLuz">
@@ -1616,12 +1620,14 @@
               <span class="config-section-collapse-title">
                 <svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg>
                 Checklist de montaje
+                <span class="sala-montaje-badge-reco setup-hidden" id="salaMontajeBadgeReco">RECOMENDADO</span>
               </span>
               <span class="sistema-montaje-resumen" id="sistemaMontajeChecksResumen">—</span>
             </span>
             <span class="config-section-collapse-chevron" aria-hidden="true">▼</span>
           </summary>
           <div class="config-section-collapse-body sistema-montaje-body" id="sistemaMontajeChecksBody">
+            <p class="sala-montaje-reco-lead setup-hidden" id="salaMontajeRecoLead" role="note"></p>
             <p class="hc-pm-inline-lead hc-pm-inline-placeholder">El checklist se carga al guardar una instalación o al abrir esta sección.</p>
           </div>
         </details>
@@ -5218,7 +5224,7 @@
   <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-flujo-logico"></script>
   <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
   <script src="js/hc-dash-recarga.js?v=2026-05-31-medir-full"></script>
-  <script src="js/hc-medir-sala-layout.js?v=2026-06-03-sala-sin-recarga"></script>
+  <script src="js/hc-medir-sala-layout.js?v=2026-05-31-luz-equip-montaje"></script>
   <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-prop-ux"></script>
   <script src="js/hc-mobile-ui.js?v=2026-05-31-mobile-ui"></script>
   <script src="js/hc-diagram-palette.js?v=2026-05-19-nft-brown"></script>
@@ -5240,7 +5246,8 @@
 <script src="js/torre-render-main.js?v=2026-05-31-prop-svg"></script>
   <script src="js/cultivos-germinacion.js?v=2026-06-03-medir-domo"></script>
   <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-germ-ahora-lite"></script>
+  <script src="js/hc-equipamiento-wizard.js?v=2026-05-31-luz-equip-montaje"></script>
+  <script src="js/hc-luz-equip-sync.js?v=2026-05-31-luz-equip-montaje"></script>
   <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
   <script src="js/hc-propagador-montaje.js?v=2026-06-03-sustrato-agua-ec"></script>
   <script src="js/hc-premium-germ-plan.js?v=2026-06-03-sustrato-agua-ec"></script>
@@ -5269,7 +5276,7 @@
   <script src="js/hc-setup-diario-fotos.js?v=2026-05-31-dwc-filas"></script>
   <script src="js/hc-setup-historial-delete.js?v=8"></script>
   <script src="js/hc-setup-registro.js?v=2026-05-31-save-toast2"></script>
-  <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-sala-hint"></script>
+  <script src="js/hc-setup-agua-sustrato.js?v=2026-05-31-luz-equip-montaje"></script>
   <script src="js/hc-param-eval-engine.js?v=2026-05-31-iot-full"></script>
   <script src="js/hc-sala-layout.js?v=2026-05-31-sala-plano"></script>
   <script src="js/hc-iot-bridge.js?v=2026-05-31-cal-ctx"></script>

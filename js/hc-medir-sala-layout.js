@@ -342,6 +342,7 @@
     if (montajeDet && !montajeDet.dataset.hcMontajeBound) {
       montajeDet.dataset.hcMontajeBound = '1';
       montajeDet.addEventListener('toggle', function () {
+        if (!montajeDet.open) montajeDet.dataset.hcMontajeUserClosed = '1';
         if (montajeDet.open && typeof hcRefreshPuestaMarchaUi === 'function') {
           hcRefreshPuestaMarchaUi();
         }
@@ -357,6 +358,8 @@
     if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
     else if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
+    if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI();
     bindSalaEquipCollapsibles();
   }
 

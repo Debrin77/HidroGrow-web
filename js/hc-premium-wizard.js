@@ -923,6 +923,7 @@
     if (typeof inferLuzFromPremium === 'function') cfg.luz = inferLuzFromPremium(p);
     else if (p.entorno === 'exterior') cfg.luz = 'natural';
     else cfg.luz = 'led';
+    if (typeof syncLuzDesdeEquipamiento === 'function') syncLuzDesdeEquipamiento(cfg, { force: true });
     if (typeof getConsejosModoSetupActivo === 'function') {
       cfg.consejosModoUi = getConsejosModoSetupActivo() === 'avanzado' ? 'avanzado' : 'principiante';
     } else {

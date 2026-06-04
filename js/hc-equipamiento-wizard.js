@@ -784,6 +784,7 @@
     if (typeof renderSalaLayoutPanel === 'function') renderSalaLayoutPanel();
     if (typeof renderIotPanel === 'function') renderIotPanel();
     if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen(cfg);
+    if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
   }
 
   function refreshSistemaEquipResumen(cfg) {

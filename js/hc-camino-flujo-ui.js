@@ -466,6 +466,8 @@
     }
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
     if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
+    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
+    if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
   }
 
   var _tabsHooked = false;
