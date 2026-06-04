@@ -69,7 +69,8 @@ function hidrogrowPrepararSnapshotPersistencia(st) {
 }
 
 /** Borra todos los datos de HidroGrow (reset manual). */
-function hidrogrowLimpiarAlmacenamientoCompleto() {
+function hidrogrowLimpiarAlmacenamientoCompleto(opts) {
+  opts = opts || {};
   const explicitKeys = [
     STORAGE_KEY,
     'hidrogrow_v1',
@@ -103,19 +104,30 @@ function hidrogrowLimpiarAlmacenamientoCompleto() {
       localStorage.removeItem(k);
     } catch (_) {}
   });
+  const explicitSet = {};
+  explicitKeys.forEach(function (k) {
+    explicitSet[k] = true;
+  });
   try {
     for (let i = localStorage.length - 1; i >= 0; i--) {
       const k = localStorage.key(i);
-      if (k && k.indexOf('hc_meteo_cache') === 0) {
+      if (!k || explicitSet[k]) continue;
+      if (
+        k.indexOf('hc_meteo_cache') === 0 ||
+        k.indexOf('hidrogrow_') === 0 ||
+        k.indexOf('cultiva_') === 0
+      ) {
         localStorage.removeItem(k);
       }
     }
   } catch (_) {}
-  try {
-    if (typeof indexedDB !== 'undefined' && typeof FOTO_DB_NAME === 'string') {
-      indexedDB.deleteDatabase(FOTO_DB_NAME);
-    }
-  } catch (_) {}
+  if (!opts.skipIndexedDb) {
+    try {
+      if (typeof indexedDB !== 'undefined' && typeof FOTO_DB_NAME === 'string') {
+        indexedDB.deleteDatabase(FOTO_DB_NAME);
+      }
+    } catch (_) {}
+  }
 }
 
 function loadState() {
