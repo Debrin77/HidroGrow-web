@@ -63,10 +63,39 @@ function hidrogrowDimsTorreDesdeConfig(cfg, torre) {
   };
 }
 
+/** Ranura en `state.torres` con datos reales del usuario (no plantilla vacía). */
+function hidrogrowTorreSlotEsReal(t) {
+  if (!t || typeof t !== 'object') return false;
+  const cfg = t.config;
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.hcPlantillaAutogenerada) return false;
+  if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
+  if (cfg.salaPreGermConfigAt || cfg.germinacionFlow) return true;
+  if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return true;
+  if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
+  if (cfg.checklistInstalacionConfirmada === true) return true;
+  if (cfg.nutriente) return true;
+  const torre = t.torre;
+  if (Array.isArray(torre)) {
+    for (let n = 0; n < torre.length; n++) {
+      const row = torre[n];
+      if (!row) continue;
+      for (let c = 0; c < row.length; c++) {
+        if (row[c] && String(row[c].variedad || '').trim()) return true;
+      }
+    }
+  }
+  const nom = String(t.nombre || '').trim();
+  if (nom && nom !== 'Mi instalación' && nom !== 'Instalación') return true;
+  return false;
+}
+
 /** Instalación real del usuario (no solo plantilla vacía en memoria). */
 function hidrogrowInstalacionPersistible(st) {
   if (!st || typeof st !== 'object') return false;
-  if (Array.isArray(st.torres) && st.torres.length > 0) return true;
+  if (Array.isArray(st.torres) && st.torres.length > 0) {
+    return st.torres.some((t) => hidrogrowTorreSlotEsReal(t));
+  }
   const cfg = st.configTorre;
   if (!cfg || typeof cfg !== 'object') return false;
   if (cfg.hcPlantillaAutogenerada) return false;
@@ -123,6 +152,10 @@ function hidrogrowLimpiarBorradorSinInstalacion(st) {
   if (!st || typeof st !== 'object') return false;
   if (hidrogrowInstalacionPersistible(st)) return false;
   let changed = false;
+  if (Array.isArray(st.torres) && st.torres.length) {
+    st.torres = [];
+    changed = true;
+  }
   if (st.configTorre) {
     delete st.configTorre;
     changed = true;
@@ -206,13 +239,17 @@ function hidrogrowLimpiarAlmacenamientoCompleto(opts) {
       const k = localStorage.key(i);
       if (!k || explicitSet[k]) continue;
       if (
-        k.indexOf('hc_meteo_cache') === 0 ||
+        k.indexOf('hc_') === 0 ||
+        k.indexOf('hg_') === 0 ||
         k.indexOf('hidrogrow_') === 0 ||
         k.indexOf('cultiva_') === 0
       ) {
         localStorage.removeItem(k);
       }
     }
+  } catch (_) {}
+  try {
+    sessionStorage.clear();
   } catch (_) {}
   if (!opts.skipIndexedDb) {
     try {
@@ -238,6 +275,11 @@ function loadState() {
         legacyPersist = !!hidrogrowMigrarStateCompleto(s);
       }
       hidrogrowAsegurarTorresSlotEnSnapshot(s);
+      if (Array.isArray(s.torres) && s.torres.length) {
+        const nAntes = s.torres.length;
+        s.torres = s.torres.filter((t) => hidrogrowTorreSlotEsReal(t));
+        if (s.torres.length !== nAntes) legacyPersist = true;
+      }
       const cfgLoad =
         s.configTorre ||
         (s.torres && s.torres[s.torreActiva != null ? s.torreActiva : 0] && s.torres[s.torreActiva != null ? s.torreActiva : 0].config);

@@ -23,15 +23,15 @@ function hcResetSessionUiFlags() {
 function hcFinishResetHeavyWork() {
   const appEl = document.getElementById('app');
   try {
+    if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
+      hcPrepararEstadoSinInstalacionEnMemoria();
+    }
+    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     if (typeof refreshTabsOperativaCamino === 'function') {
       refreshTabsOperativaCamino();
     }
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-    if (typeof renderTorre === 'function') renderTorre();
-    if (typeof updateTorreStats === 'function') updateTorreStats();
     if (typeof updateDashboard === 'function') updateDashboard();
-    if (typeof initConfigUI === 'function') initConfigUI();
-    if (typeof aplicarConfigTorre === 'function') aplicarConfigTorre();
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
     if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
@@ -79,6 +79,10 @@ async function resetApp() {
   hcResetSessionUiFlags();
 
   try {
+    if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();
+  } catch (_) {}
+
+  try {
     const _tbc = document.getElementById('hcTabBarCoach');
     if (_tbc) _tbc.classList.add('setup-hidden');
     document.body.classList.remove('hc-tab-coach-open');
@@ -92,20 +96,14 @@ async function resetApp() {
   modoActual = 'vegetativo';
   clEsPrimeraVez = true;
   currentTab = 'inicio';
-  try {
-    delete state.hcPostSetupChecklistPendiente;
-  } catch (_) {}
 
   try {
-    if (typeof saveState === 'function') saveState();
-  } catch (_) {}
-
-  try {
-    if (typeof initTorres === 'function') initTorres();
     if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
       hcPrepararEstadoSinInstalacionEnMemoria();
     }
+    if (typeof initTorres === 'function') initTorres();
     if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
+    if (typeof saveState === 'function') saveState();
   } catch (_) {}
 
   try {
@@ -133,14 +131,16 @@ async function resetApp() {
     if (btn) btn.classList.add('active');
   } catch (_) {}
 
-  const runHeavy = function () {
-    hcFinishResetHeavyWork();
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: 120 });
-  } else {
-    setTimeout(runHeavy, 0);
+  if (typeof showToast === 'function') {
+    showToast('🔄 Sistema restablecido · recargando…', false, { durationMs: 2200 });
   }
+  setTimeout(function () {
+    try {
+      location.reload();
+    } catch (_) {
+      location.href = location.href;
+    }
+  }, 380);
 }
 
 /** Carga torres + datos en memoria (sin pintar UI pesada). */

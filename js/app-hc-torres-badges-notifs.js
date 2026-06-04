@@ -199,14 +199,15 @@ function hcEsSlotInstalacionFantasma(t) {
     (cfg.caminoCultivo ||
       (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
       '');
-  if (cam === 'semilla_propagador') return false;
-  if (
-    cfg &&
-    (cfg.salaPreGermConfigAt ||
-      cfg.germinacionFlow ||
-      (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt))
-  ) {
-    return false;
+  if (cam === 'semilla_propagador') {
+    if (cfg.salaPreGermConfigAt) return false;
+    if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return false;
+    if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return false;
+    const g = cfg.germinacionFlow || {};
+    if (String(g.variedadId || g.variedad || '').trim()) return false;
+    if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) return false;
+    if (hcTorreTienePlantasAsignadas(t.torre)) return false;
+    return true;
   }
   if (cfg && cfg.checklistInstalacionConfirmada === true) return false;
   if (cfg && cfg.nutriente && !cfg.hcPlantillaAutogenerada) return false;
@@ -277,7 +278,8 @@ function hcMigrarLegacyTorresSiProcede() {
 }
 
 function hcTieneInstalacionesUsuario() {
-  return Array.isArray(state.torres) && state.torres.length > 0;
+  if (!Array.isArray(state.torres) || !state.torres.length) return false;
+  return state.torres.some((t) => !hcEsSlotInstalacionFantasma(t));
 }
 
 /** Estado en memoria cuando aún no hay ninguna instalación guardada en `state.torres`. */
@@ -305,6 +307,10 @@ function hcPrepararEstadoSinInstalacionEnMemoria() {
   state.ultimaRecarga = null;
   state.recargaSnoozeHasta = null;
   state.configTorre = null;
+  state.fotosSistemaCompleto = { fotoKeys: [], fotos: [] };
+  try {
+    delete state.hcPostSetupChecklistPendiente;
+  } catch (_) {}
 }
 
 function hcAbrirPrimeraInstalacion() {
