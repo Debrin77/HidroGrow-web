@@ -1326,7 +1326,10 @@
       if (inicioHost) inicioHost.innerHTML = hubHtml;
       var salaHost = document.getElementById('sistemaMontajeChecksBody');
       if (salaHost) {
-        if (vistaMinSala) {
+        var pasoSala =
+          typeof getSalaRecoPasoInicio === 'function' ? getSalaRecoPasoInicio(cfg) : '';
+        var montajeSalaHecho = pasoSala === 'done' || !!getChecks(cfg).completedAt;
+        if (vistaMinSala || montajeSalaHecho) {
           salaHost.innerHTML = hcPmSalaMontajeBodyHtml(cfg);
         } else {
           salaHost.innerHTML =
@@ -1640,7 +1643,12 @@
     if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
     if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
     if (typeof hcInvalidateSalaTabHeavyCache === 'function') hcInvalidateSalaTabHeavyCache();
-    if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true, lightOnly: true });
+    if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true });
+    if (typeof renderMedirEquipamientoPanel === 'function') {
+      try {
+        renderMedirEquipamientoPanel();
+      } catch (_) {}
+    }
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
@@ -1666,13 +1674,18 @@
       typeof germinacionListaParaConfigHidro === 'function' &&
       !germinacionListaParaConfigHidro(cfg)
     ) {
-      setTimeout(function () {
-        try {
-          if (typeof goTab === 'function') goTab('inicio');
-          document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-        } catch (_) {}
-      }, 500);
+      var tabSalaActiva =
+        document.getElementById('tab-sala') &&
+        document.getElementById('tab-sala').classList.contains('active');
+      if (!tabSalaActiva) {
+        setTimeout(function () {
+          try {
+            if (typeof goTab === 'function') goTab('inicio');
+            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+          } catch (_) {}
+        }, 500);
+      }
     } else if (
       cfg.caminoCultivo === 'esqueje_hidro' &&
       typeof enraizadoMontajeCompleto === 'function' &&

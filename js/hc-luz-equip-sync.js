@@ -370,28 +370,38 @@
     if (lead) lead.classList.add('setup-hidden');
     if (prereq) prereq.classList.add('setup-hidden');
 
+    var pasoListo = paso === 'done';
+    var pasoEquip = paso === 'equip';
+    var pasoMontaje = paso === 'montaje';
+
     if (equipDet) {
-      equipDet.classList.toggle('setup-hidden', paso !== 'done');
-      if (paso !== 'done') {
+      equipDet.classList.toggle('setup-hidden', !pasoEquip && !pasoListo);
+      equipDet.classList.toggle('sala-equip-details--paso-activo', pasoEquip);
+      if (pasoListo) {
+        equipDet.open = true;
+        equipDet.classList.remove('sala-equip-details--paso-activo');
+      } else if (pasoMontaje) {
         equipDet.open = false;
         equipDet.classList.remove('sala-equip-details--paso-activo');
       }
     }
 
     if (montajeDet) {
-      montajeDet.classList.toggle('setup-hidden', paso !== 'montaje');
-      montajeDet.classList.toggle('sala-montaje-details--paso-activo', paso === 'montaje');
+      montajeDet.classList.toggle('setup-hidden', !pasoMontaje && !pasoListo);
+      montajeDet.classList.toggle('sala-montaje-details--paso-activo', pasoMontaje);
       montajeDet.classList.remove('sala-montaje-details--bloqueado');
-      if (paso === 'montaje' && !montajeDet.dataset.hcMontajeUserClosed) {
+      if (pasoMontaje && !montajeDet.dataset.hcMontajeUserClosed) {
         montajeDet.open = true;
-      }
-      if (paso !== 'montaje') {
+      } else if (pasoListo) {
         montajeDet.open = false;
       }
       var moTitle = el('salaMontajeSummaryTitleText');
       if (moTitle) {
-        moTitle.textContent =
-          paso === 'montaje' ? 'Checklist de montaje físico' : 'Checklist de montaje';
+        moTitle.textContent = pasoListo
+          ? 'Montaje verificado (puedes revisar)'
+          : pasoMontaje
+            ? 'Checklist de montaje físico'
+            : 'Checklist de montaje';
       }
     }
   }
@@ -439,36 +449,42 @@
     }
 
     if (host) {
-      if (paso === 'done' || (vistaMin && paso === 'montaje')) {
-        if (paso === 'done') {
-          host.innerHTML = '';
-          host.classList.add('setup-hidden');
-        } else {
-          host.classList.remove('setup-hidden');
-          var faltaTxt =
-            falt.length > 0
-              ? ' Falta en el configurador: <strong>' +
-                falt
-                  .map(function (f) {
-                    return f.label;
-                  })
-                  .join(', ') +
-                '</strong>.'
-              : '';
-          host.innerHTML =
-            '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
-            '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-            '✓ <strong>Equipamiento de sala registrado correctamente.</strong>' +
-            faltaTxt +
-            '</p>' +
-            '<p class="sala-propagador-flujo-hint">Confirma que todo está <strong>montado y operativo</strong> ' +
-            '(propagador dentro de la sala, LED, extractor, ventilación…). Cada punto del checklist incluye ' +
-            '<strong>mini-guías</strong> según tu equipamiento.</p>' +
-            '<div class="sala-propagador-flujo-actions">' +
-            '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Abrir checklist de montaje</button> ' +
-            '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver checklist aquí</button>' +
-            '</div></div>';
-        }
+      if (paso === 'done') {
+        host.classList.remove('setup-hidden');
+        host.innerHTML =
+          '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
+          '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
+          '✓ <strong>Montaje de sala verificado.</strong> El resumen de equipamiento y el checklist quedan abajo por si quieres revisarlos.' +
+          '</p>' +
+          '<div class="sala-propagador-flujo-actions">' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Revisar checklist</button> ' +
+          '<button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'inicio\')">Ir a germinación (6 fases)</button>' +
+          '</div></div>';
+      } else if (vistaMin && paso === 'montaje') {
+        host.classList.remove('setup-hidden');
+        var faltaTxt =
+          falt.length > 0
+            ? ' Falta en el configurador: <strong>' +
+              falt
+                .map(function (f) {
+                  return f.label;
+                })
+                .join(', ') +
+              '</strong>.'
+            : '';
+        host.innerHTML =
+          '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
+          '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
+          '✓ <strong>Equipamiento de sala registrado correctamente.</strong>' +
+          faltaTxt +
+          '</p>' +
+          '<p class="sala-propagador-flujo-hint">Confirma que todo está <strong>montado y operativo</strong> ' +
+          '(propagador dentro de la sala, LED, extractor, ventilación…). Cada punto del checklist incluye ' +
+          '<strong>mini-guías</strong> según tu equipamiento.</p>' +
+          '<div class="sala-propagador-flujo-actions">' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Abrir checklist de montaje</button> ' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver checklist aquí</button>' +
+          '</div></div>';
       } else if (paso === 'equip') {
         host.classList.remove('setup-hidden');
         var propOk =
