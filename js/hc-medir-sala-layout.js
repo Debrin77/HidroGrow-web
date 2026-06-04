@@ -351,6 +351,21 @@
         btn.tabIndex = on ? 0 : -1;
       }
     });
+    if (key === 'iot') {
+      requestAnimationFrame(function () {
+        if (salaSubActive !== 'iot') return;
+        if (typeof renderIotPanel === 'function') renderIotPanel();
+      });
+    }
+    if (key === 'recarga' && salaRecargaSubTabVisible()) {
+      requestAnimationFrame(function () {
+        if (salaSubActive !== 'recarga') return;
+        if (typeof updateRecargaBar === 'function') updateRecargaBar();
+        if (typeof actualizarResumenReposicionParcialUI === 'function') {
+          actualizarResumenReposicionParcialUI();
+        }
+      });
+    }
     try {
       document.getElementById('stab-' + key)?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     } catch (_) {}
@@ -387,30 +402,123 @@
     }
   }
 
-  function refreshSalaEquipMontaje() {
-    if (typeof renderMedirEquipamientoPanel === 'function') renderMedirEquipamientoPanel();
-    else if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
-    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+  function refreshSalaEquipMontaje(opts) {
+    opts = opts || {};
+    bindSalaEquipCollapsibles();
+    var det = document.getElementById('sistemaEquipDetails');
+    var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
+    if (opts.lightOnly) {
+      if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+      return;
+    }
+    if (det && det.open && typeof renderMedirEquipamientoPanel === 'function') {
+      renderMedirEquipamientoPanel();
+    } else if (typeof refreshSistemaEquipResumen === 'function') {
+      refreshSistemaEquipResumen();
+    }
+    if (montajeDet && montajeDet.open && typeof hcRefreshPuestaMarchaUi === 'function') {
+      hcRefreshPuestaMarchaUi();
+    }
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI();
-    bindSalaEquipCollapsibles();
   }
 
-  function refreshSalaTab() {
-    if (typeof initConfigUI === 'function') initConfigUI();
-    if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
-    if (typeof actualizarVisibilidadPanelInteriorGrow === 'function') actualizarVisibilidadPanelInteriorGrow();
-    if (typeof cargarInteriorGrowUI === 'function') cargarInteriorGrowUI();
-    if (typeof actualizarVisibilidadPanelCalentadorConsigna === 'function') actualizarVisibilidadPanelCalentadorConsigna();
-    if (typeof renderIotPanel === 'function') renderIotPanel();
-    if (typeof updateRecargaBar === 'function') updateRecargaBar();
-    if (typeof actualizarResumenReposicionParcialUI === 'function') actualizarResumenReposicionParcialUI();
+  var _hcSalaHeavyGen = 0;
+  var _hcSalaHeavySig = '';
+  var _hcSalaHeavyAt = 0;
+  var SALA_HEAVY_TTL_MS = 14000;
+
+  function salaConfigRefreshSig(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    return [
+      cfg.caminoCultivo || '',
+      cfg.faseCamino || '',
+      cfg.ubicacion || '',
+      cfg.tipoInstalacion || '',
+      salaSubActive,
+      !!cfg.montajeSalaPreGermOk,
+      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+        hcSalaOcultarPanelesDuplicadosMedir(cfg),
+      salaRecargaSubTabVisible(cfg),
+    ].join('|');
+  }
+
+  function salaPanelesAguaVisibles(cfg) {
+    return !(
+      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+      hcSalaOcultarPanelesDuplicadosMedir(cfg)
+    );
+  }
+
+  function refreshSalaTabLight(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    refreshSalaSubTabsCaminoUi(cfg);
+    refreshSalaEquipMontaje({ lightOnly: true });
+    if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
+  }
+
+  function refreshSalaTabHeavy(cfg, opts) {
+    opts = opts || {};
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var tabEl = document.getElementById('tab-sala');
+    if (!tabEl || !tabEl.classList.contains('active')) return;
+
+    var sig = salaConfigRefreshSig(cfg);
+    var now = Date.now();
+    if (!opts.force && sig === _hcSalaHeavySig && now - _hcSalaHeavyAt < SALA_HEAVY_TTL_MS) {
+      return;
+    }
+
+    var showAgua = salaPanelesAguaVisibles(cfg);
+    var showRecarga = salaRecargaSubTabVisible(cfg);
+    var sub = salaSubActive;
+
+    if (showAgua) {
+      if (typeof initConfigUI === 'function') initConfigUI();
+      if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
+      if (typeof actualizarVisibilidadPanelInteriorGrow === 'function') {
+        actualizarVisibilidadPanelInteriorGrow();
+      }
+      if (typeof cargarInteriorGrowUI === 'function') cargarInteriorGrowUI();
+    }
+    if (typeof actualizarVisibilidadPanelCalentadorConsigna === 'function') {
+      actualizarVisibilidadPanelCalentadorConsigna();
+    }
+    if (sub === 'iot' && typeof renderIotPanel === 'function') renderIotPanel();
+    if (showRecarga && sub === 'recarga') {
+      if (typeof updateRecargaBar === 'function') updateRecargaBar();
+      if (typeof actualizarResumenReposicionParcialUI === 'function') {
+        actualizarResumenReposicionParcialUI();
+      }
+    }
     refreshSalaEquipMontaje();
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
-    refreshSalaSubTabsCaminoUi();
-    try {
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
-    } catch (_) {}
+
+    _hcSalaHeavySig = sig;
+    _hcSalaHeavyAt = now;
+  }
+
+  function scheduleHcRefreshSalaTabHeavy(force) {
+    var gen = ++_hcSalaHeavyGen;
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        if (gen !== _hcSalaHeavyGen) return;
+        if (typeof currentTab !== 'undefined' && currentTab !== 'sala') return;
+        refreshSalaTabHeavy(undefined, { force: !!force });
+      });
+    });
+  }
+
+  function refreshSalaTab(opts) {
+    opts = opts || {};
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    refreshSalaTabLight(cfg);
+    if (opts.lightOnly) return;
+    if (opts.deferHeavy) {
+      scheduleHcRefreshSalaTabHeavy(!!opts.force);
+      return;
+    }
+    refreshSalaTabHeavy(cfg, opts);
   }
 
   function refreshSistemaCultivoExtras() {
@@ -453,6 +561,12 @@
     return typeof hcApplyMedirTabQuick === 'function' ? hcApplyMedirTabQuick(inp.value) : false;
   };
   window.hcRefreshSalaTab = refreshSalaTab;
+  window.hcRefreshSalaTabLight = refreshSalaTabLight;
+  window.scheduleHcRefreshSalaTabHeavy = scheduleHcRefreshSalaTabHeavy;
+  window.hcInvalidateSalaTabHeavyCache = function () {
+    _hcSalaHeavySig = '';
+    _hcSalaHeavyAt = 0;
+  };
   window.hcRefreshSistemaCultivoExtras = refreshSistemaCultivoExtras;
   window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;

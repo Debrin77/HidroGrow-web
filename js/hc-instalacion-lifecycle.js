@@ -464,7 +464,7 @@
     } catch (_) {}
     setTimeout(function () {
       try {
-        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
+        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true });
         else if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       } catch (_) {}
       var det = document.getElementById('sistemaMontajeChecksDetails');
@@ -854,7 +854,7 @@
     }
     setTimeout(function () {
       try {
-        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
+        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true });
         else if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       } catch (_) {}
       hcIrMontajeSala();

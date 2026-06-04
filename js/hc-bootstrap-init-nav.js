@@ -515,8 +515,10 @@ function goTabDeferredWork(tab) {
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
   }
   if (tab === 'sala') {
-    if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab();
     if (typeof salaSubTab === 'function') salaSubTab(window.salaSubActive || 'agua');
+    if (typeof hcRefreshSalaTab === 'function') {
+      hcRefreshSalaTab({ deferHeavy: true });
+    }
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio') updateDashboard();
