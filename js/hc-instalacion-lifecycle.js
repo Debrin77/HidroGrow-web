@@ -369,11 +369,10 @@
       var g = cfg.germinacionFlow;
       var faltaTraslado = g && !g.checklistTrasladoOk;
       return {
-        titulo: faltaTraslado ? 'Checklist de traslado pendiente' : 'Primero: germinación (6 fases)',
+        titulo: faltaTraslado ? 'Checklist de traslado pendiente' : 'Primero: germinación en propagador',
         texto: faltaTraslado
           ? 'Marca el <strong>checklist de traslado</strong> en Inicio antes del depósito y del asistente DWC/RDWC.'
-          : 'Completa el camino en <strong>Inicio</strong> (propagador → sala → 6 fases). ' +
-            'El <strong>checklist del depósito</strong> va después de cerrar DWC/RDWC.',
+          : 'Sigue el registro diario en <strong>Inicio</strong>. La sala y el depósito DWC/RDWC van después.',
         cta: faltaTraslado ? 'Ir a germinación' : 'Ir a germinación',
         action: 'irGerminacion',
       };

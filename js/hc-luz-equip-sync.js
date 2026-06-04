@@ -646,7 +646,10 @@
     if (typeof global.hcRecargaCompletaAplicaEnCamino === 'function' && global.hcRecargaCompletaAplicaEnCamino(cfg)) {
       return false;
     }
-    if (typeof global.hcGerminacionActiva === 'function' && !global.hcGerminacionActiva(cfg)) {
+    if (
+      typeof global.propagadorMontajeCompleto === 'function' &&
+      !global.propagadorMontajeCompleto(cfg)
+    ) {
       return false;
     }
     if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {

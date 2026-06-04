@@ -297,6 +297,10 @@
     var flow = document.getElementById('medirFlow');
     if (flow) {
       flow.classList.toggle('medir-flow--germ-prop', activo);
+      if (activo) {
+        flow.classList.remove('medir-flow--pre-operativa');
+        flow.setAttribute('aria-hidden', 'false');
+      }
       var mountAmb = document.getElementById('medirFlowAmbienteMount');
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
       if (activo && mountAmb && solPanel) {

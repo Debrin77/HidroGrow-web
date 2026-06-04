@@ -831,12 +831,31 @@ function setStandbyLockDisabled(el, on) {
   el.setAttribute('aria-disabled', el.disabled ? 'true' : 'false');
 }
 
+function hcMedirGermPropagadorDesbloqueado() {
+  return (
+    typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+    hcMedirPermiteRegistroGerminacion(state.configTorre || {})
+  );
+}
+
 function aplicarBloqueosStandbyPorTab(on) {
   const tabMediciones = document.getElementById('tab-mediciones');
   const tabSala = document.getElementById('tab-sala');
+  const germMedir = !on && hcMedirGermPropagadorDesbloqueado();
   if (tabMediciones) {
     tabMediciones.querySelectorAll('input, textarea, select').forEach(el => {
-      setStandbyLockDisabled(el, !on);
+      setStandbyLockDisabled(el, germMedir ? false : !on);
+    });
+    tabMediciones.querySelectorAll('.medir-save-btn').forEach(el => {
+      if (!(el instanceof HTMLButtonElement)) return;
+      if (germMedir) {
+        el.disabled = false;
+        delete el.dataset.standbyLocked;
+        el.classList.remove('is-standby-disabled');
+        el.setAttribute('aria-disabled', 'false');
+      } else {
+        setStandbyLockDisabled(el, !on);
+      }
     });
   }
   if (tabSala) {
@@ -858,9 +877,13 @@ function aplicarEstadoStandbyUI() {
   const on = sistemaEstaOperativa();
   const appRoot = document.getElementById('app');
   if (appRoot) appRoot.classList.toggle('is-standby-active', !on);
+  const germMedirUi = hcMedirGermPropagadorDesbloqueado();
   ['tab-inicio', 'tab-mediciones', 'tab-sala', 'tab-sistema', 'tab-riego'].forEach(id => {
     const tab = document.getElementById(id);
-    if (tab) tab.classList.toggle('is-standby', !on);
+    if (!tab) return;
+    var standbyTab = !on;
+    if (id === 'tab-mediciones' && germMedirUi) standbyTab = false;
+    tab.classList.toggle('is-standby', standbyTab);
   });
   const globalStandby = document.getElementById('globalStandbyBanner');
   if (globalStandby) {
@@ -868,15 +891,17 @@ function aplicarEstadoStandbyUI() {
   }
   const estadoRow = document.querySelector('.dash-operativa-row');
   if (estadoRow) estadoRow.classList.toggle('is-standby-active', !on);
-  const btnGuardar = document.getElementById('btnGuardarMedicion');
-  if (btnGuardar) {
-    var germMedirBtn =
-      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
-      hcMedirPermiteRegistroGerminacion(state.configTorre || {});
+  const germMedirBtn = hcMedirGermPropagadorDesbloqueado();
+  document.querySelectorAll('.medir-save-btn').forEach(function (btn) {
+    if (!(btn instanceof HTMLButtonElement)) return;
     var puedeGuardar = on || germMedirBtn;
-    btnGuardar.disabled = !puedeGuardar;
-    btnGuardar.setAttribute('aria-disabled', puedeGuardar ? 'false' : 'true');
-  }
+    btn.disabled = !puedeGuardar;
+    btn.setAttribute('aria-disabled', puedeGuardar ? 'false' : 'true');
+    if (puedeGuardar) {
+      btn.classList.remove('is-standby-disabled');
+      delete btn.dataset.standbyLocked;
+    }
+  });
   const btnRiego = document.getElementById('btnCalcRiego');
   if (btnRiego) {
     btnRiego.disabled = !on;

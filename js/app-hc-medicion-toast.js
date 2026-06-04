@@ -246,7 +246,13 @@ async function guardarMedicion(payloadOverride) {
     });
   }
 
-  saveState(); // Guardar en localStorage SIEMPRE
+  var savedOk = typeof saveState === 'function' ? saveState() : true;
+  if (savedOk === false) {
+    if (typeof showToast === 'function') {
+      showToast('No se pudo guardar en el dispositivo. Revisa espacio o recarga la página.', true);
+    }
+    return;
+  }
 
   var evalPayload = {
     ec: ec,
@@ -439,7 +445,7 @@ function hcNotifyInstalacionGuardada(opts) {
   } else if (faseGerm && cam === 'semilla_hidro') {
     msg += ' · Prep hidro → sala → 6 fases en Inicio';
   } else if (faseGerm && cam === 'semilla_propagador') {
-    msg += ' · Checklist propagador → 6 fases (sala después)';
+    msg += ' · Checklist propagador → registro en Inicio (sala cuando quieras)';
   } else if (!faseGerm) {
     msg += ' · Continúa en Sala o Cultivo';
   }

@@ -254,7 +254,7 @@
     return montajeSalaPreGermOk(cfg);
   }
 
-  /** Propagador: sala opcional tras checklist propagador (también tras germinación concluida). Hidro: sala antes de germinar. */
+  /** Propagador: sala opcional en cualquier momento (sin exigir las 6 fases). Hidro: sala antes de germinar. */
   function hcGerminacionBloqueadaPorSala(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!hcCaminoRequiereSalaPreGerm(cfg)) return false;
@@ -388,15 +388,8 @@
 
   function hcSalaPreGermPermitida(cfg, opts) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    var cam = getCaminoCultivo(cfg);
-    if (cam === 'semilla_propagador') {
-      if (
-        typeof propagadorMontajeCompleto === 'function' &&
-        propagadorMontajeCompleto(cfg)
-      ) {
-        return true;
-      }
-      return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    if (getCaminoCultivo(cfg) === 'semilla_propagador') {
+      return true;
     }
     return true;
   }
@@ -565,29 +558,11 @@
     var cfg =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
     if (!hcSalaPreGermPermitida(cfg, opts)) {
-      var camBloq = getCaminoCultivo(cfg);
       if (typeof showToast === 'function') {
-        showToast(
-          camBloq === 'semilla_propagador'
-            ? 'Completa el checklist del propagador en Inicio antes de configurar la sala.'
-            : 'Aún no puedes configurar la sala. Revisa los pasos pendientes en Inicio.',
-          true,
-          { durationMs: 6200 }
-        );
+        showToast('Aún no puedes configurar la sala. Revisa los pasos pendientes en Inicio.', true, {
+          durationMs: 6200,
+        });
       }
-      try {
-        if (typeof goTab === 'function') goTab('inicio');
-        setTimeout(function () {
-          if (
-            camBloq === 'semilla_propagador' &&
-            typeof hcOpenPropagadorMontajeChecklist === 'function'
-          ) {
-            hcOpenPropagadorMontajeChecklist();
-          } else {
-            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }
-        }, 200);
-      } catch (_) {}
       return;
     }
     try {

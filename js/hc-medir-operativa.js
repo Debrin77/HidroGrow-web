@@ -122,11 +122,20 @@
     }
   }
 
+  function medirGerminacionPropagadorActiva(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    return (
+      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+      hcMedirPermiteRegistroGerminacion(cfg)
+    );
+  }
+
   function refreshMedirOperativaUi() {
     var lc = getLc();
     var operativa = !!lc.operativaDiaria;
     var pendiente = !operativa && lc.fase !== 'sin_config';
     var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    var germMedir = medirGerminacionPropagadorActiva(cfg);
 
     var preGate = document.getElementById('medirPreOperativaGate');
     var hub = document.getElementById('medirOperativaHub');
@@ -136,7 +145,7 @@
     var guiaCard = document.getElementById('medirGuiaDiaCard');
 
     if (preGate) {
-      preGate.classList.toggle('setup-hidden', !pendiente);
+      preGate.classList.toggle('setup-hidden', !pendiente || germMedir);
       if (pendiente) {
         var nextEl = document.getElementById('medirPreOperativaNext');
         var ctaEl = document.getElementById('medirPreOperativaCta');
@@ -201,8 +210,9 @@
     }
 
     if (flow) {
-      flow.classList.toggle('medir-flow--pre-operativa', !!pendiente);
-      flow.setAttribute('aria-hidden', pendiente ? 'true' : 'false');
+      var bloquearFlow = !!pendiente && !germMedir;
+      flow.classList.toggle('medir-flow--pre-operativa', bloquearFlow);
+      flow.setAttribute('aria-hidden', bloquearFlow ? 'true' : 'false');
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) {
         lead.innerHTML = operativa
