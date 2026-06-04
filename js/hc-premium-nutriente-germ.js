@@ -44,16 +44,13 @@
 
   function caminoRequiereNutrienteBandeja(cfg) {
     cfg = cfg || getCfgNutriente();
-    var cam = String(
+    if (typeof getCaminoCultivo === 'function') {
+      var camFn = getCaminoCultivo(cfg);
+      if (camFn) return camFn;
+    }
+    return String(
       cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || ''
     ).trim();
-    if (cam && typeof getCaminoCultivo === 'function') {
-      var camFn = getCaminoCultivo(cfg);
-      if (camFn) cam = camFn;
-    } else if (typeof getCaminoCultivo === 'function') {
-      cam = getCaminoCultivo(cfg) || '';
-    }
-    return cam;
   }
 
   function isPremiumNutrienteGermActivo(cfg) {
@@ -774,7 +771,10 @@
           ''
       ).trim()
     );
-    if (!nid) nid = nutrienteGermIdValido(readNutrienteGermIdFromUi());
+    if (!nid) {
+      var uiNid = String(readNutrienteGermIdFromUi() || '').trim();
+      nid = nutrienteGermIdValido(uiNid) || uiNid;
+    }
     if (!nid) nid = 'canna_aqua';
     var vol = getNutrienteGermVolLFromCfg(cfg);
     if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};

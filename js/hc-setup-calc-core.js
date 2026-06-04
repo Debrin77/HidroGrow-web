@@ -2094,7 +2094,9 @@ function guardarSetupYContinuarCore() {
   if (faseGermSetup) {
     try {
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
-      if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+      if (typeof resolverNutrienteGermBandeja === 'function') {
+        resolverNutrienteGermBandeja(state.configTorre);
+      } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
         hcAsegurarNutrienteGermEnCfg(state.configTorre);
       } else {
         if (typeof persistPremiumNutrienteGermFromUI === 'function') {

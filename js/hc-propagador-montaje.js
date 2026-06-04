@@ -507,7 +507,9 @@
       requiereValidacionPlanGerm(cfg) &&
       typeof validarPlanGerminacionCompleto === 'function'
     ) {
-      if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+      if (typeof resolverNutrienteGermBandeja === 'function') {
+        resolverNutrienteGermBandeja(cfg);
+      } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
         hcAsegurarNutrienteGermEnCfg(cfg);
       }
       persistHcPropPlanFromModal();
