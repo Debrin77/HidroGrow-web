@@ -868,6 +868,19 @@ function cargarEstadoTorre(idx, opts) {
       if (typeof asegurarCamposFilaTorre === 'function') asegurarCamposFilaTorre(cell);
     });
   }
+  if (
+    typeof getCaminoCultivo === 'function' &&
+    getCaminoCultivo(state.configTorre) === 'semilla_propagador' &&
+    typeof hcAjustarTorrePropagadorSemillas === 'function'
+  ) {
+    try {
+      hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
+    } catch (ePropTorre) {
+      try {
+        console.warn('hcAjustarTorrePropagadorSemillas cargarEstadoTorre', ePropTorre);
+      } catch (_) {}
+    }
+  }
   // Restaurar toldo / día de riego; plantas y edad vía sincronizarInputsRiego (torre activa + slot guardado)
   if (deferUi) {
     if (typeof window !== 'undefined') {

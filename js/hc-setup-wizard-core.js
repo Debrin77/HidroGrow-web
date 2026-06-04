@@ -24,8 +24,15 @@ function hcSetupClonePlain(value, fallback = null) {
 
 /** Normaliza tipo de instalación guardado en config (solo DWC / RDWC). */
 function tipoInstalacionNormalizado(cfg) {
+  if (
+    typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
+    hidrogrowPropagadorEnFaseGermSinHidro(cfg)
+  ) {
+    return '';
+  }
   if (typeof hidrogrowTipoInstalacionRaw === 'function') {
     const raw = hidrogrowTipoInstalacionRaw(cfg);
+    if (raw === '') return '';
     if (raw) return raw;
   }
   const t = cfg && cfg.tipoInstalacion;

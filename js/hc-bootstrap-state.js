@@ -35,6 +35,65 @@ function hidrogrowCaminoDesdeCfg(cfg) {
   return '';
 }
 
+/** Repara configs guardadas como DWC por migración antigua (propagador en germinación). */
+function hidrogrowRepararConfigPropagadorMigrada(cfg) {
+  if (typeof hidrogrowPropagadorEnFaseGermSinHidro !== 'function') return false;
+  if (!hidrogrowPropagadorEnFaseGermSinHidro(cfg)) return false;
+  let changed = false;
+  const t = String(cfg.tipoInstalacion || '').toLowerCase();
+  if (t === 'dwc' || t === 'rdwc') {
+    cfg.tipoInstalacion = '';
+    changed = true;
+  }
+  if (cfg.checklistInstalacionConfirmada === true && cfg.hcSetupFase !== 'hidro') {
+    cfg.checklistInstalacionConfirmada = false;
+    changed = true;
+  }
+  return changed;
+}
+
+/** Al cargar: la ranura activa manda sobre configTorre raíz (evita DWC fantasma en raíz). */
+function hidrogrowCfgAlCargar(s) {
+  if (!s || typeof s !== 'object') return null;
+  const idx = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
+  const slot = Array.isArray(s.torres) && s.torres[idx] ? s.torres[idx] : null;
+  if (slot && slot.config && typeof slot.config === 'object' && hidrogrowTorreSlotEsReal(slot)) {
+    return slot.config;
+  }
+  return s.configTorre && typeof s.configTorre === 'object' ? s.configTorre : null;
+}
+
+/** Copia instalación activa del slot a state.torre / configTorre (fuente de verdad al abrir). */
+function hidrogrowSincronizarRaizDesdeSlotActivo(s) {
+  if (!s || !Array.isArray(s.torres) || !s.torres.length) return false;
+  const idx = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
+  const slot = s.torres[idx];
+  if (!slot || !hidrogrowTorreSlotEsReal(slot)) return false;
+  try {
+    if (slot.config && typeof slot.config === 'object') {
+      s.configTorre = JSON.parse(JSON.stringify(slot.config));
+    }
+    if (Array.isArray(slot.torre)) {
+      s.torre = JSON.parse(JSON.stringify(slot.torre));
+    }
+    if (Array.isArray(slot.mediciones)) {
+      s.mediciones = JSON.parse(JSON.stringify(slot.mediciones));
+    }
+    if (Array.isArray(slot.registro)) {
+      s.registro = JSON.parse(JSON.stringify(slot.registro));
+    }
+    s.ultimaMedicion =
+      slot.ultimaMedicion && typeof slot.ultimaMedicion === 'object'
+        ? { ...slot.ultimaMedicion }
+        : null;
+    s.ultimaRecarga = slot.ultimaRecarga ?? null;
+    s.recargaSnoozeHasta = slot.recargaSnoozeHasta ?? null;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function hidrogrowNumSemillasGermCfg(cfg) {
   cfg = cfg || {};
   const g = cfg.germinacionFlow || {};
@@ -45,6 +104,9 @@ function hidrogrowNumSemillasGermCfg(cfg) {
   if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
     return Math.min(72, Math.round(prem.numSemillasGerm));
   }
+  if (Number.isFinite(cfg.numSemillasGerm) && cfg.numSemillasGerm >= 1) {
+    return Math.min(72, Math.round(cfg.numSemillasGerm));
+  }
   return 0;
 }
 
@@ -53,8 +115,12 @@ function hidrogrowDimsTorreDesdeConfig(cfg, torre) {
   cfg = cfg || {};
   torre = torre || [];
   if (hidrogrowCaminoDesdeCfg(cfg) === 'semilla_propagador') {
-    let c = hidrogrowNumSemillasGermCfg(cfg) || 1;
-    if (torre[0] && torre[0].length) c = Math.max(c, torre[0].length);
+    let c = hidrogrowNumSemillasGermCfg(cfg);
+    if (!c || c < 1) {
+      let flatLen = 0;
+      for (let fi = 0; fi < torre.length; fi++) flatLen += (torre[fi] && torre[fi].length) || 0;
+      c = flatLen > 0 ? flatLen : 1;
+    }
     return { numNiveles: 1, numCestas: Math.min(72, Math.max(1, c)) };
   }
   return {
@@ -274,21 +340,34 @@ function loadState() {
       if (typeof hidrogrowMigrarStateCompleto === 'function') {
         legacyPersist = !!hidrogrowMigrarStateCompleto(s);
       }
+      if (s.configTorre && hidrogrowRepararConfigPropagadorMigrada(s.configTorre)) {
+        legacyPersist = true;
+      }
+      if (Array.isArray(s.torres)) {
+        s.torres.forEach((t) => {
+          if (t && t.config && hidrogrowRepararConfigPropagadorMigrada(t.config)) {
+            legacyPersist = true;
+          }
+        });
+      }
       hidrogrowAsegurarTorresSlotEnSnapshot(s);
       if (Array.isArray(s.torres) && s.torres.length) {
         const nAntes = s.torres.length;
         s.torres = s.torres.filter((t) => hidrogrowTorreSlotEsReal(t));
         if (s.torres.length !== nAntes) legacyPersist = true;
       }
-      const cfgLoad =
-        s.configTorre ||
-        (s.torres && s.torres[s.torreActiva != null ? s.torreActiva : 0] && s.torres[s.torreActiva != null ? s.torreActiva : 0].config);
-      const dims = hidrogrowDimsTorreDesdeConfig(cfgLoad, s.torre);
-      const nivLoad = Math.max(1, dims.numNiveles || NUM_NIVELES);
-      const cesLoad = Math.max(1, dims.numCestas || NUM_CESTAS);
-      if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador' && s.torre.length > 1) {
-        s.torre = [s.torre[0] || []];
+      if (hidrogrowSincronizarRaizDesdeSlotActivo(s)) legacyPersist = true;
+      const cfgLoad = hidrogrowCfgAlCargar(s);
+      if (cfgLoad && typeof cfgLoad === 'object') {
+        try {
+          s.configTorre = JSON.parse(JSON.stringify(cfgLoad));
+        } catch (_) {
+          s.configTorre = cfgLoad;
+        }
       }
+      const dims = hidrogrowDimsTorreDesdeConfig(cfgLoad, s.torre);
+      let nivLoad = Math.max(1, dims.numNiveles || NUM_NIVELES);
+      const cesLoad = Math.max(1, dims.numCestas || NUM_CESTAS);
       const celdaVacia = () => ({
         variedad: '',
         fecha: '',
@@ -297,6 +376,22 @@ function loadState() {
         fotos: [],
         fotoKeys: [],
       });
+      if (hidrogrowCaminoDesdeCfg(cfgLoad) === 'semilla_propagador') {
+        const flat = [];
+        for (let ni = 0; ni < (s.torre || []).length; ni++) {
+          const row = s.torre[ni] || [];
+          for (let ci = 0; ci < row.length; ci++) {
+            if (row[ci]) flat.push(row[ci]);
+          }
+        }
+        while (flat.length < cesLoad) flat.push(celdaVacia());
+        s.torre = [flat.slice(0, cesLoad)];
+        nivLoad = 1;
+        if (cfgLoad && typeof cfgLoad === 'object') {
+          cfgLoad.numNiveles = 1;
+          cfgLoad.numCestas = cesLoad;
+        }
+      }
       while (s.torre.length < nivLoad) {
         s.torre.push([]);
       }
@@ -312,6 +407,22 @@ function loadState() {
       if (cfgLoad && typeof cfgLoad === 'object') {
         cfgLoad.numNiveles = nivLoad;
         cfgLoad.numCestas = cesLoad;
+      }
+      if (s.configTorre && cfgLoad) {
+        s.configTorre.numNiveles = nivLoad;
+        s.configTorre.numCestas = cesLoad;
+      }
+      const idxSlotLoad = Number.isFinite(s.torreActiva) ? s.torreActiva : 0;
+      const slotLoad = Array.isArray(s.torres) && s.torres[idxSlotLoad] ? s.torres[idxSlotLoad] : null;
+      if (slotLoad && cfgLoad) {
+        try {
+          slotLoad.config = JSON.parse(JSON.stringify(cfgLoad));
+          slotLoad.torre = JSON.parse(JSON.stringify(s.torre));
+        } catch (_) {
+          slotLoad.config = cfgLoad;
+          slotLoad.torre = s.torre;
+        }
+        legacyPersist = true;
       }
       if (s.modo) modoActual = s.modo;
       normalizarNotifOpcionesEnState(s);

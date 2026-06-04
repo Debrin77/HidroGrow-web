@@ -1678,11 +1678,28 @@
     var n = Math.min(72, Math.max(1, parseInt(String(val), 10) || 1));
     g.numSemillas = n;
     if (g.semillasActivas > n) g.semillasActivas = n;
+    if (cfg.premiumSetup && typeof cfg.premiumSetup === 'object') {
+      cfg.premiumSetup.numSemillasGerm = n;
+      cfg.premiumSetup.numSemillasGermManual = true;
+    }
+    cfg.numSemillasGerm = n;
     persistirGerminacion();
+    try {
+      if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
+        hcAjustarTorrePropagadorSemillas(cfg, n);
+      } else if (typeof hcSyncGerminacionPlanCultivo === 'function') {
+        hcSyncGerminacionPlanCultivo(cfg);
+      }
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
     refreshDashGerminacionHub();
     try {
       if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
       if (typeof hcRenderPropagadorSvg === 'function') hcRenderPropagadorSvg(cfg);
+      if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+      if (typeof redibujarTorre === 'function') redibujarTorre();
+      if (typeof updateDashboard === 'function') updateDashboard();
     } catch (_) {}
   }
 

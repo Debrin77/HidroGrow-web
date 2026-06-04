@@ -235,9 +235,31 @@ const COMPATIBILIDAD = {
 /** Sistemas hidropónicos soportados (cannabis — referencia cultivadores y fabricantes). */
 const HIDROGROW_SISTEMAS = ['dwc', 'rdwc'];
 
-/** Normaliza tipo: solo DWC o RDWC. */
+/** Camino semilla + propagador aún sin circuito DWC/RDWC cerrado. */
+function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  const cam =
+    (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
+    cfg.caminoCultivo ||
+    (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+    '';
+  if (cam !== 'semilla_propagador') return false;
+  if (cfg.hcSetupFase === 'hidro') return false;
+  const t = String(cfg.tipoInstalacion || '').toLowerCase();
+  if ((t === 'dwc' || t === 'rdwc') && cfg.checklistInstalacionConfirmada === true) {
+    return false;
+  }
+  return true;
+}
+
+/** Normaliza tipo: DWC/RDWC; en propagador sin hidro el tipo queda vacío (no forzar DWC). */
 function hidrogrowTipoInstalacionRaw(cfg) {
+  if (hidrogrowPropagadorEnFaseGermSinHidro(cfg)) return '';
   const t = cfg && cfg.tipoInstalacion;
+  if (!t || String(t).trim() === '') {
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) return '';
+    return 'dwc';
+  }
   if (t === 'rdwc') return 'rdwc';
   return 'dwc';
 }
@@ -276,10 +298,23 @@ function hidrogrowPurgarClavesLegacyInstalacion(cfg) {
  */
 function hidrogrowMigrarConfigInstalacion(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
+  let changed = false;
+  if (hidrogrowPropagadorEnFaseGermSinHidro(cfg)) {
+    if (cfg.tipoInstalacion !== '') {
+      cfg.tipoInstalacion = '';
+      changed = true;
+    }
+    if (cfg.checklistInstalacionConfirmada === true && cfg.hcSetupFase !== 'hidro') {
+      cfg.checklistInstalacionConfirmada = false;
+      changed = true;
+    }
+    if (hidrogrowPurgarClavesLegacyInstalacion(cfg)) changed = true;
+    return changed;
+  }
   const prev = String(cfg.tipoInstalacion || '').toLowerCase();
   const wasLegacy = prev === 'nft' || prev === 'torre' || prev === 'srf';
   const norm = hidrogrowTipoInstalacionRaw(cfg);
-  let changed = wasLegacy || prev !== norm;
+  changed = wasLegacy || prev !== norm;
   cfg.tipoInstalacion = norm;
   if (hidrogrowPurgarClavesLegacyInstalacion(cfg)) changed = true;
   if (wasLegacy) {

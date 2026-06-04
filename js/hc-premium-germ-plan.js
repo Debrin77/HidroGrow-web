@@ -412,8 +412,14 @@
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') persistPremiumGermPlanToConfig(cfg);
     try {
+      var nSem =
+        typeof hcNumSemillasGermConfig === 'function' ? hcNumSemillasGermConfig(cfg) : n;
+      if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
+        hcAjustarTorrePropagadorSemillas(cfg, nSem);
+      }
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       if (typeof saveState === 'function') saveState();
+      if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
     } catch (_) {}
   }
 
