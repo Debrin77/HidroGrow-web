@@ -15059,6 +15059,26 @@ button.config-option:focus-visible,
 .ultima-medicion-card.ultima-medicion-card--visible {
   display: block;
 }
+.ultima-medicion-card.ultima-medicion-card--just-saved {
+  animation: hc-medir-saved-pulse 0.55s ease 2;
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+@keyframes hc-medir-saved-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.35); }
+  50% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+}
+.medir-save-btn--saved {
+  background: var(--green) !important;
+  border-color: var(--green) !important;
+  color: var(--bg) !important;
+}
+.medir-wizard-modal--propagador .wiz-ambient-grid--primary {
+  margin-top: 0;
+}
+.medir-wizard-modal--propagador .medir-wizard-grid--ambient .wiz-field {
+  border-color: color-mix(in srgb, var(--green) 22%, var(--border));
+}
 .ultima-medicion-info {
   font-size: 12px;
   color: var(--muted);

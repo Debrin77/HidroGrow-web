@@ -790,8 +790,12 @@ function aplicarEstadoStandbyUI() {
   if (estadoRow) estadoRow.classList.toggle('is-standby-active', !on);
   const btnGuardar = document.getElementById('btnGuardarMedicion');
   if (btnGuardar) {
-    btnGuardar.disabled = !on;
-    btnGuardar.setAttribute('aria-disabled', on ? 'false' : 'true');
+    var germMedirBtn =
+      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
+      hcMedirPermiteRegistroGerminacion(state.configTorre || {});
+    var puedeGuardar = on || germMedirBtn;
+    btnGuardar.disabled = !puedeGuardar;
+    btnGuardar.setAttribute('aria-disabled', puedeGuardar ? 'false' : 'true');
   }
   const btnRiego = document.getElementById('btnCalcRiego');
   if (btnRiego) {

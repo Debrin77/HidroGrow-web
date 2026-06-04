@@ -377,6 +377,27 @@
     }
 
     refreshMedirSalaAmbienteMedirUi(cfg);
+    refreshMedirAsistentePropagadorBtn(activo);
+  }
+
+  function refreshMedirAsistentePropagadorBtn(activo) {
+    var flow = document.getElementById('medirFlow');
+    if (!flow) return;
+    var btn = flow.querySelector('.medir-flow-actions [data-quick-icon="asistentepro"]');
+    if (!btn) return;
+    var labelSpan = btn.querySelector('span:last-of-type');
+    if (labelSpan && !btn.dataset.hcAsistLabelDefault) {
+      btn.dataset.hcAsistLabelDefault = labelSpan.textContent;
+    }
+    if (activo) {
+      btn.setAttribute('aria-label', 'Abrir asistente de medición del domo propagador');
+      if (labelSpan) labelSpan.textContent = 'Asistente domo';
+    } else {
+      btn.setAttribute('aria-label', 'Abrir Asistente de mediciones');
+      if (labelSpan && btn.dataset.hcAsistLabelDefault) {
+        labelSpan.textContent = btn.dataset.hcAsistLabelDefault;
+      }
+    }
   }
 
   function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {

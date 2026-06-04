@@ -2,6 +2,62 @@
  * Medición rápida (guardarMedicion) y showToast global.
  * Último bloque de la app; carga tras meteo-alarm-app.js. Siguiente: app-hc-setup-onboarding.js.
  */
+
+function readMedirInputVal(id) {
+  const el = document.getElementById(id);
+  return el ? String(el.value || '').trim() : '';
+}
+
+function buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave) {
+  if (medirGermSave) {
+    const parts = [];
+    if (ambPayload.tempAire !== '' && ambPayload.tempAire != null) {
+      parts.push('T° ' + ambPayload.tempAire + '°C');
+    }
+    if (ambPayload.humSala !== '' && ambPayload.humSala != null) {
+      parts.push('HR ' + ambPayload.humSala + '%');
+    }
+    if (ambPayload.vpd !== '' && ambPayload.vpd != null) {
+      parts.push('VPD ' + ambPayload.vpd);
+    }
+    if (ec) parts.push('EC ' + ec);
+    if (ph) parts.push('pH ' + ph);
+    if (parts.length) return '✅ Medición guardada · ' + parts.join(' · ');
+    return '✅ Medición guardada (domo)';
+  }
+  const dep = [];
+  if (ec) dep.push('EC ' + ec);
+  if (ph) dep.push('pH ' + ph);
+  if (temp) dep.push('T° agua ' + temp);
+  if (vol) dep.push(vol + ' L');
+  if (dep.length) return '✅ Medición guardada · ' + dep.join(' · ');
+  return '✅ Medición guardada';
+}
+
+function hcNotifyMedicionGuardada(msg, extraOpts) {
+  const opts = Object.assign({ durationMs: 5200, prominent: true }, extraOpts || {});
+  showToast(msg, false, opts);
+  const card = document.getElementById('ultimaMedicionCard');
+  if (card) {
+    card.classList.add('ultima-medicion-card--just-saved');
+    setTimeout(function () {
+      card.classList.remove('ultima-medicion-card--just-saved');
+    }, 2400);
+  }
+  document.querySelectorAll('.medir-save-btn').forEach(function (btn) {
+    if (!(btn instanceof HTMLButtonElement)) return;
+    const prev = btn.textContent;
+    btn.classList.add('medir-save-btn--saved');
+    btn.textContent = '✓ Guardada';
+    btn.disabled = true;
+    setTimeout(function () {
+      btn.classList.remove('medir-save-btn--saved');
+      btn.textContent = prev;
+      btn.disabled = false;
+    }, 1800);
+  });
+}
+
 async function guardarMedicion(payloadOverride) {
   const fromPayload = payloadOverride && typeof payloadOverride === 'object';
   if (!fromPayload) {
@@ -23,7 +79,11 @@ async function guardarMedicion(payloadOverride) {
       } catch (_) {}
       return;
     }
-    if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+    if (
+      typeof sistemaEstaOperativa === 'function' &&
+      !sistemaEstaOperativa() &&
+      !medirGerm
+    ) {
       showToast(typeof getMensajeStandbyContinuar === 'function'
         ? getMensajeStandbyContinuar()
         : '⏸ Instalación en stand-by / descanso. Reactiva modo operativa para continuar.', true);
@@ -45,7 +105,11 @@ async function guardarMedicion(payloadOverride) {
       );
       return;
     }
-    if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+    if (
+      typeof sistemaEstaOperativa === 'function' &&
+      !sistemaEstaOperativa() &&
+      !medirGermP
+    ) {
       showToast(typeof getMensajeStandbyContinuar === 'function'
         ? getMensajeStandbyContinuar()
         : '⏸ Instalación en stand-by. Reactiva modo operativa.', true);
@@ -55,16 +119,16 @@ async function guardarMedicion(payloadOverride) {
 
   const ec = fromPayload && payloadOverride.ec != null
     ? String(payloadOverride.ec).trim()
-    : document.getElementById('inputEC').value.trim();
+    : readMedirInputVal('inputEC');
   const ph = fromPayload && payloadOverride.ph != null
     ? String(payloadOverride.ph).trim()
-    : document.getElementById('inputPH').value.trim();
+    : readMedirInputVal('inputPH');
   const temp = fromPayload && payloadOverride.temp != null
     ? String(payloadOverride.temp).trim()
-    : document.getElementById('inputTemp').value.trim();
+    : readMedirInputVal('inputTemp');
   const vol = fromPayload && payloadOverride.vol != null
     ? String(payloadOverride.vol).trim()
-    : document.getElementById('inputVol').value.trim();
+    : readMedirInputVal('inputVol');
   const humS = '';
   const notas = fromPayload && payloadOverride.notas != null
     ? String(payloadOverride.notas).trim()
@@ -184,62 +248,6 @@ async function guardarMedicion(payloadOverride) {
 
   saveState(); // Guardar en localStorage SIEMPRE
 
-  // Refrescar historial si está visible
-  if (document.getElementById('tab-historial').classList.contains('active')) {
-    cargarHistorial();
-  }
-
-  // ── 2. ACTUALIZAR UI ──────────────────────────────────────────────────────
-  const skipClear = fromPayload && payloadOverride.skipClearInputs === true;
-  if (!skipClear) {
-  // Limpiar campos
-  ['inputEC','inputPH','inputTemp','inputVol','inputNotas'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.value = '';
-      if (id !== 'inputNotas') el.removeAttribute('aria-invalid');
-    }
-  });
-  ['statusEC','statusPH','statusTemp','statusVol'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.className = 'param-status'; el.innerHTML = ''; }
-  });
-  ['cardEC','cardPH','cardTemp','cardVol'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.className = 'param-card';
-  });
-  ['correccionEC','correccionPH','correccionTemp','correccionVol'].forEach(id => {
-    showCorreccion(id, '');
-  });
-  }
-  try { cargarUltimaMedicion(); } catch (_) {}
-  try {
-    if (typeof refreshMonitorLive === 'function') refreshMonitorLive();
-  } catch (_) {}
-  try {
-    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-  } catch (_) {}
-
-  updateDashboard();
-  updateRecargaBar();
-  try {
-    if (vol && typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
-  } catch (_) {}
-  try {
-    if (vol) {
-      const panSis = document.getElementById('tab-sistema');
-      if (panSis && panSis.classList.contains('active') && typeof renderTorre === 'function') renderTorre();
-      else if (typeof updateTorreStats === 'function') updateTorreStats();
-    }
-  } catch (_) {}
-  showToast('✅ Medición guardada · EC:' + (ec||'—') + ' pH:' + (ph||'—'));
-
-  try {
-    if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
-    if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
-  } catch (_) {}
-
-  // Alertas unificadas (motor único)
   var evalPayload = {
     ec: ec,
     ph: ph,
@@ -256,9 +264,99 @@ async function guardarMedicion(payloadOverride) {
   };
   var evalResult =
     typeof evaluarMedicionCompleta === 'function' ? evaluarMedicionCompleta(evalPayload) : null;
+
+  var msgOk = buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave);
+  if (evalResult && evalResult.alertas && evalResult.alertas.length) {
+    msgOk += ' · ' + evalResult.alertas.length + ' aviso(s) fuera de rango';
+  }
+  hcNotifyMedicionGuardada(msgOk);
+
   if (evalResult && evalResult.alertas && evalResult.alertas.length) {
     if (typeof showAlertasPostGuardado === 'function') showAlertasPostGuardado(evalResult);
-    showToast('⚠️ ' + evalResult.alertas.length + ' valor(es) fuera de rango — revisa avisos', true);
+    setTimeout(function () {
+      showToast(
+        '⚠️ Revisa los valores marcados en Medir (fuera de rango)',
+        true,
+        { durationMs: 4800, prominent: true }
+      );
+    }, 700);
+  }
+
+  // ── 2. ACTUALIZAR UI (no debe impedir la confirmación) ───────────────────
+  try {
+    const tabHist = document.getElementById('tab-historial');
+    if (tabHist && tabHist.classList.contains('active') && typeof cargarHistorial === 'function') {
+      cargarHistorial();
+    }
+  } catch (errHist) {
+    console.warn('guardarMedicion historial', errHist);
+  }
+
+  const skipClear = fromPayload && payloadOverride.skipClearInputs === true;
+  try {
+    if (!skipClear) {
+      ['inputEC', 'inputPH', 'inputTemp', 'inputVol', 'inputNotas'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = '';
+          if (id !== 'inputNotas') el.removeAttribute('aria-invalid');
+        }
+      });
+      ['statusEC', 'statusPH', 'statusTemp', 'statusVol'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.className = 'param-status';
+          el.innerHTML = '';
+        }
+      });
+      ['cardEC', 'cardPH', 'cardTemp', 'cardVol'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.className = 'param-card';
+      });
+      ['correccionEC', 'correccionPH', 'correccionTemp', 'correccionVol'].forEach(function (id) {
+        if (typeof showCorreccion === 'function') showCorreccion(id, '');
+      });
+      [
+        'inputTempAire', 'inputHumSala', 'inputVPD', 'inputPPFD', 'inputCO2', 'inputTempExt', 'inputLux',
+      ].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = '';
+          el.removeAttribute('aria-invalid');
+        }
+      });
+      [
+        'statusTempAire', 'statusHumSala', 'statusVPD', 'statusPPFD', 'statusCO2', 'statusTempExt',
+      ].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) {
+          el.className = 'param-status';
+          el.innerHTML = '';
+        }
+      });
+      ['cardTempAire', 'cardHumSala', 'cardVPD', 'cardPPFD', 'cardCO2', 'cardTempExt'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.className = 'param-card';
+      });
+    }
+    if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
+    if (typeof refreshMonitorLive === 'function') refreshMonitorLive();
+    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof updateDashboard === 'function') updateDashboard();
+    if (typeof updateRecargaBar === 'function') updateRecargaBar();
+    if (vol && typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
+    if (vol) {
+      const panSis = document.getElementById('tab-sistema');
+      if (panSis && panSis.classList.contains('active') && typeof renderTorre === 'function') {
+        renderTorre();
+      } else if (typeof updateTorreStats === 'function') {
+        updateTorreStats();
+      }
+    }
+    if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
+    if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
+  } catch (errUi) {
+    console.warn('guardarMedicion UI refresh', errUi);
   }
 
   // ── 3. INTENTAR ENVIAR A GOOGLE SHEETS (opcional) ────────────────────────

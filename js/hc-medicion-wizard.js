@@ -5,36 +5,160 @@
 (function () {
   let step = 1;
   let busy = false;
+  let wizardMedMode = 'dwc';
 
   function el(id) { return document.getElementById(id); }
   function txt(v) { return String(v == null ? '' : v); }
 
+  function wizardCfg() {
+    return (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+  }
+
+  function isWizardPropagadorMode(cfg) {
+    cfg = cfg || wizardCfg();
+    return (
+      typeof hcMedirModoGerminacionPropagador === 'function' &&
+      hcMedirModoGerminacionPropagador(cfg)
+    );
+  }
+
+  function getWizardGermCtx(cfg) {
+    cfg = cfg || wizardCfg();
+    if (!isWizardPropagadorMode(cfg)) return null;
+    const mg =
+      typeof getMedirGermActivos === 'function'
+        ? getMedirGermActivos(cfg)
+        : { activos: { ec: true, ph: false, temp: true, hr: true, vpd: true }, plan: null };
+    return { cfg: cfg, activos: mg.activos || {}, plan: mg.plan || null };
+  }
+
+  function applyWizardModeChrome() {
+    const prop = wizardMedMode === 'propagador';
+    const modal = el('modalWizardMedicion');
+    const box = modal && modal.querySelector('.medir-wizard-modal');
+    if (box) box.classList.toggle('medir-wizard-modal--propagador', prop);
+
+    const titleTxt = modal && modal.querySelector('.modal-title-text');
+    if (titleTxt) {
+      if (!titleTxt.dataset.hcWizTitleDefault) {
+        titleTxt.dataset.hcWizTitleDefault = titleTxt.textContent;
+      }
+      titleTxt.textContent = prop
+        ? 'Asistente domo · propagador'
+        : titleTxt.dataset.hcWizTitleDefault;
+    }
+
+    const heroTitle = modal && modal.querySelector('.wiz-hero-title');
+    if (heroTitle) {
+      if (!heroTitle.dataset.hcWizHeroDefault) heroTitle.dataset.hcWizHeroDefault = heroTitle.textContent;
+      heroTitle.textContent = prop
+        ? 'T°, HR y VPD del domo — sin depósito DWC aún'
+        : heroTitle.dataset.hcWizHeroDefault;
+    }
+
+    const lead = el('wizPage1') && el('wizPage1').querySelector('.medir-wizard-lead');
+    if (lead) {
+      if (!lead.dataset.hcWizLeadDefault) lead.dataset.hcWizLeadDefault = lead.textContent;
+      lead.textContent = prop
+        ? 'Registra el clima bajo el domo. El depósito DWC se medirá cuando termines germinación y traslado.'
+        : lead.dataset.hcWizLeadDefault;
+    }
+
+    const quick = el('wizQuick');
+    if (quick) {
+      quick.placeholder = prop
+        ? 'Ej: T 24 HR 72 · EC 450 pH 5.5'
+        : 'Ej: EC 1350 pH 6.0 T 20 V 18';
+    }
+
+    const ctx = prop ? getWizardGermCtx() : null;
+    const act = ctx ? ctx.activos : null;
+
+    ['wiz-field--ec', 'wiz-field--ph', 'wiz-field--temp', 'wiz-field--vol'].forEach(function (cls) {
+      const node = el('wizPage1') && el('wizPage1').querySelector('.' + cls);
+      if (!node) return;
+      if (!prop) {
+        node.classList.remove('setup-hidden');
+        return;
+      }
+      const hide =
+        cls === 'wiz-field--temp' ||
+        cls === 'wiz-field--vol' ||
+        (cls === 'wiz-field--ec' && act && !act.ec) ||
+        (cls === 'wiz-field--ph' && act && !act.ph);
+      node.classList.toggle('setup-hidden', hide);
+    });
+
+    const depGrid = el('wizPage1') && el('wizPage1').querySelector('.medir-wizard-grid:not(.medir-wizard-grid--ambient)');
+    if (depGrid) {
+      const allDepHidden =
+        prop &&
+        act &&
+        !act.ec &&
+        !act.ph;
+      depGrid.classList.toggle('setup-hidden', !!allDepHidden);
+    }
+
+    const ambGrid = el('wizPage1') && el('wizPage1').querySelector('.medir-wizard-grid--ambient');
+    if (ambGrid) ambGrid.classList.toggle('wiz-ambient-grid--primary', prop);
+
+    const p2 = el('wizPage2');
+    if (p2) p2.classList.toggle('setup-hidden', prop);
+
+    const dot2 = el('wizDot2');
+    if (dot2) dot2.classList.toggle('setup-hidden', prop);
+
+    const lblTempAire = ambGrid && ambGrid.querySelector('label[for="wizTempAire"]');
+    if (lblTempAire) lblTempAire.textContent = prop ? 'T° domo (°C)' : 'Temp. aire sala';
+    const lblHum = ambGrid && ambGrid.querySelector('label[for="wizHumSala"]');
+    if (lblHum) lblHum.textContent = prop ? 'HR domo (%)' : 'HR %';
+  }
+
   function setDots() {
-    ['wizDot1', 'wizDot2', 'wizDot3'].forEach((id, idx) => {
+    const prop = wizardMedMode === 'propagador';
+    ['wizDot1', 'wizDot2', 'wizDot3'].forEach(function (id) {
       const d = el(id);
       if (!d) return;
-      d.classList.toggle('is-active', (idx + 1) === step);
+      if (prop && id === 'wizDot2') {
+        d.classList.add('setup-hidden');
+        d.classList.remove('is-active');
+        return;
+      }
+      d.classList.remove('setup-hidden');
+      const dotStep = id === 'wizDot1' ? 1 : id === 'wizDot2' ? 2 : 3;
+      d.classList.toggle('is-active', dotStep === step);
     });
   }
 
   function showStep(n) {
+    if (wizardMedMode === 'propagador' && Number(n) === 2) n = 3;
     step = Math.max(1, Math.min(3, Number(n) || 1));
     const p1 = el('wizPage1');
     const p2 = el('wizPage2');
     const p3 = el('wizPage3');
     if (p1) p1.classList.toggle('setup-hidden', step !== 1);
-    if (p2) p2.classList.toggle('setup-hidden', step !== 2);
+    if (p2) p2.classList.toggle('setup-hidden', step !== 2 || wizardMedMode === 'propagador');
     if (p3) p3.classList.toggle('setup-hidden', step !== 3);
 
     const back = el('wizBackBtn');
     const next = el('wizNextBtn');
     if (back) back.disabled = step === 1 || busy;
-    if (next) next.textContent = step === 3 ? (busy ? 'Guardando…' : 'Guardar') : 'Siguiente';
-    if (next) next.disabled = busy;
+    if (next) {
+      next.textContent =
+        step === 3 ? (busy ? 'Guardando…' : 'Guardar') : 'Siguiente';
+      next.disabled = busy;
+    }
     setDots();
 
     try {
-      const focusId = step === 1 ? 'wizEC' : step === 2 ? 'wizRecargaCompleta' : 'wizNotas';
+      const focusId =
+        step === 1
+          ? wizardMedMode === 'propagador'
+            ? 'wizTempAire'
+            : 'wizEC'
+          : step === 2
+            ? 'wizRecargaCompleta'
+            : 'wizNotas';
       const f = el(focusId);
       if (f && typeof f.focus === 'function') setTimeout(() => f.focus(), 30);
     } catch (_) {}
@@ -87,7 +211,7 @@
   }
 
   function getTargets() {
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cfg = wizardCfg();
     const out = {
       ecMin: 1300,
       ecMax: 1400,
@@ -95,8 +219,62 @@
       phMax: 6.5,
       tempMin: 18,
       tempMax: 22,
+      tempAireMin: 21,
+      tempAireMax: 26,
+      hrMin: 70,
+      hrMax: 80,
       volTarget: 18
     };
+    const gCtx = getWizardGermCtx(cfg);
+    if (gCtx && typeof getGerminacionRangosMonitoreo === 'function') {
+      const p = (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || '';
+      const fid =
+        typeof hcGerminacionFaseActualId === 'function'
+          ? hcGerminacionFaseActualId(cfg)
+          : 'domo';
+      const r = getGerminacionRangosMonitoreo(p, fid, cfg);
+      if (r.temp) {
+        out.tempAireMin = r.temp.min;
+        out.tempAireMax = r.temp.max;
+      }
+      if (r.hr) {
+        out.hrMin = r.hr.min;
+        out.hrMax = r.hr.max;
+      }
+      if (r.ec) {
+        out.ecMin = r.ec.min;
+        out.ecMax = r.ec.max;
+      }
+      if (r.ph) {
+        out.phMin = r.ph.min;
+        out.phMax = r.ph.max;
+      }
+    }
+    if (wizardMedMode === 'propagador') {
+      try {
+        const ecFromManual = parseRangeFromText(getManualRangeText('paramRangeEC'));
+        if (ecFromManual) {
+          out.ecMin = ecFromManual.min;
+          out.ecMax = ecFromManual.max;
+        }
+        const phFromManual = parseRangeFromText(getManualRangeText('paramRangePH'));
+        if (phFromManual) {
+          out.phMin = phFromManual.min;
+          out.phMax = phFromManual.max;
+        }
+        const tFromManual = parseRangeFromText(getManualRangeText('paramRangeTempAire'));
+        if (tFromManual) {
+          out.tempAireMin = tFromManual.min;
+          out.tempAireMax = tFromManual.max;
+        }
+        const hFromManual = parseRangeFromText(getManualRangeText('paramRangeHum'));
+        if (hFromManual) {
+          out.hrMin = hFromManual.min;
+          out.hrMax = hFromManual.max;
+        }
+      } catch (_) {}
+      return out;
+    }
     try {
       const ecObj = typeof getEcObjetivoManualUs === 'function' ? getEcObjetivoManualUs(cfg) : null;
       if (Number.isFinite(ecObj)) {
@@ -336,7 +514,13 @@
   function renderSystemHint() {
     const box = el('wizSystemHint');
     if (!box) return;
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    if (wizardMedMode === 'propagador') {
+      box.textContent =
+        'Camino semilla + propagador: mide T° y HR bajo el domo (el VPD se calcula al guardar). ' +
+        'EC/pH del agua en bandeja solo si tu fase lo indica. El depósito DWC no aplica hasta trasplantar.';
+      return;
+    }
+    const cfg = wizardCfg();
     const tipo = String(tipoInstalacionNormalizado(cfg || {})).toLowerCase();
     if (tipo === 'dwc') {
       const esKratky = typeof esDwcKratky === 'function' && esDwcKratky(cfg);
@@ -363,9 +547,9 @@
     const mode = el('wizHeroMode');
     const score = el('wizHeroScore');
     if (!st || !mode || !score) return;
-    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cfg = wizardCfg();
     const tipo = String(tipoInstalacionNormalizado(cfg || {})).toUpperCase();
-    mode.textContent = tipo;
+    mode.textContent = wizardMedMode === 'propagador' ? 'Propagador' : tipo;
 
     const d = diag || getCorrections();
     const n = Array.isArray(d?.items) ? d.items.length : 0;
@@ -437,17 +621,22 @@
     row.innerHTML = list.map((txt) => '<span class="wiz-cultivo-chip">' + txt.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>').join('');
   }
 
-  function open() {
+  function open(opts) {
+    wizardMedMode =
+      (opts && opts.propagador) || isWizardPropagadorMode() ? 'propagador' : 'dwc';
     const m = el('modalWizardMedicion');
     if (!m) return;
+    applyWizardModeChrome();
     m.classList.add('open');
     m.setAttribute('aria-hidden', 'false');
     if (typeof a11yDialogOpened === 'function') a11yDialogOpened(m);
     busy = false;
     // precargar notas desde Medir (si el usuario ya escribió)
     try {
-      if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
-      if (typeof evalParam === 'function') evalParam();
+      if (wizardMedMode === 'propagador') {
+        if (typeof evalParamGerminacion === 'function') evalParamGerminacion();
+      } else if (typeof evalParam === 'function') evalParam();
+      else if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
     } catch (_) {}
     try {
       const src = el('inputNotas');
@@ -491,7 +680,10 @@
         ec: numFromAny(u.ec),
         ph: numFromAny(u.ph),
         temp: numFromAny(u.temp),
-        vol: numFromAny(u.vol)
+        vol: numFromAny(u.vol),
+        tempAire: numFromAny(u.tempAire),
+        humSala: numFromAny(u.humSala),
+        vpd: numFromAny(u.vpd),
       };
     } catch (_) {
       return null;
@@ -505,7 +697,10 @@
   }
 
   function clearStep1() {
-    ['wizQuick','wizEC','wizPH','wizTemp','wizVol'].forEach((id) => setVal(id, ''));
+    [
+      'wizQuick', 'wizEC', 'wizPH', 'wizTemp', 'wizVol',
+      'wizTempAire', 'wizHumSala', 'wizPPFD', 'wizLux', 'wizTempExt', 'wizCO2',
+    ].forEach((id) => setVal(id, ''));
     renderInsights();
   }
 
@@ -516,7 +711,14 @@
       return;
     }
     // Solo rellenar los vacíos (no pisar lo que el usuario ya escribió)
-    const map = { wizEC: u.ec, wizPH: u.ph, wizTemp: u.temp, wizVol: u.vol };
+    const map = {
+      wizEC: u.ec,
+      wizPH: u.ph,
+      wizTemp: u.temp,
+      wizVol: u.vol,
+      wizTempAire: u.tempAire,
+      wizHumSala: u.humSala,
+    };
     Object.keys(map).forEach((id) => {
       const cur = txt(el(id)?.value || '').trim();
       if (!cur && map[id]) setVal(id, map[id]);
@@ -545,35 +747,59 @@
     const ph = valNum('wizPH');
     const temp = valNum('wizTemp');
     const vol = valNum('wizVol');
+    const tempAire = valNum('wizTempAire');
+    const humSala = valNum('wizHumSala');
 
     const t = getTargets();
     try { syncWizardRangeLabels(t); } catch (_) {}
     const parts = [];
-    if (ec) {
-      const n = Number(ec);
-      const ok = n >= t.ecMin && n <= t.ecMax;
-      parts.push(badge(ok ? 'ok' : 'warn', 'EC', n > 0 ? ec : ''));
-    } else parts.push(badge('muted', 'EC', '—'));
+    const prop = wizardMedMode === 'propagador';
 
-    if (ph) {
-      const n = Number(ph);
-      const ok = n >= t.phMin && n <= t.phMax;
-      parts.push(badge(ok ? 'ok' : 'warn', 'pH', ph));
-    } else parts.push(badge('muted', 'pH', '—'));
+    if (prop) {
+      if (tempAire) {
+        const n = Number(tempAire);
+        const ok = n >= t.tempAireMin && n <= t.tempAireMax;
+        parts.push(badge(ok ? 'ok' : 'warn', 'T° domo', tempAire + '°C'));
+      } else parts.push(badge('muted', 'T° domo', '—'));
 
-    if (temp) {
-      const n = Number(temp);
-      const ok = n >= t.tempMin && n <= t.tempMax;
-      parts.push(badge(ok ? 'ok' : 'warn', 'Temp', temp + '°C'));
-    } else parts.push(badge('muted', 'Temp', '—'));
+      if (humSala) {
+        const n = Number(humSala);
+        const ok = n >= t.hrMin && n <= t.hrMax;
+        parts.push(badge(ok ? 'ok' : 'warn', 'HR', humSala + '%'));
+      } else parts.push(badge('muted', 'HR', '—'));
+    }
 
-    if (vol) {
-      const n = Number(vol);
-      const low = Math.max(0.5, t.volTarget * 0.85);
-      const high = t.volTarget * 1.1;
-      const ok = n >= low && n <= high;
-      parts.push(badge(ok ? 'ok' : 'warn', 'Vol', vol + ' L'));
-    } else parts.push(badge('muted', 'Vol', '—'));
+    if (!prop || ec) {
+      if (ec) {
+        const n = Number(ec);
+        const ok = n >= t.ecMin && n <= t.ecMax;
+        parts.push(badge(ok ? 'ok' : 'warn', prop ? 'EC domo' : 'EC', n > 0 ? ec : ''));
+      } else if (!prop) parts.push(badge('muted', 'EC', '—'));
+    }
+
+    if (!prop || ph) {
+      if (ph) {
+        const n = Number(ph);
+        const ok = n >= t.phMin && n <= t.phMax;
+        parts.push(badge(ok ? 'ok' : 'warn', 'pH', ph));
+      } else if (!prop) parts.push(badge('muted', 'pH', '—'));
+    }
+
+    if (!prop) {
+      if (temp) {
+        const n = Number(temp);
+        const ok = n >= t.tempMin && n <= t.tempMax;
+        parts.push(badge(ok ? 'ok' : 'warn', 'Temp', temp + '°C'));
+      } else parts.push(badge('muted', 'Temp', '—'));
+
+      if (vol) {
+        const n = Number(vol);
+        const low = Math.max(0.5, t.volTarget * 0.85);
+        const high = t.volTarget * 1.1;
+        const ok = n >= low && n <= high;
+        parts.push(badge(ok ? 'ok' : 'warn', 'Vol', vol + ' L'));
+      } else parts.push(badge('muted', 'Vol', '—'));
+    }
 
     const diag = getCorrections();
     try { renderHero(diag); } catch (_) {}
@@ -581,7 +807,9 @@
       ? (diag.manualBlocksHtml && diag.manualBlocksHtml.length
         ? `<div class="wiz-corrections">${diag.manualBlocksHtml.map((h) => `<div class="wiz-correccion-block">${h}</div>`).join('')}</div>`
         : `<div class="wiz-corrections">${diag.items.map((x) => `<p>⚠️ ${x}</p>`).join('')}</div>`)
-      : '<div class="wiz-corrections wiz-corrections--ok"><p>✅ Todo en rango recomendado para esta instalación.</p></div>';
+      : '<div class="wiz-corrections wiz-corrections--ok"><p>✅ ' +
+        (prop ? 'Domo en rango orientativo.' : 'Todo en rango recomendado para esta instalación.') +
+        '</p></div>';
     box.innerHTML = `<div class="wiz-badges">${parts.join('')}</div>${corr}`;
   }
 
@@ -590,15 +818,18 @@
     const ph = valNum('wizPH');
     const temp = valNum('wizTemp');
     const vol = valNum('wizVol');
+    const tempAire = valNum('wizTempAire');
+    const humSala = valNum('wizHumSala');
     const notas = String(el('wizNotas')?.value || '').trim();
+    const prop = wizardMedMode === 'propagador';
 
     const ajustes = [];
-    if (el('wizRecargaCompleta')?.checked) ajustes.push('🔄 Recarga completa');
-    if (el('wizReposicionAguaChk')?.checked) {
+    if (!prop && el('wizRecargaCompleta')?.checked) ajustes.push('🔄 Recarga completa');
+    if (!prop && el('wizReposicionAguaChk')?.checked) {
       const L = valNum('wizReposicionAguaL');
       ajustes.push('💧 Reposición solo agua' + (L ? ` (+${L} L)` : ''));
     }
-    if (el('wizAjustePhChk')?.checked) {
+    if (!prop && el('wizAjustePhChk')?.checked) {
       const pMas = valNum('wizPhMasMl');
       const pMen = valNum('wizPhMenosMl');
       const bits = [];
@@ -606,13 +837,22 @@
       if (pMen) bits.push(`pH− ${pMen} ml`);
       ajustes.push('🧪 Ajuste pH' + (bits.length ? ` (${bits.join(' · ')})` : ''));
     }
-    if (el('wizNutrientesChk')?.checked) {
+    if (!prop && el('wizNutrientesChk')?.checked) {
       const t = String(el('wizNutrientesTxt')?.value || '').trim();
       ajustes.push('🌿 Nutrientes' + (t ? ` (${t})` : ''));
     }
 
     const parts = [];
-    parts.push(`<strong>Medición</strong>: EC ${ec || '—'} · pH ${ph || '—'} · °C ${temp || '—'} · L ${vol || '—'}`);
+    if (prop) {
+      const domo = [];
+      if (tempAire) domo.push('T° ' + tempAire + '°C');
+      if (humSala) domo.push('HR ' + humSala + '%');
+      if (ec) domo.push('EC ' + ec);
+      if (ph) domo.push('pH ' + ph);
+      parts.push('<strong>Domo propagador</strong>: ' + (domo.length ? domo.join(' · ') : '—'));
+    } else {
+      parts.push(`<strong>Medición</strong>: EC ${ec || '—'} · pH ${ph || '—'} · °C ${temp || '—'} · L ${vol || '—'}`);
+    }
     const diag = getCorrections();
     renderActionNow(diag);
     if (diag.items.length) {
@@ -651,7 +891,17 @@
     const notas = String(el('wizNotas')?.value || '').trim();
     const diag = getCorrections();
 
-    if (!ec && !ph && !temp && !vol) {
+    if (wizardMedMode === 'propagador') {
+      const ta = valNum('wizTempAire');
+      const hu = valNum('wizHumSala');
+      if (!ta || !hu) {
+        if (typeof showToast === 'function') {
+          showToast('⚠️ Introduce T° y HR del domo (el VPD se calcula solo)', true);
+        }
+        showStep(1);
+        return;
+      }
+    } else if (!ec && !ph && !temp && !vol) {
       const ta = valNum('wizTempAire');
       const hu = valNum('wizHumSala');
       if (!ta && !hu && !valNum('wizPPFD') && !valNum('wizCO2') && !valNum('wizTempExt')) {
@@ -674,9 +924,9 @@
       if (typeof syncWizardAmbienteFromWiz === 'function') syncWizardAmbienteFromWiz();
     } catch (_) {}
 
-    // si el usuario marca recarga completa, reutilizar switch existente
+    // si el usuario marca recarga completa, reutilizar switch existente (solo depósito DWC)
     try {
-      const wantRecarga = !!el('wizRecargaCompleta')?.checked;
+      const wantRecarga = wizardMedMode !== 'propagador' && !!el('wizRecargaCompleta')?.checked;
       if (wantRecarga && typeof toggleRecarga === 'function') {
         // toggleRecarga() cambia estado; forzar solo si no está ya activo
         const sw = el('recargaSwitch');
@@ -760,8 +1010,15 @@
   window.wizardMedClearStep1 = clearStep1;
   window.wizardMedNext = function () {
     if (busy) return;
-    if (step === 1) showStep(2);
-    else if (step === 2) {
+    if (step === 1) {
+      if (wizardMedMode === 'propagador') {
+        const rv = el('wizReview');
+        if (rv) rv.innerHTML = buildReview();
+        showStep(3);
+        return;
+      }
+      showStep(2);
+    } else if (step === 2) {
       const rv = el('wizReview');
       if (rv) rv.innerHTML = buildReview();
       showStep(3);
@@ -772,12 +1029,14 @@
   window.wizardMedPrev = function () {
     if (busy) return;
     if (step === 2) showStep(1);
-    else if (step === 3) showStep(2);
+    else if (step === 3) {
+      showStep(wizardMedMode === 'propagador' ? 1 : 2);
+    }
   };
 
   // Live feedback
   try {
-    ['wizEC','wizPH','wizTemp','wizVol'].forEach((id) => {
+    ['wizEC','wizPH','wizTemp','wizVol','wizTempAire','wizHumSala'].forEach((id) => {
       const e = el(id);
       if (e) e.addEventListener('input', renderInsights, { passive: true });
     });
