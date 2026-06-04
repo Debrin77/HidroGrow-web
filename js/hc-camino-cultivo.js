@@ -822,13 +822,6 @@
             action: 'irPropagadorMontaje',
           },
           {
-            id: 'fases6',
-            label: '6 fases (' + fasesN + '/6)',
-            done: fasesN >= 6,
-            action: 'irGerminacion',
-            hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
-          },
-          {
             id: 'sala_cfg',
             label: 'Sala configurada',
             done: salaPreGermConfigurada(cfg),
@@ -977,6 +970,7 @@
   function caminoResumenDebeMostrarse(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var cam = getCaminoCultivo(cfg);
+    if (cam === 'semilla_propagador') return false;
     if (!cam || !CAMINOS[cam]) return false;
     if (depositoListo(cfg)) return false;
     try {
