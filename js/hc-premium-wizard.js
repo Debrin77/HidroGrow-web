@@ -776,7 +776,7 @@
       setupData.consejosModoUi = p.consejosModoUi;
     }
     if (opts.lite) return;
-    if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+    if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(false);
     if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
   }
 

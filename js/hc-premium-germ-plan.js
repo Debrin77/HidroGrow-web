@@ -195,7 +195,7 @@
       '<div><label class="setup-field-label" for="setupPremiumNumSemillasGerm">Semillas</label>' +
       '<input type="number" id="setupPremiumNumSemillasGerm" class="setup-input-city" min="1" max="72" step="1" value="' +
       p.numSemillasGerm +
-      '" oninput="persistPremiumGermPlanFromUI(true)" onchange="persistPremiumGermPlanFromUI(true)"></div>' +
+      '" onchange="persistPremiumGermPlanFromUI(true)"></div>' +
       '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Bandeja</label>' +
       '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermPlanFromUI(false)">' +
       bandOpts +
@@ -238,6 +238,8 @@
     if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
 
+  var _hcGermPlanUiFlushTimer = null;
+
   function persistPremiumGermPlanFromUI(manualSemillas) {
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     if (!p) return;
@@ -253,6 +255,22 @@
     }
     refreshPremiumGermPlanReq();
     syncGermPlanATorreDraft();
+    if (_hcGermPlanUiFlushTimer) clearTimeout(_hcGermPlanUiFlushTimer);
+    _hcGermPlanUiFlushTimer = setTimeout(function () {
+      _hcGermPlanUiFlushTimer = null;
+      var so = document.getElementById('setupOverlay');
+      if (so && so.classList.contains('open')) return;
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+    }, 600);
+  }
+
+  function persistPremiumGermPlanFromUIImmediate(manualSemillas) {
+    if (_hcGermPlanUiFlushTimer) {
+      clearTimeout(_hcGermPlanUiFlushTimer);
+      _hcGermPlanUiFlushTimer = null;
+    }
+    persistPremiumGermPlanFromUI(manualSemillas);
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
     if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
   }
@@ -305,7 +323,7 @@
   function persistPremiumGermPlanToConfig(cfg) {
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
     if (!p || !cfg) return;
-    persistPremiumGermPlanFromUI(!!p.numSemillasGermManual);
+    persistPremiumGermPlanFromUIImmediate(!!p.numSemillasGermManual);
     if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
     cfg.premiumSetup.numSemillasGerm = p.numSemillasGerm;
     cfg.premiumSetup.sustratoGerm = p.sustratoGerm;
@@ -591,7 +609,7 @@
     ) {
       return true;
     }
-    persistPremiumGermPlanFromUI(true);
+    persistPremiumGermPlanFromUIImmediate(true);
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
     if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) {
       if (typeof showToast === 'function') showToast('Indica cuántas semillas vas a germinar en el propagador', true);
@@ -617,6 +635,7 @@
 
   global.renderPremiumGermPlanUI = renderPremiumGermPlanUI;
   global.persistPremiumGermPlanFromUI = persistPremiumGermPlanFromUI;
+  global.persistPremiumGermPlanFromUIImmediate = persistPremiumGermPlanFromUIImmediate;
   global.persistPremiumGermPlanToConfig = persistPremiumGermPlanToConfig;
   global.syncPremiumGermPlanFromConfig = syncPremiumGermPlanFromConfig;
   global.seleccionarPremiumSustratoGerm = seleccionarPremiumSustratoGerm;

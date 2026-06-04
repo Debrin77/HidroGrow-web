@@ -218,10 +218,17 @@ function hcFinishInitAppHeavyWork() {
   });
 
   var runCaminoUi = function () {
+    var setupAbiertoIdle = false;
+    try {
+      var soIdle = document.getElementById('setupOverlay');
+      setupAbiertoIdle = !!(soIdle && soIdle.classList.contains('open'));
+    } catch (_) {}
     try {
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (!setupAbiertoIdle && typeof refreshDashGerminacionHub === 'function') {
+        refreshDashGerminacionHub();
+      }
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
       if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
       if (tab === 'sala' && typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
@@ -650,7 +657,12 @@ function hcInvalidateTabDomCache() {
   _hcTabBtnsCache = null;
 }
 
-function hcScheduleTabPersist() {
+function hcTabLeavingNeedsPersist(tab) {
+  return tab === 'sistema' || tab === 'mediciones' || tab === 'sala' || tab === 'historial';
+}
+
+function hcScheduleTabPersist(prevTab) {
+  if (!hcTabLeavingNeedsPersist(prevTab)) return;
   if (_hcTabPersistTimer) clearTimeout(_hcTabPersistTimer);
   _hcTabPersistTimer = setTimeout(function () {
     _hcTabPersistTimer = null;
@@ -660,15 +672,29 @@ function hcScheduleTabPersist() {
     try {
       if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
     } catch (_) {}
-  }, 500);
+  }, 1200);
+}
+
+function hcWhenDiagramScriptsReady(cb) {
+  if (typeof cb !== 'function') return;
+  if (typeof generarSVGDwc === 'function' || typeof renderTorre === 'function') {
+    try {
+      cb();
+    } catch (_) {}
+    return;
+  }
+  var n = 0;
+  var t = setInterval(function () {
+    if (typeof generarSVGDwc === 'function' || typeof renderTorre === 'function' || ++n > 100) {
+      clearInterval(t);
+      try {
+        cb();
+      } catch (_) {}
+    }
+  }, 40);
 }
 
 function goTabDeferredWorkLite(tab) {
-  if (tab === 'inicio') {
-    try {
-      if (typeof updateDashboard === 'function') updateDashboard({ lite: true });
-    } catch (_) {}
-  }
   if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
   if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
 }
@@ -707,7 +733,10 @@ function goTabDeferredWorkHeavy(tab, gen) {
     }
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
-  if (tab === 'inicio' && typeof updateDashboard === 'function') updateDashboard();
+  if (tab === 'inicio' && typeof updateDashboard === 'function') {
+    if (skipHeavy) updateDashboard({ lite: true });
+    else updateDashboard();
+  }
   if (tab === 'meteo') {
     try {
       cargarMeteo();
@@ -722,12 +751,16 @@ function goTabDeferredWorkHeavy(tab, gen) {
   if (tab === 'sistema') {
     const modoFase =
       typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino();
-    if (modoFase) {
-      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
-      else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
-        hcRefreshSistemaPropagadorPanel();
+    const runSistema = function () {
+      if (gen !== _hcGoTabWorkGen) return;
+      if (modoFase) {
+        if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+        else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+          hcRefreshSistemaPropagadorPanel();
+        }
+        return;
       }
-    } else if (typeof renderTorre === 'function') {
+      if (typeof renderTorre !== 'function') return;
       renderTorre();
       if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
       requestAnimationFrame(function () {
@@ -748,7 +781,9 @@ function goTabDeferredWorkHeavy(tab, gen) {
           if (gen === _hcGoTabWorkGen) abrirTutorialTorrePestanaSiPrimeraVez();
         }, 520);
       }
-    }
+    };
+    hcWhenDiagramScriptsReady(runSistema);
+    return;
   }
   if (tab === 'historial') {
     histDatos = null;
@@ -814,6 +849,7 @@ function goTabDeferredWork(tab) {
 
 function goTab(tab) {
   if (tab === currentTab) return;
+  const prevTab = currentTab;
   var cfgNav = (typeof state !== 'undefined' && state && state.configTorre) || {};
   if (
     (tab === 'riego' || tab === 'meteo') &&
@@ -872,7 +908,7 @@ function goTab(tab) {
   var gen = ++_hcGoTabWorkGen;
   requestAnimationFrame(function () {
     if (gen !== _hcGoTabWorkGen) return;
-    hcScheduleTabPersist();
+    hcScheduleTabPersist(prevTab);
     goTabDeferredWork(tabWork);
   });
 }
