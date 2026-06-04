@@ -9,10 +9,17 @@
     { id: 'prop_domo', label: 'Domo / propagador montado', hint: 'Bandeja estable, tapa hermética y acceso para ventilar 2×/día.', accent: 'germ' },
     { id: 'prop_mat', label: 'Mat térmica bajo bandeja (si aplica)', hint: '22–26 °C en sustrato; termostato o termohigrómetro cerca.', accent: 'light' },
     {
-      id: 'prop_agua_sustrato',
-      label: 'Bandeja con agua + nutrientes (~2–3 mm)',
+      id: 'prop_dosis_sol',
+      label: 'Dosificación preparada · 2 L agua destilada',
       hint:
-        'Al colocar el sustrato elegido (lana, jiffy, papel húmedo, coco…): capa fina en el fondo de la bandeja, sin encharcar. Revisa cada día que no se quede seca.',
+        'Mezcla el abono del plan en agua destilada o RO (ver receta abajo). El sobrante, en botella oscura en nevera 3–5 días. Luego vierte solo ~2–3 mm en la bandeja.',
+      accent: 'hydro',
+    },
+    {
+      id: 'prop_agua_sustrato',
+      label: 'Bandeja con solución (~2–3 mm)',
+      hint:
+        'Con el sustrato ya colocado (lana, jiffy, papel, coco…): capa fina de la solución dosificada en el fondo, sin encharcar. Revisa cada día que no se quede seca.',
       accent: 'hydro',
     },
     {
@@ -49,6 +56,7 @@
   var PROP_ICONS = {
     prop_domo: '🫧',
     prop_mat: '🔥',
+    prop_dosis_sol: '🧪',
     prop_agua_sustrato: '💧',
     prop_termo: '🌡️',
     prop_luz: '💡',
@@ -164,6 +172,22 @@
       }
       if (it.id === 'prop_mat' && inst.mat_termica_germ && inst.mat_termica_germ.marca) {
         copy.label += ' · ' + inst.mat_termica_germ.marca;
+      }
+      if (it.id === 'prop_dosis_sol' && esRutaPropagador(cfg)) {
+        var volD =
+          typeof getNutrienteGermVolLFromCfg === 'function' ? getNutrienteGermVolLFromCfg(cfg) : 2;
+        var nomD =
+          typeof etiquetaNutrienteGermConfig === 'function'
+            ? etiquetaNutrienteGermConfig(cfg)
+            : '';
+        copy.label = 'Dosificación · ' + volD + ' L agua destilada';
+        if (nomD) copy.label += ' · ' + nomD;
+        copy.hint =
+          'Jarra o botella: ' +
+          volD +
+          ' L de agua destilada/RO + abono' +
+          (nomD ? ' (' + nomD + ')' : '') +
+          ' según la receta de abajo. Cierra el sobrante en botella oscura en nevera (3–5 días). Después, solo ~2–3 mm en la bandeja del domo.';
       }
       return copy;
     });
@@ -326,6 +350,10 @@
     }
     var planBlock =
       typeof renderPlanGermModalBlock === 'function' ? renderPlanGermModalBlock(cfg) : '';
+    var dosisBlock =
+      esRutaPropagador(cfg) && typeof htmlDosisNutrienteGermChecklist === 'function'
+        ? htmlDosisNutrienteGermChecklist(cfg)
+        : '';
     var sustratoAgua =
       !esRutaEsqueje(cfg) && typeof renderSustratoGermAguaEcBlockHtml === 'function'
         ? renderSustratoGermAguaEcBlockHtml(
@@ -337,6 +365,7 @@
     return (
       '<div class="hc-pm-shell hc-pm-shell--prop">' +
       planBlock +
+      dosisBlock +
       sustratoAgua +
       '<div class="hc-prop-hero">' +
       '<span class="hc-prop-hero-ico" aria-hidden="true">' +
@@ -385,7 +414,7 @@
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
-      '<p class="hc-prop-inline-lead">Checklist del propagador: al poner el <strong>sustrato elegido</strong>, llena la bandeja con <strong>agua y nutrientes ~2–3 mm</strong> (sin encharcar) y revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar. En <strong>Checklists de montaje</strong> (Inicio) puedes ir preparando la sala.</p>' +
+      '<p class="hc-prop-inline-lead">Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.</p>' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +

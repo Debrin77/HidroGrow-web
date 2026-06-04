@@ -54,11 +54,41 @@
     return caminoUsaNutrienteBandejaPropagador(cfg);
   }
 
+  /** ID de abono bandeja: config guardada, asistente (select/tarjeta) o modal checklist. */
+  function readNutrienteGermIdFromUi() {
+    var selDrop = el('setupPremiumNutrienteGermSelect');
+    if (selDrop && selDrop.value) return String(selDrop.value).trim();
+    var propSel = el('hcPropNutrienteGerm');
+    if (propSel && propSel.value) return String(propSel.value).trim();
+    var cardSel = document.querySelector(
+      '#nutrientesGridPremiumGerm .nutriente-card.selected,' +
+        '#nutrientesGridPremiumGerm .nutriente-card[aria-pressed="true"]'
+    );
+    if (cardSel) return String(cardSel.getAttribute('data-nut-id') || '').trim();
+    if (typeof setupNutriente !== 'undefined' && setupNutriente) {
+      return String(setupNutriente).trim();
+    }
+    if (typeof ensurePremiumSetup === 'function') {
+      var ps = ensurePremiumSetup();
+      if (ps && ps.nutrienteGerm) return String(ps.nutrienteGerm).trim();
+    }
+    if (selDrop && selDrop.options && selDrop.options.length) {
+      return String(selDrop.options[0].value || '').trim();
+    }
+    return 'canna_aqua';
+  }
+
   function getNutrienteGermIdFromCfg(cfg) {
     cfg = cfg || getCfgNutriente();
     var g = cfg.germinacionFlow || {};
     var prem = cfg.premiumSetup || {};
-    return String(g.nutrienteId || prem.nutrienteGerm || cfg.nutriente || '').trim();
+    var nid = String(g.nutrienteId || prem.nutrienteGerm || cfg.nutriente || '').trim();
+    if (!nid && typeof ensurePremiumSetup === 'function') {
+      var p = ensurePremiumSetup();
+      nid = String((p && p.nutrienteGerm) || '').trim();
+    }
+    if (!nid) nid = readNutrienteGermIdFromUi();
+    return nid;
   }
 
   function getNutrienteGermVolLFromCfg(cfg) {
@@ -138,6 +168,7 @@
     var sel = el('hcPropNutrienteGerm');
     var volInp = el('hcPropNutrienteGermVolL');
     var nid = sel ? String(sel.value || '').trim() : '';
+    if (!nid) nid = readNutrienteGermIdFromUi();
     var vol = volInp
       ? parseFloat(String(volInp.value || '').replace(',', '.'))
       : getNutrienteGermVolLFromCfg(cfg);
@@ -251,12 +282,15 @@
     var p = ensurePremiumNutrienteGermFields();
     var vol = getPremiumNutrienteGermVolL();
     p.nutrienteGermVolL = vol;
-    var selDrop = el('setupPremiumNutrienteGermSelect');
-    if (selDrop && selDrop.value) {
-      p.nutrienteGerm = String(selDrop.value).trim();
-      if (typeof setupNutriente !== 'undefined') setupNutriente = p.nutrienteGerm;
-    } else if (typeof setupNutriente !== 'undefined' && setupNutriente) {
-      p.nutrienteGerm = setupNutriente;
+    var nid = readNutrienteGermIdFromUi();
+    if (nid) {
+      p.nutrienteGerm = nid;
+      if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
+      var selDrop = el('setupPremiumNutrienteGermSelect');
+      if (selDrop && selDrop.options && selDrop.options.length) {
+        selDrop.value = nid;
+        if (!selDrop.value && selDrop.options[0]) selDrop.value = selDrop.options[0].value;
+      }
     }
   }
 
@@ -320,10 +354,21 @@
       typeof setupNutriente !== 'undefined' && setupNutriente
         ? setupNutriente
         : ensurePremiumNutrienteGermFields().nutrienteGerm || 'canna_aqua';
-    if (selExisting && selExisting.options && selExisting.options.length > 0) {
-      selExisting.value = sel;
-      if (!selExisting.value) selExisting.value = 'canna_aqua';
-      return;
+    if (
+      selExisting &&
+      selExisting.options &&
+      selExisting.options.length > 0 &&
+      !_nutrientesCatalogoCompletoGerm
+    ) {
+      var idsEnSelect = {};
+      for (var i = 0; i < selExisting.options.length; i++) {
+        idsEnSelect[selExisting.options[i].value] = true;
+      }
+      if (idsEnSelect[sel]) {
+        selExisting.value = sel;
+        if (!selExisting.value && list[0]) selExisting.value = list[0].id;
+        return;
+      }
     }
     var opts = list
       .map(function (n) {
@@ -384,7 +429,8 @@
       toggle.textContent = _nutrientesCatalogoCompletoGerm
         ? 'Ver top 10 España'
         : 'Ver catálogo completo';
-      toggle.classList.toggle('setup-hidden', list.length < 4);
+      toggle.classList.remove('setup-hidden');
+      toggle.setAttribute('aria-expanded', _nutrientesCatalogoCompletoGerm ? 'true' : 'false');
     }
     renderPremiumNutrienteGermSelect();
   }
@@ -424,29 +470,23 @@
     box.classList.remove('setup-hidden');
   }
 
-  function renderPremiumNutrienteGermDosis() {
-    var preview = el('nutProtocoloPreviewPremiumGerm');
-    if (!preview) return;
-    var nutId =
-      typeof setupNutriente !== 'undefined' && setupNutriente
-        ? setupNutriente
-        : ensurePremiumNutrienteGermFields().nutrienteGerm;
-    if (!nutId || !Array.isArray(NUTRIENTES_DB)) {
-      preview.classList.add('setup-hidden');
-      return;
-    }
+  function buildNutrienteGermDosisHtml(cfg, opts) {
+    opts = opts || {};
+    cfg = cfg || getCfgNutriente();
+    var nutId = getNutrienteGermIdFromCfg(cfg);
+    if (!nutId || !Array.isArray(NUTRIENTES_DB)) return '';
     var nut = NUTRIENTES_DB.find(function (n) {
       return n.id === nutId;
     });
-    if (!nut) {
-      preview.classList.add('setup-hidden');
-      return;
-    }
-    var vol = getPremiumNutrienteGermVolL();
-    var ecObj = getEcObjetivoGermPropagador();
+    if (!nut) return '';
+    var vol =
+      opts.context === 'setup' && typeof getPremiumNutrienteGermVolL === 'function'
+        ? getPremiumNutrienteGermVolL()
+        : getNutrienteGermVolLFromCfg(cfg);
+    var ecObj = getEcObjetivoGermPropagador(cfg);
     var ecMeta = Math.round((ecObj.min + ecObj.max) / 2);
-    var aguaGrifo =
-      typeof setupData !== 'undefined' && setupData.agua === 'grifo';
+    var aguaTipo = String((cfg && cfg.agua) || (typeof setupData !== 'undefined' && setupData.agua) || 'destilada');
+    var aguaGrifo = aguaTipo === 'grifo';
     var usarCalMag =
       typeof usarCalMagEnRecarga === 'function' ? usarCalMagEnRecarga() : false;
     var ctx = { modoSoft: !aguaGrifo, usarCalMag: !!(nut.calmagNecesario && usarCalMag) };
@@ -475,17 +515,35 @@
       typeof torreGetPhRangoObjetivo === 'function'
         ? torreGetPhRangoObjetivo(nut, {})
         : nut.pHRango || [5.5, 6.5];
-
-    var html = '<div class="nut-dosis-titulo">Dosis orientativa · bandeja propagador</div>';
+    var nombreNut = etiquetaNutrienteGermConfig(cfg);
+    var titulo =
+      opts.context === 'checklist'
+        ? 'Receta · ' + vol + ' L agua destilada (propagador)'
+        : 'Dosis orientativa · bandeja propagador';
+    var html = '<div class="nut-dosis-titulo">' + esc(titulo) + '</div>';
     html +=
-      '<div class="nut-dosis-ctx">Bandeja <strong>' +
-      vol +
-      ' L</strong> · EC objetivo <strong>' +
+      '<div class="nut-dosis-ctx">' +
+      (opts.context === 'checklist'
+        ? 'Prepara en <strong>jarra o botella</strong> · <strong>' +
+          vol +
+          ' L</strong> agua destilada/RO'
+        : 'Bandeja <strong>' + vol + ' L</strong>') +
+      ' · <strong>' +
+      esc(nombreNut) +
+      '</strong> · EC <strong>' +
       ecObj.min +
       '–' +
       ecObj.max +
       ' µS/cm</strong> <span class="nut-dosis-ctx-tag--ok">(germinación)</span></div>';
     var paso = 1;
+    if (opts.context === 'checklist') {
+      html +=
+        '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
+        paso++ +
+        '.</strong> Agua base</span><span class="nut-dosis-val-green">' +
+        vol +
+        ' L destilada/RO</span></div>';
+    }
     if (mlCalMag > 0) {
       html +=
         '<div class="nut-dosis-row"><span class="nut-dosis-lab"><strong>' +
@@ -545,7 +603,36 @@
         '<div class="nut-dosis-ghe">GHE: FloraMicro siempre primero. No mezclar Micro con Bloom en concentrado.</div>';
     }
     html +=
-      '<div class="nut-dosis-foot">Ajusta al medir EC en Medir (domo). Empieza por la mitad si la cepa es sensible.</div>';
+      '<div class="nut-dosis-foot">' +
+      (opts.context === 'checklist'
+        ? 'Vierte solo ~2–3 mm en la bandeja del domo. El resto de los ' +
+          vol +
+          ' L, ciérralo en <strong>botella oscura en nevera</strong> (3–5 días). Mide EC en Medir si puedes.'
+        : 'Ajusta al medir EC en Medir (domo). Empieza por la mitad si la cepa es sensible.') +
+      '</div>';
+    return html;
+  }
+
+  function htmlDosisNutrienteGermChecklist(cfg) {
+    cfg = cfg || getCfgNutriente();
+    if (!getNutrienteGermIdFromCfg(cfg)) return '';
+    var inner = buildNutrienteGermDosisHtml(cfg, { context: 'checklist' });
+    if (!inner) return '';
+    return (
+      '<section class="hc-prop-dosis-checklist setup-box-info setup-mb-12" aria-label="Dosificación propagador">' +
+      inner +
+      '</section>'
+    );
+  }
+
+  function renderPremiumNutrienteGermDosis() {
+    var preview = el('nutProtocoloPreviewPremiumGerm');
+    if (!preview) return;
+    var html = buildNutrienteGermDosisHtml(getCfgNutriente(), { context: 'setup' });
+    if (!html) {
+      preview.classList.add('setup-hidden');
+      return;
+    }
     preview.classList.remove('setup-hidden');
     preview.innerHTML = html;
   }
@@ -593,7 +680,15 @@
 
   function toggleNutrientesCatalogoPremiumGerm() {
     _nutrientesCatalogoCompletoGerm = !_nutrientesCatalogoCompletoGerm;
+    renderPremiumNutrienteGermSelect();
     renderNutrientesGridPremiumGerm();
+    var grid = el('nutrientesGridPremiumGerm');
+    if (grid) {
+      grid.classList.remove('setup-hidden');
+      try {
+        grid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (_) {}
+    }
   }
 
   function onPremiumNutrienteGermVolChange() {
@@ -651,21 +746,29 @@
     if (!cfg || !isPremiumNutrienteGermActivo(cfg)) return;
     persistPremiumNutrienteGermFromUI();
     var p = ensurePremiumNutrienteGermFields();
+    var nid = String(p.nutrienteGerm || readNutrienteGermIdFromUi() || '').trim();
+    if (!nid) return;
+    p.nutrienteGerm = nid;
     if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
-    cfg.premiumSetup.nutrienteGerm = p.nutrienteGerm;
+    cfg.premiumSetup.nutrienteGerm = nid;
     cfg.premiumSetup.nutrienteGermVolL = p.nutrienteGermVolL;
-    if (p.nutrienteGerm) {
-      cfg.nutriente = p.nutrienteGerm;
-      if (typeof setupNutriente !== 'undefined') setupNutriente = p.nutrienteGerm;
+    cfg.nutriente = nid;
+    if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
+    if (typeof setupData !== 'undefined' && setupData.premium) {
+      setupData.premium.nutrienteGerm = nid;
+      setupData.premium.nutrienteGermVolL = p.nutrienteGermVolL;
     }
     syncNutrienteGermAGerminacionFlow(cfg);
   }
 
   global.caminoUsaNutrienteBandejaPropagador = caminoUsaNutrienteBandejaPropagador;
+  global.readNutrienteGermIdFromUi = readNutrienteGermIdFromUi;
   global.getNutrienteGermIdFromCfg = getNutrienteGermIdFromCfg;
   global.getNutrienteGermVolLFromCfg = getNutrienteGermVolLFromCfg;
   global.etiquetaNutrienteGermConfig = etiquetaNutrienteGermConfig;
   global.htmlResumenNutrienteGermConfig = htmlResumenNutrienteGermConfig;
+  global.htmlDosisNutrienteGermChecklist = htmlDosisNutrienteGermChecklist;
+  global.buildNutrienteGermDosisHtml = buildNutrienteGermDosisHtml;
   global.renderHcPropNutrienteGermFields = renderHcPropNutrienteGermFields;
   global.persistNutrienteGermDesdePropModal = persistNutrienteGermDesdePropModal;
   global.isPremiumNutrienteGermActivo = isPremiumNutrienteGermActivo;

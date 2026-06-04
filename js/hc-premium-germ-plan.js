@@ -475,8 +475,16 @@
     if (!requiereValidacionPlanGerm(cfg)) {
       return { ok: true, missing: [], message: '' };
     }
-    var st = getPlanGermEstado(cfg);
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador') {
+      if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+        persistPremiumNutrienteGermFromUI();
+      }
+      if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+        persistPremiumNutrienteGermToConfig(cfg);
+      }
+    }
+    var st = getPlanGermEstado(cfg);
     var missing = [];
     if (!st.variedad) missing.push('genética');
     if (!st.numSemillas || st.numSemillas < 1) missing.push('número de semillas');
@@ -519,6 +527,12 @@
     if (typeof persistNutrienteGermDesdePropModal === 'function') {
       persistNutrienteGermDesdePropModal(cfg);
     }
+    if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+      persistPremiumNutrienteGermFromUI();
+    }
+    if (typeof persistPremiumNutrienteGermToConfig === 'function') {
+      persistPremiumNutrienteGermToConfig(cfg);
+    }
     try {
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       if (typeof saveState === 'function') saveState();
@@ -554,7 +568,7 @@
     return (
       '<section class="hc-prop-plan-block setup-mb-12" id="hcPropPlanGermBlock" aria-label="Plan de germinación">' +
       '<div class="setup-block-title">Plan de germinación <span class="setup-required-tag">obligatorio</span></div>' +
-      '<p class="setup-field-hint setup-mb-8">Antes de cerrar el checklist: genética, semillas, sustrato y <strong>abono de bandeja</strong>. Se guardan en la instalación y en <strong>Sistema → Propagador</strong>.</p>' +
+      '<p class="setup-field-hint setup-mb-8">Antes de cerrar el checklist: genética, semillas, sustrato y <strong>abono</strong>. Dosifica en <strong>2 L destilada</strong> (receta abajo); el sobrante en botella. Se guarda en la instalación y en <strong>Sistema → Propagador</strong>.</p>' +
       '<div class="' +
       alertCls +
       ' setup-mb-8" id="hcPropPlanGermStatus" role="status">' +

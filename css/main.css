@@ -18630,6 +18630,12 @@ button.toggle-switch:focus-visible {
   margin-top: 4px;
   font-weight: 700;
 }
+.hc-prop-dosis-checklist {
+  margin-top: 0;
+}
+.hc-prop-dosis-checklist .nut-dosis-titulo {
+  margin-top: 0;
+}
 .nut-dosis-foot {
   font-size: 10px;
   color: #6b7280;
