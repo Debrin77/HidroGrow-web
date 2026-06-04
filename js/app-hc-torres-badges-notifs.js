@@ -1373,7 +1373,7 @@ function borrarTorre(idx) {
 function actualizarBadgesNutriente() {
   const hayInst =
     typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
-  const nut = hayInst ? getNutrienteTorre() : null;
+  let nut = hayInst ? getNutrienteTorre() : null;
   const cfg = state.configTorre || {};
 
   if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
@@ -1411,26 +1411,75 @@ function actualizarBadgesNutriente() {
   const dashAviso   = document.getElementById('dashNutrienteAviso');
   const propagDashInicio =
     typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg);
+  const dashUsaGermNut =
+    propagDashInicio ||
+    (typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg));
+  if (dashUsaGermNut) {
+    try {
+      if (typeof hcSincronizarNutrientePropagadorEnCfg === 'function') {
+        hcSincronizarNutrientePropagadorEnCfg(cfg);
+      } else if (typeof resolverNutrienteGermBandeja === 'function') {
+        resolverNutrienteGermBandeja(cfg);
+      }
+    } catch (_) {}
+    if (!nut && typeof getNutrienteTorre === 'function') {
+      nut = getNutrienteTorre();
+    }
+  }
   const dashNutLabel = document.getElementById('dashNutrienteLabel');
   const dashSisInfo = document.getElementById('dashSistemaInfo');
-  if (dashNutLabel) dashNutLabel.classList.toggle('setup-hidden', propagDashInicio);
-  if (dashSisInfo) dashSisInfo.classList.toggle('setup-hidden', propagDashInicio);
-  if (dashNombre && !propagDashInicio) {
+  if (dashNutLabel) {
+    dashNutLabel.classList.remove('setup-hidden');
+    dashNutLabel.textContent = dashUsaGermNut
+      ? 'Nutriente · bandeja propagador'
+      : 'Nutriente seleccionado';
+  }
+  if (dashSisInfo) dashSisInfo.classList.remove('setup-hidden');
+  if (dashNombre) {
     dashNombre.textContent = nut
       ? nut.nombre
       : hayInst
-        ? 'Nutriente sin elegir'
+        ? dashUsaGermNut
+          ? 'Abono sin elegir en configurador'
+          : 'Nutriente sin elegir'
         : 'Sin nutriente';
   }
-  if (dashDetalle && !propagDashInicio) {
+  if (dashDetalle) {
     dashDetalle.textContent = nut
       ? nut.detalle
       : hayInst
-        ? 'Elige marca en Cultivo e instalación o Medir'
+        ? dashUsaGermNut
+          ? 'Elige abono en el asistente o checklist del propagador'
+          : 'Elige marca en Cultivo e instalación o Medir'
         : 'Configura tu instalación en el asistente';
   }
-  if (!propagDashInicio && (dashEstado || dashRecomendado || dashRazon || dashFuente)) {
-    if (!hayInst) {
+  if (dashEstado || dashRecomendado || dashRazon || dashFuente) {
+    if (dashUsaGermNut) {
+      const volL =
+        typeof getNutrienteGermVolLFromCfg === 'function' ? getNutrienteGermVolLFromCfg(cfg) : 2;
+      const ecObj =
+        typeof getEcObjetivoGermPropagador === 'function'
+          ? getEcObjetivoGermPropagador(cfg)
+          : { min: 400, max: 800 };
+      if (dashEstado) {
+        dashEstado.textContent = nut
+          ? 'Bandeja: ' + volL + ' L destilada · EC ' + ecObj.min + '–' + ecObj.max + ' µS/cm'
+          : 'Actual: —';
+      }
+      if (dashRecomendado) {
+        dashRecomendado.textContent = nut
+          ? 'Línea elegida en configurador propagador'
+          : 'Recomendado: Canna Aqua Vega u otra línea veg A+B';
+      }
+      if (dashTagEstado) dashTagEstado.classList.toggle('is-match', !!nut);
+      if (dashFuente) dashFuente.textContent = 'Fuente: plan germinación · bandeja domo';
+      if (dashRazon) {
+        dashRazon.textContent = nut
+          ? 'Motivo: abono para la solución fina en la bandeja del propagador (no depósito DWC).'
+          : 'Motivo: completa el paso Nutriente del asistente propagador.';
+      }
+    } else if (!propagDashInicio) {
+      if (!hayInst) {
       if (dashEstado) dashEstado.textContent = 'Actual: —';
       if (dashRecomendado) dashRecomendado.textContent = 'Recomendado ahora: —';
       if (dashTagEstado) dashTagEstado.classList.remove('is-match', 'is-mismatch');
@@ -1488,11 +1537,12 @@ function actualizarBadgesNutriente() {
         dashTagEstado.classList.add(usoRaw.toUpperCase() === recomendado ? 'is-match' : 'is-mismatch');
       }
     }
-    if (dashFuente) dashFuente.textContent = fuente;
-    if (dashRazon) dashRazon.textContent = motivo;
+      if (dashFuente) dashFuente.textContent = fuente;
+      if (dashRazon) dashRazon.textContent = motivo;
+      }
     }
   }
-  if (dashAviso && !propagDashInicio) {
+  if (dashAviso && !propagDashInicio && !dashUsaGermNut) {
     const msg =
       typeof hcGetAvisoCambioNutrientePorFase === 'function'
         ? hcGetAvisoCambioNutrientePorFase('inicio')
@@ -1653,6 +1703,27 @@ function cambiarNutriente() {
 function seleccionarNutrienteRapido(id) {
   if (!state.configTorre) state.configTorre = {};
   state.configTorre.nutriente = id;
+  const camR =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
+  const usaBandejaR =
+    camR === 'semilla_propagador' ||
+    camR === 'semilla_hidro' ||
+    (typeof hcMostrarSistemaPropagador === 'function' &&
+      hcMostrarSistemaPropagador(state.configTorre));
+  if (usaBandejaR) {
+    if (!state.configTorre.premiumSetup || typeof state.configTorre.premiumSetup !== 'object') {
+      state.configTorre.premiumSetup = {};
+    }
+    state.configTorre.premiumSetup.nutrienteGerm = id;
+    if (typeof ensureGerminacionFlow === 'function') {
+      const g = ensureGerminacionFlow(state.configTorre);
+      g.nutrienteId = id;
+    }
+    if (typeof setupData !== 'undefined' && setupData.premium) {
+      setupData.premium.nutrienteGerm = id;
+    }
+    if (typeof setupNutriente !== 'undefined') setupNutriente = id;
+  }
   saveState();
   const nutM = document.getElementById('nutrienteQuickModal');
   if (nutM) {

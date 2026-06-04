@@ -510,8 +510,6 @@
     });
     var idsOcultarHidro = [
       'dashOperativaHub',
-      'dashNutrienteLabel',
-      'dashSistemaInfo',
       'dashInstalacionLifecycle',
       'ecTransicionAvisoInicio',
     ];

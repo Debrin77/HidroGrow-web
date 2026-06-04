@@ -68,12 +68,6 @@
       (typeof state !== 'undefined' && state && state.configTorre) ||
       {};
     if (!cfg || typeof cfg !== 'object') return 'canna_aqua';
-    try {
-      if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
-        var aseg = hcAsegurarNutrienteGermEnCfg(cfg);
-        if (aseg) return String(aseg).trim();
-      }
-    } catch (_) {}
     var prem = cfg.premiumSetup || {};
     var g = cfg.germinacionFlow || {};
     var nid = String(g.nutrienteId || prem.nutrienteGerm || cfg.nutriente || '').trim();
@@ -552,24 +546,21 @@
     }
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var st = getPlanGermEstado(cfg);
-    if (cam === 'semilla_propagador' && !st.nutrienteId) {
-      st.nutrienteId = resolverNutrienteGermBandeja(cfg);
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
+      st.nutrienteId = resolverNutrienteGermBandeja(cfg) || st.nutrienteId || 'canna_aqua';
+      st.nutrienteVolL =
+        typeof getNutrienteGermVolLFromCfg === 'function'
+          ? getNutrienteGermVolLFromCfg(cfg)
+          : st.nutrienteVolL || 2;
       st.nutrienteNombre =
         typeof etiquetaNutrienteGermConfig === 'function'
           ? etiquetaNutrienteGermConfig(cfg)
           : st.nutrienteId;
-      st.nutrienteVolL =
-        typeof getNutrienteGermVolLFromCfg === 'function'
-          ? getNutrienteGermVolLFromCfg(cfg)
-          : st.nutrienteVolL;
     }
     var missing = [];
     if (!st.variedad) missing.push('genética');
     if (!st.numSemillas || st.numSemillas < 1) missing.push('número de semillas');
     if (!st.sustrato) missing.push('sustrato en propagador');
-    if (cam === 'semilla_propagador' && !st.nutrienteId) {
-      missing.push('nutriente en bandeja del domo');
-    }
     if (opts.requierePropagador !== false && cam === 'semilla_propagador' && !st.propagador) {
       missing.push('propagador/domo en catálogo');
     }

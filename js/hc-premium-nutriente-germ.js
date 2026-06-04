@@ -709,16 +709,33 @@
 
   function validarPremiumNutrienteGerm() {
     if (!isPremiumNutrienteGermActivo(getCfgNutriente())) return true;
-    persistPremiumNutrienteGermFromUI();
-    var nid =
-      typeof setupNutriente !== 'undefined' && setupNutriente
-        ? setupNutriente
-        : ensurePremiumNutrienteGermFields().nutrienteGerm;
-    if (!nid || !Array.isArray(NUTRIENTES_DB) || !NUTRIENTES_DB.some(function (n) { return n.id === nid; })) {
-      if (typeof showToast === 'function') {
-        showToast('Elige un nutriente para la solución del propagador', true);
-      }
-      return false;
+    var cfg = getCfgNutriente();
+    var nid = '';
+    if (typeof resolverNutrienteGermBandeja === 'function') {
+      nid = resolverNutrienteGermBandeja(cfg);
+    } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+      nid = hcAsegurarNutrienteGermEnCfg(cfg);
+    } else {
+      persistPremiumNutrienteGermFromUI();
+      nid =
+        (typeof setupNutriente !== 'undefined' && setupNutriente
+          ? setupNutriente
+          : '') || ensurePremiumNutrienteGermFields().nutrienteGerm || readNutrienteGermIdFromUi();
+    }
+    if (!nid) nid = 'canna_aqua';
+    if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
+    var p = ensurePremiumNutrienteGermFields();
+    p.nutrienteGerm = nid;
+    if (
+      Array.isArray(NUTRIENTES_DB) &&
+      NUTRIENTES_DB.length &&
+      !NUTRIENTES_DB.some(function (n) {
+        return n && n.id === nid;
+      })
+    ) {
+      nid = 'canna_aqua';
+      p.nutrienteGerm = nid;
+      if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
     }
     var vol = getPremiumNutrienteGermVolL();
     if (!Number.isFinite(vol) || vol < 0.5) {

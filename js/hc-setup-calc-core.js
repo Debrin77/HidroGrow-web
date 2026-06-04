@@ -7,21 +7,55 @@
 // ══════════════════════════════════════════════════
 
 // ── Nutriente de la torre activa ─────────────────────────────────────────
+function resolveNutrienteIdInstalacionActiva(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const tIdx = (typeof state !== 'undefined' && state && state.torreActiva) || 0;
+  const tCfg =
+    typeof state !== 'undefined' && state.torres && state.torres[tIdx] && state.torres[tIdx].config
+      ? state.torres[tIdx].config
+      : null;
+  const cfgEff = tCfg || cfg;
+  const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgEff) : '';
+  const usaBandejaGerm =
+    cam === 'semilla_propagador' ||
+    cam === 'semilla_hidro' ||
+    (typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfgEff)) ||
+    (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgEff)) ||
+    (typeof caminoUsaNutrienteBandejaPropagador === 'function' &&
+      caminoUsaNutrienteBandejaPropagador(cfgEff));
+  if (usaBandejaGerm) {
+    try {
+      if (typeof resolverNutrienteGermBandeja === 'function') {
+        const res = resolverNutrienteGermBandeja(cfgEff);
+        if (res) return String(res).trim();
+      }
+    } catch (_) {}
+    if (typeof getNutrienteGermIdFromCfg === 'function') {
+      const nidG = String(getNutrienteGermIdFromCfg(cfgEff) || '').trim();
+      if (nidG) return nidG;
+    }
+  }
+  const raw = tCfg ? tCfg.nutriente || cfg.nutriente : cfg.nutriente;
+  return raw && String(raw).trim() ? String(raw).trim() : '';
+}
+
 function getNutrienteTorre() {
   const cfg = state.configTorre || {};
   const tieneInst =
     typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
   if (!tieneInst) return null;
-  const tIdx = state.torreActiva || 0;
-  const tCfg = state.torres && state.torres[tIdx] && state.torres[tIdx].config;
-  const raw = tCfg ? (tCfg.nutriente || cfg.nutriente) : cfg.nutriente;
-  const idNorm = raw && String(raw).trim() ? String(raw).trim() : null;
+  let idNorm = resolveNutrienteIdInstalacionActiva(cfg);
   if (!idNorm) {
     if (cfg.hcPlantillaAutogenerada) return null;
-    if (cfg.checklistInstalacionConfirmada !== true) return null;
-    const fb = 'canna_aqua';
-    return NUTRIENTES_DB.find(n => n.id === fb) || NUTRIENTES_DB[0];
+    const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    const usaBandejaGerm =
+      cam === 'semilla_propagador' ||
+      cam === 'semilla_hidro' ||
+      (typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg));
+    if (!usaBandejaGerm && cfg.checklistInstalacionConfirmada !== true) return null;
+    idNorm = 'canna_aqua';
   }
+  if (!Array.isArray(NUTRIENTES_DB)) return null;
   return NUTRIENTES_DB.find(n => n.id === idNorm) || null;
 }
 
@@ -1677,6 +1711,50 @@ async function detectarCiudadSetup() {
   }
 }
 
+/** Abono bandeja propagador: UI → cfg (no bloquea si falta germ-plan en caché). */
+function hcSincronizarNutrientePropagadorEnCfg(cfg) {
+  if (!cfg || typeof cfg !== 'object') return 'canna_aqua';
+  if (typeof resolverNutrienteGermBandeja === 'function') {
+    return resolverNutrienteGermBandeja(cfg);
+  }
+  try {
+    if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+      persistPremiumNutrienteGermFromUI();
+    }
+  } catch (_) {}
+  var prem =
+    (typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null) ||
+    cfg.premiumSetup ||
+    {};
+  var nid = String(
+    (cfg.germinacionFlow && cfg.germinacionFlow.nutrienteId) ||
+      prem.nutrienteGerm ||
+      cfg.nutriente ||
+      (typeof setupNutriente !== 'undefined' ? setupNutriente : '') ||
+      ''
+  ).trim();
+  var sel = document.getElementById('setupPremiumNutrienteGermSelect');
+  if (!nid && sel && sel.value) nid = String(sel.value).trim();
+  if (!nid) nid = 'canna_aqua';
+  if (!cfg.premiumSetup || typeof cfg.premiumSetup !== 'object') cfg.premiumSetup = {};
+  cfg.premiumSetup.nutrienteGerm = nid;
+  var volInp = document.getElementById('setupPremiumNutrienteGermVolL');
+  var volRaw = volInp ? parseFloat(String(volInp.value || '').replace(',', '.')) : NaN;
+  var vol = Number.isFinite(volRaw) && volRaw >= 0.5 ? volRaw : Number(prem.nutrienteGermVolL);
+  if (!Number.isFinite(vol) || vol <= 0) vol = 2;
+  cfg.premiumSetup.nutrienteGermVolL = vol;
+  cfg.nutriente = nid;
+  if (typeof setupNutriente !== 'undefined') setupNutriente = nid;
+  if (typeof setupData !== 'undefined' && setupData.premium) {
+    setupData.premium.nutrienteGerm = nid;
+    setupData.premium.nutrienteGermVolL = vol;
+  }
+  if (!cfg.germinacionFlow || typeof cfg.germinacionFlow !== 'object') cfg.germinacionFlow = {};
+  cfg.germinacionFlow.nutrienteId = nid;
+  cfg.germinacionFlow.nutrienteGermVolL = vol;
+  return nid;
+}
+
 function guardarSetupYContinuar() {
   let restoreToast = null;
   try {
@@ -2019,6 +2097,29 @@ function guardarSetupYContinuarCore() {
     parseInt(String(document.getElementById('sliderHorasLuz')?.value || setupData.horasLuz || 16), 10) || 16));
   setupData.horasLuz = horasLuzGuardar;
 
+  if (faseGermSetup) {
+    try {
+      if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+      if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
+      var premPre =
+        typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
+      if (premPre) {
+        if (!premPre.nutrienteGerm) premPre.nutrienteGerm = 'canna_aqua';
+        if (typeof setupNutriente === 'undefined' || !setupNutriente) {
+          setupNutriente = premPre.nutrienteGerm;
+        }
+      }
+    } catch (_) {}
+  }
+
+  var nutrienteGuardar =
+    (typeof setupNutriente !== 'undefined' && setupNutriente
+      ? setupNutriente
+      : '') ||
+    (typeof ensurePremiumSetup === 'function'
+      ? (ensurePremiumSetup().nutrienteGerm || 'canna_aqua')
+      : 'canna_aqua');
+
   state.configTorre = {
     tipoInstalacion: faseGermSetup || faseSalaPreGerm ? '' : tipoNuevoPrevio,
     torreVistaModo: 'esquema',
@@ -2057,6 +2158,11 @@ function guardarSetupYContinuarCore() {
   if (preservedSalaLayout) {
     state.configTorre.salaLayout = preservedSalaLayout;
   }
+  if (faseGermSetup) {
+    try {
+      hcSincronizarNutrientePropagadorEnCfg(state.configTorre);
+    } catch (_) {}
+  }
   try {
     if (typeof persistPremiumSetupToConfig === 'function') {
       persistPremiumSetupToConfig(state.configTorre);
@@ -2094,18 +2200,7 @@ function guardarSetupYContinuarCore() {
   if (faseGermSetup) {
     try {
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
-      if (typeof resolverNutrienteGermBandeja === 'function') {
-        resolverNutrienteGermBandeja(state.configTorre);
-      } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
-        hcAsegurarNutrienteGermEnCfg(state.configTorre);
-      } else {
-        if (typeof persistPremiumNutrienteGermFromUI === 'function') {
-          persistPremiumNutrienteGermFromUI();
-        }
-        if (typeof persistPremiumNutrienteGermToConfig === 'function') {
-          persistPremiumNutrienteGermToConfig(state.configTorre);
-        }
-      }
+      hcSincronizarNutrientePropagadorEnCfg(state.configTorre);
       if (typeof persistPremiumGermPlanToConfig === 'function') {
         persistPremiumGermPlanToConfig(state.configTorre, { adjustTorre: true });
       }
