@@ -532,7 +532,12 @@
     var barCls = barPct >= 100 ? ' hc-monitor-bar-fill--ok' : barPct >= 50 ? ' hc-monitor-bar-fill--mid' : '';
     var avisoInst = '';
     try {
-      if (typeof getInstalacionLifecycle === 'function') {
+      var cfgMon =
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+      var ocultarAvisoInst =
+        typeof hcMedirModoGerminacionPropagador === 'function' &&
+        hcMedirModoGerminacionPropagador(cfgMon);
+      if (!ocultarAvisoInst && typeof getInstalacionLifecycle === 'function') {
         var lc = getInstalacionLifecycle();
         if (lc && !lc.operativaDiaria && lc.fase !== 'sin_config') {
           avisoInst =

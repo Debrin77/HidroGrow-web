@@ -136,6 +136,32 @@
     ensureAmbienteSaveFooter(card);
   }
 
+  function applyMedirGuiaProtocoloChrome(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var germ =
+      typeof window.hcMedirModoGerminacionPropagador === 'function' &&
+      window.hcMedirModoGerminacionPropagador(cfg);
+    var guia = document.getElementById('medirGuiaDiaCard');
+    var monitor = document.getElementById('medirMonitorCard');
+    var protocol = document.getElementById('medirProtocoloCard');
+    if (guia) guia.classList.toggle('setup-hidden', !!germ);
+    if (monitor) monitor.classList.toggle('setup-hidden', !!germ);
+    if (protocol) protocol.classList.add('setup-hidden');
+  }
+
+  /** Medir propagador: formulario de domo/sala justo bajo el banner. */
+  function repositionMedirFlowPropagadorTop() {
+    var flow = document.getElementById('medirFlow');
+    var tab = document.getElementById('tab-mediciones');
+    if (!flow || !tab) return;
+    var anchor =
+      document.getElementById('medirPropagadorFaseBanner') ||
+      document.getElementById('medirTorreBanner');
+    if (!anchor || !anchor.parentNode) return;
+    if (flow.previousElementSibling === anchor) return;
+    anchor.insertAdjacentElement('afterend', flow);
+  }
+
   /** «Tareas para hoy» justo debajo del banner de instalación / propagador. */
   function repositionMedirGuiaDiaTop() {
     var guia = document.getElementById('medirGuiaDiaCard');
@@ -594,6 +620,10 @@
       if (typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
         ensureSalaCultivoEquipMountEnTabRoot();
       }
+      applyMedirGuiaProtocoloChrome();
+      if (typeof repositionMedirFlowPropagadorTop === 'function') {
+        repositionMedirFlowPropagadorTop();
+      }
       if (typeof refreshMedirGerminacionUi === 'function') {
         refreshMedirGerminacionUi();
       }
@@ -629,6 +659,8 @@
   window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
   window.repositionMedirGuiaDiaTop = repositionMedirGuiaDiaTop;
+  window.repositionMedirFlowPropagadorTop = repositionMedirFlowPropagadorTop;
+  window.applyMedirGuiaProtocoloChrome = applyMedirGuiaProtocoloChrome;
   window.ensureSalaCultivoEquipMountEnTabRoot = ensureSalaCultivoEquipMountEnTabRoot;
 
   function scheduleInitMedirSalaLayout() {

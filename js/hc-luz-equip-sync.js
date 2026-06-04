@@ -450,16 +450,8 @@
 
     if (host) {
       if (paso === 'done') {
-        host.classList.remove('setup-hidden');
-        host.innerHTML =
-          '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
-          '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-          '✓ <strong>Montaje de sala verificado.</strong> Abajo tienes el <strong>resumen del equipamiento</strong> instalado.' +
-          '</p>' +
-          '<div class="sala-propagador-flujo-actions">' +
-          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Revisar checklist</button> ' +
-          '<button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'inicio\')">Ir a germinación (6 fases)</button>' +
-          '</div></div>';
+        host.innerHTML = '';
+        host.classList.add('setup-hidden');
       } else if (vistaMin && paso === 'montaje') {
         host.classList.remove('setup-hidden');
         var faltaTxt =

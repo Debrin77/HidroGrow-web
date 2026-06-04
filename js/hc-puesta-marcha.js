@@ -1347,6 +1347,9 @@
 
   function renderPuestaMarchaInlinePreview() {
     var cfg = getCfg();
+    if (typeof refreshMontajeInicioHubVisibility === 'function') {
+      refreshMontajeInicioHubVisibility(cfg);
+    }
     var vistaMinSala =
       typeof hcSalaPropagadorVistaMinimaSoloMontaje === 'function' &&
       hcSalaPropagadorVistaMinimaSoloMontaje(cfg);

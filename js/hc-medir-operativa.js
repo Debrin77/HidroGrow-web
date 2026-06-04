@@ -232,6 +232,9 @@
     try {
       if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
     } catch (_) {}
+    if (typeof applyMedirGuiaProtocoloChrome === 'function') {
+      applyMedirGuiaProtocoloChrome(cfg);
+    }
     refreshTabsOperativaUi();
   }
 

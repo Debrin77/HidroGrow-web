@@ -439,6 +439,10 @@
     if (typeof refreshSalaPanelesDuplicadosMedirUi === 'function') {
       refreshSalaPanelesDuplicadosMedirUi(cfg);
     }
+    if (typeof applyMedirGuiaProtocoloChrome === 'function') applyMedirGuiaProtocoloChrome(cfg);
+    if (activo && typeof repositionMedirFlowPropagadorTop === 'function') {
+      repositionMedirFlowPropagadorTop();
+    }
     if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
   }
 

@@ -456,6 +456,11 @@
   /** VPD/evolución: solo tras montaje verificado o modo operativo (no durante paso 2 montaje). */
   function shouldShowSalaSeguimientoCta() {
     try {
+      const cfg =
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+      if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador') {
+        return false;
+      }
       if (typeof getInstalacionLifecycle === 'function') {
         const lc = getInstalacionLifecycle();
         if (lc && lc.operativaDiaria) return true;

@@ -9414,9 +9414,10 @@ button.spc.spc--selected {
 .cal-nav:active { background: var(--bg3); }
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 3px;
   margin-bottom: 12px;
+  width: 100%;
 }
 .cal-dia-nombre {
   text-align: center;
@@ -9967,6 +9968,8 @@ html.hc-theme-dark .hist-seg-period-btn.active {
   border-radius: 16px;
   padding: 14px;
   box-shadow: var(--card-shadow-soft);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 html.hc-theme-dark .hc-germ-hub-card {
   background: linear-gradient(145deg, #0f1f17 0%, #132218 50%, #1a1a12 100%);
@@ -10178,7 +10181,7 @@ html.hc-theme-dark .hc-germ-fases-cal {
 }
 .hc-germ-fases-cal-item {
   display: grid;
-  grid-template-columns: 1.5rem 1fr auto;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
   gap: 0.25rem 0.5rem;
   align-items: baseline;
   font-size: 0.8rem;
@@ -10190,7 +10193,8 @@ html.hc-theme-dark .hc-germ-fases-cal {
 .hc-germ-fases-cal-dias {
   font-weight: 700;
   color: var(--text);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 .hc-germ-fases-cal-rango {
   grid-column: 2 / -1;
@@ -10540,7 +10544,8 @@ html.hc-theme-dark .medir-sala-pendiente-hint {
 }
 body.hc-modo-propagador-sistema #tab-sistema .torre-btn-puesta-marcha,
 body.hc-modo-propagador-sistema #tab-sistema #torreNombreCard,
-body.hc-modo-propagador-sistema #tab-sistema .torre-tab-resumen-superior {
+body.hc-modo-propagador-sistema #tab-sistema .torre-tab-resumen-superior,
+body.hc-modo-propagador-sistema #tab-sistema #torreBtnIrMedirMunicipio {
   display: none !important;
 }
 /* Propagador: solo SVG + panel de germinación; sin depósito ni macetas DWC */
@@ -17415,9 +17420,18 @@ html.hc-theme-dark .nft-deposito-cifras-fixed {
 }
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 3px;
   margin-bottom: 12px;
+  width: 100%;
+}
+#tab-calendario .cal-grid > div:empty {
+  min-height: 40px;
+}
+#tab-calendario .cal-cell,
+#tab-calendario button.cal-day-btn.cal-cell {
+  aspect-ratio: 1;
+  min-height: 40px;
 }
 .cal-legend-row {
   display: flex;

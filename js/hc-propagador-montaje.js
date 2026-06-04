@@ -662,8 +662,19 @@
     return partes.join(' · ');
   }
 
+  function refreshMontajeInicioHubVisibility(cfg) {
+    cfg = cfg || getCfg();
+    var det = document.getElementById('hcMontajeInicioDetails');
+    if (!det) return;
+    var ocultar =
+      typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg);
+    det.classList.toggle('setup-hidden', ocultar);
+    if (ocultar) det.open = false;
+  }
+
   function renderMontajeInicioHubPropagador(cfg) {
     cfg = cfg || getCfg();
+    refreshMontajeInicioHubVisibility(cfg);
     if (!montajeInicioUsaHubPropagador(cfg)) return '';
     var propCh = getChecks(cfg);
     var propIt = buildItems(cfg);
@@ -823,4 +834,5 @@
   global.montajeInicioUsaHubPropagador = montajeInicioUsaHubPropagador;
   global.renderMontajeInicioHubPropagador = renderMontajeInicioHubPropagador;
   global.renderMontajeInicioHubSubtitulo = renderMontajeInicioHubSubtitulo;
+  global.refreshMontajeInicioHubVisibility = refreshMontajeInicioHubVisibility;
 })(typeof window !== 'undefined' ? window : this);

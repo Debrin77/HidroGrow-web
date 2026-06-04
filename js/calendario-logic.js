@@ -891,6 +891,7 @@ function renderCalendario() {
 
   // ── Renderizar grid ──────────────────────────────────────────────────────
   const grid = document.getElementById('calGrid');
+  if (!grid) return;
   grid.innerHTML = '';
   const diasMes   = new Date(año, mes + 1, 0).getDate();
   const primerDia = new Date(año, mes, 1).getDay();

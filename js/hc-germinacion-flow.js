@@ -1116,6 +1116,9 @@
   }
 
   function renderDashGerminacionHub() {
+    if (typeof refreshMontajeInicioHubVisibility === 'function') {
+      refreshMontajeInicioHubVisibility(cfgActiva());
+    }
     var hub = document.getElementById('dashGerminacionHub');
     if (!hub) return;
     var cfg = cfgActiva();
