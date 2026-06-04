@@ -188,16 +188,13 @@
 
   function numSemillasCaminoGerm(cfg) {
     cfg = cfg || cfgActiva();
+    if (typeof hcNumSemillasGermConfig === 'function') {
+      var nCfg = hcNumSemillasGermConfig(cfg);
+      if (nCfg >= 1) return nCfg;
+    }
     if (typeof getPlanGermEstado === 'function') {
       var st = getPlanGermEstado(cfg);
       if (st.numSemillas >= 1) return Math.round(st.numSemillas);
-    }
-    var g =
-      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
-    if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) return Math.round(g.numSemillas);
-    var prem = cfg.premiumSetup || {};
-    if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
-      return Math.round(prem.numSemillasGerm);
     }
     return 0;
   }
@@ -367,12 +364,8 @@
     for (var li = 0; li < labels.length && li < labelTexts.length; li++) {
       labels[li].textContent = labelTexts[li];
     }
-    var plantas =
-      typeof hcCollectPlantasInstalacionActiva === 'function'
-        ? hcCollectPlantasInstalacionActiva()
-        : [];
     var nSem = numSemillasCaminoGerm(cfg);
-    var nPlantas = plantas.length > 0 ? plantas.length : nSem > 0 ? nSem : 0;
+    var nPlantas = nSem > 0 ? nSem : 0;
     var g =
       typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
     var diaN = 1;

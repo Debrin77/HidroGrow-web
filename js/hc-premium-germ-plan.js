@@ -322,6 +322,13 @@
     }
     cfg.numSemillasGerm = p.numSemillasGerm;
     cfg.sustratoGerm = p.sustratoGerm;
+    if (
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(cfg) === 'semilla_propagador' &&
+      typeof hcAjustarTorrePropagadorSemillas === 'function'
+    ) {
+      hcAjustarTorrePropagadorSemillas(cfg, g.numSemillas);
+    }
   }
 
   function requiereValidacionPlanGerm(cfg) {
@@ -333,8 +340,15 @@
   function resolveNumSemillasGermPlan(cfg, g, prem) {
     prem = prem || (cfg && cfg.premiumSetup) || {};
     g = g || {};
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var nPrem = Math.round(Number(prem.numSemillasGerm));
     var nFlow = Math.round(Number(g.numSemillas));
+    if (cam === 'semilla_propagador') {
+      if (prem.numSemillasGermManual && Number.isFinite(nPrem) && nPrem >= 1) return nPrem;
+      if (Number.isFinite(nPrem) && nPrem >= 1) return nPrem;
+      if (Number.isFinite(nFlow) && nFlow >= 1) return nFlow;
+      return 0;
+    }
     if (Number.isFinite(nPrem) && nPrem >= 1) {
       if (prem.numSemillasGermManual || !Number.isFinite(nFlow) || nFlow < 1) {
         return nPrem;

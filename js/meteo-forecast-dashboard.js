@@ -440,6 +440,9 @@ function updateDashTorre() {
   if (!elP || !elD || !elC || !elX) return;
   const cfgTorre = state.configTorre || {};
   try {
+    if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
+      hcRepararSemillasPropagadorAlCargar(cfgTorre);
+    }
     if (typeof hcRefreshDashTorreCultivoResumen === 'function') {
       hcRefreshDashTorreCultivoResumen(cfgTorre);
     }

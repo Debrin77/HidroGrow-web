@@ -375,7 +375,7 @@
     var pasoMontaje = paso === 'montaje';
 
     if (equipDet) {
-      equipDet.classList.toggle('setup-hidden', !pasoEquip && !pasoListo);
+      equipDet.classList.toggle('setup-hidden', pasoMontaje);
       equipDet.classList.toggle('sala-equip-details--paso-activo', pasoEquip);
       if (pasoListo) {
         equipDet.open = true;
@@ -387,11 +387,11 @@
     }
 
     if (montajeDet) {
-      montajeDet.classList.toggle('setup-hidden', !pasoMontaje && !pasoListo);
+      montajeDet.classList.toggle('setup-hidden', pasoEquip || pasoListo);
       montajeDet.classList.toggle('sala-montaje-details--paso-activo', pasoMontaje);
       montajeDet.classList.remove('sala-montaje-details--bloqueado');
-      if (pasoMontaje && !montajeDet.dataset.hcMontajeUserClosed) {
-        montajeDet.open = true;
+      if (pasoMontaje) {
+        if (!montajeDet.dataset.hcMontajeUserOpened) montajeDet.open = false;
       } else if (pasoListo) {
         montajeDet.open = false;
       }
@@ -579,24 +579,6 @@
       renderSalaMontajePrerequisito(cfg);
 
       var paso = getSalaRecoPasoInicio(cfg);
-      if (
-        show &&
-        paso === 'montaje' &&
-        !hcSalaPropagadorVistaMinimaSoloMontaje(cfg) &&
-        !det.open &&
-        !det.dataset.hcMontajeUserClosed
-      ) {
-        var pm = cfg.puestaMarchaChecks;
-        if (!pm || !pm.completedAt) {
-          setTimeout(function () {
-            try {
-              if (!det.dataset.hcMontajeUserClosed && getSalaRecoPasoInicio(getCfg()) === 'montaje') {
-                det.open = true;
-              }
-            } catch (_) {}
-          }, 0);
-        }
-      }
     } catch (e) {
       try {
         console.warn('applySalaMontajeRecomendadoUi', e);

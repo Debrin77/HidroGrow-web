@@ -1486,18 +1486,33 @@ function buildHtmlPlantasInstalacionResumen(opts) {
     typeof etiquetaSistemaHidroponicoBreve === 'function'
       ? etiquetaSistemaHidroponicoBreve(cfg)
       : 'DWC/RDWC';
-  const plantas =
+  const faseSisPre =
+    typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+  const esPropagGerm =
+    faseSisPre === 'propagador' ||
+    faseSisPre === 'germ_cubo' ||
+    (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg));
+  var nSemPlan = 0;
+  if (faseSisPre === 'propagador') {
+    if (typeof hcNumSemillasGermConfig === 'function') {
+      nSemPlan = hcNumSemillasGermConfig(cfg);
+    } else if (typeof getPlanGermEstado === 'function') {
+      nSemPlan = getPlanGermEstado(cfg).numSemillas || 0;
+    }
+  } else if (esPropagGerm && typeof getPlanGermEstado === 'function') {
+    nSemPlan = getPlanGermEstado(cfg).numSemillas || 0;
+  }
+  let plantas =
     typeof hcCollectPlantasInstalacionActiva === 'function'
       ? hcCollectPlantasInstalacionActiva()
       : [];
+  if (faseSisPre === 'propagador' && nSemPlan >= 1 && plantas.length > nSemPlan) {
+    plantas = plantas.slice(0, nSemPlan);
+  }
 
   if (!plantas.length) {
-    const faseSis =
-      typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
-    const enGermCamino =
-      faseSis === 'propagador' ||
-      faseSis === 'germ_cubo' ||
-      (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg));
+    const faseSis = faseSisPre;
+    const enGermCamino = esPropagGerm;
     const planSt =
       enGermCamino && typeof getPlanGermEstado === 'function' ? getPlanGermEstado(cfg) : null;
     const emptyMsg =

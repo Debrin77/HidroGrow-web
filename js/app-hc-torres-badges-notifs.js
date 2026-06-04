@@ -840,13 +840,23 @@ function cargarEstadoTorre(idx, opts) {
     ? normalizeTorreModoActual(t.modoActual)
     : (MODOS_CULTIVO[t.modoActual] ? t.modoActual : 'vegetativo');
   // Asegurar estructura COMPLETA — en propagador 1×N semillas (no 5×5 por defecto)
-  const dimsTorre =
+  let dimsTorre =
     typeof hcDimsTorreDesdeConfig === 'function'
       ? hcDimsTorreDesdeConfig(state.configTorre, state.torre)
       : {
           numNiveles: state.configTorre?.numNiveles || NUM_NIVELES,
           numCestas: state.configTorre?.numCestas || NUM_CESTAS,
         };
+  if (
+    typeof getCaminoCultivo === 'function' &&
+    getCaminoCultivo(state.configTorre) === 'semilla_propagador' &&
+    typeof hcNumSemillasGermConfig === 'function'
+  ) {
+    const nSemC = hcNumSemillasGermConfig(state.configTorre);
+    if (nSemC >= 1) {
+      dimsTorre = { numNiveles: 1, numCestas: nSemC };
+    }
+  }
   const nivR = dimsTorre.numNiveles;
   const cesR = dimsTorre.numCestas;
   if (state.configTorre) {
@@ -870,14 +880,17 @@ function cargarEstadoTorre(idx, opts) {
   }
   if (
     typeof getCaminoCultivo === 'function' &&
-    getCaminoCultivo(state.configTorre) === 'semilla_propagador' &&
-    typeof hcAjustarTorrePropagadorSemillas === 'function'
+    getCaminoCultivo(state.configTorre) === 'semilla_propagador'
   ) {
     try {
-      hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
+      if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
+        hcRepararSemillasPropagadorAlCargar(state.configTorre);
+      } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
+        hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
+      }
     } catch (ePropTorre) {
       try {
-        console.warn('hcAjustarTorrePropagadorSemillas cargarEstadoTorre', ePropTorre);
+        console.warn('hcRepararSemillasPropagadorAlCargar cargarEstadoTorre', ePropTorre);
       } catch (_) {}
     }
   }

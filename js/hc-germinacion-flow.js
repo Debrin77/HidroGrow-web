@@ -1120,7 +1120,10 @@
       if (cu) cultNombre = cu.nombre || g.variedadId;
     }
     var nSemHub = 0;
-    if (typeof getPlanGermEstado === 'function') {
+    if (typeof hcNumSemillasGermConfig === 'function') {
+      nSemHub = hcNumSemillasGermConfig(cfg);
+    }
+    if (!nSemHub && typeof getPlanGermEstado === 'function') {
       var stHub = getPlanGermEstado(cfg);
       if (stHub && stHub.numSemillas) nSemHub = stHub.numSemillas;
     }
@@ -1698,6 +1701,7 @@
       if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
       if (typeof hcRenderPropagadorSvg === 'function') hcRenderPropagadorSvg(cfg);
       if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
+      if (typeof hcRefreshDashTorreCultivoResumen === 'function') hcRefreshDashTorreCultivoResumen(cfg);
       if (typeof redibujarTorre === 'function') redibujarTorre();
       if (typeof updateDashboard === 'function') updateDashboard();
     } catch (_) {}

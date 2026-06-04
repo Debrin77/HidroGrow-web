@@ -595,6 +595,32 @@
     return true;
   }
 
+  /**
+   * Repara torre/config cuando quedó matriz DWC (p. ej. 3×3=9) pero el plan tiene otra cantidad de semillas.
+   */
+  function hcRepararSemillasPropagadorAlCargar(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (typeof state === 'undefined' || !state) return false;
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg);
+    }
+    var n = hcNumSemillasGermConfig(cfg);
+    if (!n || n < 1) return false;
+    var torre = state.torre || [];
+    var flat = 0;
+    for (var fi = 0; fi < torre.length; fi++) {
+      flat += (torre[fi] && torre[fi].length) || 0;
+    }
+    var need =
+      torre.length !== 1 ||
+      flat !== n ||
+      (cfg.numNiveles || 1) !== 1 ||
+      (cfg.numCestas || 0) !== n;
+    if (!need) return false;
+    return hcAjustarTorrePropagadorSemillas(cfg, n);
+  }
+
   /** Filas × cestas según camino (propagador = 1×N semillas, no 5×5 por defecto). */
   function hcDimsTorreDesdeConfig(cfg, torre) {
     cfg = cfg || {};
@@ -602,11 +628,7 @@
     if (getCaminoCultivo(cfg) === 'semilla_propagador') {
       var c = hcNumSemillasGermConfig(cfg);
       if (!c || c < 1) {
-        var flatLen = 0;
-        for (var fi = 0; fi < torre.length; fi++) {
-          flatLen += (torre[fi] && torre[fi].length) || 0;
-        }
-        c = flatLen > 0 ? flatLen : 1;
+        c = 6;
       }
       return { numNiveles: 1, numCestas: Math.min(72, Math.max(1, c)) };
     }
@@ -632,9 +654,7 @@
     if (typeof getSistemaFaseCamino !== 'function' || getSistemaFaseCamino(cfg) !== 'propagador') {
       return;
     }
-    if (typeof persistPremiumGermPlanToConfig === 'function') {
-      persistPremiumGermPlanToConfig(cfg);
-    }
+    hcRepararSemillasPropagadorAlCargar(cfg);
     var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
     if (!sug || !sug.variedadId) return;
     var torre = typeof state !== 'undefined' && state && state.torre ? state.torre : [];
@@ -650,21 +670,8 @@
       }
       if (conVar) break;
     }
-    var dims = hcDimsTorreDesdeConfig(cfg, torre);
-    cfg.numNiveles = dims.numNiveles;
-    cfg.numCestas = dims.numCestas;
-    var count0 = torre[0] ? torre[0].length : 0;
-    var flatCount = 0;
-    for (var fi = 0; fi < torre.length; fi++) {
-      flatCount += (torre[fi] && torre[fi].length) || 0;
-    }
-    var needResize =
-      torre.length !== 1 ||
-      count0 !== dims.numCestas ||
-      flatCount !== dims.numCestas ||
-      (cfg.numNiveles || 1) !== 1;
-    if (!conVar || needResize) {
-      hcAjustarTorrePropagadorSemillas(cfg, dims.numCestas);
+    if (!conVar) {
+      hcAjustarTorrePropagadorSemillas(cfg, hcNumSemillasGermConfig(cfg) || 6);
     }
   }
 
@@ -1290,6 +1297,7 @@
   global.hcAplicarGeometriaSugeridaGerminacion = hcAplicarGeometriaSugeridaGerminacion;
   global.hcInicializarTorreGerminacionPropagador = hcInicializarTorreGerminacionPropagador;
   global.hcAjustarTorrePropagadorSemillas = hcAjustarTorrePropagadorSemillas;
+  global.hcRepararSemillasPropagadorAlCargar = hcRepararSemillasPropagadorAlCargar;
   global.hcSyncGerminacionPlanCultivo = hcSyncGerminacionPlanCultivo;
   global.hcDimsTorreDesdeConfig = hcDimsTorreDesdeConfig;
   global.hcNumSemillasGermConfig = hcNumSemillasGermConfig;

@@ -431,6 +431,7 @@
     if (montajeDet && !montajeDet.dataset.hcMontajeBound) {
       montajeDet.dataset.hcMontajeBound = '1';
       montajeDet.addEventListener('toggle', function () {
+        if (montajeDet.open) montajeDet.dataset.hcMontajeUserOpened = '1';
         if (!montajeDet.open) montajeDet.dataset.hcMontajeUserClosed = '1';
         if (montajeDet.open && typeof hcRefreshPuestaMarchaUi === 'function') {
           hcRefreshPuestaMarchaUi();
