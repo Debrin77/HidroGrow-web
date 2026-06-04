@@ -359,6 +359,11 @@
     return cam(cfg) === 'semilla_propagador';
   }
 
+  /** Meteo accesible aunque el depósito aún no esté operativo (camino propagador). */
+  function hcMeteoTabPermitidaSinOperativa(cfg) {
+    return hcMeteoRequiereLocalidad(cfg);
+  }
+
   function hcOcultarTabSalaDuranteGerm(cfg) {
     return hcOcultarTabSalaDuranteCamino(cfg);
   }
@@ -443,6 +448,7 @@
   global.hcOcultarTabSalaDuranteGerm = hcOcultarTabSalaDuranteGerm;
   global.hcOcultarTabRiegoEnCaminoPropagador = hcOcultarTabRiegoEnCaminoPropagador;
   global.hcMeteoRequiereLocalidad = hcMeteoRequiereLocalidad;
+  global.hcMeteoTabPermitidaSinOperativa = hcMeteoTabPermitidaSinOperativa;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;

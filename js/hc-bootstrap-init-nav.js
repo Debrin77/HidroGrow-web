@@ -448,49 +448,7 @@ function scrollTabBarToActive(btn) {
   });
 }
 
-function goTab(tab) {
-  if (tab === currentTab) return;
-  if (
-    (tab === 'riego' || tab === 'meteo') &&
-    typeof medicionesOperativasPermitidas === 'function' &&
-    !medicionesOperativasPermitidas()
-  ) {
-    if (typeof showToast === 'function') {
-      showToast(
-        'Riego y Meteo avanzado se activan tras el primer llenado del depósito (instalación operativa).',
-        false,
-        { durationMs: 5200 }
-      );
-    }
-    tab = 'inicio';
-  }
-  // Guardar slot de torre en memoria; localStorage en diferido (móvil más fluido)
-  try {
-    guardarEstadoTorreActual();
-  } catch (_) {}
-  if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
-  else saveState();
-  document.querySelectorAll('.tab-panel').forEach(p => {
-    p.classList.remove('active');
-    p.setAttribute('aria-hidden', 'true');
-  });
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const panel = document.getElementById('tab-' + tab);
-  if (panel) {
-    panel.classList.add('active');
-    panel.setAttribute('aria-hidden', 'false');
-  }
-  const activeBtn = document.getElementById('btn-' + tab);
-  if (activeBtn) activeBtn.classList.add('active');
-  scrollTabBarToActive(activeBtn);
-  ['inicio','mediciones','sala','sistema','calendario','riego','meteo','historial','consejos','ayuda'].forEach(t => {
-    const b = document.getElementById('btn-' + t);
-    if (b) b.setAttribute('aria-selected', t === tab ? 'true' : 'false');
-  });
-  currentTab = tab;
-  try {
-    actualizarTabContextHints(tab);
-  } catch (_) {}
+function goTabDeferredWork(tab) {
   if (tab === 'mediciones') {
     cargarUltimaMedicion();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
@@ -562,6 +520,65 @@ function goTab(tab) {
   try {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   } catch (_) {}
+}
+
+function goTab(tab) {
+  if (tab === currentTab) return;
+  var cfgNav = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (
+    (tab === 'riego' || tab === 'meteo') &&
+    typeof medicionesOperativasPermitidas === 'function' &&
+    !medicionesOperativasPermitidas()
+  ) {
+    var meteoProp =
+      tab === 'meteo' &&
+      typeof hcMeteoTabPermitidaSinOperativa === 'function' &&
+      hcMeteoTabPermitidaSinOperativa(cfgNav);
+    if (!meteoProp) {
+      if (typeof showToast === 'function') {
+        showToast(
+          tab === 'meteo'
+            ? 'Meteo se activa tras el primer llenado del depósito (instalación operativa). En propagador usa Medir e Inicio.'
+            : 'Riego se activa tras el primer llenado del depósito (instalación operativa).',
+          false,
+          { durationMs: 5200 }
+        );
+      }
+      tab = 'inicio';
+    }
+  }
+
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.remove('active');
+    p.setAttribute('aria-hidden', 'true');
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('tab-' + tab);
+  if (panel) {
+    panel.classList.add('active');
+    panel.setAttribute('aria-hidden', 'false');
+  }
+  const activeBtn = document.getElementById('btn-' + tab);
+  if (activeBtn) activeBtn.classList.add('active');
+  scrollTabBarToActive(activeBtn);
+  ['inicio','mediciones','sala','sistema','calendario','riego','meteo','historial','consejos','ayuda'].forEach(t => {
+    const b = document.getElementById('btn-' + t);
+    if (b) b.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+  });
+  currentTab = tab;
+  try {
+    actualizarTabContextHints(tab);
+  } catch (_) {}
+
+  var tabWork = tab;
+  requestAnimationFrame(function () {
+    try {
+      guardarEstadoTorreActual();
+    } catch (_) {}
+    if (typeof hcPersistStateSoon === 'function') hcPersistStateSoon();
+    else if (typeof saveState === 'function') saveState();
+    goTabDeferredWork(tabWork);
+  });
 }
 
 function irMedirMunicipioClima() {

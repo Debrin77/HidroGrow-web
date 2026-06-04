@@ -77,11 +77,30 @@
 
   var TABS_POST_OPERATIVA = ['riego', 'meteo'];
 
+  function meteoTabVisiblePreOperativa() {
+    return (
+      typeof hcMeteoTabPermitidaSinOperativa === 'function' &&
+      hcMeteoTabPermitidaSinOperativa()
+    );
+  }
+
   function refreshTabsOperativaUi() {
     var operativa = medicionesOperativasPermitidas();
     TABS_POST_OPERATIVA.forEach(function (t) {
       var btn = document.getElementById('btn-' + t);
-      if (btn) btn.classList.toggle('setup-hidden', !operativa);
+      if (!btn) return;
+      if (t === 'meteo' && meteoTabVisiblePreOperativa()) {
+        btn.classList.remove('setup-hidden');
+        return;
+      }
+      if (
+        t === 'riego' &&
+        typeof hcOcultarTabRiegoEnCaminoPropagador === 'function' &&
+        hcOcultarTabRiegoEnCaminoPropagador()
+      ) {
+        return;
+      }
+      btn.classList.toggle('setup-hidden', !operativa);
     });
     var tabActiva =
       typeof currentTab !== 'undefined' && currentTab ? currentTab : null;
@@ -96,6 +115,7 @@
       });
     }
     if (!operativa && tabActiva && TABS_POST_OPERATIVA.indexOf(tabActiva) >= 0) {
+      if (tabActiva === 'meteo' && meteoTabVisiblePreOperativa()) return;
       try {
         if (typeof goTab === 'function') goTab('inicio');
       } catch (_) {}
