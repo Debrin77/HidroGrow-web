@@ -327,6 +327,42 @@
     return '';
   }
 
+  var TORRE_HIDRO_CHROME_IDS = [
+    'torreEsquemaSub',
+    'torreDiagramToolbar',
+    'torreCestaFocusBar',
+    'torreInteraccionBar',
+    'torreListaVista',
+    'torreSistemaResumenWrap',
+    'torreQuickTip',
+    'sistemaDwcAyudaCard',
+    'sistemaEcPhStrategyCard',
+  ];
+
+  function setTorreHidroChromeVisible(visible) {
+    TORRE_HIDRO_CHROME_IDS.forEach(function (id) {
+      var node = document.getElementById(id);
+      if (!node) return;
+      node.classList.toggle('setup-hidden', !visible);
+      if (!visible) {
+        node.hidden = true;
+        node.setAttribute('aria-hidden', 'true');
+      } else {
+        node.hidden = false;
+        node.removeAttribute('aria-hidden');
+      }
+    });
+    document.querySelectorAll('#tab-sistema .torre-deposito-stack, #tab-sistema .torre-deposito').forEach(function (node) {
+      node.classList.toggle('setup-hidden', !visible);
+      node.setAttribute('aria-hidden', visible ? 'false' : 'true');
+    });
+    document.querySelectorAll('#tab-sistema .torre-leyenda-mt').forEach(function (node) {
+      node.classList.toggle('setup-hidden', !visible);
+    });
+    var cont = document.querySelector('#tab-sistema .torre-container');
+    if (cont) cont.classList.toggle('torre-container--solo-propagador', !visible);
+  }
+
   function toggleTorreChrome(mostrarFase, cfg, fase) {
     var torreWrap = document.getElementById('torreSVGWrap');
     var torreCard = document.getElementById('torreNombreCard');
@@ -335,6 +371,10 @@
     var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
     var cultivoExtras = document.getElementById('sistemaCultivoExtras');
     var esPropagador = fase === 'propagador';
+    var sinHidro =
+      esPropagador &&
+      typeof hcSistemaPropagadorSinHidro === 'function' &&
+      hcSistemaPropagadorSinHidro(cfg || cfgActiva());
     if (mostrarFase) {
       if (torreWrap) {
         if (esPropagador) {
@@ -362,6 +402,7 @@
         ecphCard.classList.add('setup-hidden');
       }
       if (cultivoExtras) cultivoExtras.classList.add('setup-hidden');
+      setTorreHidroChromeVisible(!sinHidro);
     } else {
       if (torreWrap) torreWrap.classList.remove('setup-hidden');
       if (torreCard) torreCard.classList.remove('setup-hidden');
@@ -370,6 +411,7 @@
         dwcCard.classList.remove('setup-hidden');
       }
       if (cultivoExtras) cultivoExtras.classList.remove('setup-hidden');
+      setTorreHidroChromeVisible(true);
       try {
         if (typeof sincronizarSistemaNftMontajeUI === 'function') {
           sincronizarSistemaNftMontajeUI();

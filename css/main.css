@@ -10522,6 +10522,24 @@ body.hc-modo-propagador-sistema #tab-sistema #torreNombreCard,
 body.hc-modo-propagador-sistema #tab-sistema .torre-tab-resumen-superior {
   display: none !important;
 }
+/* Propagador: solo SVG + panel de germinación; sin depósito ni macetas DWC */
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador #torreEsquemaSub,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador #torreDiagramToolbar,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador #torreCestaFocusBar,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador #torreInteraccionBar,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador .torre-deposito-stack,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador .torre-deposito,
+body.hc-modo-fase-propagador #tab-sistema .torre-container--solo-propagador .torre-leyenda-mt,
+body.hc-modo-fase-propagador #tab-sistema #sistemaDwcAyudaCard,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador #torreEsquemaSub,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador #torreDiagramToolbar,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador #torreCestaFocusBar,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador #torreInteraccionBar,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .torre-deposito-stack,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .torre-deposito,
+body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .torre-leyenda-mt {
+  display: none !important;
+}
 .hc-sis-fase-pasos {
   margin: 12px 0;
   padding-left: 1.2rem;

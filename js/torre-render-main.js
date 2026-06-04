@@ -957,9 +957,11 @@ function updateTorreStats() {
   const locBtn = document.getElementById('torreBtnIrMedirMunicipio');
   if (locBtn) locBtn.classList.toggle('setup-hidden', !!locStr);
 
-  // Info depósito
+  // Info depósito (oculto en camino propagador hasta cerrar hidro)
   const depEl = document.getElementById('depositoTitulo');
-  if (depEl) {
+  const ocultarDepHidro =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+  if (depEl && !ocultarDepHidro) {
     const pref = rawNombre ? rawNombre + ' · ' : '';
     if (esRdwcCfg) {
       depEl.textContent = pref + 'Depósito RDWC (control y recirculación)';

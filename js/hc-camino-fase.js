@@ -148,6 +148,13 @@
     return getSistemaFaseCamino(cfg) === 'propagador';
   }
 
+  /** Semilla + propagador: sin bloques de depósito DWC/RDWC hasta cerrar el asistente hidro. */
+  function hcSistemaPropagadorSinHidro(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_propagador') return false;
+    return !hidroCerrado(cfg);
+  }
+
   function hcTituloSistemaTab(cfg) {
     var f = getSistemaFaseCamino(cfg);
     if (!f || !FASE_UI[f]) return 'Cultivo e instalación';
@@ -401,6 +408,7 @@
   global.getSistemaFaseCamino = getSistemaFaseCamino;
   global.hcMostrarSistemaFaseCamino = hcMostrarSistemaFaseCamino;
   global.hcMostrarSistemaPropagador = hcMostrarSistemaPropagador;
+  global.hcSistemaPropagadorSinHidro = hcSistemaPropagadorSinHidro;
   global.hcTituloSistemaTab = hcTituloSistemaTab;
   global.hcOperativaFaseCamino = hcOperativaFaseCamino;
   global.hcOperativaFasePropagadorGerm = hcOperativaFasePropagadorGerm;
