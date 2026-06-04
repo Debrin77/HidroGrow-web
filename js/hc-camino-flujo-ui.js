@@ -549,6 +549,8 @@
       }
     }
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
+    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
     if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);

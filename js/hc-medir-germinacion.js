@@ -101,15 +101,60 @@
   }
 
   /**
-   * Campos de sala (PPFD, CO₂, temp. exterior): en propagador solo tras configurar la sala en el asistente.
+   * Propagador: sala configurada + checklist de montaje verificado (propagador dentro).
+   * Hidro directo: solo equipamiento de sala guardado.
    */
-  function hcMedirSalaAmbienteDisponible(cfg) {
+  function hcMedirSalaListaParaMedir(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_propagador') {
+      if (typeof salaPreGermConfigurada !== 'function' || !salaPreGermConfigurada(cfg)) {
+        return false;
+      }
+      if (typeof montajeSalaPreGermOk === 'function') {
+        return montajeSalaPreGermOk(cfg);
+      }
+      return !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
+    }
+    if (cam === 'semilla_hidro') {
+      return typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
+    }
+    return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
+  }
+
+  function hcMedirSalaConfigurada(cfg) {
     cfg = cfg || cfgActiva();
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
       return typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
     }
     return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
+  }
+
+  /** Alias histórico: parámetros de sala medibles en Medir. */
+  function hcMedirSalaAmbienteDisponible(cfg) {
+    return hcMedirSalaListaParaMedir(cfg);
+  }
+
+  /** PPFD / CO₂ / temp. ext. según equipamiento registrado en la sala. */
+  function hcMedirCardSalaEquipoVisible(cardId, cfg) {
+    if (!hcMedirSalaListaParaMedir(cfg)) return false;
+    cfg = cfg || cfgActiva();
+    var inst = cfg.equipamientoInstalado || {};
+    var eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento : [];
+    var ubic = String(
+      cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior'
+    ).toLowerCase();
+    if (cardId === 'cardPPFD') {
+      return !!(inst.led && inst.led.id) || Number.isFinite(Number(cfg.growRoomLedW));
+    }
+    if (cardId === 'cardCO2') {
+      return !!(inst.co2 && inst.co2.id) || eq.indexOf('co2') >= 0;
+    }
+    if (cardId === 'cardTempExt') {
+      return ubic === 'exterior' || !!(inst.extractor && inst.extractor.id);
+    }
+    return true;
   }
 
   /** Medir propagador: T°/HR/VPD del domo siempre; EC según fase; pH según plan. */
@@ -267,10 +312,18 @@
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) {
         if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
+        var salaLista = hcMedirSalaListaParaMedir(cfg);
+        var salaCfg = hcMedirSalaConfigurada(cfg);
         lead.innerHTML = activo
-          ? 'Introduce <strong>T° y HR del domo</strong>; el <strong>VPD se calcula solo</strong>' +
-            (activos.ec || activos.ph ? '. También puedes registrar EC/pH del propagador' : '') +
-            '. Los recuadros indican si estás en rango.'
+          ? salaLista
+            ? '<strong>Domo:</strong> T° y HR (VPD automático)' +
+              (activos.ec || activos.ph ? ' · EC/pH del propagador si aplica' : '') +
+              '. <strong>Sala montada:</strong> registra también los parámetros del equipamiento que aparecen abajo.'
+            : salaCfg
+              ? '<strong>Domo:</strong> T°, HR y VPD. Completa el <strong>checklist de montaje en Sala</strong> para activar mediciones del resto del equipamiento.'
+              : 'Introduce <strong>T° y HR del domo</strong>; el <strong>VPD se calcula solo</strong>' +
+                (activos.ec || activos.ph ? '. También puedes registrar EC/pH del propagador' : '') +
+                '. Configura la sala para más parámetros después.'
           : lead.dataset.hcMedirLeadDefault;
       }
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
@@ -378,8 +431,42 @@
 
     refreshMedirSalaAmbienteMedirUi(cfg);
     refreshMedirAsistentePropagadorBtn(activo);
+    refreshMedirPropagadorTabChrome(cfg, activo);
     if (typeof refreshSalaPanelesDuplicadosMedirUi === 'function') {
       refreshSalaPanelesDuplicadosMedirUi(cfg);
+    }
+    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+  }
+
+  function refreshMedirPropagadorTabChrome(cfg, activo) {
+    cfg = cfg || cfgActiva();
+    activo = activo !== undefined ? activo : hcMedirModoGerminacionPropagador(cfg);
+    var tab = document.getElementById('tab-mediciones');
+    if (tab) tab.classList.toggle('medir-tab--propagador', !!activo);
+
+    var hideWhenProp = [
+      'medirPuestaMarchaCard',
+      'medirPreOperativaGate',
+      'medirOperativaHub',
+      'tabContextHintMediciones',
+      'hcMultiCoachMedir',
+    ];
+    hideWhenProp.forEach(function (id) {
+      var n = document.getElementById(id);
+      if (n) n.classList.toggle('setup-hidden', !!activo);
+    });
+
+    var loc = document.getElementById('panelLocalidadMeteo');
+    if (loc) loc.classList.toggle('medir-localidad--propagador', !!activo);
+
+    var titleWrap = tab && tab.querySelector('.section-title > span');
+    if (titleWrap) {
+      if (!titleWrap.dataset.hcMedirTitleDefault) {
+        titleWrap.dataset.hcMedirTitleDefault = titleWrap.innerHTML;
+      }
+      titleWrap.innerHTML = activo
+        ? '<span class="accent">Medir</span> · domo y sala'
+        : titleWrap.dataset.hcMedirTitleDefault;
     }
   }
 
@@ -419,27 +506,44 @@
       if (lead) lead.insertAdjacentElement('afterend', hint);
       else ambCard.insertBefore(hint, ambCard.firstChild);
     }
-    var cfgBtn =
-      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador'
-        ? '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button> o ' +
-          '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje</button>'
-        : '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
-    hint.innerHTML =
-      (germ
-        ? '<strong>Sala sin configurar.</strong> PPFD, CO₂ y temp. exterior aparecen cuando completes la <strong>configuración de sala</strong> en el asistente. Arriba: <strong>T°, HR y VPD del domo</strong>. '
-        : '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras configurar la instalación y completar el checklist de montaje. ') +
-      cfgBtn +
-      '.';
+    var salaCfg = hcMedirSalaConfigurada(cfg);
+    var prop =
+      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador';
+    var cfgBtn = prop
+      ? '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar sala</button>'
+      : '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button>';
+    var montajeBtn =
+      '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
+    if (germ && !salaCfg) {
+      hint.innerHTML =
+        '<strong>Solo domo por ahora.</strong> Registra <strong>T°, HR y VPD del propagador</strong>. ' +
+        'Los parámetros del resto del equipamiento de la sala (LED, CO₂, etc.) aparecen tras ' +
+        cfgBtn +
+        '.';
+    } else if (germ && salaCfg) {
+      hint.innerHTML =
+        '<strong>Sala configurada.</strong> Completa el ' +
+        montajeBtn +
+        ' (propagador montado y operativo) para registrar PPFD, CO₂ y el resto según tu equipamiento.';
+    } else {
+      hint.innerHTML =
+        '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras el montaje verificado. ' +
+        cfgBtn +
+        '.';
+    }
   }
 
   function refreshMedirSalaAmbienteMedirUi(cfg) {
     cfg = cfg || cfgActiva();
     var germ = hcMedirModoGerminacionPropagador(cfg);
-    var salaLista = hcMedirSalaAmbienteDisponible(cfg);
+    var salaLista = hcMedirSalaListaParaMedir(cfg);
+    var salaCfg = hcMedirSalaConfigurada(cfg);
 
     AMBIENTE_SALA_CARDS.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.classList.toggle('setup-hidden', !salaLista);
+      if (!el) return;
+      var show = hcMedirCardSalaEquipoVisible(id, cfg);
+      el.classList.toggle('setup-hidden', !show);
     });
 
     var banner = document.getElementById('medirAmbienteImportanteBanner');
@@ -453,10 +557,12 @@
       if (!kick.dataset.hcMedirKickDefault) kick.dataset.hcMedirKickDefault = kick.textContent;
       if (!sub.dataset.hcMedirSubDefault) sub.dataset.hcMedirSubDefault = sub.textContent;
       if (germ) {
-        kick.textContent = salaLista ? 'Domo y sala' : 'Domo propagador';
+        kick.textContent = salaLista ? 'Domo y sala montada' : salaCfg ? 'Domo · sala pendiente montaje' : 'Domo propagador';
         sub.textContent = salaLista
-          ? 'T°, HR y VPD del domo · PPFD, CO₂ y temp. exterior (sala configurada)'
-          : 'T°, HR y VPD del domo — obligatorio';
+          ? 'T°, HR y VPD del domo · parámetros del equipamiento de sala según catálogo'
+          : salaCfg
+            ? 'T°, HR y VPD del domo — completa el checklist de montaje en Sala'
+            : 'T°, HR y VPD del domo — obligatorio';
       } else if (!salaLista) {
         kick.textContent = 'Paso 2 · opcional';
         sub.textContent = 'Luz, CO₂ y temp. exterior tras montaje de sala verificado';
@@ -469,14 +575,21 @@
     var ambCard = document.getElementById('medirAmbienteCard');
     ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista);
 
+    if (germ && salaLista) {
+      var ambDet = document.getElementById('medirAmbienteDetails');
+      if (ambDet && !ambDet.dataset.hcAmbUserClosed) ambDet.open = true;
+    }
+
     if (ambCard) {
       var ambLead = ambCard.querySelector('.medir-ambiente-lead');
       if (ambLead) {
         if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
         if (germ) {
           ambLead.textContent = salaLista
-            ? 'T°, HR y VPD del domo. Con la sala montada puedes añadir PPFD, CO₂ y temp. exterior abajo.'
-            : 'T°, HR y VPD del domo del propagador. El VPD se calcula al escribir T° y HR.';
+            ? 'T°, HR y VPD del domo. Abajo: mediciones del equipamiento de la sala que tengas instalado (LED, CO₂, extractor…).'
+            : salaCfg
+              ? 'T°, HR y VPD del domo. Tras el checklist de montaje en Sala aparecerán el resto de parámetros medibles.'
+              : 'T°, HR y VPD del domo del propagador. El VPD se calcula al escribir T° y HR.';
         } else if (!salaLista) {
           ambLead.textContent =
             'Temp. aire y HR para VPD. PPFD, CO₂ y temp. exterior cuando el montaje de sala esté verificado.';
@@ -546,6 +659,10 @@
   global.refreshMedirGerminacionUi = refreshMedirGerminacionUi;
   global.refreshMedirSalaAmbienteMedirUi = refreshMedirSalaAmbienteMedirUi;
   global.hcMedirSalaAmbienteDisponible = hcMedirSalaAmbienteDisponible;
+  global.hcMedirSalaListaParaMedir = hcMedirSalaListaParaMedir;
+  global.hcMedirSalaConfigurada = hcMedirSalaConfigurada;
+  global.hcMedirCardSalaEquipoVisible = hcMedirCardSalaEquipoVisible;
+  global.refreshMedirPropagadorTabChrome = refreshMedirPropagadorTabChrome;
   global.evalParamGerminacion = evalParamGerminacion;
   global.actualizarRangosParametrosMedirGerm = actualizarRangosParametrosMedirGerm;
 

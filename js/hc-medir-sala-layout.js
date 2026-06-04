@@ -57,7 +57,14 @@
       if (open && typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
     });
 
-    monitor.parentNode.insertBefore(wrap, monitor);
+    var anchor =
+      document.getElementById('medirPropagadorFaseBanner') ||
+      document.getElementById('medirTorreBanner');
+    if (anchor && anchor.parentNode) {
+      anchor.insertAdjacentElement('afterend', wrap);
+    } else if (monitor.parentNode) {
+      monitor.parentNode.insertBefore(wrap, monitor);
+    }
     wrap.appendChild(head);
     wrap.appendChild(body);
     body.appendChild(monitor);
@@ -127,6 +134,19 @@
     var ambGrid = card.querySelector('.medir-ambiente-grid');
     if (ambGrid) ambGrid.classList.add('medir-ambiente-grid--premium');
     ensureAmbienteSaveFooter(card);
+  }
+
+  /** «Tareas para hoy» justo debajo del banner de instalación / propagador. */
+  function repositionMedirGuiaDiaTop() {
+    var guia = document.getElementById('medirGuiaDiaCard');
+    var tab = document.getElementById('tab-mediciones');
+    if (!guia || !tab) return;
+    var anchor =
+      document.getElementById('medirPropagadorFaseBanner') ||
+      document.getElementById('medirTorreBanner');
+    if (!anchor) return;
+    if (guia.parentNode === tab && guia.previousElementSibling === anchor) return;
+    anchor.insertAdjacentElement('afterend', guia);
   }
 
   function ensureMedirFlowAmbienteMount() {
@@ -385,7 +405,9 @@
     if (det && typeof getCamposEquipamientoFaltantes === 'function') {
       var cfgEq = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
       var falt = getCamposEquipamientoFaltantes(cfgEq);
-      if (falt.length && !det.open) det.open = true;
+      var salaCfgOk =
+        typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfgEq);
+      if (falt.length && !det.open && !salaCfgOk) det.open = true;
     }
     var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
     if (montajeDet && !montajeDet.dataset.hcMontajeBound) {
@@ -398,7 +420,16 @@
       });
     }
     var cfgPm = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
-    if (montajeDet && cfgPm.puestaMarchaChecks && !cfgPm.puestaMarchaChecks.completedAt && !montajeDet.open) {
+    var vistaMinMontaje =
+      typeof hcSalaPropagadorVistaMinimaSoloMontaje === 'function' &&
+      hcSalaPropagadorVistaMinimaSoloMontaje(cfgPm);
+    if (
+      montajeDet &&
+      cfgPm.puestaMarchaChecks &&
+      !cfgPm.puestaMarchaChecks.completedAt &&
+      !montajeDet.open &&
+      !vistaMinMontaje
+    ) {
       montajeDet.open = true;
     }
   }
@@ -540,6 +571,10 @@
       refreshSalaSubTabsCaminoUi();
       refreshSalaEquipMontaje();
       refreshSistemaCultivoExtras();
+      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+      if (typeof refreshMedirGerminacionUi === 'function') {
+        refreshMedirGerminacionUi();
+      }
     } catch (e) {
       try {
         console.warn('initMedirSalaLayout', e);
@@ -571,6 +606,7 @@
   window.hcRefreshSistemaCultivoExtras = refreshSistemaCultivoExtras;
   window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
+  window.repositionMedirGuiaDiaTop = repositionMedirGuiaDiaTop;
 
   function scheduleInitMedirSalaLayout() {
     if (typeof window !== 'undefined' && window._hcMedirSalaLayoutDone) return;

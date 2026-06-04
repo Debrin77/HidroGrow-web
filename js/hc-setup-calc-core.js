@@ -2465,6 +2465,8 @@ function guardarSetupYContinuarCore() {
       if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
+      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
       if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
       if (
         typeof renderCalendario === 'function' &&

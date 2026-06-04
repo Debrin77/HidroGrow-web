@@ -550,6 +550,8 @@ function goTabDeferredWork(tab) {
     if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
     if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
+    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
   }
   if (tab === 'sala') {
     if (typeof salaSubTab === 'function') salaSubTab(window.salaSubActive || 'agua');

@@ -1269,16 +1269,21 @@
     refreshPuestaMarchaModalFoot(cfg, checks);
   }
 
-  function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items) {
+  function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items, opts) {
+    opts = opts || {};
     items = items || buildItemsForConfig(cfg);
     var bloqueada = montajeEdicionBloqueada();
+    var shell = buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, 'inline');
+    if (opts.soloChecklist) {
+      return shell;
+    }
     var btnLabel = bloqueada
       ? 'Ver montaje (solo lectura)'
       : verificada
         ? 'Revisar montaje'
         : 'Abrir checklist completo';
     return (
-      buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, 'inline') +
+      shell +
       (!bloqueada
         ? '<p class="hc-pm-inline-config"><button type="button" class="btn btn-ghost btn-sm" onclick="hcAbrirConfiguradorDesdeMontaje()">Cambiar equipamiento (configurador)</button></p>'
         : '') +
@@ -1289,8 +1294,18 @@
     );
   }
 
+  function hcPmSalaMontajeBodyHtml(cfg) {
+    var checks = getChecks(cfg);
+    var items = buildItemsForConfig(cfg);
+    var prog = countProgress(checks, cfg, items);
+    return buildPuestaMarchaInlineHtml(cfg, checks, prog, !!checks.completedAt, items, { soloChecklist: true });
+  }
+
   function renderPuestaMarchaInlinePreview() {
     var cfg = getCfg();
+    var vistaMinSala =
+      typeof hcSalaPropagadorVistaMinimaSoloMontaje === 'function' &&
+      hcSalaPropagadorVistaMinimaSoloMontaje(cfg);
     var hubHtml =
       typeof renderMontajeInicioHubPropagador === 'function'
         ? renderMontajeInicioHubPropagador(cfg)
@@ -1300,15 +1315,19 @@
       if (inicioHost) inicioHost.innerHTML = hubHtml;
       var salaHost = document.getElementById('sistemaMontajeChecksBody');
       if (salaHost) {
-        salaHost.innerHTML =
-          '<p class="hc-pm-inline-lead">Primero <strong>configura la sala y el equipamiento</strong> (asistente o Sala). Después usa este <strong>checklist de montaje</strong> para verificar en físico LED, extractor, propagador, etc. Sin depósito DWC hasta tras germinar.</p>' +
-          buildPuestaMarchaInlineHtml(
-            cfg,
-            getChecks(cfg),
-            countProgress(getChecks(cfg), cfg, buildItemsForConfig(cfg)),
-            !!(getChecks(cfg).completedAt),
-            buildItemsForConfig(cfg)
-          );
+        if (vistaMinSala) {
+          salaHost.innerHTML = hcPmSalaMontajeBodyHtml(cfg);
+        } else {
+          salaHost.innerHTML =
+            '<p class="hc-pm-inline-lead">Primero <strong>configura la sala y el equipamiento</strong> (asistente o Sala). Después usa este <strong>checklist de montaje</strong> para verificar en físico LED, extractor, propagador, etc. Sin depósito DWC hasta tras germinar.</p>' +
+            buildPuestaMarchaInlineHtml(
+              cfg,
+              getChecks(cfg),
+              countProgress(getChecks(cfg), cfg, buildItemsForConfig(cfg)),
+              !!(getChecks(cfg).completedAt),
+              buildItemsForConfig(cfg)
+            );
+        }
       }
       return;
     }
@@ -1316,7 +1335,9 @@
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
     var verificada = !!checks.completedAt;
-    var html = buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items);
+    var html = vistaMinSala
+      ? hcPmSalaMontajeBodyHtml(cfg)
+      : buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items);
     if (!html || !String(html).trim()) {
       html =
         '<p class="hc-pm-inline-lead">Configura una instalación con el asistente para ver el checklist de montaje.</p>' +
@@ -1604,6 +1625,11 @@
     saveChecks(checks);
     closePuestaMarchaChecklist();
     refreshPuestaMarchaUi();
+    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
+    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
+    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+    if (typeof hcInvalidateSalaTabHeavyCache === 'function') hcInvalidateSalaTabHeavyCache();
+    if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true, lightOnly: true });
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
@@ -1708,6 +1734,7 @@
   global.hcFinishPuestaMarcha = finishPuestaMarcha;
   global.hcMaybeOfferPuestaMarcha = maybeOfferAfterSetup;
   global.hcRefreshPuestaMarchaUi = refreshPuestaMarchaUi;
+  global.hcPmSalaMontajeBodyHtml = hcPmSalaMontajeBodyHtml;
   global.hcBuildPuestaMarchaItems = buildItemsForConfig;
   global.hcPmIrRevisarSalaEquip = hcPmIrRevisarSalaEquip;
   global.hcAbrirConfiguradorDesdeMontaje = hcAbrirConfiguradorDesdeMontaje;

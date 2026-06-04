@@ -21704,6 +21704,22 @@ html.hc-theme-dark .torre-nft-p-note strong {
 .medir-tareas-badge--mid { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
 .medir-tareas-badge--pend { background: #fef3c7; color: #92400e; }
 .medir-guia-card .medir-guia-body { padding-top: 8px; }
+#tab-mediciones.medir-tab--propagador #medirGuiaDiaCard {
+  margin-bottom: 14px;
+}
+#tab-mediciones.medir-tab--propagador .medir-localidad--propagador {
+  margin-bottom: 12px;
+}
+#tab-mediciones.medir-tab--propagador .medir-flow--germ-prop {
+  margin-top: 4px;
+}
+#tab-mediciones.medir-tab--propagador .medir-sala-pendiente-hint {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
 .hc-monitor-tareas-hint {
   font-size: 11px;
   line-height: 1.45;
@@ -22125,6 +22141,53 @@ html.hc-theme-dark .sala-propagador-puente {
 }
 html.hc-theme-dark .sala-propagador-puente-text {
   color: #fde68a;
+}
+.sala-cultivo-equip-mount--vista-min .sala-propagador-flujo-inner--min {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+.sala-propagador-status-banner {
+  margin: 0 0 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+.sala-propagador-status-banner--ok {
+  background: rgba(34, 139, 87, 0.12);
+  border: 1px solid rgba(34, 139, 87, 0.35);
+  color: var(--text, #1a3d2e);
+}
+html.hc-theme-dark .sala-propagador-status-banner--ok {
+  background: rgba(72, 187, 120, 0.12);
+  border-color: rgba(72, 187, 120, 0.35);
+  color: #d4ede0;
+}
+.sala-propagador-status-banner--pending {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.28);
+}
+html.hc-theme-dark .sala-propagador-status-banner--pending {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.35);
+}
+.sala-propagador-flujo-hint {
+  margin: 0 0 12px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-muted, #5c6570);
+}
+html.hc-theme-dark .sala-propagador-flujo-hint {
+  color: #a8b4c0;
+}
+.sala-cultivo-equip-mount--vista-min .sala-montaje-details--recomendado {
+  margin-top: 4px;
+}
+.sala-cultivo-equip-mount--vista-min .hc-pm-inline-config,
+.sala-cultivo-equip-mount--vista-min .hc-pm-inline-actions {
+  display: none;
 }
 .sala-equip-paso-badge,
 .sala-montaje-paso-badge {
