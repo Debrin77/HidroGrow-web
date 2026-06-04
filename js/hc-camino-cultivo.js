@@ -376,10 +376,22 @@
     }
   }
 
-  function hcSalaPreGermPermitida(cfg) {
+  function hcSalaPreGermPermitida(cfg, opts) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    opts = opts || {};
     var cam = getCaminoCultivo(cfg);
     if (cam === 'semilla_propagador') {
+      if (opts.duranteGerminacion) {
+        if (
+          typeof propagadorMontajeCompleto === 'function' &&
+          propagadorMontajeCompleto(cfg)
+        ) {
+          return true;
+        }
+        if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+          return true;
+        }
+      }
       return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     }
     return true;
@@ -544,10 +556,11 @@
     }
   }
 
-  function abrirSetupFaseSala() {
+  function abrirSetupFaseSala(opts) {
+    opts = opts || {};
     var cfg =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
-    if (!hcSalaPreGermPermitida(cfg)) {
+    if (!hcSalaPreGermPermitida(cfg, opts)) {
       if (typeof showToast === 'function') {
         showToast(
           'Completa las 6 fases en Inicio → Germinación antes de configurar la sala.',
@@ -585,11 +598,18 @@
     }
     if (typeof showToast === 'function') {
       showToast(
-        'Solo equipamiento de sala (carpa, LED, extractor). El fotoperiodo y el DWC/RDWC ya los definiste o irán después.',
+        opts.duranteGerminacion
+          ? 'Elige carpa, LED, extractor y deja el propagador dentro de la sala. Luego revisa el checklist en Sala.'
+          : 'Solo equipamiento de sala (carpa, LED, extractor). El fotoperiodo y el DWC/RDWC ya los definiste o irán después.',
         false,
         { durationMs: 6800 }
       );
     }
+  }
+
+  /** Inicio · propagador: abrir configurador de equipamiento de sala durante la germinación. */
+  function abrirConfiguradorEquipamientoSalaPropagador() {
+    abrirSetupFaseSala({ duranteGerminacion: true });
   }
 
   function abrirSetupFaseHidro() {
@@ -1073,6 +1093,7 @@
   global.depositoListo = depositoListo;
   global.persistCaminoToConfig = persistCaminoToConfig;
   global.abrirSetupFaseSala = abrirSetupFaseSala;
+  global.abrirConfiguradorEquipamientoSalaPropagador = abrirConfiguradorEquipamientoSalaPropagador;
   global.abrirSetupFaseHidro = abrirSetupFaseHidro;
   global.getSetupUltimoPasoIndice = getSetupUltimoPasoIndice;
   global.getSetupSkippedPagesForCamino = getSetupSkippedPagesForCamino;

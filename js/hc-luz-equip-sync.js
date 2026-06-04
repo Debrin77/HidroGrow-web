@@ -377,6 +377,132 @@
   global.applySalaMontajeRecomendadoUi = applySalaMontajeRecomendadoUi;
   global.toggleLuzOrigenManual = toggleLuzOrigenManual;
   global.tieneEquipLuzRelevante = tieneEquipLuzRelevante;
+
+  /** Equipamiento de sala + checklist de montaje listos (camino propagador). */
+  function salaEquipInicioCompleto(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {
+      return false;
+    }
+    if (typeof global.getCamposEquipamientoFaltantes === 'function') {
+      var falt = global.getCamposEquipamientoFaltantes(cfg);
+      if (falt && falt.length) return false;
+    }
+    if (typeof global.montajeSalaPreGermOk === 'function' && !global.montajeSalaPreGermOk(cfg)) {
+      return false;
+    }
+    return true;
+  }
+
+  /** 'equip' = falta configurador · 'montaje' = falta checklist físico */
+  function getSalaRecoPasoInicio(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {
+      return 'equip';
+    }
+    if (typeof global.getCamposEquipamientoFaltantes === 'function') {
+      var falt = global.getCamposEquipamientoFaltantes(cfg);
+      if (falt && falt.length) return 'equip';
+    }
+    if (typeof global.montajeSalaPreGermOk === 'function' && !global.montajeSalaPreGermOk(cfg)) {
+      return 'montaje';
+    }
+    return 'done';
+  }
+
+  function hcMostrarRecoEquipSalaInicio(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.getCaminoCultivo !== 'function') return false;
+    if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (
+      typeof global.hcTieneInstalacionesUsuario === 'function' &&
+      !global.hcTieneInstalacionesUsuario()
+    ) {
+      return false;
+    }
+    if (typeof global.hcRecargaCompletaAplicaEnCamino === 'function' && global.hcRecargaCompletaAplicaEnCamino(cfg)) {
+      return false;
+    }
+    if (typeof global.hcGerminacionActiva === 'function' && !global.hcGerminacionActiva(cfg)) {
+      return false;
+    }
+    return !salaEquipInicioCompleto(cfg);
+  }
+
+  function renderDashSalaEquipRecoBanner(cfg) {
+    var host = el('dashSalaEquipReco');
+    if (!host) return;
+    var show = hcMostrarRecoEquipSalaInicio(cfg);
+    host.classList.toggle('setup-hidden', !show);
+    if (!show) {
+      host.innerHTML = '';
+      return;
+    }
+    var paso = getSalaRecoPasoInicio(cfg);
+    var falt =
+      typeof global.getCamposEquipamientoFaltantes === 'function'
+        ? global.getCamposEquipamientoFaltantes(cfg)
+        : [];
+    var faltaTxt =
+      falt.length > 0
+        ? ' Falta en catálogo: <strong>' +
+          falt
+            .map(function (f) {
+              return f.label;
+            })
+            .join(', ') +
+          '</strong>.'
+        : '';
+    var onclick =
+      paso === 'montaje'
+        ? "typeof hcOpenPuestaMarchaChecklist==='function'&&hcOpenPuestaMarchaChecklist()"
+        : "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()";
+    var title =
+      paso === 'montaje'
+        ? 'Completa el checklist de montaje de sala'
+        : 'Configura el equipamiento de la sala de cultivo';
+    var text =
+      paso === 'montaje'
+        ? 'El equipamiento ya está registrado. Abre el <strong>checklist de montaje</strong> y marca lo que ya tienes montado en físico (LED, extractor, domo/propagador, ventilación). La pestaña Sala aparece al terminar la germinación.'
+        : 'Monta la sala con el <strong>propagador dentro</strong> (carpa, LED, extractor, domo…). Después completa el <strong>checklist de montaje</strong>. Mejora la germinación ahora.';
+    var cta = paso === 'montaje' ? 'Abrir checklist de montaje ›' : 'Abrir configurador ›';
+    var pasoHint =
+      paso === 'montaje'
+        ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
+        : '<span class="dash-sala-equip-reco-step">Paso 1 de 2 · equipamiento</span>';
+    host.innerHTML =
+      '<button type="button" class="dash-sala-equip-reco-btn" onclick="' +
+      onclick +
+      '">' +
+      '<span class="dash-sala-equip-reco-badge">RECOMENDADO</span>' +
+      pasoHint +
+      '<span class="dash-sala-equip-reco-title">' +
+      title +
+      '</span>' +
+      '<span class="dash-sala-equip-reco-text">' +
+      text +
+      faltaTxt +
+      '</span>' +
+      '<span class="dash-sala-equip-reco-cta">' +
+      cta +
+      '</span>' +
+      '</button>';
+  }
+
+  function refreshDashSalaEquipRecoBanner(cfg) {
+    try {
+      renderDashSalaEquipRecoBanner(cfg);
+    } catch (e) {
+      try {
+        console.warn('refreshDashSalaEquipRecoBanner', e);
+      } catch (_) {}
+    }
+  }
+
+  global.salaEquipInicioCompleto = salaEquipInicioCompleto;
+  global.getSalaRecoPasoInicio = getSalaRecoPasoInicio;
+  global.hcMostrarRecoEquipSalaInicio = hcMostrarRecoEquipSalaInicio;
+  global.refreshDashSalaEquipRecoBanner = refreshDashSalaEquipRecoBanner;
 })(
   typeof window !== 'undefined' ? window : this
 );

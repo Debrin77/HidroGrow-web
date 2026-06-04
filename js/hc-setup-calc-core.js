@@ -2466,6 +2466,9 @@ function guardarSetupYContinuarCore() {
   try {
     if (typeof hcMaybeOfferPuestaMarcha === 'function') hcMaybeOfferPuestaMarcha();
   } catch (_) {}
+  try {
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+  } catch (_) {}
   // Tras configurar: montaje de sala → cultivo → checklist depósito (orden estricto).
   if (typeof iniciarFlujoInstalacionPostSetup === 'function') {
     iniciarFlujoInstalacionPostSetup();

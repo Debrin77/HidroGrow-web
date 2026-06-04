@@ -14717,6 +14717,97 @@ html.hc-theme-dark .sala-montaje-prereq-title {
 html.hc-theme-dark .sala-montaje-prereq-warn {
   color: #fbbf24;
 }
+.dash-sala-equip-reco {
+  margin: 0 0 12px;
+}
+.dash-sala-equip-reco-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 14px 12px;
+  border: 2px solid rgba(180, 83, 9, 0.55);
+  border-radius: 14px;
+  background: linear-gradient(155deg, #fff7ed 0%, #fffdf9 45%, #fef3c7 100%);
+  box-shadow: 0 4px 14px rgba(180, 83, 9, 0.14);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+.dash-sala-equip-reco-btn:hover {
+  border-color: rgba(217, 119, 6, 0.75);
+  box-shadow: 0 6px 18px rgba(180, 83, 9, 0.22);
+  transform: translateY(-1px);
+}
+.dash-sala-equip-reco-btn:focus-visible {
+  outline: 2px solid #d97706;
+  outline-offset: 2px;
+}
+html.hc-theme-dark .dash-sala-equip-reco-btn {
+  border-color: rgba(251, 191, 36, 0.45);
+  background: linear-gradient(155deg, rgba(180, 83, 9, 0.22) 0%, rgba(20, 28, 23, 0.96) 55%);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+.dash-sala-equip-reco-step {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #b45309;
+  margin-bottom: 4px;
+}
+html.hc-theme-dark .dash-sala-equip-reco-step {
+  color: #fbbf24;
+}
+.dash-sala-equip-reco-badge {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 3px 10px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #92400e;
+  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 100%);
+  border-radius: 999px;
+  border: 1px solid rgba(180, 83, 9, 0.35);
+}
+html.hc-theme-dark .dash-sala-equip-reco-badge {
+  color: #fef3c7;
+  background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+}
+.dash-sala-equip-reco-title {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #78350f;
+  margin-bottom: 4px;
+}
+html.hc-theme-dark .dash-sala-equip-reco-title {
+  color: #fde68a;
+}
+.dash-sala-equip-reco-text {
+  display: block;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #92400e;
+  margin-bottom: 8px;
+}
+html.hc-theme-dark .dash-sala-equip-reco-text {
+  color: #fcd34d;
+}
+.dash-sala-equip-reco-cta {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #b45309;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+html.hc-theme-dark .dash-sala-equip-reco-cta {
+  color: #fbbf24;
+}
 .medir-grid-2-gap-8 {
   display: grid;
   grid-template-columns: 1fr 1fr;

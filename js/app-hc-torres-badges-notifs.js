@@ -315,6 +315,9 @@ function hcRefreshDashSinInstalacionUi() {
   if (opRow) opRow.classList.toggle('setup-hidden', !hay);
   if (lifecycle && !hay) lifecycle.classList.add('setup-hidden');
   if (rutina && !hay) rutina.classList.add('setup-hidden');
+  try {
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+  } catch (_) {}
 }
 
 // Inicializar sistema de torres (sin crear «Mi instalación» por defecto)

@@ -468,6 +468,7 @@
     if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
   }
 
   var _tabsHooked = false;

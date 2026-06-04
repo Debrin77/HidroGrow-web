@@ -785,6 +785,7 @@
     if (typeof renderIotPanel === 'function') renderIotPanel();
     if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen(cfg);
     if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
   }
 
   function refreshSistemaEquipResumen(cfg) {

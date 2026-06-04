@@ -1399,6 +1399,9 @@
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     } catch (_) {}
     try {
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+    } catch (_) {}
+    try {
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
       else if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     } catch (_) {}

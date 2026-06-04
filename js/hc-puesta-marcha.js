@@ -1406,6 +1406,9 @@
     }
     renderPuestaMarchaInlinePreview();
     try {
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+    } catch (_) {}
+    try {
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     } catch (_) {}

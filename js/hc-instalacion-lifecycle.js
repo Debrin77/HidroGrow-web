@@ -637,6 +637,7 @@
     } catch (_) {}
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
     var rutina = document.getElementById('dashRutinaDia');
     var pctEl = document.getElementById('dashInstLifecyclePct');
     var trackEl = document.getElementById('dashInstLifecycleTrack');
