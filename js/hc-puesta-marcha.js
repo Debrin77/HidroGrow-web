@@ -1301,7 +1301,7 @@
       var salaHost = document.getElementById('sistemaMontajeChecksBody');
       if (salaHost) {
         salaHost.innerHTML =
-          '<p class="hc-pm-inline-lead">Mismo bloque que en Inicio: <strong>configuración de sala</strong> en el asistente (sala + equipamiento + propagador con semillas) y checklist de montaje físico. Sin depósito DWC hasta tras germinar.</p>' +
+          '<p class="hc-pm-inline-lead">Primero <strong>configura la sala y el equipamiento</strong> (asistente o Sala). Después usa este <strong>checklist de montaje</strong> para verificar en físico LED, extractor, propagador, etc. Sin depósito DWC hasta tras germinar.</p>' +
           buildPuestaMarchaInlineHtml(
             cfg,
             getChecks(cfg),

@@ -194,8 +194,8 @@
     if (!hasEquip) {
       mount.innerHTML =
         '<p class="luz-origen-equip-empty">' +
-        'Aún no hay equipamiento de sala registrado. Configúralo en <strong>Sala → Checklist de montaje</strong> ' +
-        'y <strong>Equipamiento</strong> (o en el asistente). Después aparecerá aquí la luz y el domo que elegiste.</p>';
+        'Aún no hay equipamiento de sala registrado. Primero <strong>configura la sala y el equipamiento</strong> ' +
+        '(asistente o <strong>Sala → Equipamiento</strong>); después el checklist de montaje y aquí verás la luz y el domo que elegiste.</p>';
       if (manualWrap) manualWrap.classList.remove('luz-origen-manual-wrap--collapsed');
       if (manualLabel) manualLabel.classList.add('setup-hidden');
       return;
@@ -290,6 +290,41 @@
     return true;
   }
 
+  function renderSalaMontajePrerequisito(cfg) {
+    cfg = cfg || getCfg();
+    var host = el('salaMontajePrereqOrden');
+    if (!host) return;
+    var show = montajeRecomendadoAplica(cfg);
+    host.classList.toggle('setup-hidden', !show);
+    if (!show) {
+      host.innerHTML = '';
+      return;
+    }
+    var falt =
+      typeof global.getCamposEquipamientoFaltantes === 'function'
+        ? global.getCamposEquipamientoFaltantes(cfg)
+        : [];
+    var warn = '';
+    if (falt.length) {
+      warn =
+        '<p class="sala-montaje-prereq-warn">Falta registrar: <strong>' +
+        falt
+          .map(function (f) {
+            return f.label;
+          })
+          .join(', ') +
+        '</strong>. Sin eso el checklist será genérico y las guías no mostrarán tu marca/modelo.</p>';
+    }
+    host.innerHTML =
+      '<p class="sala-montaje-prereq-title">Orden recomendado</p>' +
+      '<ol class="sala-montaje-prereq-steps">' +
+      '<li><strong>Configuración de sala</strong> — ubicación, agua, dimensiones (asistente <em>Configurar sala</em> o <strong>Sala → Agua y ubicación</strong>).</li>' +
+      '<li><strong>Equipamiento</strong> — carpa, LED, extractor, propagador… (<strong>Sala → Equipamiento</strong> o paso del asistente).</li>' +
+      '<li><strong>Checklist de montaje</strong> — comprobar en físico lo que ya elegiste (pasos y mini-guías con tu modelo).</li>' +
+      '</ol>' +
+      warn;
+  }
+
   function applySalaMontajeRecomendadoUi(cfg) {
     cfg = cfg || getCfg();
     var det = el('sistemaMontajeChecksDetails');
@@ -305,10 +340,11 @@
       lead.classList.toggle('setup-hidden', !show);
       if (show) {
         lead.textContent =
-          'Montar la sala antes de germinar en el propagador mejora luz, clima y ventilación en esta etapa. ' +
-          'Al terminar la germinación, el traslado al hidro será más rápido porque gran parte del montaje ya estará hecho.';
+          'Montar la sala antes de germinar en el propagador mejora luz, clima y ventilación. ' +
+          'Al acabar la germinación, el traslado al hidro será más rápido si ya completaste los pasos 1 y 2 de abajo.';
       }
     }
+    renderSalaMontajePrerequisito(cfg);
 
     if (show && !det.open && !det.dataset.hcMontajeUserClosed) {
       var pm = cfg.puestaMarchaChecks;

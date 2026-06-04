@@ -14677,6 +14677,46 @@ html.hc-theme-dark .sala-montaje-reco-lead {
   color: #fde68a;
   border-left-color: #fbbf24;
 }
+.sala-montaje-prereq-orden {
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px dashed rgba(180, 83, 9, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+}
+html.hc-theme-dark .sala-montaje-prereq-orden {
+  background: rgba(20, 28, 23, 0.5);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+.sala-montaje-prereq-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 6px;
+  color: #92400e;
+}
+html.hc-theme-dark .sala-montaje-prereq-title {
+  color: #fde68a;
+}
+.sala-montaje-prereq-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: var(--text-sm, 13px);
+  line-height: 1.45;
+  color: var(--text, #1f2937);
+}
+.sala-montaje-prereq-steps li + li {
+  margin-top: 4px;
+}
+.sala-montaje-prereq-warn {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #b45309;
+}
+html.hc-theme-dark .sala-montaje-prereq-warn {
+  color: #fbbf24;
+}
 .medir-grid-2-gap-8 {
   display: grid;
   grid-template-columns: 1fr 1fr;
