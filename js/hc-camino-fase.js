@@ -536,6 +536,9 @@
         }
       } catch (_) {}
     }
+    try {
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+    } catch (_) {}
   }
 
   function hcOcultarTabSalaDuranteGerm(cfg) {

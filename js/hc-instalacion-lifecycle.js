@@ -239,17 +239,29 @@
             etapa: 'hidro_config',
           };
         }
-        if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
-          if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+          return {
+            label: 'Configurar equipamiento de sala',
+            action: 'abrirSetupFaseSala',
+            etapa: 'sala_config',
+          };
+        }
+        if (typeof getCamposEquipamientoFaltantes === 'function') {
+          var faltEqSala = getCamposEquipamientoFaltantes(cfg);
+          if (faltEqSala && faltEqSala.length) {
             return {
-              label: 'Configurar sala (opcional)',
+              label: 'Completar equipamiento de sala',
               action: 'abrirSetupFaseSala',
               etapa: 'sala_config',
             };
           }
-          if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
-            return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
-          }
+        }
+        if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+          return {
+            label: 'Checklist montaje de sala',
+            action: 'irMontaje',
+            etapa: 'sala_montaje',
+          };
         }
         return {
           label: 'Registro diario · propagador',

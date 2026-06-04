@@ -694,8 +694,35 @@
     return false;
   }
 
+  /**
+   * Inicio · propagador: mostrar aviso mientras falte equipamiento de sala o checklist de montaje.
+   * (Tras guardar el configurador el paso pasa a «montaje» — antes el banner desaparecía por error.)
+   */
+  function hcPropagadorPendienteSalaEnInicio(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.getCaminoCultivo !== 'function') return false;
+    if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (
+      typeof global.hcTieneInstalacionesUsuario === 'function' &&
+      !global.hcTieneInstalacionesUsuario()
+    ) {
+      return false;
+    }
+    if (typeof global.hcRecargaCompletaAplicaEnCamino === 'function' && global.hcRecargaCompletaAplicaEnCamino(cfg)) {
+      return false;
+    }
+    if (
+      typeof global.propagadorMontajeCompleto === 'function' &&
+      !global.propagadorMontajeCompleto(cfg)
+    ) {
+      return false;
+    }
+    var paso = getSalaRecoPasoInicio(cfg);
+    return paso === 'equip' || paso === 'montaje';
+  }
+
   function hcMostrarRecoEquipSalaInicio(cfg) {
-    return hcFaltaConfigurarSalaEquipPropagador(cfg);
+    return hcPropagadorPendienteSalaEnInicio(cfg);
   }
 
   function renderDashSalaEquipRecoBanner(cfg) {
@@ -724,17 +751,17 @@
         : '';
     var onclick =
       paso === 'montaje'
-        ? "typeof hcOpenPuestaMarchaChecklist==='function'&&hcOpenPuestaMarchaChecklist()"
+        ? "typeof hcIrMontajeSala==='function'&&hcIrMontajeSala()"
         : "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()";
     var title =
       paso === 'montaje'
-        ? 'Completa el checklist de montaje de sala'
+        ? 'Checklist de montaje de sala (con guías)'
         : 'Configura el equipamiento de la sala de cultivo';
     var text =
       paso === 'montaje'
-        ? 'El equipamiento ya está en el configurador. En <strong>Sala → Paso 2</strong> abre el checklist y marca lo montado en físico (LED, extractor, ventilación, domo…).'
-        : 'En <strong>Sala</strong>: primero el <strong>configurador</strong> (carpa, LED, extractor, propagador dentro de la sala); después el <strong>checklist de montaje</strong>. Mejora la germinación ahora.';
-    var cta = paso === 'montaje' ? 'Abrir checklist de montaje ›' : 'Abrir configurador ›';
+        ? 'Equipamiento guardado. En <strong>Sala → Checklist de montaje</strong> marca cada punto en físico; en cada tarjeta abre la <strong>guía paso a paso</strong> (carpa, LED, extractor…). El circuito <strong>DWC/RDWC</strong> solo después de la germinación.'
+        : 'En <strong>Sala</strong>: primero el <strong>configurador</strong> (carpa, LED, extractor, propagador en la sala); después el <strong>checklist de montaje</strong> con sus guías.';
+    var cta = paso === 'montaje' ? 'Ir al checklist en Sala ›' : 'Abrir configurador ›';
     var pasoHint =
       paso === 'montaje'
         ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
@@ -779,6 +806,7 @@
   global.salaEquipInicioCompleto = salaEquipInicioCompleto;
   global.getSalaRecoPasoInicio = getSalaRecoPasoInicio;
   global.hcFaltaConfigurarSalaEquipPropagador = hcFaltaConfigurarSalaEquipPropagador;
+  global.hcPropagadorPendienteSalaEnInicio = hcPropagadorPendienteSalaEnInicio;
   global.hcMostrarRecoEquipSalaInicio = hcMostrarRecoEquipSalaInicio;
   global.refreshDashSalaEquipRecoBanner = refreshDashSalaEquipRecoBanner;
 })(
