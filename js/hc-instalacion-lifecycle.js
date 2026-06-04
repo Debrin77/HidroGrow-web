@@ -19,7 +19,12 @@
   function instalacionEstaConfigurada(cfg) {
     if (!cfg || typeof cfg !== 'object') return false;
     if (cfg.hcPlantillaAutogenerada) return false;
-    if (cfg.hcSetupFase === 'germinacion' && cfg.caminoCultivo) return true;
+    var cam =
+      cfg.caminoCultivo ||
+      (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+      '';
+    if (cam === 'semilla_propagador') return true;
+    if (cfg.hcSetupFase === 'germinacion' && cam) return true;
     if (cfg.checklistInstalacionConfirmada === true) return true;
     if (
       typeof checklistInstalacionCompletaParaRecarga === 'function' &&

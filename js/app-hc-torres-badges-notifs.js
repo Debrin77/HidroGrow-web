@@ -167,6 +167,10 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
 }
 
 function emojiMigracionPorTipoInstalacion(cfg) {
+  const cam =
+    cfg &&
+    (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '');
+  if (cam === 'semilla_propagador') return '🫧';
   const tipo = cfg && cfg.tipoInstalacion ? tipoInstalacionNormalizado(cfg) : '';
   if (typeof emojiSistemaPorTipo === 'function') return emojiSistemaPorTipo(tipo || 'dwc');
   if (!tipo) return '🫧';
@@ -200,14 +204,16 @@ function hcEsSlotInstalacionFantasma(t) {
       (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
       '');
   if (cam === 'semilla_propagador') {
-    if (cfg.salaPreGermConfigAt) return false;
-    if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return false;
-    if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return false;
-    const g = cfg.germinacionFlow || {};
-    if (String(g.variedadId || g.variedad || '').trim()) return false;
-    if (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) return false;
-    if (hcTorreTienePlantasAsignadas(t.torre)) return false;
-    return true;
+    if (cfg.hcPlantillaAutogenerada && !hcTorreTienePlantasAsignadas(t.torre)) {
+      const g = cfg.germinacionFlow || {};
+      const prem = cfg.premiumSetup || {};
+      const tienePlan =
+        String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim() ||
+        (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) ||
+        (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1);
+      if (!tienePlan && !cfg.salaPreGermConfigAt && !cfg.propagadorMontajeChecks) return true;
+    }
+    return false;
   }
   if (cfg && cfg.checklistInstalacionConfirmada === true) return false;
   if (cfg && cfg.nutriente && !cfg.hcPlantillaAutogenerada) return false;
@@ -232,9 +238,56 @@ function hcLegacyMereceMigrarASlot(cfg, st) {
     if (st && hcTorreTienePlantasAsignadas(st.torre)) return true;
     return false;
   }
+  const cam =
+    cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
+  if (cam === 'semilla_propagador') return true;
+  if (cfg.hcSetupFase === 'germinacion' && cam) return true;
+  if (cfg.germinacionFlow && typeof cfg.germinacionFlow === 'object') return true;
+  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;
   if (cfg.nutriente) return true;
   return false;
+}
+
+/** Crea `state.torres[0]` desde config guardada si el camino propagador no tenía ranura. */
+function hcAsegurarSlotInstalacionDesdeConfig() {
+  if (!state || typeof state !== 'object') return;
+  if (!Array.isArray(state.torres)) state.torres = [];
+  if (state.torres.some((t) => !hcEsSlotInstalacionFantasma(t))) return;
+  const cfg = state.configTorre;
+  if (!cfg || typeof cfg !== 'object') return;
+  if (typeof hidrogrowInstalacionPersistible === 'function' && !hidrogrowInstalacionPersistible(state)) {
+    return;
+  }
+  const cam =
+    (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
+    cfg.caminoCultivo ||
+    (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+    '';
+  const nom =
+    String(cfg.nombreTorre || cfg.nombreInstalacion || '').trim() ||
+    (cam === 'semilla_propagador' ? 'Germinación · propagador' : 'Mi instalación');
+  state.torres = [
+    {
+      id: cfg.id || Date.now(),
+      nombre: nom,
+      emoji: emojiMigracionPorTipoInstalacion(cfg),
+      config: hcClonePlainData(cfg, null),
+      torre: hcClonePlainData(state.torre, []),
+      modoActual: modoActual || 'vegetativo',
+      mediciones: hcClonePlainData(state.mediciones, []),
+      registro: hcClonePlainData(state.registro, []),
+      ultimaMedicion: state.ultimaMedicion ? { ...state.ultimaMedicion } : null,
+      ultimaRecarga: state.ultimaRecarga ?? null,
+      recargaSnoozeHasta: state.recargaSnoozeHasta ?? null,
+      notifOpciones: { recarga: false, medicion: false, cosecha: false, esquejes: false },
+      fotosSistemaCompleto: hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] }),
+    },
+  ];
+  state.torreActiva = 0;
+  try {
+    if (typeof saveState === 'function') saveState();
+  } catch (_) {}
 }
 
 function hcMigrarLegacyTorresSiProcede() {
@@ -251,11 +304,16 @@ function hcMigrarLegacyTorresSiProcede() {
     }
     return;
   }
-  if (!hcLegacyMereceMigrarASlot(state.configTorre, state)) return;
+  if (!hcLegacyMereceMigrarASlot(state.configTorre, state)) {
+    hcAsegurarSlotInstalacionDesdeConfig();
+    return;
+  }
   const cfg = state.configTorre;
+  const camLegacy =
+    (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') || '';
   const nomLegacy =
     (cfg && String(cfg.nombreInstalacion || cfg.nombreTorre || '').trim()) ||
-    '';
+    (camLegacy === 'semilla_propagador' ? 'Germinación · propagador' : '');
   state.torres = [
     {
       id: Date.now(),
@@ -278,7 +336,12 @@ function hcMigrarLegacyTorresSiProcede() {
 }
 
 function hcTieneInstalacionesUsuario() {
-  if (!Array.isArray(state.torres) || !state.torres.length) return false;
+  if (!state || typeof state !== 'object') return false;
+  if (!Array.isArray(state.torres)) state.torres = [];
+  if (!state.torres.length && typeof hcAsegurarSlotInstalacionDesdeConfig === 'function') {
+    hcAsegurarSlotInstalacionDesdeConfig();
+  }
+  if (!state.torres.length) return false;
   return state.torres.some((t) => !hcEsSlotInstalacionFantasma(t));
 }
 
@@ -313,9 +376,54 @@ function hcPrepararEstadoSinInstalacionEnMemoria() {
   } catch (_) {}
 }
 
+function hcCopyDashSinInstalacion(cfg) {
+  cfg = cfg || (state && state.configTorre) || {};
+  let cam = '';
+  try {
+    if (typeof getCaminoCultivo === 'function') cam = getCaminoCultivo(cfg) || '';
+  } catch (_) {}
+  if (!cam && cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) {
+    cam = cfg.premiumSetup.caminoCultivo;
+  }
+  if (!cam) {
+    try {
+      const stored = localStorage.getItem('hc_bienvenida_v2026_7_camino');
+      if (stored) cam = stored;
+    } catch (_) {}
+  }
+  if (cam === 'semilla_propagador') {
+    return {
+      label: 'Germinación en propagador',
+      lead: 'Configura tu propagador, genética y plan de semillas con el asistente.',
+      btn: 'Configurar propagador',
+    };
+  }
+  if (cam === 'semilla_hidro') {
+    return {
+      label: 'Instalación seleccionada',
+      lead: 'Configura germinación en hidro y tu sistema con el asistente.',
+      btn: 'Configurar instalación',
+    };
+  }
+  return {
+    label: 'Instalación seleccionada',
+    lead: 'Configura tu primer DWC o RDWC con el asistente.',
+    btn: 'Configurar instalación',
+  };
+}
+
 function hcAbrirPrimeraInstalacion() {
+  const copy = hcCopyDashSinInstalacion();
   if (typeof abrirSetupNuevaTorre === 'function') {
     abrirSetupNuevaTorre();
+    try {
+      if (
+        copy.btn === 'Configurar propagador' &&
+        typeof seleccionarCaminoCultivo === 'function'
+      ) {
+        seleccionarCaminoCultivo('semilla_propagador');
+      }
+    } catch (_) {}
     return;
   }
   if (typeof abrirSetup === 'function') abrirSetup();
@@ -326,12 +434,23 @@ function hcRefreshDashSinInstalacionUi() {
   const banner = document.getElementById('dashTorreBanner');
   const label = document.getElementById('dashInstalacionLabel');
   const cta = document.getElementById('dashSinInstalacionCta');
+  const leadEl = document.getElementById('dashSinInstalacionLead');
+  const btnEl = cta && cta.querySelector('.dash-sin-instalacion-btn');
   const opRow = document.querySelector('.dash-operativa-row');
   const lifecycle = document.getElementById('dashInstalacionLifecycle');
   const rutina = document.getElementById('dashRutinaDia');
+  const copy = hcCopyDashSinInstalacion();
   if (banner) banner.classList.toggle('setup-hidden', !hay);
-  if (label) label.classList.toggle('setup-hidden', !hay);
+  if (label) {
+    label.classList.toggle('setup-hidden', !hay);
+    if (hay) label.textContent = 'Instalación seleccionada';
+    else label.textContent = copy.label;
+  }
   if (cta) cta.classList.toggle('setup-hidden', hay);
+  if (!hay) {
+    if (leadEl) leadEl.textContent = copy.lead;
+    if (btnEl) btnEl.textContent = copy.btn;
+  }
   const cfgDashUi = state.configTorre || {};
   const ocultarOpPropag =
     typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDashUi);
@@ -377,6 +496,9 @@ function initTorres() {
     }
   });
   if (idsReparados || emojisMigrados) saveState();
+  if (typeof hcAsegurarSlotInstalacionDesdeConfig === 'function') {
+    hcAsegurarSlotInstalacionDesdeConfig();
+  }
   if (typeof normalizarNotifOpcionesEnState === 'function') normalizarNotifOpcionesEnState(state);
 }
 
