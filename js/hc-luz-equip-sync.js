@@ -323,6 +323,7 @@
     var montajeDet = el('sistemaMontajeChecksDetails');
     var puente = el('salaPropagadorPuenteMontaje');
     var tabShell = document.querySelector('#tab-sala .sala-sub-shell');
+    var subTabs = el('salaSubTabs');
     var hint = el('tabContextHintSala');
     var intro = document.querySelector('#tab-sala .medir-sala-intro');
     var eqBadge = el('salaEquipPasoBadge');
@@ -332,12 +333,15 @@
     var prereq = el('salaMontajePrereqOrden');
 
     if (mount) mount.classList.toggle('sala-cultivo-equip-mount--vista-min', activa);
+    var tabSala = el('tab-sala');
+    if (tabSala) tabSala.classList.toggle('sala-tab--propagador-focus', activa);
 
     if (!activa) {
       if (equipDet) equipDet.classList.remove('setup-hidden');
       if (montajeDet) montajeDet.classList.remove('setup-hidden');
       if (puente) puente.classList.remove('setup-hidden');
       if (tabShell) tabShell.classList.remove('setup-hidden');
+      if (subTabs) subTabs.classList.remove('setup-hidden');
       if (hint) hint.classList.remove('setup-hidden');
       if (intro) intro.classList.remove('setup-hidden');
       return;
@@ -349,7 +353,17 @@
     }
     if (hint) hint.classList.add('setup-hidden');
     if (intro) intro.classList.add('setup-hidden');
-    if (tabShell) tabShell.classList.add('setup-hidden');
+    if (typeof global.ensureSalaCultivoEquipMountEnTabRoot === 'function') {
+      global.ensureSalaCultivoEquipMountEnTabRoot();
+    }
+    if (tabShell) tabShell.classList.remove('setup-hidden');
+    if (subTabs) subTabs.classList.add('setup-hidden');
+    var panelAgua = el('salaPanelAgua');
+    if (panelAgua) {
+      panelAgua.classList.remove('setup-hidden');
+      panelAgua.setAttribute('aria-hidden', 'false');
+    }
+    if (mount) mount.classList.remove('setup-hidden');
     if (eqBadge) eqBadge.classList.add('setup-hidden');
     if (moBadge) moBadge.classList.add('setup-hidden');
     if (recoBadge) recoBadge.classList.add('setup-hidden');
@@ -457,6 +471,9 @@
         }
       } else if (paso === 'equip') {
         host.classList.remove('setup-hidden');
+        var propOk =
+          typeof global.propagadorMontajeCompleto === 'function' &&
+          global.propagadorMontajeCompleto(cfg);
         var faltaEquip =
           falt.length > 0
             ? ' Falta: <strong>' +
@@ -469,6 +486,11 @@
             : '';
         host.innerHTML =
           '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
+          (propOk
+            ? '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
+              '✓ <strong>Propagador verificado.</strong> Siguiente paso: equipamiento de la sala.' +
+              '</p>'
+            : '') +
           '<p class="sala-propagador-status-banner sala-propagador-status-banner--pending" role="note">' +
           'Configura carpa, LED, extractor y medidas en el <strong>configurador de sala</strong>.' +
           faltaEquip +

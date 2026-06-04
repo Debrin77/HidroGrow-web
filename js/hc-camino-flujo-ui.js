@@ -514,9 +514,11 @@
     } catch (_) {}
   }
 
-  function refreshTabsOperativaCamino() {
+  function refreshTabsOperativaCamino(opts) {
+    opts = opts || {};
     var cfg = cfgActiva();
     aplicarVisibilidadTabsCamino(cfg);
+    if (opts.visibilidadOnly) return;
 
     ensureOperativaBanner(
       'propagadorSalaOcultaBanner',

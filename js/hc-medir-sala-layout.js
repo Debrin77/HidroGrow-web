@@ -252,6 +252,24 @@
     });
   }
 
+  /**
+   * El bloque equipamiento/montaje debe verse aunque el sub-shell Agua/IoT esté oculto (camino propagador).
+   */
+  function ensureSalaCultivoEquipMountEnTabRoot() {
+    var equipMount = document.getElementById('salaCultivoEquipMount');
+    var tab = document.getElementById('tab-sala');
+    if (!equipMount || !tab) return;
+    equipMount.classList.remove('setup-hidden');
+    equipMount.removeAttribute('aria-hidden');
+    if (equipMount.parentNode === tab) return;
+    var anchor = document.getElementById('tabSalaMount');
+    if (anchor && anchor.parentNode === tab) {
+      tab.insertBefore(equipMount, anchor);
+    } else {
+      tab.appendChild(equipMount);
+    }
+  }
+
   function buildSalaSubTabs() {
     var mount = document.getElementById('tabSalaMount');
     if (!mount || document.getElementById('salaSubTabs')) return;
@@ -572,6 +590,9 @@
       refreshSalaEquipMontaje();
       refreshSistemaCultivoExtras();
       if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+      if (typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
+        ensureSalaCultivoEquipMountEnTabRoot();
+      }
       if (typeof refreshMedirGerminacionUi === 'function') {
         refreshMedirGerminacionUi();
       }
@@ -607,6 +628,7 @@
   window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
   window.repositionMedirGuiaDiaTop = repositionMedirGuiaDiaTop;
+  window.ensureSalaCultivoEquipMountEnTabRoot = ensureSalaCultivoEquipMountEnTabRoot;
 
   function scheduleInitMedirSalaLayout() {
     if (typeof window !== 'undefined' && window._hcMedirSalaLayoutDone) return;

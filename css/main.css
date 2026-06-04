@@ -22189,6 +22189,12 @@ html.hc-theme-dark .sala-propagador-flujo-hint {
 .sala-cultivo-equip-mount--vista-min .hc-pm-inline-actions {
   display: none;
 }
+#tab-sala .sala-cultivo-equip-mount {
+  margin-bottom: 12px;
+}
+#tab-sala.sala-tab--propagador-focus .sala-sub-tabs {
+  display: none;
+}
 .sala-equip-paso-badge,
 .sala-montaje-paso-badge {
   display: inline-block;
