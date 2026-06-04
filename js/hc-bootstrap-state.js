@@ -21,6 +21,8 @@ let state = null; // se inicializa después
 /** Elimina copias antiguas (HidroCultivo / v1) — no se importan al estado actual. */
 function hidrogrowPurgarStorageLegacySilencioso() {
   try {
+    if (typeof window !== 'undefined' && window._hcLegacyStoragePurgado) return;
+    if (typeof window !== 'undefined') window._hcLegacyStoragePurgado = true;
     localStorage.removeItem('hidrogrow_v1');
     localStorage.removeItem('cultiva_v1');
   } catch (_) {}
@@ -393,8 +395,18 @@ function loadState() {
         return initState();
       }
       let legacyPersist = false;
-      if (typeof hidrogrowMigrarStateCompleto === 'function') {
+      var migKey = 'hc_state_migrated_' + (typeof APP_BUILD_VERSION !== 'undefined' ? APP_BUILD_VERSION : '0');
+      var yaMigrado = false;
+      try {
+        yaMigrado = sessionStorage.getItem(migKey) === '1';
+      } catch (_) {}
+      if (!yaMigrado && typeof hidrogrowMigrarStateCompleto === 'function') {
         legacyPersist = !!hidrogrowMigrarStateCompleto(s);
+        if (legacyPersist) {
+          try {
+            sessionStorage.setItem(migKey, '1');
+          } catch (_) {}
+        }
       }
       if (s.configTorre && hidrogrowRepararConfigPropagadorMigrada(s.configTorre)) {
         legacyPersist = true;

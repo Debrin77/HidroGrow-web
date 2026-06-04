@@ -8,11 +8,25 @@
 
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js?v=2026-05-31-pin-fix')
-      .then(reg => console.log('[HidroGrow] SW registrado:', reg.scope))
-      .catch(err => console.warn('[HidroGrow] SW error:', err));
-  });
+  var hcRegisterSw = function () {
+    navigator.serviceWorker
+      .register('service-worker.js?v=2026-05-31-pin-fix')
+      .then(function (reg) {
+        try {
+          console.log('[HidroGrow] SW registrado:', reg.scope);
+        } catch (_) {}
+      })
+      .catch(function (err) {
+        try {
+          console.warn('[HidroGrow] SW error:', err);
+        } catch (_) {}
+      });
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(hcRegisterSw, { timeout: 12000 });
+  } else {
+    window.addEventListener('load', hcRegisterSw);
+  }
 }
 
 /** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalación es manual. */
@@ -66,10 +80,10 @@ window.addEventListener('appinstalled', () => {
 
 function hcSplashMinVisibleMs() {
   try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 450;
-    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 500;
+    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 200;
+    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 280;
   } catch (_) {}
-  return 900;
+  return 500;
 }
 const splashShownAtMs = Date.now();
 
@@ -89,7 +103,7 @@ async function waitSplashMinimumVisible() {
 }
 
 // Failsafe para WebView: evita splash infinito si window.onload no llega.
-setTimeout(hideSplash, 6000);
+setTimeout(hideSplash, 3500);
 
 function hcBindPinScreenListeners() {
   document.querySelectorAll('.pin-key[data-digit]').forEach(function (key) {
