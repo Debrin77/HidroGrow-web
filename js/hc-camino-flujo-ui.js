@@ -286,8 +286,11 @@
     }
     var sub = el('setupPremiumClimaSubtitle');
     if (sub && show) {
+      sub.classList.remove('setup-hidden');
       sub.textContent = 'Fotoperiodo bajo domo; la EC de la bandeja la defines arriba con tu abono.';
     }
+    var nutSec = el('setupPremiumNutrienteGermSection');
+    if (nutSec && show) nutSec.classList.remove('setup-hidden');
     if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
   }
 

@@ -10066,6 +10066,16 @@ html.hc-theme-dark .hc-germ-prop-hint {
 #spagePremium3.hc-germ-ahora-page .equip-catalog-group-hint {
   display: none !important;
 }
+#spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSection {
+  display: block !important;
+}
+#spagePremium4.hc-prop-nutriente-page #setupPremiumNutrienteGermSelectWrap,
+#spagePremium4.hc-prop-nutriente-page #nutrientesGridPremiumGerm {
+  display: block;
+}
+#spagePremium4.hc-prop-nutriente-page .setup-subtitle#setupPremiumClimaSubtitle {
+  margin-top: 8px;
+}
 #setupPremiumGermAhoraHost .setup-block-title {
   font-size: 14px;
   margin-top: 4px;

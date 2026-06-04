@@ -43,11 +43,22 @@
   }
 
   function isPremiumNutrienteGermActivo(cfg) {
-    if (caminoUsaNutrienteBandejaPropagador(cfg)) return true;
-    return (
+    if (
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()
-    );
+    ) {
+      return true;
+    }
+    if (
+      typeof setupPagina !== 'undefined' &&
+      typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
+      setupPagina === SETUP_PAGE_PREMIUM_4 &&
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(cfg) === 'semilla_propagador'
+    ) {
+      return true;
+    }
+    return caminoUsaNutrienteBandejaPropagador(cfg);
   }
 
   function getNutrienteGermIdFromCfg(cfg) {
@@ -247,7 +258,11 @@
     var p = ensurePremiumNutrienteGermFields();
     var vol = getPremiumNutrienteGermVolL();
     p.nutrienteGermVolL = vol;
-    if (typeof setupNutriente !== 'undefined' && setupNutriente) {
+    var selDrop = el('setupPremiumNutrienteGermSelect');
+    if (selDrop && selDrop.value) {
+      p.nutrienteGerm = String(selDrop.value).trim();
+      if (typeof setupNutriente !== 'undefined') setupNutriente = p.nutrienteGerm;
+    } else if (typeof setupNutriente !== 'undefined' && setupNutriente) {
       p.nutrienteGerm = setupNutriente;
     }
   }
@@ -264,31 +279,113 @@
     if (!Number.isFinite(vol) || vol <= 0) p.nutrienteGermVolL = VOL_BANDEJA_DEFAULT;
     var inp = el('setupPremiumNutrienteGermVolL');
     if (inp) inp.value = String(p.nutrienteGermVolL);
+    var selDrop = el('setupPremiumNutrienteGermSelect');
+    if (selDrop) selDrop.value = nid;
+  }
+
+  function renderNutrienteCardHtmlGerm(n, opts) {
+    opts = opts || {};
+    var selectedId = opts.selectedId != null ? opts.selectedId : 'canna_aqua';
+    var onSelect = opts.onSelect || 'selNutrientePremiumGerm';
+    var cardId = (opts.idPrefix || 'nut-prem-') + n.id;
+    return (
+      '<button type="button" class="nutriente-card ' +
+      (n.id === selectedId ? 'selected' : '') +
+      '" id="' +
+      cardId +
+      '" data-nut-id="' +
+      n.id +
+      '" onclick="' +
+      onSelect +
+      "('" +
+      n.id +
+      '\')" aria-pressed="' +
+      (n.id === selectedId ? 'true' : 'false') +
+      '">' +
+      '<span class="nutriente-nombre">' +
+      esc(n.nombre || n.id) +
+      '</span>' +
+      '<span class="nutriente-detalle">' +
+      esc(n.detalle || '') +
+      '</span></button>'
+    );
+  }
+
+  function renderPremiumNutrienteGermSelect() {
+    var wrap = el('setupPremiumNutrienteGermSelectWrap');
+    if (!wrap) return;
+    var list = getListaNutrientesPremiumGerm();
+    if (!list.length && Array.isArray(NUTRIENTES_DB)) {
+      list = filtrarNutrientesGermLista(
+        NUTRIENTES_DB.filter(function (n) {
+          return n && n.top_es;
+        })
+      );
+    }
+    var sel =
+      typeof setupNutriente !== 'undefined' && setupNutriente
+        ? setupNutriente
+        : ensurePremiumNutrienteGermFields().nutrienteGerm || 'canna_aqua';
+    var opts = list
+      .map(function (n) {
+        return (
+          '<option value="' +
+          esc(n.id) +
+          '"' +
+          (n.id === sel ? ' selected' : '') +
+          '>' +
+          esc(n.nombre || n.id) +
+          '</option>'
+        );
+      })
+      .join('');
+    wrap.innerHTML =
+      '<label class="setup-field-label" for="setupPremiumNutrienteGermSelect">Línea de abono (veg / A+B) <span class="setup-required-tag">obligatorio</span></label>' +
+      '<select id="setupPremiumNutrienteGermSelect" class="setup-input-city setup-mb-8" onchange="typeof onPremiumNutrienteGermSelectChange===\'function\'&&onPremiumNutrienteGermSelectChange()">' +
+      opts +
+      '</select>';
+    wrap.classList.remove('setup-hidden');
+  }
+
+  function onPremiumNutrienteGermSelectChange() {
+    var sel = el('setupPremiumNutrienteGermSelect');
+    if (!sel || !sel.value) return;
+    selNutrientePremiumGerm(sel.value);
+    persistPremiumNutrienteGermFromUI();
   }
 
   function renderNutrientesGridPremiumGerm() {
     var grid = el('nutrientesGridPremiumGerm');
-    if (!grid || typeof renderNutrienteCardHtml !== 'function') return;
+    if (!grid) return;
     var list = getListaNutrientesPremiumGerm();
     var sel =
       typeof setupNutriente !== 'undefined' && setupNutriente
         ? setupNutriente
         : ensurePremiumNutrienteGermFields().nutrienteGerm || 'canna_aqua';
-    grid.innerHTML = list
-      .map(function (n) {
-        return renderNutrienteCardHtml(n, {
-          selectedId: sel,
-          idPrefix: 'nut-prem-',
-          onSelect: 'selNutrientePremiumGerm',
-        });
-      })
-      .join('');
+    var renderCard =
+      typeof renderNutrienteCardHtml === 'function' ? renderNutrienteCardHtml : renderNutrienteCardHtmlGerm;
+    if (!list.length) {
+      grid.innerHTML =
+        '<p class="setup-field-hint">Usa el desplegable de arriba para elegir el abono.</p>';
+    } else {
+      grid.innerHTML = list
+        .map(function (n) {
+          return renderCard(n, {
+            selectedId: sel,
+            idPrefix: 'nut-prem-',
+            onSelect: 'selNutrientePremiumGerm',
+          });
+        })
+        .join('');
+    }
     var toggle = el('nutrientesToggleCatalogoPremiumGerm');
     if (toggle) {
       toggle.textContent = _nutrientesCatalogoCompletoGerm
         ? 'Ver top 10 España'
         : 'Ver catálogo completo';
+      toggle.classList.toggle('setup-hidden', list.length < 4);
     }
+    renderPremiumNutrienteGermSelect();
   }
 
   function renderPremiumNutrienteGermEcBanner() {
@@ -455,16 +552,20 @@
   function refreshPremiumNutrienteGermSection() {
     var sec = el('setupPremiumNutrienteGermSection');
     var show = isPremiumNutrienteGermActivo(getCfgNutriente());
-    if (sec) sec.classList.toggle('setup-hidden', !show);
+    if (sec) {
+      sec.classList.toggle('setup-hidden', !show);
+      if (show) sec.classList.remove('setup-hidden');
+    }
     if (!show) return;
     syncPremiumNutrienteGermFromConfig();
+    renderPremiumNutrienteGermSelect();
     renderPremiumNutrienteGermEcBanner();
     renderNutrientesGridPremiumGerm();
     renderPremiumNutrienteGermDosis();
     var hint = el('setupPremiumNutrienteGermHint');
     if (hint) {
       hint.textContent =
-        'Elige el abono (líneas veg / A+B) para preparar la solución de la bandeja y acercar la EC al rango del propagador.';
+        'Elige el abono (desplegable o tarjetas) para la solución de la bandeja (~2–3 mm de agua con nutriente en el domo).';
     }
   }
 
@@ -472,6 +573,8 @@
     if (typeof setupNutriente !== 'undefined') setupNutriente = id;
     var p = ensurePremiumNutrienteGermFields();
     p.nutrienteGerm = id;
+    var selDrop = el('setupPremiumNutrienteGermSelect');
+    if (selDrop && selDrop.value !== id) selDrop.value = id;
     document.querySelectorAll('.nutriente-card[data-nut-id]').forEach(function (c) {
       var match = c.getAttribute('data-nut-id') === id;
       c.classList.toggle('selected', match);
@@ -567,5 +670,6 @@
   global.selNutrientePremiumGerm = selNutrientePremiumGerm;
   global.toggleNutrientesCatalogoPremiumGerm = toggleNutrientesCatalogoPremiumGerm;
   global.onPremiumNutrienteGermVolChange = onPremiumNutrienteGermVolChange;
+  global.onPremiumNutrienteGermSelectChange = onPremiumNutrienteGermSelectChange;
   global.renderPremiumNutrienteGermDosis = renderPremiumNutrienteGermDosis;
 })();
