@@ -64,34 +64,18 @@ function updateDashboard() {
     actualizarAvisoCestasSinFecha();
   }
 
-  // Meteo en Inicio: solo instalaciones con circuito hidro / exterior (no propagador en fase domo)
-  const soloPropagDash =
-    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDash);
-  if (!soloPropagDash) {
-    try {
-      applyInicioAmbienteExteriorVisibility();
-    } catch (_) {}
-    const intDash =
-      typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfgDash);
-    if (!intDash) {
-      fetchMeteoAlert();
-    }
-  }
-
   try { refreshUbicacionInstalacionUI(); } catch (_) {}
 
   try {
     actualizarQuickActionsNoviceMode();
   } catch (_) {}
 
-  if (!soloPropagDash) {
-    try { void refreshMeteoAlarmFlashDashboard(); } catch (_) {}
-  }
-
   try {
     if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   } catch (_) {}
 
+  const soloPropagDash =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDash);
   if (!soloPropagDash) {
     try {
       if (typeof refreshEcTransicionAvisoAll === 'function') refreshEcTransicionAvisoAll();
@@ -1421,17 +1405,12 @@ function clearMeteoAlertRetry() {
   }
 }
 
-/** Inicio: condiciones meteorológicas de la zona (solo exterior; nunca en fase propagador sin hidro). */
+/** Inicio: sin condiciones ambientales (solo pestaña Meteo). */
 function applyInicioAmbienteExteriorVisibility() {
   const wrap = document.getElementById('dashBloqueAmbienteExterior');
-  if (!wrap) return;
-  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
-  if (typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg)) {
-    wrap.classList.add('setup-hidden');
-    return;
-  }
-  const int = typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
-  wrap.classList.toggle('setup-hidden', !!int);
+  if (wrap) wrap.classList.add('setup-hidden');
+  const flash = document.getElementById('meteoFlashAviso');
+  if (flash) flash.classList.add('setup-hidden');
 }
 
 function programarReintentoMeteoAlert() {

@@ -755,7 +755,8 @@
     if (!Number.isFinite(p[key])) p[key] = null;
   }
 
-  function persistPremiumSetupFromUI() {
+  function persistPremiumSetupFromUI(opts) {
+    opts = opts || {};
     const p = ensurePremiumSetup();
     persistPremiumFieldFromUI('setupPremiumAnchoM', p, 'anchoM');
     persistPremiumFieldFromUI('setupPremiumLargoM', p, 'largoM');
@@ -774,11 +775,13 @@
       p.consejosModoUi = getConsejosModoSetupActivo();
       setupData.consejosModoUi = p.consejosModoUi;
     }
+    if (opts.lite) return;
     if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
     if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
   }
 
   function cargarPremiumSetupUI(pagina) {
+    if (pagina == null && typeof setupPagina !== 'undefined') pagina = setupPagina;
     syncPremiumEntornoDesdeUbicacion();
     const p = ensurePremiumSetup();
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
@@ -789,6 +792,40 @@
       p.consejosModoUi = cfg.consejosModoUi;
       if (typeof setupData !== 'undefined') setupData.consejosModoUi = cfg.consejosModoUi;
     }
+    if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(pagina);
+
+    if (pagina === SETUP_PAGE_ORIGEN) {
+      if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
+      if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
+      return;
+    }
+
+    if (pagina === SETUP_PAGE_PREMIUM_1) {
+      seleccionarPremiumObjetivo(p.objetivo || 'autocultivo');
+      if (typeof seleccionarConsejosModoSetup === 'function') {
+        const modoConsejos =
+          p.consejosModoUi ||
+          (typeof getConsejosModoSetupActivo === 'function' ? getConsejosModoSetupActivo() : null) ||
+          cfg.consejosModoUi ||
+          'principiante';
+        seleccionarConsejosModoSetup(modoConsejos);
+      }
+      return;
+    }
+
+    if (pagina === SETUP_PAGE_PREMIUM_2) {
+      refreshPremiumEntornoUI();
+      refreshPremiumMetodoUI();
+      var cam2 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
+      if (cam2 && needsPremiumClimaPresetApply(cam2, p)) {
+        aplicarPremiumClimaPorCamino(cam2, { force: true });
+      } else {
+        refreshPremiumClimaCaminoUI();
+      }
+      refreshPremiumClimaResumen();
+      return;
+    }
+
     if (cfg.growRoomAnchoM && !p.anchoM) p.anchoM = cfg.growRoomAnchoM;
     if (cfg.growRoomLargoM && !p.largoM) p.largoM = cfg.growRoomLargoM;
     if (cfg.growRoomAltoM && !p.altoM) p.altoM = cfg.growRoomAltoM;
@@ -812,84 +849,59 @@
     if (el('setupPremiumHorasLuz')) el('setupPremiumHorasLuz').value = String(p.horasLuz || 18);
     if (el('setupPremiumIntensidadLuz') && p.intensidadLuz) el('setupPremiumIntensidadLuz').value = p.intensidadLuz;
 
-    var camClima = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
-    if (camClima && needsPremiumClimaPresetApply(camClima, p)) {
-      aplicarPremiumClimaPorCamino(camClima, { force: true });
-    } else {
-      refreshPremiumClimaCaminoUI();
-    }
-
-    seleccionarPremiumObjetivo(p.objetivo || 'autocultivo');
-    if (pagina === SETUP_PAGE_PREMIUM_1 && typeof seleccionarConsejosModoSetup === 'function') {
-      const modoConsejos =
-        p.consejosModoUi ||
-        (typeof getConsejosModoSetupActivo === 'function' ? getConsejosModoSetupActivo() : null) ||
-        cfg.consejosModoUi ||
-        'principiante';
-      seleccionarConsejosModoSetup(modoConsejos);
-    }
-    refreshPremiumEntornoUI();
-    refreshPremiumMetodoUI();
-    seleccionarPremiumGenetica(p.geneticaPref || 'foto');
-    if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
-    refreshPremiumGerminacionUI();
-    calcularPremiumSala();
-    refreshPremiumClimaResumen();
-    if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
-    if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
-    if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
-    if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
-    if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
-    if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
-    refreshPremiumMetodoOrigenHint();
-    refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
-    syncPremiumMetodoGenPlacement();
-    if (typeof syncPremiumGermPlanFromConfig === 'function') syncPremiumGermPlanFromConfig(cfg);
-    if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
-    if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
-    if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(pagina);
-
-    if (pagina === SETUP_PAGE_ORIGEN) {
-      if (typeof refreshPremiumOrigenPasoUI === 'function') refreshPremiumOrigenPasoUI();
-    }
-    if (pagina === SETUP_PAGE_PREMIUM_6) {
-      syncPremiumMetodoGenPlacement();
-      refreshPremiumGerminacionUI();
-      if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
-      if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
-      if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
-      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
-    }
     if (pagina === SETUP_PAGE_PREMIUM_3) {
+      var cam3 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
+      if (cam3 && needsPremiumClimaPresetApply(cam3, p)) {
+        aplicarPremiumClimaPorCamino(cam3, { force: true });
+      } else {
+        refreshPremiumClimaCaminoUI();
+      }
+      refreshPremiumEntornoUI();
+      refreshPremiumMetodoUI();
+      seleccionarPremiumGenetica(p.geneticaPref || 'foto');
+      refreshPremiumGerminacionUI();
       if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
       if (p.entorno !== 'exterior' && typeof syncSalaMedidasDesdeEquipamientoInstalado === 'function') {
         syncSalaMedidasDesdeEquipamientoInstalado();
       }
-      refreshPremiumEntornoUI();
       if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
       if (typeof applySalaPreGermEquipMinimalChrome === 'function') applySalaPreGermEquipMinimalChrome();
       calcularPremiumSala();
+      refreshPremiumClimaResumen();
+      if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
+      if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
+      if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
+      if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(p.origenPlanta || 'semilla');
+      refreshPremiumMetodoOrigenHint();
+      refreshPremiumOrigenRecoUI(p.origenPlanta || 'semilla', []);
+      syncPremiumMetodoGenPlacement();
+      if (typeof syncPremiumGermPlanFromConfig === 'function') syncPremiumGermPlanFromConfig(cfg);
+      if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
+      if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
+      return;
     }
+
     if (typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' && pagina === SETUP_PAGE_PREMIUM_4) {
       if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
-        syncPremiumNutrienteGermFromConfig(
-          typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
-        );
+        syncPremiumNutrienteGermFromConfig(cfg);
       }
       if (typeof refreshPremiumNutrienteGermSection === 'function') refreshPremiumNutrienteGermSection();
       if (typeof applyPremiumPropagadorPaso4Chrome === 'function') applyPremiumPropagadorPaso4Chrome();
-      var camP4 = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
-      if (camP4 && needsPremiumClimaPresetApply(camP4, p)) {
-        aplicarPremiumClimaPorCamino(camP4, { force: true });
-      } else {
-        refreshPremiumClimaCaminoUI();
-        refreshPremiumClimaResumen();
-      }
+      refreshPremiumClimaCaminoUI();
+      refreshPremiumClimaResumen();
+      return;
     }
-    if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
-      syncPremiumNutrienteGermFromConfig(
-        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
-      );
+
+    if (pagina === SETUP_PAGE_PREMIUM_6) {
+      syncPremiumMetodoGenPlacement();
+      refreshPremiumGerminacionUI();
+      seleccionarPremiumGenetica(p.geneticaPref || 'foto');
+      if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
+      if (typeof renderSemilleroPerfilPanel === 'function') renderSemilleroPerfilPanel();
+      if (typeof refreshPremiumSemilleroVis === 'function') refreshPremiumSemilleroVis();
+      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
+      if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     }
   }
 
@@ -953,7 +965,11 @@
   }
 
   function validarPremiumSetupPaso(pagina) {
-    persistPremiumSetupFromUI();
+    const lite =
+      pagina === SETUP_PAGE_ORIGEN ||
+      pagina === SETUP_PAGE_PREMIUM_1 ||
+      pagina === SETUP_PAGE_PREMIUM_2;
+    persistPremiumSetupFromUI({ lite: lite });
     if (pagina === SETUP_PAGE_ORIGEN) {
       const cam =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
@@ -972,10 +988,7 @@
     }
     if (pagina === SETUP_PAGE_PREMIUM_2) {
       const pEnt = ensurePremiumSetup();
-      const needMeteoCity =
-        pEnt.entorno === 'exterior' ||
-        (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad());
-      if (needMeteoCity) {
+      if (pEnt.entorno === 'exterior') {
         const sd = typeof setupData !== 'undefined' ? setupData : {};
         const hasCity =
           sd.ciudad &&
@@ -983,12 +996,7 @@
           Number.isFinite(sd.lon);
         if (!hasCity) {
           if (typeof showToast === 'function') {
-            showToast(
-              pEnt.entorno === 'exterior'
-                ? 'Indica y confirma el municipio para datos meteorológicos'
-                : 'En propagador (interior o exterior) confirma el municipio para la pestaña Meteo',
-              true
-            );
+            showToast('Indica y confirma el municipio para datos meteorológicos', true);
           }
           return false;
         }

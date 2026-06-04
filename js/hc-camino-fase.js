@@ -504,9 +504,11 @@
     cfg = cfg || cfgActiva();
     var soloPropag =
       typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    ['dashBloqueAmbienteExterior', 'meteoFlashAviso'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('setup-hidden');
+    });
     var idsOcultarHidro = [
-      'dashBloqueAmbienteExterior',
-      'meteoFlashAviso',
       'dashOperativaHub',
       'dashNutrienteLabel',
       'dashSistemaInfo',
@@ -524,17 +526,14 @@
       avisoCestas.style.display = 'none';
       avisoCestas.innerHTML = '';
     }
-    if (soloPropag) {
-      try {
-        if (typeof clearMeteoAlertRetry === 'function') clearMeteoAlertRetry();
-      } catch (_) {}
-    } else {
-      try {
-        if (typeof applyInicioAmbienteExteriorVisibility === 'function') {
-          applyInicioAmbienteExteriorVisibility();
-        }
-      } catch (_) {}
-    }
+    try {
+      if (typeof clearMeteoAlertRetry === 'function') clearMeteoAlertRetry();
+    } catch (_) {}
+    try {
+      if (typeof applyInicioAmbienteExteriorVisibility === 'function') {
+        applyInicioAmbienteExteriorVisibility();
+      }
+    } catch (_) {}
     try {
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}

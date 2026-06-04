@@ -139,6 +139,16 @@
       if (def.germModo) state.configTorre.premiumSetup.germinacionModoPreferido = def.germModo;
     }
     refreshCaminoCultivoUI();
+    if (
+      typeof setupPagina !== 'undefined' &&
+      typeof SETUP_PAGE_ORIGEN !== 'undefined' &&
+      setupPagina === SETUP_PAGE_ORIGEN
+    ) {
+      if (typeof refreshSetupCaminoStepBanner === 'function') {
+        refreshSetupCaminoStepBanner(setupPagina);
+      }
+      return;
+    }
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
     if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
     if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();

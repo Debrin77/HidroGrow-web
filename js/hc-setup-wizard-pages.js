@@ -255,7 +255,11 @@ function setupNext() {
       return;
     }
   }
-  if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+  if (
+    setupPagina >= SETUP_PAGE_PREMIUM_START &&
+    setupPagina <= SETUP_PAGE_PREMIUM_END &&
+    setupPagina !== SETUP_PAGE_ORIGEN
+  ) {
     if (typeof validarPremiumSetupPaso === 'function' && !validarPremiumSetupPaso(setupPagina)) return;
     if (setupPagina === SETUP_PAGE_PREMIUM_1 && typeof persistConsejosModoSetupToPremium === 'function') {
       persistConsejosModoSetupToPremium();

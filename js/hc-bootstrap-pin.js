@@ -103,27 +103,10 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
-        var lanzar = function () {
-          if (typeof initApp !== 'function') {
-            throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
-          }
-          initApp();
-        };
-        if (typeof hcWhenAppScriptsReady === 'function') {
-          hcWhenAppScriptsReady(function () {
-            try {
-              lanzar();
-            } catch (eIn) {
-              try {
-                console.error('initApp tras PIN (defer)', eIn);
-              } catch (_) {}
-            } finally {
-              appUnlockInProgress = false;
-            }
-          });
-          return;
+        if (typeof initApp !== 'function') {
+          throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
         }
-        lanzar();
+        initApp();
       } catch (eInit) {
         try {
           console.error('initApp tras PIN', eInit);
