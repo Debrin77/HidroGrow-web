@@ -327,9 +327,15 @@ let _meteoFlashDashPromise = null;
 async function refreshMeteoAlarmFlashDashboard() {
   const cfgFlash = (typeof state !== 'undefined' && state && state.configTorre) || {};
   if (
+    typeof hcSistemaPropagadorSinHidro === 'function' &&
+    hcSistemaPropagadorSinHidro(cfgFlash)
+  ) {
+    renderMeteoFlashBanner([]);
+    return;
+  }
+  if (
     typeof instalacionEsUbicacionInterior === 'function' &&
-    instalacionEsUbicacionInterior(cfgFlash) &&
-    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgFlash))
+    instalacionEsUbicacionInterior(cfgFlash)
   ) {
     renderMeteoFlashBanner([]);
     return;

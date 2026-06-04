@@ -332,7 +332,10 @@ function hcRefreshDashSinInstalacionUi() {
   if (banner) banner.classList.toggle('setup-hidden', !hay);
   if (label) label.classList.toggle('setup-hidden', !hay);
   if (cta) cta.classList.toggle('setup-hidden', hay);
-  if (opRow) opRow.classList.toggle('setup-hidden', !hay);
+  const cfgDashUi = state.configTorre || {};
+  const ocultarOpPropag =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDashUi);
+  if (opRow) opRow.classList.toggle('setup-hidden', !hay || ocultarOpPropag);
   if (lifecycle && !hay) lifecycle.classList.add('setup-hidden');
   if (rutina && !hay) rutina.classList.add('setup-hidden');
   try {

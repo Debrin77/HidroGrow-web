@@ -32,6 +32,13 @@
   function operativaVisible() {
     try {
       if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) return false;
+      const cfg = state && state.configTorre ? state.configTorre : {};
+      if (
+        typeof hcSistemaPropagadorSinHidro === 'function' &&
+        hcSistemaPropagadorSinHidro(cfg)
+      ) {
+        return false;
+      }
       if (typeof medicionesOperativasPermitidas === 'function' && !medicionesOperativasPermitidas()) return false;
       return true;
     } catch (_) {

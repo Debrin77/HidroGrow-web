@@ -644,7 +644,11 @@
     var ctaEl = document.getElementById('dashInstLifecycleCta');
 
     if (box) {
-      var showInst = lc.fase !== 'operativa' && lc.fase !== 'sin_config';
+      var cfgLc = cfgActiva();
+      var ocultarLcPropag =
+        typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgLc);
+      var showInst =
+        !ocultarLcPropag && lc.fase !== 'operativa' && lc.fase !== 'sin_config';
       box.classList.toggle('setup-hidden', !showInst);
       if (showInst) {
         var pasoUnico =

@@ -484,8 +484,8 @@
   }
 
   /**
-   * Camino propagador: municipio para Meteo (interior y exterior).
-   * La previsión de la zona ayuda a ventilar el domo y planificar sala aunque el cultivo sea en carpa.
+   * Asistente / Medir: el camino propagador exige municipio para previsión (pestaña Meteo).
+   * No implica mostrar «Condiciones de ambiente» en Inicio — ver refreshDashInicioVistaCamino.
    */
   function hcMeteoRequiereLocalidad(cfg) {
     cfg = cfg || cfgActiva();
@@ -494,7 +494,48 @@
 
   /** Meteo accesible aunque el depósito aún no esté operativo (camino propagador). */
   function hcMeteoTabPermitidaSinOperativa(cfg) {
-    return hcMeteoRequiereLocalidad(cfg);
+    cfg = cfg || cfgActiva();
+    return cam(cfg) === 'semilla_propagador';
+  }
+
+  /**
+   * Inicio acotado a germinación/propagador: sin depósito, meteo de zona, rutina DWC ni medición rápida EC/pH.
+   */
+  function refreshDashInicioVistaCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    var soloPropag =
+      typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    var idsOcultarHidro = [
+      'dashBloqueAmbienteExterior',
+      'meteoFlashAviso',
+      'dashOperativaHub',
+      'dashNutrienteLabel',
+      'dashSistemaInfo',
+      'dashInstalacionLifecycle',
+      'ecTransicionAvisoInicio',
+    ];
+    idsOcultarHidro.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('setup-hidden', soloPropag);
+    });
+    var opRow = document.querySelector('#tab-inicio .dash-operativa-row');
+    if (opRow) opRow.classList.toggle('setup-hidden', soloPropag);
+    var avisoCestas = document.getElementById('avisoCestasSinFechaInicio');
+    if (avisoCestas && soloPropag) {
+      avisoCestas.style.display = 'none';
+      avisoCestas.innerHTML = '';
+    }
+    if (soloPropag) {
+      try {
+        if (typeof clearMeteoAlertRetry === 'function') clearMeteoAlertRetry();
+      } catch (_) {}
+    } else {
+      try {
+        if (typeof applyInicioAmbienteExteriorVisibility === 'function') {
+          applyInicioAmbienteExteriorVisibility();
+        }
+      } catch (_) {}
+    }
   }
 
   function hcOcultarTabSalaDuranteGerm(cfg) {
@@ -588,6 +629,7 @@
   global.hcOcultarTabRiegoEnCaminoPropagador = hcOcultarTabRiegoEnCaminoPropagador;
   global.hcMeteoRequiereLocalidad = hcMeteoRequiereLocalidad;
   global.hcMeteoTabPermitidaSinOperativa = hcMeteoTabPermitidaSinOperativa;
+  global.refreshDashInicioVistaCamino = refreshDashInicioVistaCamino;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;

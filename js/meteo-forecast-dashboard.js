@@ -26,8 +26,12 @@ function updateDashboard() {
       now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   }
 
-  // Última medición / lecturas germinación
   const cfgDash = state.configTorre || {};
+  try {
+    if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
+  } catch (_) {}
+
+  // Última medición / lecturas germinación
   const elUltima = document.getElementById('dashUltimaMedicion');
   const usaTilesGerm =
     typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfgDash);
@@ -52,18 +56,26 @@ function updateDashboard() {
   // Recarga
   updateRecargaBar();
 
-  actualizarAvisoCestasSinFecha();
+  if (
+    !(
+      typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDash)
+    )
+  ) {
+    actualizarAvisoCestasSinFecha();
+  }
 
-  // Meteo (solo si instalación en exterior)
-  try {
-    applyInicioAmbienteExteriorVisibility();
-  } catch (_) {}
-  const intDash =
-    typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfgDash);
-  const meteoDash =
-    !intDash || (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgDash));
-  if (meteoDash) {
-    fetchMeteoAlert();
+  // Meteo en Inicio: solo instalaciones con circuito hidro / exterior (no propagador en fase domo)
+  const soloPropagDash =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDash);
+  if (!soloPropagDash) {
+    try {
+      applyInicioAmbienteExteriorVisibility();
+    } catch (_) {}
+    const intDash =
+      typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfgDash);
+    if (!intDash) {
+      fetchMeteoAlert();
+    }
   }
 
   try { refreshUbicacionInstalacionUI(); } catch (_) {}
@@ -72,15 +84,19 @@ function updateDashboard() {
     actualizarQuickActionsNoviceMode();
   } catch (_) {}
 
-  try { void refreshMeteoAlarmFlashDashboard(); } catch (_) {}
+  if (!soloPropagDash) {
+    try { void refreshMeteoAlarmFlashDashboard(); } catch (_) {}
+  }
 
   try {
     if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   } catch (_) {}
 
-  try {
-    if (typeof refreshEcTransicionAvisoAll === 'function') refreshEcTransicionAvisoAll();
-  } catch (_) {}
+  if (!soloPropagDash) {
+    try {
+      if (typeof refreshEcTransicionAvisoAll === 'function') refreshEcTransicionAvisoAll();
+    } catch (_) {}
+  }
 
   try {
     if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
@@ -115,6 +131,9 @@ function updateDashboard() {
     if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
   } catch (_) {}
 
+  try {
+    if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
+  } catch (_) {}
 }
 
 function getRecentMedicionesForWeekly(limit) {
@@ -1385,15 +1404,17 @@ function clearMeteoAlertRetry() {
   }
 }
 
-/** Inicio: condiciones de la zona (ocultas en interior salvo camino propagador, que usa meteo de municipio). */
+/** Inicio: condiciones meteorológicas de la zona (solo exterior; nunca en fase propagador sin hidro). */
 function applyInicioAmbienteExteriorVisibility() {
   const wrap = document.getElementById('dashBloqueAmbienteExterior');
   if (!wrap) return;
   const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg)) {
+    wrap.classList.add('setup-hidden');
+    return;
+  }
   const int = typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
-  const mostrarZona =
-    !int || (typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg));
-  wrap.classList.toggle('setup-hidden', !mostrarZona);
+  wrap.classList.toggle('setup-hidden', !!int);
 }
 
 function programarReintentoMeteoAlert() {
@@ -1417,9 +1438,19 @@ async function fetchMeteoAlert() {
 
   const cfgAlert = (typeof state !== 'undefined' && state && state.configTorre) || {};
   if (
+    typeof hcSistemaPropagadorSinHidro === 'function' &&
+    hcSistemaPropagadorSinHidro(cfgAlert)
+  ) {
+    clearMeteoAlertRetry();
+    _meteoAlertRetryStep = 0;
+    try {
+      applyInicioAmbienteExteriorVisibility();
+    } catch (_) {}
+    return;
+  }
+  if (
     typeof instalacionEsUbicacionInterior === 'function' &&
-    instalacionEsUbicacionInterior(cfgAlert) &&
-    !(typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfgAlert))
+    instalacionEsUbicacionInterior(cfgAlert)
   ) {
     clearMeteoAlertRetry();
     _meteoAlertRetryStep = 0;
