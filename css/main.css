@@ -10063,6 +10063,31 @@ html.hc-theme-dark .hc-germ-hub-var {
 .hc-germ-fecha-siembra-hint {
   margin: 8px 0 0;
 }
+.hc-germ-oscuridad-banner {
+  margin: 10px 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.06);
+  border: 1px solid var(--border);
+  border-left: 4px solid #475569;
+  line-height: 1.45;
+}
+.hc-germ-oscuridad-title {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+.hc-germ-oscuridad-body {
+  margin: 0 0 8px;
+  font-size: 0.88rem;
+}
+.hc-germ-oscuridad-lugar {
+  margin: 0;
+  font-size: 0.82rem;
+}
+html.hc-theme-dark .hc-germ-oscuridad-banner {
+  background: rgba(148, 163, 184, 0.08);
+  border-left-color: #94a3b8;
+}
 .hc-germ-prop-hint {
   margin: 10px 0 0;
   padding: 10px 12px;

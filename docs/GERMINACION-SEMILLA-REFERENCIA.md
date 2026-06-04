@@ -21,7 +21,7 @@ Rangos habituales citados por cultivadores:
 - HR: **70–90 %** en la zona de la semilla
 - Tras emergencia: **18 h/día** (o 24 h muy suave los primeros días en algunos protocolos), **PPFD bajo** (~100–300 µmol/m²/s), LED/fluorescente cerca pero sin quemar
 
-**En HidroGrow:** el asistente ya orienta **18 h / intensidad baja** en clima de sala; el hub de germinación recuerda T°/HR por genética.
+**En HidroGrow:** el asistente orienta **18 h / intensidad baja** en clima de sala; el hub de germinación recuerda T°/HR por genética. En **Inicio**, caminos `semilla_propagador` y `semilla_hidro`: aviso **«Oscuridad · días 1–2»** mientras duren los dos primeros días desde la fecha de siembra (sin fecha de siembra no se muestra el contador).
 
 ---
 

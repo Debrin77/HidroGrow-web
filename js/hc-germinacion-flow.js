@@ -301,6 +301,40 @@
     }
   }
 
+  /** Días 1–N del seguimiento con fecha de siembra: recomendar oscuridad (consenso cultivadores). */
+  var GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2;
+
+  function hubMuestraAvisoOscuridadGerm(cfg, g) {
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
+    if (!getFechaInicioGerminacion(g, cfg)) return false;
+    var diaN = diasDesdeInicio(g, cfg) + 1;
+    return diaN >= 1 && diaN <= GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS;
+  }
+
+  function renderHubOscuridadGerminacionHtml(cfg, g) {
+    if (!hubMuestraAvisoOscuridadGerm(cfg, g)) return '';
+    var modo = getModoGerminacion(cfg, g);
+    var diaN = diasDesdeInicio(g, cfg) + 1;
+    var lugar =
+      modo === 'hidro_directo'
+        ? 'Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.'
+        : 'Domo del propagador cerrado y a la sombra; sin abrir a la luz de la sala.';
+    return (
+      '<div class="hc-germ-oscuridad-banner" role="note" aria-live="polite">' +
+      '<p class="hc-germ-oscuridad-title"><strong>Oscuridad · días ' +
+      diaN +
+      ' de ' +
+      GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS +
+      '</strong></p>' +
+      '<p class="hc-germ-oscuridad-body">La semilla abre con <strong>humedad y calor</strong>, no con luz. Mantén oscuridad o luz muy tenue hasta que asoma el brote verde; entonces pasa a luz suave (~18 h/día).</p>' +
+      '<p class="hc-germ-oscuridad-lugar setup-field-hint">' +
+      esc(lugar) +
+      '</p></div>'
+    );
+  }
+
   function renderHubFechaSiembraEditor(cfg, g) {
     var camGerm =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
@@ -1436,6 +1470,7 @@
       diaN +
       '</strong> del seguimiento</p>' +
       renderHubFechaSiembraEditor(cfg, g) +
+      renderHubOscuridadGerminacionHtml(cfg, g) +
       (camGerm === 'semilla_propagador'
         ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
           '<strong>Guía de 6 fases (opcional):</strong> el cierre de germinación va por <strong>días según genética</strong> (~' +

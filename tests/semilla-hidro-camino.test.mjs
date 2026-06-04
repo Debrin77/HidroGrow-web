@@ -66,6 +66,14 @@ test('checklist 6: medir sin modo solo-propagador en hidro', () => {
   assert.match(layout, /hcMedirModoGerminacionPropagador/);
 });
 
+test('aviso oscuridad dias 1-2 en hub propagador e hidro', () => {
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(germ, /GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2/);
+  assert.match(germ, /renderHubOscuridadGerminacionHtml/);
+  assert.match(germ, /semilla_propagador.*semilla_hidro/s);
+  assert.match(germ, /hubMuestraAvisoOscuridadGerm/);
+});
+
 test('checklist 7: fecha siembra en inicio y calendario', () => {
   const germ = read('js/hc-germinacion-flow.js');
   assert.match(germ, /hcGermFechaSiembraInicio/);
