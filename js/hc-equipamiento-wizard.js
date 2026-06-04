@@ -485,10 +485,15 @@
     const inst = ensureEquipInstalado(cfg);
     const esExt = resolveSetupEntorno() === 'exterior';
     const cats = resolveEquipCategorias();
+    const omitCircuitoHidro =
+      typeof hcPropagadorEquipSalaSinHidro === 'function' && hcPropagadorEquipSalaSinHidro(cfg);
     const falt = [];
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
       if (!cat.indispensable) return;
+      if (omitCircuitoHidro && (key === 'medidor' || key === 'bomba_aire' || key === 'bomba_recirc')) {
+        return;
+      }
       if (cat.entorno === 'interior' && esExt) return;
       if (cat.entorno === 'exterior' && !esExt) return;
       const tieneCatalogo = !!(inst[key] && inst[key].id);

@@ -112,45 +112,52 @@ function hcPreinitTorreStateWhileLocked() {
   }
 }
 
+function hcResolveTabActivaBoot() {
+  const t = typeof currentTab !== 'undefined' ? currentTab : 'inicio';
+  const panel = document.getElementById('tab-' + t);
+  if (panel && panel.classList.contains('active')) return t;
+  return 'inicio';
+}
+
 function hcFinishInitAppHeavyWork() {
   const appEl = document.getElementById('app');
+  const tab = hcResolveTabActivaBoot();
+
   try {
-    if (typeof hcApplyCargarTorreUiPendiente === 'function') hcApplyCargarTorreUiPendiente();
-    try {
-      renderTorre();
-    } catch (eRenderTorre) {
-      try {
-        console.error('renderTorre en initApp', eRenderTorre);
-      } catch (_) {}
-    }
-    try {
-      if (typeof renderTorreMedirDiagram === 'function') renderTorreMedirDiagram();
-    } catch (_) {}
-    try {
-      updateTorreStats();
+    if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+    if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+    if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
+    if (tab === 'inicio' && typeof updateDashboard === 'function') {
       updateDashboard();
-    } catch (eDash) {
-      try {
-        console.error('dashboard en initApp', eDash);
-      } catch (_) {}
+    } else if (typeof goTabDeferredWork === 'function') {
+      goTabDeferredWork(tab);
     }
+  } catch (eDash) {
     try {
-      initConfigUI();
+      console.error('dashboard en initApp', eDash);
+    } catch (_) {}
+  } finally {
+    if (appEl) appEl.classList.remove('hc-app-booting');
+  }
+
+  requestAnimationFrame(function () {
+    try {
+      if (typeof hcApplyCargarTorreUiPendiente === 'function') {
+        hcApplyCargarTorreUiPendiente({ tab: tab, boot: true });
+      }
+      if (typeof hcApplyCargarTorreRiegoPendiente === 'function') {
+        hcApplyCargarTorreRiegoPendiente();
+      }
     } catch (eCfg) {
       try {
-        console.error('initConfigUI en initApp', eCfg);
+        console.error('cargarTorreUi en initApp', eCfg);
       } catch (_) {}
     }
-    try {
-      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-    } catch (_) {}
-    try {
-      actualizarVistaRiegoPorTipoInstalacion();
-    } catch (eHdr) {
-      try {
-        console.error('riego en initApp', eHdr);
-      } catch (_) {}
-    }
+  });
+
+  var runBackground = function () {
     try {
       if (
         typeof getCaminoCultivo === 'function' &&
@@ -159,11 +166,31 @@ function hcFinishInitAppHeavyWork() {
       ) {
         hcSyncGerminacionPlanCultivo(state.configTorre);
       }
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (tab === 'sistema') {
+        try {
+          if (typeof updateTorreStats === 'function') updateTorreStats();
+          if (typeof renderTorre === 'function') renderTorre();
+          if (typeof renderCompatGrid === 'function') renderCompatGrid();
+          if (typeof calcularRotacion === 'function') calcularRotacion();
+          if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
+        } catch (eRenderTorre) {
+          try {
+            console.error('renderTorre en initApp', eRenderTorre);
+          } catch (_) {}
+        }
+      } else if (tab === 'mediciones' && typeof renderTorreMedirDiagram === 'function') {
+        renderTorreMedirDiagram();
+      }
+      if (tab === 'riego' && typeof actualizarVistaRiegoPorTipoInstalacion === 'function') {
+        actualizarVistaRiegoPorTipoInstalacion();
+      }
     } catch (_) {}
-    if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
-  } finally {
-    if (appEl) appEl.classList.remove('hc-app-booting');
+  };
+
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(runBackground, { timeout: 1400 });
+  } else {
+    setTimeout(runBackground, 120);
   }
 }
 
@@ -507,6 +534,16 @@ function scrollTabBarToActive(btn) {
 }
 
 function goTabDeferredWork(tab) {
+  if (
+    (tab === 'mediciones' || tab === 'sala') &&
+    typeof hcInitMedirSalaLayout === 'function' &&
+    !window._hcMedirSalaLayoutDone
+  ) {
+    window._hcMedirSalaLayoutDone = true;
+    try {
+      hcInitMedirSalaLayout();
+    } catch (_) {}
+  }
   if (tab === 'mediciones') {
     cargarUltimaMedicion();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();

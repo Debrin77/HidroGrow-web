@@ -572,5 +572,21 @@
   window.hcRefreshSalaEquipMontaje = refreshSalaEquipMontaje;
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
 
-  document.addEventListener('DOMContentLoaded', initMedirSalaLayout);
+  function scheduleInitMedirSalaLayout() {
+    if (typeof window !== 'undefined' && window._hcMedirSalaLayoutDone) return;
+    if (typeof window !== 'undefined' && window._hcMedirSalaLayoutScheduled) return;
+    if (typeof window !== 'undefined') window._hcMedirSalaLayoutScheduled = true;
+    var run = function () {
+      if (typeof window !== 'undefined' && window._hcMedirSalaLayoutDone) return;
+      if (typeof window !== 'undefined') window._hcMedirSalaLayoutDone = true;
+      initMedirSalaLayout();
+    };
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      setTimeout(run, 600);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', scheduleInitMedirSalaLayout);
 })();

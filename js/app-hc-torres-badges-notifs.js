@@ -593,25 +593,51 @@ function guardarEstadoTorreActual() {
   return true;
 }
 
-function aplicarCargarTorreUiDesdeEstado() {
+function aplicarCargarTorreUiDesdeEstado(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const tab =
+    opts.tab ||
+    (document.getElementById('tab-mediciones')?.classList.contains('active')
+      ? 'mediciones'
+      : document.getElementById('tab-sala')?.classList.contains('active')
+        ? 'sala'
+        : document.getElementById('tab-meteo')?.classList.contains('active')
+          ? 'meteo'
+          : 'inicio');
   if (state.configTorre?.sustrato) state.configSustrato = state.configTorre.sustrato;
   aplicarConfigTorre();
-  cargarUbicacionMedicionesUI();
-  cargarInteriorGrowUI();
-  if (typeof applyMedirCollapseUI === 'function') applyMedirCollapseUI();
-  cargarLocalidadMeteoUI();
+  if (opts.boot && tab === 'inicio') {
+    try {
+      if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
+    } catch (_) {}
+    return;
+  }
+  if (tab === 'mediciones' || tab === 'sala') {
+    cargarUbicacionMedicionesUI();
+    cargarInteriorGrowUI();
+    if (typeof applyMedirCollapseUI === 'function') applyMedirCollapseUI();
+    if (typeof initConfigUI === 'function') initConfigUI();
+  }
+  if (tab === 'meteo' || tab === 'mediciones' || tab === 'sala') {
+    cargarLocalidadMeteoUI();
+  }
   try {
     refreshUbicacionInstalacionUI();
   } catch (_) {}
-  syncRiegoAvanzadoUI();
+  if (tab === 'riego' || tab === 'mediciones') {
+    syncRiegoAvanzadoUI();
+  }
   if (
-    document.getElementById('tab-sala')?.classList.contains('active') ||
-    document.getElementById('tab-mediciones')?.classList.contains('active')
+    !opts.boot &&
+    (document.getElementById('tab-sala')?.classList.contains('active') ||
+      document.getElementById('tab-mediciones')?.classList.contains('active'))
   ) {
-    initConfigUI();
+    if (typeof initConfigUI === 'function') initConfigUI();
   }
   try {
-    if (typeof updateRecargaBar === 'function') updateRecargaBar();
+    if (typeof updateRecargaBar === 'function' && (tab === 'inicio' || tab === 'mediciones' || tab === 'sala')) {
+      updateRecargaBar();
+    }
   } catch (_) {}
   try {
     if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
@@ -687,6 +713,13 @@ function cargarEstadoTorre(idx, opts) {
     });
   }
   // Restaurar toldo / día de riego; plantas y edad vía sincronizarInputsRiego (torre activa + slot guardado)
+  if (deferUi) {
+    if (typeof window !== 'undefined') {
+      window._hcCargarTorreUiPendiente = true;
+      window._hcCargarTorreRiegoPendiente = true;
+    }
+    return;
+  }
   try {
     if (typeof riegoCargarToldoDesdeConfig === 'function') riegoCargarToldoDesdeConfig();
   } catch (_) {}
@@ -696,17 +729,27 @@ function cargarEstadoTorre(idx, opts) {
   try {
     if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
   } catch (eRiegoSync) {}
-  if (deferUi) {
-    if (typeof window !== 'undefined') window._hcCargarTorreUiPendiente = true;
-    return;
-  }
   aplicarCargarTorreUiDesdeEstado();
 }
 
-function hcApplyCargarTorreUiPendiente() {
+function hcApplyCargarTorreRiegoPendiente() {
+  if (typeof window === 'undefined' || !window._hcCargarTorreRiegoPendiente) return;
+  window._hcCargarTorreRiegoPendiente = false;
+  try {
+    if (typeof riegoCargarToldoDesdeConfig === 'function') riegoCargarToldoDesdeConfig();
+  } catch (_) {}
+  try {
+    if (typeof initDiaRiego === 'function') initDiaRiego();
+  } catch (_) {}
+  try {
+    if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
+  } catch (_) {}
+}
+
+function hcApplyCargarTorreUiPendiente(opts) {
   if (typeof window === 'undefined' || !window._hcCargarTorreUiPendiente) return;
   window._hcCargarTorreUiPendiente = false;
-  aplicarCargarTorreUiDesdeEstado();
+  aplicarCargarTorreUiDesdeEstado(opts || {});
 }
 
 function actualizarHeaderTorre() {

@@ -187,6 +187,16 @@
     return !!cfg.salaPreGermConfigAt;
   }
 
+  /** Propagador sin DWC cerrado: configurar sala sin medidor/bombas del depósito. */
+  function hcPropagadorEquipSalaSinHidro(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)) {
+      return false;
+    }
+    return true;
+  }
+
   /** Asistente premium aún en bloque germinación (antes de geometría/hidro). */
   function hcSetupWizardEnBloquePremiumGerm() {
     if (typeof setupPagina === 'undefined') return false;
@@ -1081,6 +1091,7 @@
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
+  global.hcPropagadorEquipSalaSinHidro = hcPropagadorEquipSalaSinHidro;
   global.montajeSalaPreGermOk = montajeSalaPreGermOk;
   global.salaListaAntesDeGerminacion = salaListaAntesDeGerminacion;
   global.hcGerminacionBloqueadaPorSala = hcGerminacionBloqueadaPorSala;

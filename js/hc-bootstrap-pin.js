@@ -137,7 +137,6 @@ function unlockAndInitApp() {
         return;
       } finally {
         appUnlockInProgress = false;
-        if (appEl) appEl.classList.remove('hc-app-booting');
       }
     };
     if (typeof requestAnimationFrame === 'function') {

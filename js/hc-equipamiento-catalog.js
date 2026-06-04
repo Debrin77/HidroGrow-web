@@ -534,7 +534,28 @@ function getEquipCatalogGroups(entorno) {
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
   const germKeys = ['propagador', 'mat_termica_germ'];
 
-  if (faseSala && (camino === 'semilla_propagador' || camino === 'semilla_hidro')) {
+  if (faseSala && camino === 'semilla_propagador') {
+    return base
+      .filter(function (g) {
+        return g.id !== 'hidro';
+      })
+      .map(function (g) {
+        return Object.assign({}, g, {
+          keys: (g.keys || []).filter(function (k) {
+            return germKeys.indexOf(k) < 0;
+          }),
+          hint:
+            g.id === 'sala'
+              ? 'Carpa, LED, extractor y clima. El circuito DWC/RDWC lo configurarás tras la germinación.'
+              : g.hint,
+        });
+      })
+      .filter(function (g) {
+        return g.keys && g.keys.length;
+      });
+  }
+
+  if (faseSala && camino === 'semilla_hidro') {
     return base
       .map(function (g) {
         return Object.assign({}, g, {
