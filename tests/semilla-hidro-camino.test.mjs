@@ -96,6 +96,19 @@ test('equipamiento hidro: cúpula por maceta, no propagador en grupo opcional', 
   assert.match(wiz, /equip-catalog-per-maceta/);
 });
 
+test('prep hidro: tras checklist navega a montaje si sala ya configurada', () => {
+  const prop = read('js/hc-propagador-montaje.js');
+  assert.match(prop, /hcAbrirMontajeSalaChecklist/);
+  assert.match(prop, /salaPreGermConfigurada\(cfg2\)/);
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /salaConfiguradaCamino/);
+  assert.match(cultivo, /hcAbrirMontajeSalaChecklist/);
+  const life = read('js/hc-instalacion-lifecycle.js');
+  assert.match(life, /function hcAbrirMontajeSalaChecklist/);
+  const setup = read('js/hc-setup-calc-core.js');
+  assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);
+});
+
 test('documentación semilla hidro presente', () => {
   const doc = read('docs/SEMILLA-HIDRO-CAMINO.md');
   assert.match(doc, /semilla_hidro/);

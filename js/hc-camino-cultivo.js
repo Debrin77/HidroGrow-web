@@ -261,7 +261,17 @@
 
   function salaPreGermConfigurada(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    return !!cfg.salaPreGermConfigAt;
+    if (cfg.salaPreGermConfigAt) return true;
+    if (typeof salaConfiguradaCamino === 'function') {
+      return salaConfiguradaCamino(cfg);
+    }
+    var p = cfg.premiumSetup || {};
+    if (Number(p.anchoM) > 0 && Number(p.largoM) > 0) return true;
+    if (Number(cfg.growRoomAnchoM) > 0 && Number(cfg.growRoomLargoM) > 0) return true;
+    var inst = cfg.equipamientoInstalado || {};
+    return Object.keys(inst).some(function (k) {
+      return inst[k] && (inst[k].marca || inst[k].id);
+    });
   }
 
   /** Tras guardar solo equipamiento de sala: no pisar propagador, germinación ni camino. */
@@ -807,6 +817,23 @@
       hcPropagadorAsistenteGermPendiente(cfg)
     ) {
       abrirSetupCaminoPropagador();
+      return;
+    }
+    if (
+      getCaminoCultivo(cfg) === 'semilla_hidro' &&
+      salaPreGermConfigurada(cfg) &&
+      typeof montajeSalaPreGermOk === 'function' &&
+      !montajeSalaPreGermOk(cfg) &&
+      typeof hcAbrirMontajeSalaChecklist === 'function'
+    ) {
+      if (typeof showToast === 'function') {
+        showToast(
+          'La sala ya está en el asistente. Abre el checklist de montaje físico en Sala.',
+          false,
+          { durationMs: 5200 }
+        );
+      }
+      hcAbrirMontajeSalaChecklist();
       return;
     }
     if (!hcSalaPreGermPermitida(cfg, opts)) {

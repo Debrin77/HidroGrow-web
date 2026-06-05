@@ -672,12 +672,16 @@ function actualizarPostSetupChecklistRail() {
     sala_config: {
       title: 'Paso 2 · Configurar sala',
       text:
-        'Asistente: carpa, LED, extractor y ubicación. <strong>Sin DWC/RDWC</strong> todavía — eso va tras concluir la germinación.',
+        cam === 'semilla_hidro'
+          ? 'Solo si falta equipamiento de sala en el asistente (carpa, LED, extractor). En hidro el DWC ya lo definiste al crear la instalación.'
+          : 'Asistente: carpa, LED, extractor y ubicación. <strong>Sin DWC/RDWC</strong> todavía — eso va tras concluir la germinación.',
     },
     sala_montaje: {
       title: 'Paso 3 · Montaje de sala',
       text:
-        'Checklist físico en Sala (carpa, luz, aire). Los puntos del <strong>sistema hidro</strong> aparecen después del asistente DWC/RDWC.',
+        cam === 'semilla_hidro'
+          ? 'Checklist físico en Sala: carpa, luz, aire y puntos del <strong>DWC/RDWC</strong> que configuraste. Luego primer llenado del depósito.'
+          : 'Checklist físico en Sala (carpa, luz, aire). Los puntos del <strong>sistema hidro</strong> aparecen después del asistente DWC/RDWC.',
     },
     germinacion: {
       title: cam === 'semilla_propagador' ? 'Modo propagador' : 'Paso 4 · Germinación',

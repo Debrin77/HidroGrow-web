@@ -777,7 +777,9 @@
           if (typeof abrirSetupFaseSala === 'function') setTimeout(abrirSetupFaseSala, 400);
         } else if (bloqueo === 'sala_montaje') {
           showToast('Completa el checklist de montaje de sala en la pestaña Sala.', true);
-          if (typeof hcIrMontajeSala === 'function') setTimeout(hcIrMontajeSala, 400);
+          if (typeof hcAbrirMontajeSalaChecklist === 'function') {
+            setTimeout(hcAbrirMontajeSalaChecklist, 400);
+          } else if (typeof hcIrMontajeSala === 'function') setTimeout(hcIrMontajeSala, 400);
         } else if (bloqueo === 'traslado') {
           showToast('Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.', true);
           if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
@@ -1418,7 +1420,7 @@
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>Montaje de sala.</strong> Verifica el checklist en la pestaña Sala. ' +
-        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Ir a montaje</button></div>';
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirMontajeSalaChecklist===\'function\'?hcAbrirMontajeSalaChecklist():(typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala())">Ir a montaje</button></div>';
     } else if (bloqueoSala === 'traslado') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +

@@ -555,7 +555,8 @@
     return false;
   }
 
-  function hcIrMontajeSala() {
+  function hcIrMontajeSala(opts) {
+    opts = opts || {};
     try {
       if (typeof goTab === 'function') goTab('sala');
       if (typeof salaSubTab === 'function') salaSubTab('agua');
@@ -571,7 +572,15 @@
       if (det && typeof det.scrollIntoView === 'function') {
         det.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
-    }, 220);
+      if (opts.abrirChecklist && typeof hcOpenPuestaMarchaChecklist === 'function') {
+        hcOpenPuestaMarchaChecklist();
+      }
+    }, opts.delay != null ? opts.delay : 220);
+  }
+
+  function hcAbrirMontajeSalaChecklist(opts) {
+    opts = opts || {};
+    hcIrMontajeSala({ abrirChecklist: true, delay: opts.delay != null ? opts.delay : 320 });
   }
 
   function hcIrCultivoMatriz(desdePostSetup) {
@@ -625,7 +634,7 @@
         if (typeof abrirSetup === 'function') abrirSetup();
         break;
       case 'irMontaje':
-        hcIrMontajeSala();
+        hcAbrirMontajeSalaChecklist();
         break;
       case 'irCultivo':
         hcIrCultivoMatriz(true);
@@ -1017,6 +1026,7 @@
   global.instalacionGuidadaActiva = instalacionGuidadaActiva;
   global.hcGateChecklistDeposito = hcGateChecklistDeposito;
   global.hcIrMontajeSala = hcIrMontajeSala;
+  global.hcAbrirMontajeSalaChecklist = hcAbrirMontajeSalaChecklist;
   global.hcIrCultivoMatriz = hcIrCultivoMatriz;
   global.hcIrRutinaDia = hcIrRutinaDia;
   global.hcEjecutarAccionInstalacion = hcEjecutarAccionInstalacion;

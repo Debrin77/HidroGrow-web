@@ -2130,7 +2130,13 @@ function guardarSetupYContinuarCore() {
     volDeposito:  vol,
     agua:         setupData.agua || 'destilada',
     checklistInstalacionConfirmada: faseGermSetup || faseSalaPreGerm ? false : true,
-    hcSetupFase: faseSalaPreGerm ? 'germinacion' : faseGermSetup ? 'germinacion' : 'hidro',
+    hcSetupFase: faseSalaPreGerm
+      ? 'germinacion'
+      : faseGermSetup
+        ? 'germinacion'
+        : wizardHidroGermCompleto
+          ? 'germinacion'
+          : 'hidro',
     ubicacion:    setupData.ubicacion || setupUbicacion || 'exterior',
     luz:          setupData.luz || 'led',
     horasLuz:     horasLuzGuardar,

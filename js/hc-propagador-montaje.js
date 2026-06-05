@@ -553,7 +553,9 @@
         esRutaEsqueje(cfg)
           ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
           : esRutaGermHidro(cfg)
-            ? '✓ Prep listo. Siguiente: configurar la sala en el asistente.'
+            ? typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg)
+              ? '✓ Prep listo. Siguiente: checklist de montaje de sala.'
+              : '✓ Prep listo. Siguiente: configurar la sala en el asistente.'
             : '✓ Propagador listo.',
         false,
         { durationMs: 4200 }
@@ -573,12 +575,16 @@
     }
     if (typeof hcCaminoRequiereSalaPreGerm === 'function' && hcCaminoRequiereSalaPreGerm(cfg)) {
       setTimeout(function () {
-        if (
-          typeof salaPreGermConfigurada === 'function' &&
-          salaPreGermConfigurada(cfg) &&
-          typeof montajeSalaPreGermOk === 'function' &&
-          montajeSalaPreGermOk(cfg)
-        ) {
+        var cfg2 = getCfg();
+        if (typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg2)) {
+          return;
+        }
+        if (typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg2)) {
+          if (typeof hcAbrirMontajeSalaChecklist === 'function') {
+            hcAbrirMontajeSalaChecklist({ delay: 420 });
+          } else if (typeof hcIrMontajeSala === 'function') {
+            hcIrMontajeSala({ abrirChecklist: true });
+          }
           return;
         }
         if (typeof abrirSetupFaseSala === 'function') abrirSetupFaseSala();
