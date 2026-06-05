@@ -22,7 +22,7 @@ Asistente único (sala + equip + genética + fecha siembra + DWC/RDWC en el mism
 | # | Etapa | Dónde en la app | Notas |
 |---|--------|-----------------|-------|
 | 1 | Camino + objetivo + entorno | Asistente pasos 1–3 | `semilla_hidro` fija modo `hidro_directo` |
-| 2 | Sala + equip prep cubo | Asistente paso 4 | Medidor, aire depósito, cúpulas opcionales |
+| 2 | Sala + equip prep cubo | Asistente paso 4 | Medidor, aire depósito, cúpulas opcionales; **sondas IoT** opcionales aquí (no se repite paso Equipamiento tras DWC) |
 | 3 | Clima / luz | Asistente paso 5 | Fotoperiodo bajo domo/cúpula |
 | 4 | Genética + método | Asistente paso 6 | Obligatorio en «Detalle origen» |
 | 5 | Plan semillas + sustrato + **fecha siembra** | Asistente paso 7 | Mismo paso que genética (hidro) |

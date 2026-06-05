@@ -917,7 +917,8 @@ function actualizarAvisoCestasSinFecha() {
 }
 
 function getEstado(variedad, dias) {
-  const base = DIAS_COSECHA[variedad] || 50;
+  const base =
+    typeof getDiasCosechaVariedad === 'function' ? getDiasCosechaVariedad(variedad) : DIAS_COSECHA[variedad] || 50;
   const total = typeof torreGetDiasCosechaObjetivo === 'function'
     ? torreGetDiasCosechaObjetivo(base, state.configTorre || {})
     : base;

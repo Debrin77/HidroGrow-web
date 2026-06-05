@@ -646,6 +646,11 @@ function hcResetTorreSetupSlidersZero() {
  * @param {string} [tipo] — tipo ya elegido; si se omite, resetea todos los bloques.
  */
 function hcResetSetupFormForNewInstall(tipo) {
+  try {
+    if (typeof hcResetPremiumGermPlanBorrador === 'function' && typeof ensurePremiumSetup === 'function') {
+      hcResetPremiumGermPlanBorrador(ensurePremiumSetup());
+    }
+  } catch (_) {}
   hcResetTorreSetupSlidersZero();
   try {
     if (typeof hcResetNftSetupSlidersZero === 'function') hcResetNftSetupSlidersZero();

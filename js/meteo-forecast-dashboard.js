@@ -487,7 +487,10 @@ function updateDashTorre() {
           plantasConFecha++;
           const estado = getEstado(c.variedad, dias);
           if (estado === 'cosecha') cosechas++;
-          const totalDiasVariedad = DIAS_COSECHA[c.variedad] || 50;
+          const totalDiasVariedad =
+            typeof getDiasCosechaVariedad === 'function'
+              ? getDiasCosechaVariedad(c.variedad)
+              : DIAS_COSECHA[c.variedad] || 50;
           const diasRestantes = Math.max(0, totalDiasVariedad - dias);
           if (diasRestantes > 0 && diasRestantes < proxDias) proxDias = diasRestantes;
         }

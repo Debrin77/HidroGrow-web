@@ -20392,6 +20392,13 @@ button.toggle-switch:focus-visible {
   border-radius: 12px;
   border: 1.5px solid #e5e7eb;
 }
+.setup-sensores-box--iot {
+  background: rgba(13, 148, 136, 0.06);
+  border-color: rgba(13, 148, 136, 0.35);
+}
+.setup-sensores-box--iot .setup-sensores-title .hc-ico {
+  color: #0d9488;
+}
 .setup-sensores-title {
   display: flex;
   align-items: center;

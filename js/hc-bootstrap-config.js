@@ -217,7 +217,30 @@ const GRUPOS_CULTIVO_OLD = {
   D: GRUPOS_CULTIVO.auto,
 };
 
-const DIAS_COSECHA = Object.fromEntries(CULTIVOS_DB.map(c => [c.nombre, c.dias]));
+const DIAS_COSECHA = (function buildDiasCosechaIndex() {
+  const db = typeof CULTIVOS_DB !== 'undefined' && Array.isArray(CULTIVOS_DB) ? CULTIVOS_DB : [];
+  const out = {};
+  db.forEach(function (c) {
+    if (!c) return;
+    if (c.nombre) out[c.nombre] = c.dias;
+    if (c.id) out[c.id] = c.dias;
+  });
+  return out;
+})();
+
+/** Días hasta cosecha por id o nombre de genética (catálogo cannabis). */
+function getDiasCosechaVariedad(variedad) {
+  const v = String(variedad || '').trim();
+  if (!v) return 50;
+  if (typeof getCultivoDB === 'function') {
+    const c = getCultivoDB(v);
+    if (c && Number.isFinite(c.dias)) return c.dias;
+  }
+  if (typeof DIAS_COSECHA !== 'undefined' && DIAS_COSECHA[v] != null) {
+    return Number(DIAS_COSECHA[v]);
+  }
+  return 50;
+}
 
 const COMPATIBILIDAD = {
   'A-A': { ok: true, icono: '✅', texto: 'Compatibles — mismo depósito' },

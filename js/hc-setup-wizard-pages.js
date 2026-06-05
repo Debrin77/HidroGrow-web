@@ -207,12 +207,18 @@ function renderSetupPage() {
       next.removeAttribute('aria-hidden');
       next.tabIndex = 0;
       if (setupPagina === ultimoPaso) {
+        var camBtn =
+          typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+        var germBtn =
+          typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
         next.textContent =
           typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()
             ? '✅ Guardar sala → checklist montaje'
-            : typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion()
-              ? '✅ Guardar → checklist propagador'
-              : '✅ Guardar y empezar';
+            : germBtn && camBtn === 'semilla_hidro'
+              ? '✅ Guardar → prep hidro y germinación'
+              : germBtn
+                ? '✅ Guardar → checklist propagador'
+                : '✅ Guardar y empezar';
         next.setAttribute('aria-label', 'Guardar configuración y empezar');
       } else {
         next.textContent = 'Siguiente →';
@@ -288,6 +294,12 @@ function setupNext() {
     }
     if (setupPagina === SETUP_PAGE_PREMIUM_END && typeof syncSetupDataFromPremium === 'function') {
       syncSetupDataFromPremium();
+    }
+    if (
+      setupPagina === SETUP_PAGE_PREMIUM_3 &&
+      typeof persistSetupSensoresHardware === 'function'
+    ) {
+      persistSetupSensoresHardware();
     }
   }
   if (setupPagina === SETUP_PAGE_CULTIVOS && typeof validarPlantasVsSalaPremium === 'function') {
@@ -1022,21 +1034,33 @@ function ensureSetupSensoresHardware() {
   return setupData.sensoresHardware;
 }
 
+function setupSensHwInputs() {
+  const ec =
+    document.getElementById('setupPremiumSensHwEC') ||
+    document.getElementById('setupSensHwEC');
+  const ph =
+    document.getElementById('setupPremiumSensHwPH') ||
+    document.getElementById('setupSensHwPH');
+  const hum =
+    document.getElementById('setupPremiumSensHwHum') ||
+    document.getElementById('setupSensHwHum');
+  return { ec: ec, ph: ph, hum: hum };
+}
+
 function cargarSetupSensoresHwUI() {
   const s = ensureSetupSensoresHardware();
-  const e = document.getElementById('setupSensHwEC');
-  const p = document.getElementById('setupSensHwPH');
-  const h = document.getElementById('setupSensHwHum');
-  if (e) e.checked = !!s.ec;
-  if (p) p.checked = !!s.ph;
-  if (h) h.checked = !!s.humedad;
+  const inp = setupSensHwInputs();
+  if (inp.ec) inp.ec.checked = !!s.ec;
+  if (inp.ph) inp.ph.checked = !!s.ph;
+  if (inp.hum) inp.hum.checked = !!s.humedad;
 }
 
 function persistSetupSensoresHardware() {
   const s = ensureSetupSensoresHardware();
-  s.ec = !!document.getElementById('setupSensHwEC')?.checked;
-  s.ph = !!document.getElementById('setupSensHwPH')?.checked;
-  s.humedad = !!document.getElementById('setupSensHwHum')?.checked;
+  const inp = setupSensHwInputs();
+  if (inp.ec) s.ec = !!inp.ec.checked;
+  if (inp.ph) s.ph = !!inp.ph.checked;
+  if (inp.hum) s.humedad = !!inp.hum.checked;
 }
 
 let _nutrientesMostrarCatalogoCompleto = false;

@@ -396,16 +396,17 @@
       banner.classList.remove('setup-hidden');
       banner.className = 'setup-box-info setup-mb-8';
       var pH = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
-      var planH =
-        Number.isFinite(pH.numSemillasGerm) && pH.sustratoGerm
-          ? ' Plan: <strong>' +
-            pH.numSemillasGerm +
-            ' semilla(s)</strong> en <strong>' +
-            (typeof etiquetaSustratoGerm === 'function'
-              ? etiquetaSustratoGerm(pH.sustratoGerm)
-              : pH.sustratoGerm) +
-            '</strong> (bloque de abajo).'
-          : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
+      var resH =
+        typeof planGermResumenListo === 'function' ? planGermResumenListo(pH) : null;
+      var planH = resH
+        ? ' Plan: <strong>' +
+          resH.num +
+          ' semilla(s)</strong> en <strong>' +
+          (typeof etiquetaSustratoGerm === 'function'
+            ? etiquetaSustratoGerm(resH.sustrato)
+            : resH.sustrato) +
+          '</strong> (bloque de abajo).'
+        : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo (paso Detalle origen o bloque de plan).';
       var cupH = !!(inst.cupula_maceta && inst.cupula_maceta.id);
       banner.innerHTML =
         '<strong>Semilla en hidro:</strong> germinas en el <strong>cubo DWC/RDWC</strong> (net pot en el depósito).' +
@@ -420,14 +421,15 @@
       const tieneProp = !!(inst.propagador && inst.propagador.id);
       banner.className = tieneProp ? 'setup-box-info setup-mb-8' : 'setup-box-warn setup-mb-8';
       var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
-      var plan =
-        Number.isFinite(p.numSemillasGerm) && p.sustratoGerm
-          ? ' Plan: <strong>' +
-            p.numSemillasGerm +
-            ' semilla(s)</strong> en <strong>' +
-            (typeof etiquetaSustratoGerm === 'function' ? etiquetaSustratoGerm(p.sustratoGerm) : p.sustratoGerm) +
-            '</strong> (bloque de abajo).'
-          : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
+      var resP =
+        typeof planGermResumenListo === 'function' ? planGermResumenListo(p) : null;
+      var plan = resP
+        ? ' Plan: <strong>' +
+          resP.num +
+          ' semilla(s)</strong> en <strong>' +
+          (typeof etiquetaSustratoGerm === 'function' ? etiquetaSustratoGerm(resP.sustrato) : resP.sustrato) +
+          '</strong> (bloque de abajo).'
+        : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
       banner.innerHTML = tieneProp
         ? '<strong>Semilla:</strong> propagador en catálogo.' + plan + ' Seguimiento en <strong>Inicio → Germinación</strong> y <strong>Sistema → Propagador</strong>.'
         : '<strong>Semilla:</strong> marca un <strong>domo / propagador</strong> arriba y completa el plan de semillas/sustrato abajo.';
@@ -444,6 +446,49 @@
     banner.innerHTML = '';
   }
 
+  function renderPremiumSensoresIoTBlock() {
+    var host = el('setupPremiumSensoresIoTHost');
+    if (!host) return;
+    if (!isSemillaHidroEquipWizard()) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
+    host.classList.remove('setup-hidden');
+    if (host.querySelector('#setupPremiumSensHwEC')) {
+      if (typeof cargarSetupSensoresHwUI === 'function') cargarSetupSensoresHwUI();
+      return;
+    }
+    host.innerHTML =
+      '<div class="setup-sensores-box setup-sensores-box--iot">' +
+      '<div class="setup-sensores-title">' +
+      '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="#hc-i-antenna"/></svg> ' +
+      'Sondas continuas e IoT (opcional)</div>' +
+      '<div class="setup-sensores-desc">' +
+      'El <strong>medidor pen / combo EC·pH</strong> ya lo elegiste arriba en el catálogo. ' +
+      'Aquí solo anotas <strong>sondas o medidores fijos</strong> además del pen: dejan constancia en el checklist ' +
+      'y, si son compatibles con <strong>gateway WiFi</strong> (ESP32 HidroGrow, Bluelab Pulse, Growth Control, etc.), ' +
+      'pueden autocompletar lecturas en <strong>Medir</strong> tras validar la conexión.</div>' +
+      '<div class="setup-box-info setup-mb-8" role="note">' +
+      '<strong>Sin sondas:</strong> registra manualmente en Medir — la app funciona igual. ' +
+      '<strong>Con IoT:</strong> coste cero en servidores; el hardware es tuyo en tu red local.</div>' +
+      '<div class="setup-sensores-list">' +
+      '<label class="setup-sensores-item">' +
+      '<input type="checkbox" id="setupPremiumSensHwEC" onchange="persistSetupSensoresHardware()">' +
+      '<span>EC / conductividad continua en depósito o solución</span></label>' +
+      '<label class="setup-sensores-item">' +
+      '<input type="checkbox" id="setupPremiumSensHwPH" onchange="persistSetupSensoresHardware()">' +
+      '<span>pH continuo (sonda sumergida o medidor fijo)</span></label>' +
+      '<label class="setup-sensores-item">' +
+      '<input type="checkbox" id="setupPremiumSensHwHum" onchange="persistSetupSensoresHardware()">' +
+      '<span>Humedad (sustrato, aire o ambos)</span></label>' +
+      '</div>' +
+      '<div class="setup-mt-8">' +
+      '<button type="button" class="btn btn-sm btn-secondary" onclick="goTab(\'mediciones\');setTimeout(function(){if(typeof hcIotOpenWifiWizard===\'function\')hcIotOpenWifiWizard();},400)">Configurar gateway WiFi</button>' +
+      '</div></div>';
+    if (typeof cargarSetupSensoresHwUI === 'function') cargarSetupSensoresHwUI();
+  }
+
   function renderEquipamientoPremiumUI(opts) {
     opts = opts || {};
     renderEquipOrigenGermBanner();
@@ -452,6 +497,7 @@
       renderEquipCatalogInto(el('setupEquipCatalogGrid'), 'setupEquipCatalog_');
     }
     renderEquipFaltantesHint();
+    renderPremiumSensoresIoTBlock();
     const cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     const soloPropagador =

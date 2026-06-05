@@ -22,7 +22,7 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   assert.match(cultivo, /SETUP_PAGE_PREMIUM_END/);
   assert.match(
     cultivo,
-    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
+    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_EQUIP[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
   );
   assert.match(setup, /wizardHidroGermCompleto/);
   assert.match(setup, /salaPreGermConfigAt/);
@@ -83,6 +83,19 @@ test('checklist 7: fecha siembra en inicio y calendario', () => {
   const plan = read('js/hc-premium-germ-plan.js');
   assert.match(plan, /hcCaminoSemillaGermEnSetup/);
   assert.match(plan, /fechaSiembraGerm/);
+});
+
+test('equipamiento hidro: medidor y bomba_aire solo en prep_hidro (sin duplicar en circuito)', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /EQUIP_PREP_HIDRO_KEYS_DEDUP/);
+  assert.match(cat, /keys: \['medidor', 'bomba_aire'\]/);
+  assert.match(cat, /if \(g\.id === 'hidro'\)/);
+  assert.match(cat, /EQUIP_PREP_HIDRO_KEYS_DEDUP\.indexOf\(k\) < 0/);
+  assert.match(cat, /piedra difusora/i);
+  assert.doesNotMatch(
+    cat,
+    /hidroGermEquip[\s\S]{0,900}required: g\.id === 'sala' \|\| g\.id === 'hidro'/
+  );
 });
 
 test('equipamiento hidro: cúpula por maceta, no propagador en grupo opcional', () => {
@@ -189,6 +202,20 @@ test('semilla_hidro: cierre sin segundo asistente DWC ni copy de traslado', () =
   assert.match(life, /Checklist operativa pendiente/);
 });
 
+test('semilla_hidro: plan de semillas no se muestra con defaults (solo elección usuario)', () => {
+  const plan = read('js/hc-premium-germ-plan.js');
+  const equip = read('js/hc-equipamiento-wizard.js');
+  assert.match(plan, /function planGermResumenListo/);
+  assert.match(plan, /numSemillasGermManual/);
+  assert.match(plan, /sustratoGermManual/);
+  assert.match(plan, /cam === 'semilla_hidro'[\s\S]{0,120}return 0/);
+  assert.match(equip, /planGermResumenListo/);
+  assert.doesNotMatch(
+    equip,
+    /Number\.isFinite\(pH\.numSemillasGerm\) && pH\.sustratoGerm/
+  );
+});
+
 test('instalaciones: sync UI al cambiar torre sin mezclar caminos', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
   const torres = read('js/app-hc-torres-badges-notifs.js');
@@ -218,4 +245,31 @@ test('semilla_hidro: resumen pasos orden prep → sala → hidro → depósito �
   const trasladoPos = b.indexOf("id: 'traslado'");
   assert.ok(hidroPos < fasesPos, 'DWC antes de las 6 fases');
   assert.ok(fasesPos < trasladoPos, '6 fases antes del checklist operativa');
+});
+
+test('semilla_hidro: sondas IoT en premium y sin paso Equipamiento repetido', () => {
+  const equip = read('js/hc-equipamiento-wizard.js');
+  const pages = read('js/hc-setup-wizard-pages.js');
+  const html = read('index.html');
+  assert.match(equip, /function renderPremiumSensoresIoTBlock/);
+  assert.match(equip, /isSemillaHidroEquipWizard\(\)/);
+  assert.match(equip, /setupPremiumSensHwEC/);
+  assert.match(equip, /gateway WiFi/);
+  assert.match(pages, /function setupSensHwInputs/);
+  assert.match(pages, /setupPremiumSensHwEC/);
+  assert.match(html, /id="setupPremiumSensoresIoTHost"/);
+});
+
+test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
+  const html = read('index.html');
+  const cfg = read('js/hc-bootstrap-config.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const iGen = html.indexOf('genetics-db.js');
+  const iCult = html.indexOf('cultivos-db.js');
+  const iBoot = html.indexOf('hc-bootstrap-config.js');
+  assert.ok(iGen >= 0 && iCult >= 0 && iBoot >= 0, 'scripts de catálogo presentes');
+  assert.ok(iGen < iBoot && iCult < iBoot, 'genetics y cultivos-db antes de bootstrap-config');
+  assert.match(cfg, /function getDiasCosechaVariedad/);
+  assert.match(cfg, /if \(c\.id\) out\[c\.id\]/);
+  assert.match(cultivo, /camAj !== 'semilla_propagador' && camAj !== 'semilla_hidro'/);
 });

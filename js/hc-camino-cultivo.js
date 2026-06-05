@@ -136,6 +136,24 @@
     } else if (typeof persistOrigenASetupData === 'function') {
       persistOrigenASetupData(def.origenPlanta);
     }
+    if (def.origenPlanta === 'semilla') {
+      var esNuevaGerm =
+        typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre;
+      var premGuard =
+        typeof state !== 'undefined' &&
+        state &&
+        state.configTorre &&
+        state.configTorre.premiumSetup;
+      if (
+        esNuevaGerm ||
+        !premGuard ||
+        !(premGuard.numSemillasGermManual || premGuard.sustratoGermManual)
+      ) {
+        if (typeof hcResetPremiumGermPlanBorrador === 'function') {
+          hcResetPremiumGermPlanBorrador(p);
+        }
+      }
+    }
     if (typeof state !== 'undefined' && state && state.configTorre) {
       state.configTorre.caminoCultivo = def.id;
       if (!state.configTorre.premiumSetup || typeof state.configTorre.premiumSetup !== 'object') {
@@ -674,7 +692,8 @@
   function hcAjustarTorrePropagadorSemillas(cfg, nObjetivo, opts) {
     opts = opts || {};
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    var camAj = getCaminoCultivo(cfg);
+    if (camAj !== 'semilla_propagador' && camAj !== 'semilla_hidro') return false;
     if (typeof state === 'undefined' || !state) return false;
     if (cfg._hcAjustandoTorrePropagador) return false;
     cfg._hcAjustandoTorrePropagador = true;
@@ -1026,6 +1045,7 @@
     var cam = getCaminoCultivo();
     if (cam === 'semilla_hidro') {
       [
+        typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
         typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
         typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
       ].forEach(function (p) {

@@ -2012,6 +2012,7 @@ function guardarSetupYContinuarCore() {
     );
   }
 
+  if (typeof persistSetupSensoresHardware === 'function') persistSetupSensoresHardware();
   const sensHwGuardar = {
     ec: !!(setupData.sensoresHardware && setupData.sensoresHardware.ec),
     ph: !!(setupData.sensoresHardware && setupData.sensoresHardware.ph),
@@ -2587,8 +2588,20 @@ function guardarSetupYContinuarCore() {
     try {
       if (typeof refreshPlantasInstalacionResumen === 'function') refreshPlantasInstalacionResumen();
     } catch (_) {}
-    if (typeof updateTorreStats === 'function') updateTorreStats();
-    if (typeof updateDashboard === 'function') updateDashboard();
+    try {
+      if (typeof updateTorreStats === 'function') updateTorreStats();
+    } catch (eTorreStats) {
+      try {
+        console.error('updateTorreStats (post-guardado asistente)', eTorreStats);
+      } catch (_) {}
+    }
+    try {
+      if (typeof updateDashboard === 'function') updateDashboard();
+    } catch (eDash) {
+      try {
+        console.error('updateDashboard (post-guardado asistente)', eDash);
+      } catch (_) {}
+    }
     try {
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     } catch (_) {}

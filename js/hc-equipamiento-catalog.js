@@ -80,7 +80,7 @@ const EQUIP_CATEGORIAS = {
       { key: 'lpm', label: 'Caudal (L/min)', type: 'number' },
       { key: 'watts', label: 'W', type: 'number' },
     ],
-    hint: 'Esencial en DWC/RDWC. Dimensiona L/min según litros del depósito y número de difusores.',
+    hint: 'Esencial en DWC/RDWC: incluye piedra difusora (o aireador) en el depósito. Dimensiona L/min según litros y número de burbujeadores.',
   },
   bomba_recirc: {
     id: 'bomba_recirc',
@@ -525,8 +525,12 @@ const EQUIP_PREP_HIDRO_GROUP = {
   label: 'Prep germinación en cubo',
   icon: '🪴',
   keys: ['medidor', 'bomba_aire'],
-  hint: 'La semilla va en net pot dentro del DWC/RDWC (agua + burbujeo). Medidor y oxigenador del depósito. Mini domo sobre la maceta es opcional (checklist prep), no hace falta bandeja propagador.',
+  hint:
+    'La semilla va en net pot dentro del DWC/RDWC. Aquí solo: medidor EC/pH y bomba de aire con piedra difusora en el depósito (oxigenación para germinar en el cubo). Mini domo por maceta es opcional más abajo.',
 };
+
+/** Claves ya cubiertas en Prep cubo (no repetir en «Circuito hidro» del mismo paso). */
+var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire'];
 
 function getPremiumOrigenPlanta() {
   try {
@@ -616,9 +620,7 @@ function getEquipCatalogGroups(entorno) {
     return [
       Object.assign({}, EQUIP_PREP_HIDRO_GROUP, {
         required: true,
-        hint:
-          EQUIP_PREP_HIDRO_GROUP.hint +
-          ' Debajo: sala (carpa, LED) y circuito hidro del asistente.',
+        hint: EQUIP_PREP_HIDRO_GROUP.hint + ' Debajo: equipamiento de sala (carpa, LED, extractor).',
       }),
       {
         id: 'germ_opcional_hidro',
@@ -631,9 +633,26 @@ function getEquipCatalogGroups(entorno) {
           'No sustituye germinar en el cubo. Si usas cúpula: una por cada net pot/cesta (DWC/RDWC), no bandeja propagador de muchas celdas.',
       },
     ].concat(
-      base.map(function (g) {
-        return Object.assign({}, g, { required: g.id === 'sala' || g.id === 'hidro' });
-      })
+      base
+        .map(function (g) {
+          if (g.id === 'hidro') {
+            var keysRest = (g.keys || []).filter(function (k) {
+              return EQUIP_PREP_HIDRO_KEYS_DEDUP.indexOf(k) < 0;
+            });
+            if (!keysRest.length) return null;
+            return Object.assign({}, g, {
+              label: 'Circuito hidro · recirculación',
+              keys: keysRest,
+              required: false,
+              hint:
+                'Medidor y oxigenador del depósito ya están arriba. Aquí solo bomba de recirculación si montas RDWC (DWC puro puede omitirla).',
+            });
+          }
+          return Object.assign({}, g, { required: g.id === 'sala' });
+        })
+        .filter(function (g) {
+          return g && g.keys && g.keys.length;
+        })
     );
   }
 
