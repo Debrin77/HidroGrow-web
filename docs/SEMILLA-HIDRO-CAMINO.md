@@ -184,6 +184,15 @@ Orden típico:
 
 Cada entrada en `state.torres` / `configTorre` activa lleva su propio `caminoCultivo`, genética, fechas y fases. Cambiar de torre no mezcla germinación ni prep.
 
+Al **cambiar de instalación** (`cambiarTorreActiva`):
+
+1. `guardarEstadoTorreActual()` persiste el slot anterior antes de cargar el nuevo.
+2. `cargarEstadoTorre` clona `config` + `torre` del slot (sin punteros compartidos).
+3. `hcGerminacionSyncDesdePremium` fija `germinacionFlow.modo` según el camino del slot (`hidro_directo` vs `propagador`).
+4. `hcSincronizarUiInstalacionActiva` repinta pestañas, resumen de camino y panel Sistema según la instalación activa.
+
+En hidro directo el checklist de cierre se guarda también como `checklistOperativaOk` (alias de `checklistTrasladoOk` legacy).
+
 ---
 
 ## Checklist de prueba manual

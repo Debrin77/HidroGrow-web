@@ -404,6 +404,33 @@
     return '';
   }
 
+  function checklistCierreGermOk(g) {
+    if (typeof global.germChecklistCierreOk === 'function') return global.germChecklistCierreOk(g);
+    if (!g || typeof g !== 'object') return false;
+    if (g.checklistOperativaOk === true) return true;
+    return !!g.checklistTrasladoOk;
+  }
+
+  /** Tras cambiar de instalación: re-sincroniza camino, pestañas y resumen sin mezclar datos. */
+  function hcSincronizarUiInstalacionActiva(opts) {
+    opts = opts || {};
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    try {
+      if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
+    } catch (_) {}
+    try {
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ visibilidadOnly: !!opts.soloVisibilidad });
+      }
+    } catch (_) {}
+    try {
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
+    try {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+    } catch (_) {}
+  }
+
   function hcGerminacionBloqueada(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (typeof hcGerminacionBloqueadaPorMontaje === 'function' && hcGerminacionBloqueadaPorMontaje(cfg)) {
@@ -443,11 +470,11 @@
           if (
             typeof germinacionConcluida === 'function' &&
             germinacionConcluida(cfg) &&
-            !g.checklistTrasladoOk
+            !checklistCierreGermOk(g)
           ) {
             return 'traslado';
           }
-        } else if (allDone && !g.checklistTrasladoOk) {
+        } else if (allDone && !checklistCierreGermOk(g)) {
           return 'traslado';
         }
       }
@@ -475,7 +502,7 @@
     for (var i = 0; i < ids.length; i++) {
       if (!pasos[ids[i]] || !pasos[ids[i]].doneAt) return false;
     }
-    return !!g.checklistTrasladoOk;
+    return checklistCierreGermOk(g);
   }
 
   function hcCaminoRequiereConfigHidroPendiente(cfg) {
@@ -1129,7 +1156,7 @@
             {
               id: 'traslado',
               label: 'Checklist traslado',
-              done: !!g.checklistTrasladoOk,
+              done: checklistCierreGermOk(g),
               action: 'irGerminacion',
             },
             {
@@ -1196,7 +1223,7 @@
           {
             id: 'traslado',
             label: 'Checklist operativa',
-            done: !!g.checklistTrasladoOk,
+            done: checklistCierreGermOk(g),
             action: 'irGerminacion',
           },
           {
@@ -1399,6 +1426,8 @@
   global.hcGerminacionBloqueadaPorPrepSistema = hcGerminacionBloqueadaPorPrepSistema;
   global.germinacionSeisFasesCompletas = germinacionSeisFasesCompletas;
   global.hcGerminacionBloqueada = hcGerminacionBloqueada;
+  global.hcSincronizarUiInstalacionActiva = hcSincronizarUiInstalacionActiva;
+  global.checklistCierreGermOk = checklistCierreGermOk;
   global.hcCaminoEsSemilla = hcCaminoEsSemilla;
   global.hcCaminoRequiereConfigHidroPendiente = hcCaminoRequiereConfigHidroPendiente;
   global.hidroInstalacionCerrada = hidroInstalacionCerrada;

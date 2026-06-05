@@ -189,6 +189,19 @@ test('semilla_hidro: cierre sin segundo asistente DWC ni copy de traslado', () =
   assert.match(life, /Checklist operativa pendiente/);
 });
 
+test('instalaciones: sync UI al cambiar torre sin mezclar caminos', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const torres = read('js/app-hc-torres-badges-notifs.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(cultivo, /function hcSincronizarUiInstalacionActiva/);
+  assert.match(cultivo, /global\.hcSincronizarUiInstalacionActiva/);
+  assert.match(torres, /hcSincronizarUiInstalacionActiva/);
+  assert.match(torres, /camCargarTorre === 'semilla_propagador' \|\| camCargarTorre === 'semilla_hidro'/);
+  assert.match(germ, /function germChecklistCierreOk/);
+  assert.match(germ, /checklistOperativaOk/);
+  assert.match(germ, /if \(modoFijo\) g\.modo = modoFijo/);
+});
+
 test('semilla_hidro: resumen pasos orden prep → sala → hidro → depósito → fases → operativa', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
   const anchor = cultivo.indexOf("label: 'Prep en hidro'");

@@ -579,6 +579,11 @@ var _hcCambiarTorreGen = 0;
 function hcRefrescarUiTrasCambioTorre(tab) {
   tab = tab || (typeof currentTab !== 'undefined' ? currentTab : 'inicio');
   try {
+    if (typeof hcSincronizarUiInstalacionActiva === 'function') {
+      hcSincronizarUiInstalacionActiva({ soloVisibilidad: tab !== 'inicio' });
+    }
+  } catch (_) {}
+  try {
     if (typeof hcApplyCargarTorreRiegoPendiente === 'function') hcApplyCargarTorreRiegoPendiente();
   } catch (_) {}
   try {
@@ -865,6 +870,13 @@ function aplicarCargarTorreUiDesdeEstado(opts) {
   try {
     if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
   } catch (_) {}
+  if (!opts.boot) {
+    try {
+      if (typeof hcSincronizarUiInstalacionActiva === 'function') {
+        hcSincronizarUiInstalacionActiva({ soloVisibilidad: true });
+      }
+    } catch (_) {}
+  }
 }
 
 function cargarEstadoTorre(idx, opts) {
@@ -956,37 +968,38 @@ function cargarEstadoTorre(idx, opts) {
       if (typeof asegurarCamposFilaTorre === 'function') asegurarCamposFilaTorre(cell);
     });
   }
-  if (
-    typeof getCaminoCultivo === 'function' &&
-    getCaminoCultivo(state.configTorre) === 'semilla_propagador'
-  ) {
-    var runPropagadorTorreSync = function () {
+  var camCargarTorre =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(state.configTorre) : '';
+  if (camCargarTorre === 'semilla_propagador' || camCargarTorre === 'semilla_hidro') {
+    var runGermTorreSync = function () {
       try {
-        if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
-          hcRepararSemillasPropagadorAlCargar(state.configTorre);
-        } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
-          hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
-        }
-        if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
-          syncPremiumNutrienteGermFromConfig(state.configTorre);
+        if (camCargarTorre === 'semilla_propagador') {
+          if (typeof hcRepararSemillasPropagadorAlCargar === 'function') {
+            hcRepararSemillasPropagadorAlCargar(state.configTorre);
+          } else if (typeof hcAjustarTorrePropagadorSemillas === 'function') {
+            hcAjustarTorrePropagadorSemillas(state.configTorre, cesR);
+          }
+          if (typeof syncPremiumNutrienteGermFromConfig === 'function') {
+            syncPremiumNutrienteGermFromConfig(state.configTorre);
+          }
         }
         if (typeof hcGerminacionSyncDesdePremium === 'function') {
           hcGerminacionSyncDesdePremium(state.configTorre);
         }
-      } catch (ePropTorre) {
+      } catch (eGermTorre) {
         try {
-          console.warn('hcRepararSemillasPropagadorAlCargar cargarEstadoTorre', ePropTorre);
+          console.warn('runGermTorreSync cargarEstadoTorre', eGermTorre);
         } catch (_) {}
       }
     };
     if (deferUi) {
       if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runPropagadorTorreSync, { timeout: 2800 });
+        requestIdleCallback(runGermTorreSync, { timeout: 2800 });
       } else {
-        setTimeout(runPropagadorTorreSync, 120);
+        setTimeout(runGermTorreSync, 120);
       }
     } else {
-      runPropagadorTorreSync();
+      runGermTorreSync();
     }
   }
   // Restaurar toldo / día de riego; plantas y edad vía sincronizarInputsRiego (torre activa + slot guardado)

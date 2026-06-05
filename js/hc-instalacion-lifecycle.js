@@ -469,7 +469,13 @@
       var g = cfg.germinacionFlow;
       var camGermDep =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-      var faltaTraslado = g && !g.checklistTrasladoOk;
+      var faltaTraslado =
+        g &&
+        !(typeof checklistCierreGermOk === 'function'
+          ? checklistCierreGermOk(g)
+          : typeof germChecklistCierreOk === 'function'
+            ? germChecklistCierreOk(g)
+            : g.checklistTrasladoOk);
       if (camGermDep === 'semilla_hidro') {
         if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
           return {

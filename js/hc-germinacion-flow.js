@@ -135,6 +135,21 @@
     return null;
   }
 
+  /** Lectura unificada del checklist de cierre (persistencia legacy: checklistTrasladoOk). */
+  function germChecklistCierreOk(g) {
+    if (!g || typeof g !== 'object') return false;
+    if (g.checklistOperativaOk === true) return true;
+    return !!g.checklistTrasladoOk;
+  }
+
+  function setGermChecklistCierreOk(g, cfg, val) {
+    if (!g || typeof g !== 'object') return;
+    var ok = !!val;
+    g.checklistTrasladoOk = ok;
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_hidro') g.checklistOperativaOk = ok;
+  }
+
   /** Copy post-6-fases: hidro directo ≠ traslado desde propagador. */
   function labelsCierreGerminacion(cfg) {
     cfg = cfg || cfgActiva();
@@ -574,6 +589,11 @@
     }
     if (!Array.isArray(g.nutrientesAplicados)) g.nutrientesAplicados = [];
     migrateChecklistLegacy(cfg, g);
+    var modoFijo = getCaminoGermModoFijo(cfg);
+    if (modoFijo) g.modo = modoFijo;
+    if (modoFijo === 'hidro_directo' && g.checklistTrasladoOk && g.checklistOperativaOk == null) {
+      g.checklistOperativaOk = true;
+    }
     return g;
   }
 
@@ -612,8 +632,12 @@
     g.concluidaAt = new Date().toISOString();
     persistirGerminacion();
     if (typeof showToast === 'function') {
+      var camConc =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
       showToast(
-        '✓ Germinación marcada como concluida · configura el sistema hidropónico para el traslado',
+        camConc === 'semilla_hidro'
+          ? '✓ Germinación marcada como concluida · sigue el checklist operativa en Inicio'
+          : '✓ Germinación marcada como concluida · configura el sistema hidropónico para el traslado',
         false,
         { durationMs: 6200, prominent: true }
       );
@@ -866,7 +890,7 @@
     }
     const modoAct = getModoGerminacion(cfg, g);
     const paso = PASOS[idx];
-    if (paso.id === 'dwc' && !g.checklistTrasladoOk) {
+    if (paso.id === 'dwc' && !germChecklistCierreOk(g)) {
       if (typeof showToast === 'function') {
         showToast(labelsCierreGerminacion(cfg).fase6Toast, true);
       }
@@ -907,7 +931,7 @@
         try {
           document.getElementById('hcGermTrasladoCta')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } catch (_) {}
-        if (!g.checklistTrasladoOk) hcGerminacionAbrirChecklistTraslado();
+        if (!germChecklistCierreOk(g)) hcGerminacionAbrirChecklistTraslado();
       }, 900);
     }
   }
@@ -1010,7 +1034,7 @@
     var all = CHECKLIST_TRASLADO.every(function (it) {
       return !!g.checklistTraslado[it.id];
     });
-    g.checklistTrasladoOk = all;
+    setGermChecklistCierreOk(g, cfg, all);
     persistirGerminacion();
     var btn = document.getElementById('hcGermChecklistContinuar');
     if (btn) btn.disabled = !all;
@@ -1066,7 +1090,7 @@
       '</div>' +
       '<div class="checklist-bloqueo-actions">' +
       '<button type="button" id="hcGermChecklistContinuar" class="checklist-pregunta-btn-main"' +
-      (g.checklistTrasladoOk ? '' : ' disabled') +
+      (germChecklistCierreOk(g) ? '' : ' disabled') +
       '>' +
       esc(lblCl.btnContinuar) +
       '</button></div>' +
@@ -1086,7 +1110,7 @@
     });
     document.getElementById('hcGermChecklistLater').addEventListener('click', cerrar);
     document.getElementById('hcGermChecklistContinuar').addEventListener('click', function () {
-      if (!g.checklistTrasladoOk) {
+      if (!germChecklistCierreOk(g)) {
         if (typeof showToast === 'function') showToast('Marca todos los puntos del checklist', true);
         return;
       }
@@ -1171,7 +1195,7 @@
       }
       return;
     }
-    if (!skipChecklistGate && !g.checklistTrasladoOk) {
+    if (!skipChecklistGate && !germChecklistCierreOk(g)) {
       hcGerminacionAbrirChecklistTraslado();
       return;
     }
@@ -2321,6 +2345,8 @@
 
   var refreshDashGerminacionHub = renderDashGerminacionHub;
 
+  global.germChecklistCierreOk = germChecklistCierreOk;
+  global.setGermChecklistCierreOk = setGermChecklistCierreOk;
   global.hcGerminacionActiva = hcGerminacionActiva;
   global.hcGerminacionSyncDesdePremium = hcGerminacionSyncDesdePremium;
   global.hcGerminacionSyncEquipDesdeInstalado = hcGerminacionSyncEquipDesdeInstalado;
