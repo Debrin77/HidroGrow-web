@@ -109,6 +109,13 @@ test('prep hidro: tras checklist navega a montaje si sala ya configurada', () =>
   assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);
 });
 
+test('hcDashRecargaPropagadorInfo: diasObjetivo usa diasObj (sin ReferenceError)', () => {
+  const fase = read('js/hc-camino-fase.js');
+  assert.match(fase, /var diasObj =[\s\S]*diasObjetivoConclusionGerm/);
+  assert.doesNotMatch(fase, /diasObjetivo: diasObjetivo/);
+  assert.match(fase, /diasObjetivo: diasObj/);
+});
+
 test('documentación semilla hidro presente', () => {
   const doc = read('docs/SEMILLA-HIDRO-CAMINO.md');
   assert.match(doc, /semilla_hidro/);

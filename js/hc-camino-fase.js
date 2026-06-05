@@ -618,7 +618,7 @@
       phCubo: spec.phCubo || '5.5',
       faseId: faseId,
       faseNutrienteOpcional: !faseNut,
-      diasObjetivo: diasObjetivo,
+      diasObjetivo: diasObj,
       nombreVar: spec.nombreGenetica || vid || '',
     };
   }
