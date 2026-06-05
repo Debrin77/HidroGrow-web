@@ -45,26 +45,63 @@
   ];
 
   var PREP_HIDRO_DIAS_OSCURIDAD = 2;
+  /** Tras brote verde: ventilar cúpula antes de retirarla por completo (consenso hidro). */
+  var PREP_HIDRO_HORAS_VENTILAR_CUPULA = '24–48';
 
   var ITEMS_PREP_HIDRO = [
-    { id: 'ph_netpot', label: 'Net pot y cubo de lana en el sistema', hint: 'Semilla nunca suelta en el depósito; solo en cubo dentro de la maceta.', accent: 'hydro' },
-    { id: 'ph_nivel', label: 'Nivel de agua mínimo / niebla de raíz', hint: 'EC 200–400 µS hasta enraizar; T° agua 20–24 °C.', accent: 'hydro' },
-    { id: 'ph_domo_mini', label: 'Mini domo o HR alta sobre la maceta', hint: 'Microclima hasta que la plántula aguante sin domo.', accent: 'germ' },
+    {
+      id: 'ph_sem_una',
+      label: '1 semilla por cubo de sustrato',
+      hint:
+        'Una semilla en cada cubo de lana/jiffy dentro de su net pot. No varias en el mismo cubo: compiten y hay que raear.',
+      accent: 'germ',
+    },
+    {
+      id: 'ph_netpot',
+      label: 'Net pot y cubo en cada cesta del sistema',
+      hint:
+        'Semilla nunca suelta en el depósito: solo en cubo dentro de la maceta. N cestas = N semillas del plan.',
+      accent: 'hydro',
+    },
+    {
+      id: 'ph_nivel',
+      label: 'Nivel de llenado del depósito (germinación)',
+      hint:
+        'Distancia nutriente → base del sustrato según medidas DWC/RDWC (fase plántula recién plantada). EC 200–400 µS; T° agua 20–24 °C.',
+      accent: 'hydro',
+    },
+    {
+      id: 'ph_domo_mini',
+      label: 'Cúpula individual en cada cesta (opcional)',
+      hint:
+        'Una mini cúpula por net pot (no bandeja propagador). Cierra los primeros días; mantiene HR local sobre la semilla.',
+      accent: 'germ',
+    },
     {
       id: 'ph_oscuridad',
       label: 'Oscuridad · días 1 y ' + PREP_HIDRO_DIAS_OSCURIDAD + ' tras siembra',
       hint:
-        'La semilla abre con humedad y calor, no con luz. Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.',
+        'La semilla abre con humedad y calor, no con luz. Cúpula cerrada; sin LED directo sobre la semilla en el cubo.',
+      accent: 'germ',
+    },
+    {
+      id: 'ph_luz',
+      label: 'Luz tenue 18/6 (desde día ' + (PREP_HIDRO_DIAS_OSCURIDAD + 1) + ' o brote verde)',
+      hint:
+        'En cuanto asoma el cotiledón, luz suave ~18 h/día. Si aún llevas cúpula, ábrela a ventilar antes de quitarla.',
+      accent: 'light',
+    },
+    {
+      id: 'ph_quitar_cupula',
+      label: 'Quitar cúpulas al brote verde (por cesta)',
+      hint:
+        'Al ver cotiledón: ventila la cúpula ' +
+        PREP_HIDRO_HORAS_VENTILAR_CUPULA +
+        ' h → retírala por maceta. Si HR sala ≥70 %, antes; si es muy seco, un poco más. Burbujeo suave sin encharcar.',
       accent: 'germ',
     },
     { id: 'ph_medidor', label: 'Medidor EC/pH a mano listo', hint: 'Calibración reciente; anota en Medir cuando subas EC.', accent: 'iot' },
     { id: 'ph_aire', label: 'Aireación del depósito comprobada', hint: 'Burbujeo suave; sin burbujas fuertes sobre la semilla.', accent: 'air' },
-    {
-      id: 'ph_luz',
-      label: 'Luz tenue 18/6 (desde día ' + (PREP_HIDRO_DIAS_OSCURIDAD + 1) + ' o brote verde)',
-      hint: 'Cuando asoma el cotiledón, luz suave ~18 h/día; evita LED de floración directo sobre la plántula.',
-      accent: 'light',
-    },
   ];
 
   var PROP_ICONS = {
@@ -83,14 +120,72 @@
     enr_luz: '💡',
     enr_termo: '🌡️',
     enr_aire: '🫧',
+    ph_sem_una: '🌱',
     ph_netpot: '🪴',
     ph_nivel: '💧',
     ph_domo_mini: '🫧',
     ph_oscuridad: '🌑',
+    ph_quitar_cupula: '🔓',
     ph_medidor: '📟',
     ph_aire: '💨',
     ph_luz: '💡',
   };
+
+  function prepHidroSustratoKey(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof resolveSustratoGermFromCfg === 'function') {
+      return resolveSustratoGermFromCfg(cfg);
+    }
+    var prem = (cfg && cfg.premiumSetup) || {};
+    return prem.sustratoGerm || cfg.sustratoGerm || 'lana';
+  }
+
+  function prepHidroSustratoEsCoco(cfg) {
+    var sKey = prepHidroSustratoKey(cfg);
+    if (typeof dwcSustratoFamiliaCoco === 'function' && typeof normalizaSustratoKey === 'function') {
+      return dwcSustratoFamiliaCoco(normalizaSustratoKey(sKey));
+    }
+    return String(sKey).toLowerCase().indexOf('coco') >= 0;
+  }
+
+  function prepHidroFmtRangoCm(lo, hi) {
+    var a = Number(lo);
+    var b = Number(hi);
+    if (!Number.isFinite(a) || !Number.isFinite(b)) return '—';
+    if (Math.abs(a - b) < 0.05) return String(Math.round(a * 10) / 10);
+    return String(Math.round(a * 10) / 10) + '–' + String(Math.round(b * 10) / 10);
+  }
+
+  /** Rango cm nutriente → base del sustrato en fase «recién plantada» (germinación en cubo). */
+  function prepHidroRangoLlenadoGermCm(cfg) {
+    cfg = cfg || getCfg();
+    var esCoco = prepHidroSustratoEsCoco(cfg);
+    if (typeof dwcRangoCmPorFaseYFamilia === 'function') {
+      var r = dwcRangoCmPorFaseYFamilia('recien', esCoco);
+      return { lo: r[0], hi: r[1], esCoco: esCoco, fase: 'recien' };
+    }
+    return { lo: 0, hi: esCoco ? 0 : 0.5, esCoco: esCoco, fase: 'recien' };
+  }
+
+  function prepHidroLitrosLlenadoSeguro(cfg) {
+    cfg = cfg || getCfg();
+    try {
+      if (typeof getDwcVolumenSeguroMaxLitrosDesdeConfig === 'function') {
+        var lit = getDwcVolumenSeguroMaxLitrosDesdeConfig(cfg);
+        if (Number.isFinite(lit) && lit > 0) return Math.round(lit * 10) / 10;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function prepHidroNumSemillasPlan(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof hcNumSemillasGermConfig === 'function') {
+      var n = hcNumSemillasGermConfig(cfg);
+      if (n >= 1) return n;
+    }
+    return 0;
+  }
 
   function renderPrepHidroOscuridadBannerHtml() {
     return (
@@ -99,7 +194,75 @@
       PREP_HIDRO_DIAS_OSCURIDAD +
       '</strong></p>' +
       '<p class="hc-germ-oscuridad-body">La semilla abre con <strong>humedad y calor</strong>, no con luz. Mantén oscuridad o luz muy tenue hasta que asoma el brote verde; entonces pasa a luz suave (~18 h/día).</p>' +
-      '<p class="hc-germ-oscuridad-lugar setup-field-hint">Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.</p>' +
+      '<p class="hc-germ-oscuridad-lugar setup-field-hint">Cúpula cerrada en cada cesta; sin LED directo sobre la semilla en el cubo.</p>' +
+      '</div>'
+    );
+  }
+
+  function renderPrepHidroCupulaBannerHtml() {
+    return (
+      '<div class="hc-germ-cupula-banner" role="note">' +
+      '<p class="hc-germ-cupula-title"><strong>Cúpulas individuales · cuándo quitarlas</strong></p>' +
+      '<p class="hc-germ-cupula-body">No es lo mismo que el propagador de bandeja: <strong>una cúpula por cesta/net pot</strong>. Tras el brote verde: <strong>ventila</strong> la cúpula ' +
+      PREP_HIDRO_HORAS_VENTILAR_CUPULA +
+      ' h y <strong>retírala por maceta</strong>. Dejarla demasiado tiempo en hidro favorece hongos y raíces blandas.</p>' +
+      '</div>'
+    );
+  }
+
+  function renderPrepHidroLlenadoBannerHtml(cfg) {
+    cfg = cfg || getCfg();
+    var r = prepHidroRangoLlenadoGermCm(cfg);
+    var cmTxt = prepHidroFmtRangoCm(r.lo, r.hi);
+    var litros = prepHidroLitrosLlenadoSeguro(cfg);
+    var medidasOk =
+      typeof dwcTieneMedidasCestaEnCfg === 'function' && dwcTieneMedidasCestaEnCfg(cfg);
+    var litrosTxt = litros != null ? ' · <strong>' + litros + ' L</strong> útiles orientativos' : '';
+    var medidasNote = medidasOk
+      ? ''
+      : '<p class="hc-germ-llenado-note setup-field-hint">Indica medidas del cubo y de la cesta en el asistente DWC/RDWC para afinar litros; el rango en cm ya es válido para germinar.</p>';
+    return (
+      '<div class="hc-germ-llenado-banner" role="note">' +
+      '<p class="hc-germ-llenado-title"><strong>Llenado del depósito · germinación</strong></p>' +
+      '<p class="hc-germ-llenado-value">Distancia nutriente → <strong>base del sustrato</strong>: <strong>' +
+      esc(cmTxt) +
+      ' cm</strong>' +
+      litrosTxt +
+      '</p>' +
+      '<p class="hc-germ-llenado-body setup-field-hint">Medida vertical desde la superficie del agua hasta la base del cubo de lana en la tapa. Fase «plántula recién plantada» · sustrato ' +
+      (r.esCoco ? 'coco' : 'lana/jiffy/esponja') +
+      '. EC 200–400 µS hasta enraizar. Misma lógica en <strong>Cultivo e instalación</strong> y checklist de primer llenado.</p>' +
+      medidasNote +
+      '</div>'
+    );
+  }
+
+  function renderPrepHidroSemillasBannerHtml(cfg) {
+    cfg = cfg || getCfg();
+    var n = prepHidroNumSemillasPlan(cfg);
+    var nTxt =
+      n >= 1
+        ? '<strong>' + n + '</strong> semilla' + (n === 1 ? '' : 's') + ' → <strong>' + n + '</strong> cubo' + (n === 1 ? '' : 's') + ' / cesta' + (n === 1 ? '' : 's')
+        : 'Indica cuántas semillas en el plan de germinación (arriba)';
+    return (
+      '<div class="hc-germ-sem-banner" role="note">' +
+      '<p class="hc-germ-sem-title"><strong>1 semilla por sustrato</strong></p>' +
+      '<p class="hc-germ-sem-body">' +
+      nTxt +
+      '. Nunca varias semillas en el mismo cubo.</p></div>'
+    );
+  }
+
+  /** Bloque guía prep hidro: semillas, oscuridad, cúpulas y llenado (modal + Sistema). */
+  function renderPrepHidroGuiaGermHtml(cfg) {
+    cfg = cfg || getCfg();
+    if (!esRutaGermHidro(cfg)) return '';
+    return (
+      '<div class="hc-prep-hidro-guia">' +
+      renderPrepHidroSemillasBannerHtml(cfg) +
+      renderPrepHidroOscuridadBannerHtml() +
+      renderPrepHidroCupulaBannerHtml() +
+      renderPrepHidroLlenadoBannerHtml(cfg) +
       '</div>'
     );
   }
@@ -232,6 +395,22 @@
           ' L de agua destilada/RO + abono' +
           (nomD ? ' (' + nomD + ')' : '') +
           ' según la receta de abajo. Cierra el sobrante en botella oscura en nevera (3–5 días). Después, solo ~2–3 mm en la bandeja del domo.';
+      }
+      if (esRutaGermHidro(cfg) && it.id === 'ph_nivel') {
+        var rNiv = prepHidroRangoLlenadoGermCm(cfg);
+        var litNiv = prepHidroLitrosLlenadoSeguro(cfg);
+        copy.hint =
+          'Nutriente → base del sustrato: ' +
+          prepHidroFmtRangoCm(rNiv.lo, rNiv.hi) +
+          ' cm (plántula recién en cubo)' +
+          (litNiv != null ? '; ~' + litNiv + ' L útiles por cubo' : '') +
+          '. EC 200–400 µS; T° agua 20–24 °C. Burbujeo suave.';
+      }
+      if (esRutaGermHidro(cfg) && it.id === 'ph_netpot') {
+        var nPot = prepHidroNumSemillasPlan(cfg);
+        if (nPot >= 1) {
+          copy.hint += ' Plan: ' + nPot + ' semilla' + (nPot === 1 ? '' : 's') + ' en ' + nPot + ' cesta' + (nPot === 1 ? '' : 's') + '.';
+        }
       }
       return copy;
     });
@@ -377,7 +556,9 @@
         ? 'Checklist de enraizado'
         : 'Montaje del propagador / domo';
     var lead = esRutaGermHidro(cfg)
-      ? 'Antes de las <strong>6 fases</strong>: confirma net pot y microclima. Los <strong>dos primeros días</strong> tras siembra van en <strong>oscuridad</strong>; luego luz tenue. Después <strong>configura la sala</strong> (asistente + montaje); el DWC/RDWC se cierra al terminar el camino.'
+      ? 'Antes de las <strong>6 fases</strong>: <strong>1 semilla por cubo</strong>, cúpula opcional por cesta, oscuridad días 1–' +
+        PREP_HIDRO_DIAS_OSCURIDAD +
+        ' y llenado con distancia nutriente → sustrato (ver guía). Al brote: quita cúpulas. Luego sala, montaje y primer llenado.'
       : esRutaEsqueje(cfg)
         ? 'Domo, higiene y microclima antes de pasar esquejes a la matriz.'
         : 'Marca cada punto del montaje. Arriba debes tener <strong>genética, semillas y sustrato</strong> antes de confirmar.';
@@ -423,6 +604,7 @@
       lead +
       '</p></div></div>' +
       equipRef +
+      (esRutaGermHidro(cfg) ? renderPrepHidroGuiaGermHtml(cfg) : '') +
       renderPropProgressHtml(prog, verificada, 'Progreso del montaje') +
       '<div class="hc-pm-grid hc-pm-grid--prop" role="list">' +
       items
@@ -444,7 +626,9 @@
     var esHidro = esRutaGermHidro(cfg);
     var titulo = esHidro ? 'Paso 1 · Preparar germinación en hidro' : 'Paso 1 · Montaje del propagador';
     var lead = esHidro
-      ? 'Checklist <strong>prep en cubo</strong>: net pot, medidor, aire en el depósito, EC baja para germinar y (opcional) mini domo por maceta. Tras siembra: <strong>oscuridad los 2 primeros días</strong>, luego luz tenue. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases en Inicio.'
+      ? 'Checklist <strong>prep en cubo</strong>: 1 semilla/cubo, cúpula por cesta, llenado (cm bajo sustrato), oscuridad días 1–' +
+        PREP_HIDRO_DIAS_OSCURIDAD +
+        ', quitar cúpulas al brote y aire suave. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases.'
       : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
     return (
@@ -928,4 +1112,12 @@
   global.renderMontajeInicioHubPropagador = renderMontajeInicioHubPropagador;
   global.renderMontajeInicioHubSubtitulo = renderMontajeInicioHubSubtitulo;
   global.refreshMontajeInicioHubVisibility = refreshMontajeInicioHubVisibility;
+  global.PREP_HIDRO_DIAS_OSCURIDAD = PREP_HIDRO_DIAS_OSCURIDAD;
+  global.PREP_HIDRO_HORAS_VENTILAR_CUPULA = PREP_HIDRO_HORAS_VENTILAR_CUPULA;
+  global.prepHidroRangoLlenadoGermCm = prepHidroRangoLlenadoGermCm;
+  global.prepHidroFmtRangoCm = prepHidroFmtRangoCm;
+  global.renderPrepHidroGuiaGermHtml = renderPrepHidroGuiaGermHtml;
+  global.renderPrepHidroOscuridadBannerHtml = renderPrepHidroOscuridadBannerHtml;
+  global.renderPrepHidroCupulaBannerHtml = renderPrepHidroCupulaBannerHtml;
+  global.renderPrepHidroLlenadoBannerHtml = renderPrepHidroLlenadoBannerHtml;
 })(typeof window !== 'undefined' ? window : this);

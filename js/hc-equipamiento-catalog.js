@@ -187,7 +187,7 @@ const EQUIP_CATEGORIAS = {
     recommended: false,
     perMaceta: true,
     campos: [{ key: 'diametroCm', label: 'Ø aprox. (cm)', type: 'number' }],
-    hint: 'Una unidad por cada net pot/cesta en el DWC/RDWC (no es propagador de 24–77 celdas). Oscuridad + HR los primeros días; quítala cuando el brote aguante.',
+    hint: 'Una por cada net pot/cesta (no bandeja propagador). Días 1–2: cerrada + oscuridad; al brote verde ventila 24–48 h y quítala por maceta.',
   },
   mat_termica_germ: {
     id: 'mat_termica_germ',

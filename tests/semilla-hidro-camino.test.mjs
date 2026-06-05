@@ -46,6 +46,10 @@ test('checklist 3: sistema prep hidro e ITEMS_PREP_HIDRO', () => {
   assert.match(montaje, /var ITEMS_PREP_HIDRO/);
   assert.match(montaje, /esRutaGermHidro/);
   assert.match(montaje, /ph_oscuridad/);
+  assert.match(montaje, /ph_quitar_cupula/);
+  assert.match(montaje, /ph_sem_una/);
+  assert.match(montaje, /prepHidroRangoLlenadoGermCm/);
+  assert.match(montaje, /renderPrepHidroGuiaGermHtml/);
   assert.match(montaje, /PREP_HIDRO_DIAS_OSCURIDAD = 2/);
 });
 
@@ -72,6 +76,9 @@ test('aviso oscuridad dias 1-2 en hub propagador e hidro', () => {
   const germ = read('js/hc-germinacion-flow.js');
   assert.match(germ, /GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2/);
   assert.match(germ, /renderHubOscuridadGerminacionHtml/);
+  assert.match(germ, /renderHubCupulaGermHidroHtml/);
+  assert.match(germ, /renderHubLlenadoGermHidroHtml/);
+  assert.match(germ, /1 semilla por cubo/);
   assert.match(germ, /semilla_propagador.*semilla_hidro/s);
   assert.match(germ, /hubMuestraAvisoOscuridadGerm/);
 });

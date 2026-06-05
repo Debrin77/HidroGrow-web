@@ -280,6 +280,8 @@
         footPrep =
           '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist prep hidro</button></p>';
       }
+      var guiaPrep =
+        typeof renderPrepHidroGuiaGermHtml === 'function' ? renderPrepHidroGuiaGermHtml(cfg) : '';
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -290,8 +292,9 @@
         '<p class="hc-sis-prop-lead">' +
         (prepOk
           ? 'Prep en cubo listo. Sigue con el <strong>siguiente paso</strong> de la lista (sala, montaje, DWC/RDWC o depósito).'
-          : 'Orden sin repetir pasos: prep → sala → sistema → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).') +
+          : 'Orden: <strong>1 semilla/cubo</strong>, cúpula por cesta, oscuridad 2 días, llenado (cm bajo sustrato) → sala → montaje → <strong>primer llenado</strong> → 6 fases en Inicio.') +
         '</p>' +
+        guiaPrep +
         htmlPasosPrep(cfg) +
         footPrep +
         '</section>'

@@ -50,14 +50,32 @@ No hay consenso de que una variedad concreta exija otro método de germinación;
 
 ---
 
-## Semilla en hidro (DWC/RDWC) — cupula en la cesta/maceta
+## Semilla en hidro (DWC/RDWC) — cúpula, oscuridad y llenado
 
-Sí, es **práctica frecuente** los primeros días:
+### 1 semilla por sustrato
 
-- **Mini cúpula / domo sobre la net pot** (o bolsa de humedad): mantiene HR alta sobre la maceta mientras la plántula es frágil.
-- No es lo mismo que una **bandeja propagador 77 celdas**: en hidro la semilla ya está en el **depósito/cubo**; la cúpula es **microclima local**, opcional.
-- En la app: checklist prep `ph_domo_mini` — «Mini domo o HR alta sobre la maceta».
-- Cuando aguanta sin domo: quitar cúpula, seguir con **burbujeo suave** y luz tenue de sala.
+**Sí:** una semilla por cubo de lana/jiffy dentro de cada net pot. En la app, `numSemillasGerm` = N cubos/cestas.
+
+### Cúpula individual por cesta
+
+- **Mini cúpula / domo sobre cada net pot** (no bandeja propagador): HR alta local los primeros días.
+- Checklist prep: `ph_domo_mini`, `ph_quitar_cupula`.
+- **Cuándo quitar:** al **brote verde (cotiledón)** → ventilar cúpula **24–48 h** → retirar **por maceta**. Dejarla demasiado en hidro favorece hongos y «wet feet» ([Grow Weed Easy](https://www.growweedeasy.com/how-to-care-for-hydroponic-cannabis-seedlings)).
+
+### Oscuridad (días 1–2 orientativos)
+
+La semilla abre sin luz; al brote, luz tenue. Hub Inicio: banner «Oscuridad · días 1–2» con fecha de siembra.
+
+### Llenado del depósito
+
+Distancia vertical **nutriente → base del sustrato** en la cesta (fase «recién plantada»):
+
+| Sustrato | Rango orientativo |
+|----------|-------------------|
+| Lana / jiffy / esponja | **0–0,5 cm** |
+| Coco | **0 cm** (casi tocando o muy cerca) |
+
+EC **200–400 µS** hasta enraizar. La app calcula cm y litros en checklist prep, **Cultivo e instalación** y primer llenado (`dwcRangoCmPorFaseYFamilia('recien')`).
 
 ---
 

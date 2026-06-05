@@ -375,7 +375,7 @@
     var diaN = diasDesdeInicio(g, cfg) + 1;
     var lugar =
       modo === 'hidro_directo'
-        ? 'Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.'
+        ? 'Cúpula cerrada en cada cesta; sin LED directo sobre la semilla en el cubo.'
         : 'Domo del propagador cerrado y a la sombra; sin abrir a la luz de la sala.';
     return (
       '<div class="hc-germ-oscuridad-banner" role="note" aria-live="polite">' +
@@ -388,6 +388,55 @@
       '<p class="hc-germ-oscuridad-lugar setup-field-hint">' +
       esc(lugar) +
       '</p></div>'
+    );
+  }
+
+  function hubMuestraAvisoCupulaGermHidro(cfg, g) {
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_hidro' && getModoGerminacion(cfg, g) !== 'hidro_directo') return false;
+    if (!getFechaInicioGerminacion(g, cfg)) return false;
+    var diaN = diasDesdeInicio(g, cfg) + 1;
+    return diaN > GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS;
+  }
+
+  function renderHubCupulaGermHidroHtml(cfg, g) {
+    if (!hubMuestraAvisoCupulaGermHidro(cfg, g)) return '';
+    var horasVent =
+      typeof PREP_HIDRO_HORAS_VENTILAR_CUPULA !== 'undefined'
+        ? PREP_HIDRO_HORAS_VENTILAR_CUPULA
+        : '24–48';
+    return (
+      '<div class="hc-germ-cupula-banner" role="note" aria-live="polite">' +
+      '<p class="hc-germ-cupula-title"><strong>Cúpulas por cesta</strong></p>' +
+      '<p class="hc-germ-cupula-body">Si aún llevas mini cúpula: al <strong>brote verde</strong>, ventílala ' +
+      esc(horasVent) +
+      ' h y <strong>quítala por maceta</strong>. Una cúpula por net pot (no bandeja propagador). Burbujeo suave + luz tenue de sala.</p></div>'
+    );
+  }
+
+  function renderHubLlenadoGermHidroHtml(cfg) {
+    if (typeof renderPrepHidroLlenadoBannerHtml === 'function') {
+      return renderPrepHidroLlenadoBannerHtml(cfg);
+    }
+    if (typeof prepHidroRangoLlenadoGermCm !== 'function') return '';
+    var r = prepHidroRangoLlenadoGermCm(cfg);
+    var fmt =
+      typeof prepHidroFmtRangoCm === 'function'
+        ? prepHidroFmtRangoCm(r.lo, r.hi)
+        : r.lo + '–' + r.hi;
+    return (
+      '<div class="hc-germ-llenado-banner" role="note">' +
+      '<p class="hc-germ-llenado-title"><strong>Llenado · germinación</strong></p>' +
+      '<p class="hc-germ-llenado-body">Nutriente → base del sustrato: <strong>' +
+      esc(fmt) +
+      ' cm</strong>. EC baja hasta enraizar.</p></div>'
+    );
+  }
+
+  function hubMuestraGuiaLlenadoGermHidro(cfg) {
+    return (
+      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_hidro'
     );
   }
 
@@ -1584,6 +1633,12 @@
       '</strong> del seguimiento</p>' +
       renderHubFechaSiembraEditor(cfg, g) +
       renderHubOscuridadGerminacionHtml(cfg, g) +
+      renderHubCupulaGermHidroHtml(cfg, g) +
+      (hubMuestraGuiaLlenadoGermHidro(cfg) ? renderHubLlenadoGermHidroHtml(cfg) : '') +
+      (camGerm === 'semilla_hidro'
+        ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
+          '<strong>1 semilla por cubo</strong> de sustrato en cada cesta. N semillas del plan = N net pots.</p>'
+        : '') +
       (camGerm === 'semilla_propagador'
         ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
           '<strong>Guía de 6 fases (opcional):</strong> el cierre de germinación va por <strong>días según genética</strong> (~' +
