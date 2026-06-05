@@ -484,7 +484,7 @@
       '<span>Humedad (sustrato, aire o ambos)</span></label>' +
       '</div>' +
       '<div class="setup-mt-8">' +
-      '<button type="button" class="btn btn-sm btn-secondary" onclick="goTab(\'mediciones\');setTimeout(function(){if(typeof hcIotOpenWifiWizard===\'function\')hcIotOpenWifiWizard();},400)">Configurar gateway WiFi</button>' +
+      '<button type="button" class="btn btn-sm btn-secondary" onclick="if(typeof hcIotOpenWifiWizard===\'function\')hcIotOpenWifiWizard()">Configurar gateway WiFi</button>' +
       '</div></div>';
     if (typeof cargarSetupSensoresHwUI === 'function') cargarSetupSensoresHwUI();
   }

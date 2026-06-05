@@ -1426,6 +1426,34 @@
     }
   }
 
+  /**
+   * Cadena prep → sala → montaje → DWC/RDWC → depósito en semilla_hidro (sin exigir germinación activa).
+   */
+  function hcSiguientePasoSemillaHidro(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_hidro') return null;
+    if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
+      return { label: 'Checklist prep hidro', action: 'irPropagadorMontaje', etapa: 'prep_hidro' };
+    }
+    if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+      return { label: 'Configurar sala', action: 'abrirSetupFaseSala', etapa: 'sala_config' };
+    }
+    if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+      return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
+    }
+    if (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg)) {
+      return { label: 'Configurar DWC/RDWC', action: 'abrirSetupFaseHidro', etapa: 'hidro_config' };
+    }
+    if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+      return {
+        label: 'Primer llenado del depósito',
+        action: 'abrirChecklist',
+        etapa: 'deposito_llenado',
+      };
+    }
+    return { label: '6 fases en Inicio', action: 'irGerminacion', etapa: 'germ_cubo' };
+  }
+
   global.HC_CAMINOS_CULTIVO = CAMINOS;
   global.ensurePremiumCamino = ensurePremiumCamino;
   global.getCaminoCultivo = getCaminoCultivo;
@@ -1437,6 +1465,7 @@
   global.hcCaminoSemillaGermEnSetup = hcCaminoSemillaGermEnSetup;
   global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
+  global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
   global.hcPropagadorEquipSalaSinHidro = hcPropagadorEquipSalaSinHidro;

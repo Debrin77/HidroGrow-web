@@ -45,6 +45,8 @@ test('checklist 3: sistema prep hidro e ITEMS_PREP_HIDRO', () => {
   const montaje = read('js/hc-propagador-montaje.js');
   assert.match(montaje, /var ITEMS_PREP_HIDRO/);
   assert.match(montaje, /esRutaGermHidro/);
+  assert.match(montaje, /ph_oscuridad/);
+  assert.match(montaje, /PREP_HIDRO_DIAS_OSCURIDAD = 2/);
 });
 
 test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
@@ -109,14 +111,17 @@ test('equipamiento hidro: cúpula por maceta, no propagador en grupo opcional', 
   assert.match(wiz, /equip-catalog-per-maceta/);
 });
 
-test('prep hidro: tras checklist navega a montaje si sala ya configurada', () => {
+test('prep hidro: tras checklist navega al siguiente paso pendiente', () => {
   const prop = read('js/hc-propagador-montaje.js');
-  assert.match(prop, /hcAbrirMontajeSalaChecklist/);
-  assert.match(prop, /salaPreGermConfigurada\(cfg2\)/);
+  assert.match(prop, /hcAvanzarSemillaHidroTrasPrepChecklist/);
+  assert.match(prop, /hcSiguientePasoSemillaHidro/);
   const cultivo = read('js/hc-camino-cultivo.js');
-  assert.match(cultivo, /salaConfiguradaCamino/);
-  assert.match(cultivo, /hcAbrirMontajeSalaChecklist/);
+  assert.match(cultivo, /function hcSiguientePasoSemillaHidro/);
+  assert.match(cultivo, /abrirSetupFaseHidro/);
+  const sis = read('js/hc-sistema-fase-camino.js');
+  assert.match(sis, /Siguiente:/);
   const life = read('js/hc-instalacion-lifecycle.js');
+  assert.match(life, /hcSiguientePasoSemillaHidro/);
   assert.match(life, /function hcAbrirMontajeSalaChecklist/);
   const setup = read('js/hc-setup-calc-core.js');
   assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);

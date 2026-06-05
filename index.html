@@ -3862,15 +3862,14 @@
         <div><label class="form-label setup-dwc-label" for="setupDwcObjetivoCultivo">Objetivo de cultivo</label><select id="setupDwcObjetivoCultivo" class="setup-dwc-input" onchange="try{onSetupDwcMedidasInput()}catch(e){}"><option value="final">Floración / tamaño completo</option><option value="baby">SOG / esquejes</option></select></div>
         <p id="setupDwcCultivoRecoStatus" class="setup-hidden" role="status"></p>
         <div id="setupDwcDepUnidoRejillaWrap">
-        <div><label class="form-label setup-dwc-label" for="setupDwcRejillaPreferida">Rejilla</label><select id="setupDwcRejillaPreferida" class="setup-dwc-input"><option value="objetivo">Por objetivo</option><option value="max">Máxima</option></select></div>
-        <div class="setup-dwc-grid-2"><div><label for="setupDwcTapaMarcoMm">Marco tapa</label><input type="number" id="setupDwcTapaMarcoMm" class="setup-dwc-input"></div><div><label for="setupDwcTapaHuecoMm">Entre cestas</label><input type="number" id="setupDwcTapaHuecoMm" class="setup-dwc-input"></div></div>
-        <p id="setupDwcTapaCestasHint" class="setup-hidden"></p>
-        <button type="button" class="setup-hidden" id="btnDwcAplicarRejillaPrincipalSetup"></button>
-        <p id="setupDwcRejillaHintPrincipal" class="setup-hidden"></p>
-        <button type="button" class="setup-hidden" id="btnDwcAplicarRejillaSecundariaSetup"></button>
+        <p id="setupDwcTapaCestasHint" class="setup-field-hint setup-mb-8 setup-hidden" role="status" aria-live="polite"></p>
+        <select id="setupDwcRejillaPreferida" class="setup-hidden" aria-hidden="true" tabindex="-1"><option value="objetivo" selected>Por objetivo</option><option value="max">Máxima</option></select>
+        <input type="hidden" id="setupDwcTapaMarcoMm" value="">
+        <input type="hidden" id="setupDwcTapaHuecoMm" value="">
+        <button type="button" class="setup-hidden" id="btnDwcAplicarRejillaPrincipalSetup" aria-hidden="true" tabindex="-1"></button>
+        <p id="setupDwcRejillaHintPrincipal" class="setup-hidden" aria-hidden="true"></p>
+        <button type="button" class="setup-hidden" id="btnDwcAplicarRejillaSecundariaSetup" aria-hidden="true" tabindex="-1"></button>
         </div>
-        <label class="setup-dwc-check-label setup-dwc-dep-unido-only"><input type="checkbox" id="setupDwcCupulas" class="setup-dwc-check-input"><span>Cúpulas</span></label>
-        <label class="setup-dwc-check-label setup-dwc-dep-unido-only"><input type="checkbox" id="setupDwcEntradaAire" class="setup-dwc-check-input"><span>Entrada aire</span></label>
         <div id="setupVolMezclaSlotDwc" class="setup-hidden" aria-hidden="true"></div>
         </div>
         </div>
@@ -4548,7 +4547,7 @@
     <div id="propagadorMontajeBody" class="hc-pm-body"></div>
     <div class="hc-pm-foot">
       <button type="button" class="btn btn-ghost btn-sm" onclick="hcClosePropagadorMontajeChecklist()">Cerrar</button>
-      <button type="button" class="btn btn-primary btn-sm" id="hcPropagadorMontajeFinishBtn" onclick="hcFinishPropagadorMontaje()">Confirmar propagador</button>
+      <button type="button" class="btn btn-primary btn-sm" id="hcPropagadorMontajeFinishBtn" onclick="hcFinishPropagadorMontaje()">Confirmar</button>
     </div>
   </div>
 </div>
@@ -4574,10 +4573,14 @@
   role="dialog" aria-modal="true" aria-labelledby="iotWifiWizardTitle">
   <div class="modal hc-iot-wiz-modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="iotWifiWizardTitle">Asistente WiFi IoT</div>
-    <p class="hc-iot-wiz-intro">Opcional. Si no tienes gateway, cierra y sigue registrando manualmente en Medir.</p>
+    <div class="modal-title modal-title--with-close" id="iotWifiWizardTitle">
+      <span class="modal-title-text">Asistente WiFi IoT</span>
+      <button type="button" class="modal-close-btn" aria-label="Cerrar asistente WiFi IoT" onclick="hcIotCloseWifiWizard()">X</button>
+    </div>
+    <p class="hc-iot-wiz-intro">Opcional. Si no tienes gateway, cierra y sigue con el asistente de configuración.</p>
     <div id="iotWifiWizardBody" class="hc-iot-wiz-body"></div>
     <div class="hc-iot-wiz-foot">
+      <button type="button" class="btn btn-ghost btn-sm" onclick="hcIotCloseWifiWizard()">Cerrar</button>
       <button type="button" class="btn btn-ghost btn-sm" id="iotWizBtnPrev" onclick="hcIotWizardPrev()">← Anterior</button>
       <button type="button" class="btn btn-ghost btn-sm" onclick="hcIotWizardReset()">Reiniciar</button>
       <button type="button" class="btn btn-primary btn-sm" id="iotWizBtnNext" onclick="hcIotWizardNext()">Siguiente →</button>
@@ -5244,7 +5247,7 @@
 <script src="js/meteo-alarm-utils.js?v=1"></script>
 <script src="js/meteo-alarm-parse.js?v=1"></script>
 <script src="js/hc-medir-operativa.js?v=2026-06-03-medir-prop-guardar"></script>
-<script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-instalaciones-aisladas"></script>
+<script src="js/hc-instalacion-lifecycle.js?v=2026-05-31-prep-hidro-next"></script>
 <script src="js/hc-bootstrap-onboarding.js?v=2026-05-31-bienvenida-fix"></script>
 <script src="js/hc-bootstrap-init-nav.js?v=2026-05-31-boot-click"></script>
 <script src="js/hc-medir-quick-parse.js?v=2026-05-31-medir-full"></script>
@@ -5270,25 +5273,25 @@
 <script defer src="js/torre-render-main.js?v=2026-06-03-dias-cosecha"></script>
 <script src="js/cultivos-germinacion.js?v=2026-06-03-medir-domo"></script>
 <script src="js/nutrientes-hidrogrow.js?v=2026-05-31-top10"></script>
-<script src="js/hc-equipamiento-wizard.js?v=2026-05-31-iot-premium"></script>
+<script src="js/hc-equipamiento-wizard.js?v=2026-05-31-wifi-setup"></script>
 <script src="js/hc-esquejes-madre.js?v=2026-05-31-dome-breeder"></script>
-<script src="js/hc-camino-cultivo.js?v=2026-06-03-torre-sem-hidro"></script>
+<script src="js/hc-camino-cultivo.js?v=2026-05-31-prep-hidro-next"></script>
 <script src="js/hc-premium-germ-plan.js?v=2026-05-31-plan-sin-default"></script>
 <script src="js/hc-premium-nutriente-germ.js?v=2026-05-31-nutriente-fix4"></script>
-<script src="js/hc-propagador-montaje.js?v=2026-05-31-nutriente-fix4"></script>
+<script src="js/hc-propagador-montaje.js?v=2026-05-31-prep-hidro-next"></script>
 <script src="js/hc-germinacion-flow.js?v=2026-05-31-instalaciones-aisladas"></script>
 <script defer src="js/diagrams/propagador/propagador-diagram.js?v=2026-05-31-prop-svg"></script>
 <script src="js/hc-premium-genetics-germ.js?v=2026-05-31-germ-ahora-lite"></script>
 <script src="js/hc-camino-fase.js?v=2026-05-31-dias-obj-fix"></script>
-<script src="js/hc-sistema-fase-camino.js?v=2026-06-03-nutriente-propagador-persist"></script>
+<script src="js/hc-sistema-fase-camino.js?v=2026-05-31-prep-hidro-next"></script>
 <script src="js/hc-camino-flujo-ui.js?v=2026-05-31-fecha-paso6-hidro"></script>
 <script src="js/hc-premium-origen-paso.js?v=2026-05-31-sin-cajas-origen"></script>
-<script src="js/app-hc-setup-onboarding.js?v=2026-05-31-perf2"></script>
+<script src="js/app-hc-setup-onboarding.js?v=2026-05-31-dwc-simple"></script>
 <script src="js/hc-premium-wizard.js?v=2026-05-31-nutriente-fix4"></script>
 <script src="js/hc-setup-flow.js?v=2026-05-31-perf2"></script>
 <script src="js/hc-setup-guias.js?v=2026-05-31-header-compact"></script>
 <script src="js/hc-setup-wizard-core.js?v=2026-05-31-plan-sin-default"></script>
-<script defer src="js/hc-setup-wizard-dwc.js?v=2026-05-31-guardar-defer"></script>
+<script defer src="js/hc-setup-wizard-dwc.js?v=2026-05-31-dwc-simple"></script>
 <script src="js/hc-torre-resumen-tabla.js?v=2026-06-02-cesta-reco"></script>
 <script src="js/hc-cultivo-cesta-matrix.js?v=2026-05-31-propagador-cultivo"></script>
 <script src="js/hc-setup-wizard-pages.js?v=2026-06-03-btn-hidro"></script>

@@ -44,13 +44,27 @@
     { id: 'enr_aire', label: 'Aireación del depósito/clonador comprobada', hint: 'Burbujeo suave; EC 0–400 µS las primeras 48 h si usas mini DWC.', accent: 'air' },
   ];
 
+  var PREP_HIDRO_DIAS_OSCURIDAD = 2;
+
   var ITEMS_PREP_HIDRO = [
     { id: 'ph_netpot', label: 'Net pot y cubo de lana en el sistema', hint: 'Semilla nunca suelta en el depósito; solo en cubo dentro de la maceta.', accent: 'hydro' },
     { id: 'ph_nivel', label: 'Nivel de agua mínimo / niebla de raíz', hint: 'EC 200–400 µS hasta enraizar; T° agua 20–24 °C.', accent: 'hydro' },
     { id: 'ph_domo_mini', label: 'Mini domo o HR alta sobre la maceta', hint: 'Microclima hasta que la plántula aguante sin domo.', accent: 'germ' },
+    {
+      id: 'ph_oscuridad',
+      label: 'Oscuridad · días 1 y ' + PREP_HIDRO_DIAS_OSCURIDAD + ' tras siembra',
+      hint:
+        'La semilla abre con humedad y calor, no con luz. Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.',
+      accent: 'germ',
+    },
     { id: 'ph_medidor', label: 'Medidor EC/pH a mano listo', hint: 'Calibración reciente; anota en Medir cuando subas EC.', accent: 'iot' },
     { id: 'ph_aire', label: 'Aireación del depósito comprobada', hint: 'Burbujeo suave; sin burbujas fuertes sobre la semilla.', accent: 'air' },
-    { id: 'ph_luz', label: 'Luz tenue 18/6 sobre la zona', hint: 'Misma lógica que propagador: evita estrés en plántula joven.', accent: 'light' },
+    {
+      id: 'ph_luz',
+      label: 'Luz tenue 18/6 (desde día ' + (PREP_HIDRO_DIAS_OSCURIDAD + 1) + ' o brote verde)',
+      hint: 'Cuando asoma el cotiledón, luz suave ~18 h/día; evita LED de floración directo sobre la plántula.',
+      accent: 'light',
+    },
   ];
 
   var PROP_ICONS = {
@@ -72,10 +86,23 @@
     ph_netpot: '🪴',
     ph_nivel: '💧',
     ph_domo_mini: '🫧',
+    ph_oscuridad: '🌑',
     ph_medidor: '📟',
     ph_aire: '💨',
     ph_luz: '💡',
   };
+
+  function renderPrepHidroOscuridadBannerHtml() {
+    return (
+      '<div class="hc-germ-oscuridad-banner" role="note" aria-live="polite">' +
+      '<p class="hc-germ-oscuridad-title"><strong>Oscuridad · días 1 y ' +
+      PREP_HIDRO_DIAS_OSCURIDAD +
+      '</strong></p>' +
+      '<p class="hc-germ-oscuridad-body">La semilla abre con <strong>humedad y calor</strong>, no con luz. Mantén oscuridad o luz muy tenue hasta que asoma el brote verde; entonces pasa a luz suave (~18 h/día).</p>' +
+      '<p class="hc-germ-oscuridad-lugar setup-field-hint">Mini cúpula sobre la net pot o maceta tapada; sin LED directo sobre la semilla en el cubo.</p>' +
+      '</div>'
+    );
+  }
 
   function getCfg() {
     if (typeof state !== 'undefined' && state && state.configTorre) return state.configTorre;
@@ -333,7 +360,7 @@
         ? 'Checklist de enraizado'
         : 'Montaje del propagador / domo';
     var lead = esRutaGermHidro(cfg)
-      ? 'Antes de las <strong>6 fases</strong>: confirma net pot y microclima. Después <strong>configura la sala</strong> (asistente + montaje); el DWC/RDWC se cierra al terminar el camino.'
+      ? 'Antes de las <strong>6 fases</strong>: confirma net pot y microclima. Los <strong>dos primeros días</strong> tras siembra van en <strong>oscuridad</strong>; luego luz tenue. Después <strong>configura la sala</strong> (asistente + montaje); el DWC/RDWC se cierra al terminar el camino.'
       : esRutaEsqueje(cfg)
         ? 'Domo, higiene y microclima antes de pasar esquejes a la matriz.'
         : 'Marca cada punto del montaje. Arriba debes tener <strong>genética, semillas y sustrato</strong> antes de confirmar.';
@@ -400,7 +427,7 @@
     var esHidro = esRutaGermHidro(cfg);
     var titulo = esHidro ? 'Paso 1 · Preparar germinación en hidro' : 'Paso 1 · Montaje del propagador';
     var lead = esHidro
-      ? 'Checklist <strong>prep en cubo</strong>: net pot, medidor, aire en el depósito, EC baja para germinar y (opcional) mini domo por maceta. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases en Inicio.'
+      ? 'Checklist <strong>prep en cubo</strong>: net pot, medidor, aire en el depósito, EC baja para germinar y (opcional) mini domo por maceta. Tras siembra: <strong>oscuridad los 2 primeros días</strong>, luego luz tenue. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases en Inicio.'
       : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
     return (
@@ -464,6 +491,34 @@
     refreshPropagadorMontajeUi();
   }
 
+  function hcRerenderPropagadorMontajeModal() {
+    var modal = document.getElementById('modalPropagadorMontaje');
+    if (!modal || !modal.classList.contains('open')) return;
+    var cfg = getCfg();
+    var body = document.getElementById('propagadorMontajeBody');
+    if (body) body.innerHTML = renderBodyHtml(cfg);
+    if (typeof updatePropagadorMontajeFoot === 'function') updatePropagadorMontajeFoot(cfg);
+  }
+
+  function hcAvanzarSemillaHidroTrasPrepChecklist(cfg) {
+    cfg = cfg || getCfg();
+    if (!esRutaGermHidro(cfg)) return;
+    var next =
+      typeof hcSiguientePasoSemillaHidro === 'function' ? hcSiguientePasoSemillaHidro(cfg) : null;
+    if (!next || !next.action || next.action === 'irPropagadorMontaje') return;
+    setTimeout(function () {
+      if (typeof hcEjecutarAccionInstalacion === 'function') {
+        hcEjecutarAccionInstalacion(next.action);
+      } else if (next.action === 'abrirSetupFaseSala' && typeof abrirSetupFaseSala === 'function') {
+        abrirSetupFaseSala();
+      } else if (next.action === 'abrirSetupFaseHidro' && typeof abrirSetupFaseHidro === 'function') {
+        abrirSetupFaseHidro();
+      } else if (next.action === 'irMontaje' && typeof hcAbrirMontajeSalaChecklist === 'function') {
+        hcAbrirMontajeSalaChecklist({ delay: 0 });
+      }
+    }, 450);
+  }
+
   function hcOpenPropagadorMontajeChecklist() {
     var modal = document.getElementById('modalPropagadorMontaje');
     if (!modal) {
@@ -486,6 +541,7 @@
           : 'Montaje del propagador';
     }
     modal.classList.add('open');
+    if (typeof updatePropagadorMontajeFoot === 'function') updatePropagadorMontajeFoot(cfg);
     try {
       if (typeof a11yDialogOpened === 'function') a11yDialogOpened(modal);
     } catch (_) {}
@@ -543,6 +599,11 @@
       return;
     }
     checks.completedAt = new Date().toISOString();
+    saveChecks(cfg, checks);
+    try {
+      if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(getCfg());
+    } catch (_) {}
+    hcClosePropagadorMontajeChecklist();
     try {
       if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
       else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
@@ -551,17 +612,19 @@
       if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     } catch (_) {}
-    saveChecks(cfg, checks);
-    hcClosePropagadorMontajeChecklist();
     refreshPropagadorMontajeUi();
+    var nextHidro =
+      esRutaGermHidro(cfg) && typeof hcSiguientePasoSemillaHidro === 'function'
+        ? hcSiguientePasoSemillaHidro(getCfg())
+        : null;
     if (typeof showToast === 'function') {
       showToast(
         esRutaEsqueje(cfg)
           ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
           : esRutaGermHidro(cfg)
-            ? typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg)
-              ? '✓ Prep listo. Siguiente: checklist de montaje de sala.'
-              : '✓ Prep listo. Siguiente: configurar la sala en el asistente.'
+            ? nextHidro && nextHidro.action !== 'irPropagadorMontaje'
+              ? '✓ Prep listo. Siguiente: ' + nextHidro.label + '.'
+              : '✓ Prep listo.'
             : '✓ Propagador listo.',
         false,
         { durationMs: 4200 }
@@ -579,22 +642,9 @@
       }
       return;
     }
-    if (typeof hcCaminoRequiereSalaPreGerm === 'function' && hcCaminoRequiereSalaPreGerm(cfg)) {
-      setTimeout(function () {
-        var cfg2 = getCfg();
-        if (typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg2)) {
-          return;
-        }
-        if (typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg2)) {
-          if (typeof hcAbrirMontajeSalaChecklist === 'function') {
-            hcAbrirMontajeSalaChecklist({ delay: 420 });
-          } else if (typeof hcIrMontajeSala === 'function') {
-            hcIrMontajeSala({ abrirChecklist: true });
-          }
-          return;
-        }
-        if (typeof abrirSetupFaseSala === 'function') abrirSetupFaseSala();
-      }, 700);
+    if (cam === 'semilla_hidro') {
+      hcAvanzarSemillaHidroTrasPrepChecklist(getCfg());
+      return;
     }
   }
 

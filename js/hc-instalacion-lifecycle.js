@@ -249,47 +249,22 @@
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
 
     try {
+      if (cam === 'semilla_hidro' && typeof hcSiguientePasoSemillaHidro === 'function') {
+        var pasoHidro = hcSiguientePasoSemillaHidro(cfg);
+        if (pasoHidro) return pasoHidro;
+      }
       if (
+        cam !== 'semilla_hidro' &&
         typeof propagadorMontajeCompleto === 'function' &&
         typeof hcGerminacionActiva === 'function' &&
         hcGerminacionActiva(cfg) &&
         !propagadorMontajeCompleto(cfg)
       ) {
         return {
-          label:
-            cam === 'semilla_hidro' ? 'Preparar germinación en hidro' : 'Montaje del propagador',
+          label: 'Montaje del propagador',
           action: 'irPropagadorMontaje',
           etapa: 'propagador',
         };
-      }
-      if (cam === 'semilla_hidro' && typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
-        if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
-          return {
-            label: 'Prep germinación en hidro',
-            action: 'irPropagadorMontaje',
-            etapa: 'prep_hidro',
-          };
-        }
-        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
-          return { label: 'Configurar sala', action: 'abrirSetupFaseSala', etapa: 'sala_config' };
-        }
-        if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
-          return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
-        }
-        if (
-          cfg.tipoInstalacion !== 'dwc' &&
-          cfg.tipoInstalacion !== 'rdwc' &&
-          typeof abrirSetupFaseHidro === 'function'
-        ) {
-          return { label: 'Configurar DWC/RDWC', action: 'abrirSetupFaseHidro', etapa: 'hidro_config' };
-        }
-        if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
-          return {
-            label: 'Primer llenado del depósito',
-            action: 'abrirChecklist',
-            etapa: 'deposito_llenado',
-          };
-        }
       }
       if (cam === 'semilla_propagador') {
         if (

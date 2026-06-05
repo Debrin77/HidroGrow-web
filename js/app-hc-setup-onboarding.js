@@ -487,18 +487,9 @@ function actualizarResumenSetup() {
       if (rimD != null) geoDwcRes += ' Ø' + rimD + ' mm';
       if (hD != null) geoDwcRes += ' · ' + hD + ' mm alto';
     }
-    if (document.getElementById('setupDwcCupulas')?.checked) geoDwcRes += ' · cúpulas';
-    if (document.getElementById('setupDwcEntradaAire')?.checked) geoDwcRes += ' · entrada aire';
     const objSel = document.getElementById('setupDwcObjetivoCultivo')?.value;
     const objLbl = dwcNormalizeObjetivoCultivo(objSel) === 'baby' ? 'SOG / esquejes' : 'flor completa';
     geoDwcRes += ' · objetivo ' + objLbl;
-    if (!dwcMcSetup) {
-      const rejSel = dwcNormalizeRejillaModo(document.getElementById('setupDwcRejillaPreferida')?.value);
-      geoDwcRes += ' · botón principal ' + (rejSel === 'max' ? 'máxima' : 'recomendada');
-      const mhG = _dwcParseMarcoHuecoMmIds('setupDwcTapaMarcoMm', 'setupDwcTapaHuecoMm');
-      if (mhG.marco != null && mhG.marco > 0) geoDwcRes += ' · marco tapa ' + mhG.marco + ' mm/lado';
-      if (mhG.hueco != null) geoDwcRes += ' · entre cestas ' + mhG.hueco + ' mm';
-    }
   }
   if (isRdwc) {
     const volCtl = parseInt(String(document.getElementById('setupRdwcControlVolL')?.value || '').trim(), 10);

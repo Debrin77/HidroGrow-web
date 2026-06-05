@@ -2683,7 +2683,6 @@ function refreshDwcTapHintSetup() {
   const mh = _dwcParseMarcoHuecoMmIds('setupDwcTapaMarcoMm', 'setupDwcTapaHuecoMm');
   const marcoE = mh.marco != null ? mh.marco : 0;
   const huecoE = mh.hueco != null ? mh.hueco : DWC_TAPA_HUECO_DEFAULT_MM;
-  const spec = dwcGetObjetivoSpec(dwcObjetivoDesdeInputId('setupDwcObjetivoCultivo'));
   const formaTap = dwcNormalizeDepositoForma(document.getElementById('setupDwcDepositoForma')?.value);
   const ev = dwcEvaluarCapestEnTapa(filas, cols, rim, L, W, marcoE, huecoE, formaTap);
   if (ev.estado === 'incompleto') {
@@ -2712,103 +2711,42 @@ function refreshDwcTapHintSetup() {
     el.style.background = '#ecfdf5';
     el.style.border = '1.5px solid #86efac';
     el.style.color = '#14532d';
-    el.textContent = ev.tapaCircular
-      ? '✓ Rejilla ' +
-        cols +
-        '×' +
-        filas +
-        ' cabe en tapa circular (~Ø ' +
-        Math.round(ev.diamUtilMm != null ? ev.diamUtilMm : Math.min(ev.Lmm, ev.Wmm)) +
-        ' mm útil; marco ' +
-        ev.marco +
-        ' mm/lado, ' +
-        ev.hueco +
-        ' mm entre cestas). Objetivo: ' +
-        spec.label +
-        ' (' +
-        spec.ccTxt +
-        ' c-c).'
-      : '✓ La rejilla cabe en el área útil de la tapa (~' +
-        Math.round(ev.Lmm) +
-        '×' +
-        Math.round(ev.Wmm) +
-        ' mm; marco ' +
-        ev.marco +
-        ' mm/lado, ' +
-        ev.hueco +
-        ' mm entre cestas). Esta medida es de tapa (cestas), no de litros útiles. Objetivo: ' +
-        spec.label +
-        ' (' +
-        spec.ccTxt +
-        ' c-c).';
+    const totalC = filas * cols;
+    el.textContent =
+      '✓ Caben las ' +
+      totalC +
+      ' cesta' +
+      (totalC === 1 ? '' : 's') +
+      ' (Ø ' +
+      rim +
+      ' mm) en la tapa con las medidas indicadas.';
   } else {
     el.style.background = '#fffbeb';
     el.style.border = '1.5px solid #fde68a';
     el.style.color = '#92400e';
-    el.textContent = '⚠️ ' + ev.msg;
+    el.textContent =
+      '⚠️ No caben ' +
+      cols +
+      '×' +
+      filas +
+      ' cestas de Ø ' +
+      rim +
+      ' mm en la tapa. Reduce filas/cestas por fila, aumenta el depósito o usa cestas más pequeñas.';
   }
 
   const btnPriS = document.getElementById('btnDwcAplicarRejillaPrincipalSetup');
   const btnSecS = document.getElementById('btnDwcAplicarRejillaSecundariaSetup');
-  if (rim != null && L != null && W != null) {
-    const om = dwcMaxCestasTeoricasEnTapa(rim, L, W, marcoE, huecoE, formaTap);
-    const modoPri = dwcNormalizeRejillaModo(document.getElementById('setupDwcRejillaPreferida')?.value);
-    const rangoObj = dwcRangoCestasOrientativoPorObjetivo(om, spec);
-    const ok = om && om.max >= 1;
-    if (btnPriS) {
-      if (ok) {
-        btnPriS.classList.remove('setup-hidden');
-        btnPriS.disabled = false;
-        if (modoPri === 'max') {
-          btnPriS.onclick = aplicarDwcRejillaMaximaDesdeSetup;
-          btnPriS.textContent = 'Aplicar rejilla máxima (principal)';
-        } else {
-          btnPriS.onclick = aplicarDwcRejillaRecomendadaDesdeSetup;
-          btnPriS.textContent = 'Aplicar rejilla recomendada (principal)';
-        }
-      } else {
-        btnPriS.classList.add('setup-hidden');
-        btnPriS.disabled = true;
-      }
-    }
-    if (btnSecS) {
-      if (ok) {
-        btnSecS.classList.remove('setup-hidden');
-        btnSecS.disabled = false;
-        if (modoPri === 'max') {
-          btnSecS.onclick = aplicarDwcRejillaRecomendadaDesdeSetup;
-          btnSecS.textContent = 'Aplicar rejilla recomendada (alternativa)';
-        } else {
-          btnSecS.onclick = aplicarDwcRejillaMaximaDesdeSetup;
-          btnSecS.textContent = 'Aplicar rejilla máxima (alternativa)';
-        }
-      } else {
-        btnSecS.classList.add('setup-hidden');
-        btnSecS.disabled = true;
-      }
-    }
-    if (hintPri) {
-      if (ok) {
-        hintPri.classList.remove('setup-hidden');
-        hintPri.textContent = dwcTextoHintBotonPrincipal(modoPri, spec, om, rangoObj);
-      } else {
-        hintPri.classList.add('setup-hidden');
-        hintPri.textContent = '';
-      }
-    }
-  } else {
-    if (btnPriS) {
-      btnPriS.classList.add('setup-hidden');
-      btnPriS.disabled = true;
-    }
-    if (btnSecS) {
-      btnSecS.classList.add('setup-hidden');
-      btnSecS.disabled = true;
-    }
-    if (hintPri) {
-      hintPri.classList.add('setup-hidden');
-      hintPri.textContent = '';
-    }
+  if (btnPriS) {
+    btnPriS.classList.add('setup-hidden');
+    btnPriS.disabled = true;
+  }
+  if (btnSecS) {
+    btnSecS.classList.add('setup-hidden');
+    btnSecS.disabled = true;
+  }
+  if (hintPri) {
+    hintPri.classList.add('setup-hidden');
+    hintPri.textContent = '';
   }
   try {
     renderDwcCultivoRecoStatus('setup');

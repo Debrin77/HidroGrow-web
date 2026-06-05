@@ -264,6 +264,22 @@
     }
 
     if (fase === 'prep_hidro') {
+      var prepOk =
+        typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg);
+      var nextPrep =
+        typeof hcSiguientePasoSemillaHidro === 'function' ? hcSiguientePasoSemillaHidro(cfg) : null;
+      var footPrep = '';
+      if (prepOk && nextPrep && nextPrep.action !== 'irPropagadorMontaje') {
+        footPrep =
+          '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'' +
+          nextPrep.action +
+          '\')">Siguiente: ' +
+          esc(nextPrep.label) +
+          '</button></p>';
+      } else if (!prepOk) {
+        footPrep =
+          '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist prep hidro</button></p>';
+      }
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -271,8 +287,13 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">Orden sin repetir pasos: prep → sala → sistema → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).</p>' +
+        '<p class="hc-sis-prop-lead">' +
+        (prepOk
+          ? 'Prep en cubo listo. Sigue con el <strong>siguiente paso</strong> de la lista (sala, montaje, DWC/RDWC o depósito).'
+          : 'Orden sin repetir pasos: prep → sala → sistema → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).') +
+        '</p>' +
         htmlPasosPrep(cfg) +
+        footPrep +
         '</section>'
       );
     }
