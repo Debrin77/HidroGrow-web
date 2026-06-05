@@ -397,12 +397,18 @@
     var items = buildItems(cfg);
     var prog = countProgress(checks, items);
     var verificada = !!checks.completedAt;
-    var titulo = esRutaGermHidro(cfg) ? 'Paso 1 · Preparar germinación en hidro' : 'Paso 1 · Montaje del propagador';
+    var esHidro = esRutaGermHidro(cfg);
+    var titulo = esHidro ? 'Paso 1 · Preparar germinación en hidro' : 'Paso 1 · Montaje del propagador';
+    var lead = esHidro
+      ? 'Checklist <strong>prep en cubo</strong>: net pot, medidor, aire en el depósito, EC baja para germinar y (opcional) mini domo por maceta. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases en Inicio.'
+      : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
     return (
       '<div class="hc-prop-inline hc-prop-inline--premium" id="hcPropagadorMontajeInline">' +
       '<div class="hc-prop-inline-head">' +
-      '<span class="hc-prop-inline-ico" aria-hidden="true">🫧</span>' +
+      '<span class="hc-prop-inline-ico" aria-hidden="true">' +
+      (esHidro ? '💧' : '🫧') +
+      '</span>' +
       '<h3 class="hc-prop-inline-title">' +
       esc(titulo) +
       '</h3>' +
@@ -414,7 +420,7 @@
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
-      '<p class="hc-prop-inline-lead">Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.</p>' +
+      '<p class="hc-prop-inline-lead">' + lead + '</p>' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
       (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
       '</button>' +

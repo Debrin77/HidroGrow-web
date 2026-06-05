@@ -13,7 +13,7 @@ flowchart TD
   C --> D[sala + montaje sala]
   D --> E[DWC ya en cfg + depósito listo]
   E --> F[Hub 6 fases Inicio]
-  F --> G[checklist traslado]
+  F --> G[checklist operativa + matriz]
   G --> H[SVG torre operativa]
 ```
 
@@ -63,7 +63,7 @@ flowchart TD
 
 | ID | Tema | Notas |
 |----|------|-------|
-| R1 | Copy onboarding paso sala | En `hc-bootstrap-onboarding` rail «sin DWC todavía» encaja al propagador; en hidro el DWC ya va en el mismo asistente — revisar textos del rail guiado |
+| R1 | Copy onboarding / nutriente / prep | **Corregido** — textos hidro en onboarding, nutriente cubo, inline prep, sistema germ_cubo, card camino |
 | R2 | Matriz 5×5 vs semillas | Tras wizard completo se usa geometría DWC (`initTorreMatrizVacia`), no 1×N como propagador; coherente con cubo único, pero conviene probar N cestas = N semillas |
 | R3 | `hcGerminacionBloqueada` CTA `hidro_config` | Tras wizard completo `hidroInstalacionCerrada` suele ser true; si falla checklist instalación, el CTA puede confundir — probar en UI |
 | R4 | Nutriente paso 4 | `validarPremiumNutrienteGerm` en paso 4; hidro puede avanzar sin nutriente bandeja hasta guardar — aceptable si el checklist prep lo exige |

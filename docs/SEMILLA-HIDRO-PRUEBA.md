@@ -37,10 +37,10 @@ npm test
 1. Completar prep, configurar sala, verificar montaje, primer llenado depósito.
 2. Inicio → hub visible; anillo muestra **%** (no solo «d12»).
 
-### 5. Seis fases y traslado
+### 5. Seis fases y cierre operativo
 
 1. Marcar las **6 fases** del rail (obligatorias).
-2. Checklist traslado → Sistema pasa a esquema **DWC/RDWC** completo.
+2. Checklist **operativa** + registrar en matriz → Sistema pasa a esquema **DWC/RDWC** completo.
 
 ### 6. Medir
 

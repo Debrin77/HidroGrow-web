@@ -63,7 +63,7 @@
       return (
         '<p class="hc-sis-prop-nut-empty setup-field-hint">Sin nutrientes anotados en el registro diario de ' +
         esc(ctxLabel) +
-        '. Configúralo en el asistente (paso Nutriente y clima domo) o en el checklist del propagador.</p>'
+        '. Configúralo en el asistente (paso Clima y abono) o en el checklist de prep.</p>'
       );
     }
     return (
@@ -291,7 +291,7 @@
         '</h2>' +
         '<p class="hc-sis-prop-lead">Semilla en <strong>net pot</strong> sobre ' +
         esc(tipo) +
-        ' (no suelta en el depósito). El esquema completo se activa tras el checklist de traslado.</p>' +
+        ' (no suelta en el depósito). El esquema completo se activa tras la <strong>checklist operativa</strong> y registrar la plántula en la matriz.</p>' +
         '<div class="hc-sis-prop-grid">' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Fases</span><strong>' +
         fasesN +

@@ -271,6 +271,25 @@ test('semilla_hidro: bomba recirc solo tras elegir RDWC, no en equipamiento prev
   assert.match(cat, /equipCatalogTipoInstalacionHidro\(\) === 'rdwc'/);
 });
 
+test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
+  const prop = read('js/hc-propagador-montaje.js');
+  const fase = read('js/hc-camino-fase.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  const onboard = read('js/hc-bootstrap-onboarding.js');
+  const nut = read('js/hc-premium-nutriente-germ.js');
+  const origen = read('js/hc-premium-origen-paso.js');
+  const html = read('index.html');
+  assert.match(prop, /Checklist <strong>prep en cubo<\/strong>/);
+  assert.match(fase, /pend\.push\('prep hidro'\)/);
+  assert.match(fase, /checklist operativa y matriz/);
+  assert.match(sis, /checklist operativa<\/strong> y registrar la plántula/);
+  assert.match(onboard, /checklist <strong>operativa<\/strong> y registro en matriz/);
+  assert.match(nut, /Nutriente · germinación en cubo/);
+  assert.match(nut, /EC baja, ~200–400 µS/);
+  assert.match(origen, /no hay segundo paso hidro/);
+  assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');

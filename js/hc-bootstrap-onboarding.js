@@ -688,7 +688,7 @@ function actualizarPostSetupChecklistRail() {
       text:
         cam === 'semilla_propagador'
           ? 'Registro diario en <strong>Inicio</strong> (T°, HR, nutrientes). Al concluir por días → hidro.'
-          : 'Control día a día en <strong>Inicio</strong>. Incluye checklist de traslado antes del depósito.',
+          : 'Control día a día en <strong>Inicio</strong> (6 fases). Tras el depósito lleno: checklist <strong>operativa</strong> y registro en matriz.',
     },
     hidro_config: {
       title: 'Paso 5 · Sistema DWC/RDWC',

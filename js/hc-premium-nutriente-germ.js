@@ -665,10 +665,25 @@
     renderPremiumNutrienteGermEcBanner();
     renderNutrientesGridPremiumGerm();
     renderPremiumNutrienteGermDosis();
+    var cam = caminoRequiereNutrienteBandeja(getCfgNutriente());
+    var esHidro = cam === 'semilla_hidro';
+    var secTitle = sec && sec.querySelector('.setup-block-title');
+    if (secTitle) {
+      secTitle.innerHTML = esHidro
+        ? 'Nutriente · germinación en cubo <span class="setup-required-tag">obligatorio</span>'
+        : 'Nutriente · bandeja propagador <span class="setup-required-tag">obligatorio</span>';
+    }
+    if (sec) {
+      sec.setAttribute(
+        'aria-label',
+        esHidro ? 'Nutriente germinación en cubo' : 'Nutriente propagador'
+      );
+    }
     var hint = el('setupPremiumNutrienteGermHint');
     if (hint) {
-      hint.textContent =
-        'Elige el abono (desplegable o tarjetas) para la solución de la bandeja (~2–3 mm de agua con nutriente en el domo).';
+      hint.textContent = esHidro
+        ? 'Elige el abono para el <strong>primer llenado</strong> del depósito (EC baja, ~200–400 µS) y el registro diario en Inicio. No es la receta de bandeja propagador.'
+        : 'Elige el abono (desplegable o tarjetas) para la solución de la bandeja (~2–3 mm de agua con nutriente en el domo).';
     }
   }
 

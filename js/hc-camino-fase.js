@@ -263,7 +263,7 @@
 
     if (fase === 'prep_hidro') {
       var pend = [];
-      if (!prepGermHidroListo(cfg)) pend.push('checklist propagador');
+      if (!prepGermHidroListo(cfg)) pend.push('prep hidro');
       if (!salaLista(cfg)) pend.push('sala');
       if (!hidroCerrado(cfg)) pend.push('DWC/RDWC');
       return {
@@ -674,7 +674,7 @@
         tipo: 'camino',
         icono: '🌱',
         titulo: 'Germinación en cubo',
-        desc: 'Registro diario en Inicio; esquema tras traslado.',
+        desc: 'Registro diario en Inicio; esquema completo tras checklist operativa y matriz.',
         action: 'inicio',
       });
     }

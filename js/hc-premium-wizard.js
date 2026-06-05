@@ -631,10 +631,14 @@
       ) {
         sub.textContent = '';
         sub.classList.add('setup-hidden');
-      } else if (faseSala && (cam === 'semilla_propagador' || cam === 'semilla_hidro')) {
+      } else if (faseSala && cam === 'semilla_propagador') {
         sub.classList.remove('setup-hidden');
         sub.textContent =
           'Configura la sala (carpa, LED, clima, circulación). El propagador ya lo diste en la fase anterior.';
+      } else if (faseSala && cam === 'semilla_hidro') {
+        sub.classList.remove('setup-hidden');
+        sub.textContent =
+          'Configura la sala (carpa, LED, clima, circulación). El prep en cubo y el DWC/RDWC ya los diste en el asistente inicial.';
       } else if (int) {
         sub.classList.remove('setup-hidden');
         sub.textContent =

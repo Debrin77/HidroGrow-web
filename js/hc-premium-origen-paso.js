@@ -103,8 +103,8 @@
       txt = faseGerm
         ? '<strong>Ruta: semilla en hidro.</strong> Equipamiento de <strong>sala + prep cubo</strong> → montaje → ' +
           'DWC/RDWC y <strong>primer llenado</strong> → luego las 6 fases en Inicio.'
-        : '<strong>Ruta: semilla en hidro.</strong> Prep en depósito → <strong>sala y montaje</strong> → 6 fases en Inicio. ' +
-          'Al terminar solo cierras DWC/RDWC (sin repetir germinación en el depósito).';
+        : '<strong>Ruta: semilla en hidro.</strong> Prep en cubo → <strong>sala, montaje y primer llenado</strong> → 6 fases en Inicio → checklist operativa y matriz. ' +
+          'El DWC/RDWC se configuró en el mismo asistente (no hay segundo paso hidro).';
     } else if (cam === 'esqueje_hidro') {
       txt =
         '<strong>Ruta: esqueje.</strong> <strong>Propagador</strong> para enraizar + sala y circuito hidro en este asistente.';
