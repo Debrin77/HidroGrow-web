@@ -260,6 +260,17 @@ test('semilla_hidro: sondas IoT en premium y sin paso Equipamiento repetido', ()
   assert.match(html, /id="setupPremiumSensoresIoTHost"/);
 });
 
+test('semilla_hidro: bomba recirc solo tras elegir RDWC, no en equipamiento previo', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /function equipSemillaHidroSinSistemaElegido/);
+  assert.match(cat, /function equipCatalogIncluirBombaRecirc/);
+  assert.match(cat, /!equipCatalogIncluirBombaRecirc\(\)\) return null/);
+  assert.match(cat, /setupPagina < SETUP_PAGE_PREMIUM_END/);
+  assert.match(cat, /if \(faseSala && camino === 'semilla_hidro'\)/);
+  assert.match(cat, /return g\.id !== 'hidro'/);
+  assert.match(cat, /equipCatalogTipoInstalacionHidro\(\) === 'rdwc'/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');

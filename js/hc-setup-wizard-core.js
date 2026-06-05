@@ -2328,6 +2328,9 @@ function seleccionarTipoInstalacionSetup(tipo) {
     }
   }
   refrescarSetupTipoInstalacionUI();
+  try {
+    if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
+  } catch (_) {}
 }
 
 function refrescarSetupTipoInstalacionUI() {

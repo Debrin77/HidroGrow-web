@@ -532,6 +532,76 @@ const EQUIP_PREP_HIDRO_GROUP = {
 /** Claves ya cubiertas en Prep cubo (no repetir en «Circuito hidro» del mismo paso). */
 var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire'];
 
+/**
+ * Semilla en hidro: el paso de equipamiento (premium 3) va antes de elegir DWC/RDWC (premium END).
+ * Hasta entonces no debe pedirse bomba de recirculación (solo RDWC).
+ */
+function equipSemillaHidroSinSistemaElegido() {
+  var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+  if (cam !== 'semilla_hidro') return false;
+  try {
+    if (typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return true;
+    }
+    var enGermSetup =
+      typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup();
+    if (!enGermSetup) return false;
+    if (typeof setupPagina !== 'undefined' && typeof SETUP_PAGE_PREMIUM_END !== 'undefined') {
+      return setupPagina < SETUP_PAGE_PREMIUM_END;
+    }
+    return true;
+  } catch (_) {}
+  return false;
+}
+
+function equipCatalogTipoInstalacionHidro() {
+  try {
+    if (
+      typeof setupTipoInstalacion !== 'undefined' &&
+      (setupTipoInstalacion === 'dwc' || setupTipoInstalacion === 'rdwc')
+    ) {
+      if (equipSemillaHidroSinSistemaElegido()) return '';
+      return setupTipoInstalacion;
+    }
+  } catch (_) {}
+  try {
+    var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (typeof tipoInstalacionNormalizado === 'function') {
+      return tipoInstalacionNormalizado(cfg) || '';
+    }
+    var t = cfg && cfg.tipoInstalacion;
+    if (t === 'rdwc') return 'rdwc';
+    if (t === 'dwc') return 'dwc';
+  } catch (_) {}
+  return '';
+}
+
+/** Bomba de recirculación solo cuando el sistema elegido es RDWC. */
+function equipCatalogIncluirBombaRecirc() {
+  if (equipSemillaHidroSinSistemaElegido()) return false;
+  return equipCatalogTipoInstalacionHidro() === 'rdwc';
+}
+
+function equipFilterGroupKeys(keys) {
+  keys = keys || [];
+  if (equipCatalogIncluirBombaRecirc()) return keys;
+  return keys.filter(function (k) {
+    return k !== 'bomba_recirc';
+  });
+}
+
+function equipApplyBombaRecircFilter(groups) {
+  return (groups || [])
+    .map(function (g) {
+      var keys = equipFilterGroupKeys(g.keys);
+      if (g.id === 'hidro' && !keys.length) return null;
+      return Object.assign({}, g, { keys: keys });
+    })
+    .filter(function (g) {
+      return g && g.keys && g.keys.length;
+    });
+}
+
 function getPremiumOrigenPlanta() {
   try {
     if (typeof ensurePremiumSetup === 'function') {
@@ -582,11 +652,18 @@ function getEquipCatalogGroups(entorno) {
 
   if (faseSala && camino === 'semilla_hidro') {
     return base
+      .filter(function (g) {
+        return g.id !== 'hidro';
+      })
       .map(function (g) {
         return Object.assign({}, g, {
           keys: (g.keys || []).filter(function (k) {
             return germKeys.indexOf(k) < 0;
           }),
+          hint:
+            g.id === 'sala'
+              ? 'Carpa, LED, extractor y clima. El circuito DWC/RDWC y la bomba de recirculación (si es RDWC) los configurarás tras elegir el sistema.'
+              : g.hint,
         });
       })
       .filter(function (g) {
@@ -636,16 +713,19 @@ function getEquipCatalogGroups(entorno) {
       base
         .map(function (g) {
           if (g.id === 'hidro') {
-            var keysRest = (g.keys || []).filter(function (k) {
-              return EQUIP_PREP_HIDRO_KEYS_DEDUP.indexOf(k) < 0;
-            });
+            if (!equipCatalogIncluirBombaRecirc()) return null;
+            var keysRest = equipFilterGroupKeys(
+              (g.keys || []).filter(function (k) {
+                return EQUIP_PREP_HIDRO_KEYS_DEDUP.indexOf(k) < 0;
+              })
+            );
             if (!keysRest.length) return null;
             return Object.assign({}, g, {
               label: 'Circuito hidro · recirculación',
               keys: keysRest,
               required: false,
               hint:
-                'Medidor y oxigenador del depósito ya están arriba. Aquí solo bomba de recirculación si montas RDWC (DWC puro puede omitirla).',
+                'Medidor y oxigenador del depósito ya están arriba. Aquí la bomba de recirculación para RDWC.',
             });
           }
           return Object.assign({}, g, { required: g.id === 'sala' });
@@ -657,7 +737,7 @@ function getEquipCatalogGroups(entorno) {
   }
 
   if (camino === 'semilla_hidro') {
-    return base;
+    return equipApplyBombaRecircFilter(base);
   }
 
   if (origen === 'semilla' || camino === 'semilla_propagador') {
@@ -670,12 +750,16 @@ function getEquipCatalogGroups(entorno) {
     if (faseGerm || propagadorSoloAhora) {
       return [germGrp];
     }
-    return [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base);
+    return equipApplyBombaRecircFilter(
+      [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base)
+    );
   }
   if (origen === 'clon') {
-    return [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — imprescindible' })].concat(base);
+    return equipApplyBombaRecircFilter(
+      [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — imprescindible' })].concat(base)
+    );
   }
-  return base;
+  return equipApplyBombaRecircFilter(base);
 }
 
 function getEquipCategorias() {
@@ -710,6 +794,8 @@ window.EQUIP_CATEGORIAS = EQUIP_CATEGORIAS;
 window.EQUIPAMIENTO_CATALOG = EQUIPAMIENTO_CATALOG;
 window.EQUIP_TOP_ES_LIMIT = EQUIP_TOP_ES_LIMIT;
 window.getEquipCatalogGroups = getEquipCatalogGroups;
+window.equipCatalogIncluirBombaRecirc = equipCatalogIncluirBombaRecirc;
+window.equipSemillaHidroSinSistemaElegido = equipSemillaHidroSinSistemaElegido;
 window.getEquipCategorias = getEquipCategorias;
 window.getEquipamientoByCategoria = getEquipamientoByCategoria;
 window.getEquipamientoById = getEquipamientoById;
