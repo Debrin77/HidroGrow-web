@@ -157,13 +157,13 @@ function hidrogrowTorreSlotEsReal(t) {
   if (!t || typeof t !== 'object') return false;
   const cfg = t.config;
   if (!cfg || typeof cfg !== 'object') return false;
-  if (cfg.hcPlantillaAutogenerada) return false;
   if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
   if (cfg.salaPreGermConfigAt || cfg.germinacionFlow) return true;
-  if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return true;
+  if (cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks) return true;
   if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;
   if (cfg.nutriente) return true;
+  if (cfg.hcPlantillaAutogenerada) return false;
   const torre = t.torre;
   if (Array.isArray(torre)) {
     for (let n = 0; n < torre.length; n++) {
@@ -187,12 +187,12 @@ function hidrogrowInstalacionPersistible(st) {
   }
   const cfg = st.configTorre;
   if (!cfg || typeof cfg !== 'object') return false;
-  if (cfg.hcPlantillaAutogenerada) return false;
   if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
-  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.germinacionFlow) return true;
-  if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) return true;
+  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks || cfg.germinacionFlow) return true;
   if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;
+  if (cfg.nutriente) return true;
+  if (cfg.hcPlantillaAutogenerada) return false;
   const torre = st.torre;
   if (Array.isArray(torre)) {
     for (let n = 0; n < torre.length; n++) {
@@ -749,7 +749,8 @@ function initState() {
 }
 
 
-function saveState() {
+function saveState(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
   try {
     if (state && typeof hidrogrowAsegurarTorresSlotEnSnapshot === 'function') {
       hidrogrowAsegurarTorresSlotEnSnapshot(state);
@@ -757,7 +758,7 @@ function saveState() {
     // Multi-torre: la copia en state.torres[idx] es la que se rehidrata al abrir la app.
     // Sin esto, guardar solo state.torre (p. ej. tras editar una cesta) deja el slot obsoleto
     // y al recargar cargarEstadoTorre() sobrescribe la torre vacía → desaparecen plantas y el Diario.
-    if (state && state.torres && state.torres.length > 0) {
+    if (state && state.torres && state.torres.length > 0 && !opts.skipSlotGuard) {
       const okSaveSlot = guardarEstadoTorreActual();
       if (okSaveSlot === false) return false;
     }

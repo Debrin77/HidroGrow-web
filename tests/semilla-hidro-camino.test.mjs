@@ -109,6 +109,26 @@ test('prep hidro: tras checklist navega a montaje si sala ya configurada', () =>
   assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);
 });
 
+test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () => {
+  const torres = read('js/app-hc-torres-badges-notifs.js');
+  const boot = read('js/hc-bootstrap-state.js');
+  assert.match(torres, /cam === 'semilla_propagador' \|\| cam === 'semilla_hidro'/);
+  assert.match(torres, /cfg\.preparacionGermHidroChecks/);
+  assert.match(boot, /cfg\.preparacionGermHidroChecks/);
+  assert.doesNotMatch(
+    boot,
+    /if \(cfg\.hcPlantillaAutogenerada\) return false;[\s\S]{0,80}if \(cfg\.caminoCultivo/
+  );
+});
+
+test('sala: checklist montaje se pinta sin esperar idle pesado', () => {
+  const layout = read('js/hc-medir-sala-layout.js');
+  const nav = read('js/hc-bootstrap-init-nav.js');
+  assert.match(layout, /hcRefreshPuestaMarchaUi/);
+  assert.match(nav, /hcRefreshPuestaMarchaUi/);
+  assert.match(nav, /updateDashboard\(\{ lite: true \}\)/);
+});
+
 test('hcDashRecargaPropagadorInfo: diasObjetivo usa diasObj (sin ReferenceError)', () => {
   const fase = read('js/hc-camino-fase.js');
   assert.match(fase, /var diasObj =[\s\S]*diasObjetivoConclusionGerm/);

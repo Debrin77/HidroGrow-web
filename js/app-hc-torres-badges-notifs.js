@@ -194,24 +194,49 @@ function hcTorreTienePlantasAsignadas(torreMat) {
   );
 }
 
-/** Ranura creada solo por migración/plantilla sin datos reales del usuario. */
-function hcEsSlotInstalacionFantasma(t) {
-  if (!t || typeof t !== 'object') return true;
-  const cfg = t.config;
+function hcCaminoGermSemillaEnSlot(cfg) {
   const cam =
     cfg &&
     (cfg.caminoCultivo ||
       (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
       '');
-  if (cam === 'semilla_propagador') {
+  return cam === 'semilla_propagador' || cam === 'semilla_hidro';
+}
+
+function hcSlotTienePlanGerminacion(cfg, g, prem) {
+  g = g || (cfg && cfg.germinacionFlow) || {};
+  prem = prem || (cfg && cfg.premiumSetup) || {};
+  return !!(
+    String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim() ||
+    (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) ||
+    (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) ||
+    String(prem.fechaSiembraGerm || g.fechaSiembraGerm || g.startedAt || '').trim()
+  );
+}
+
+function hcSlotTienePrepCaminoSemilla(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  return !!(
+    cfg.salaPreGermConfigAt ||
+    cfg.propagadorMontajeChecks ||
+    cfg.preparacionGermHidroChecks ||
+    (cfg.puestaMarchaChecks && typeof cfg.puestaMarchaChecks === 'object' && Object.keys(cfg.puestaMarchaChecks).length) ||
+    cfg.germinacionFlow ||
+    cfg.hcSetupFase === 'germinacion'
+  );
+}
+
+/** Ranura creada solo por migración/plantilla sin datos reales del usuario. */
+function hcEsSlotInstalacionFantasma(t) {
+  if (!t || typeof t !== 'object') return true;
+  const cfg = t.config;
+  if (hcCaminoGermSemillaEnSlot(cfg)) {
     if (cfg.hcPlantillaAutogenerada && !hcTorreTienePlantasAsignadas(t.torre)) {
       const g = cfg.germinacionFlow || {};
       const prem = cfg.premiumSetup || {};
-      const tienePlan =
-        String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim() ||
-        (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) ||
-        (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1);
-      if (!tienePlan && !cfg.salaPreGermConfigAt && !cfg.propagadorMontajeChecks) return true;
+      if (!hcSlotTienePlanGerminacion(cfg, g, prem) && !hcSlotTienePrepCaminoSemilla(cfg)) {
+        return true;
+      }
     }
     return false;
   }
@@ -240,10 +265,10 @@ function hcLegacyMereceMigrarASlot(cfg, st) {
   }
   const cam =
     cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
-  if (cam === 'semilla_propagador') return true;
+  if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return true;
   if (cfg.hcSetupFase === 'germinacion' && cam) return true;
   if (cfg.germinacionFlow && typeof cfg.germinacionFlow === 'object') return true;
-  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks) return true;
+  if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;
   if (cfg.nutriente) return true;
   return false;
@@ -266,7 +291,11 @@ function hcAsegurarSlotInstalacionDesdeConfig() {
     '';
   const nom =
     String(cfg.nombreTorre || cfg.nombreInstalacion || '').trim() ||
-    (cam === 'semilla_propagador' ? 'Germinación · propagador' : 'Mi instalación');
+    (cam === 'semilla_propagador'
+      ? 'Germinación · propagador'
+      : cam === 'semilla_hidro'
+        ? 'Germinación · hidro'
+        : 'Mi instalación');
   state.torres = [
     {
       id: cfg.id || Date.now(),
@@ -545,59 +574,141 @@ function actualizarTorreActual() {
   showToast('🔄 Instalación actualizada · ' + ((getTorreActiva()?.nombre || '').trim() || 'Instalación'));
 }
 
+var _hcCambiarTorreGen = 0;
+
+function hcRefrescarUiTrasCambioTorre(tab) {
+  tab = tab || (typeof currentTab !== 'undefined' ? currentTab : 'inicio');
+  try {
+    if (typeof hcApplyCargarTorreRiegoPendiente === 'function') hcApplyCargarTorreRiegoPendiente();
+  } catch (_) {}
+  try {
+    if (typeof hcApplyCargarTorreUiPendiente === 'function') {
+      hcApplyCargarTorreUiPendiente({ tab: tab });
+    }
+  } catch (_) {}
+  if (tab === 'sistema') {
+    try {
+      if (typeof renderTorre === 'function') renderTorre();
+      if (typeof updateTorreStats === 'function') updateTorreStats();
+      if (typeof renderCompatGrid === 'function') renderCompatGrid();
+    } catch (_) {}
+  } else if (tab === 'inicio') {
+    try {
+      if (typeof updateDashboard === 'function') updateDashboard({ lite: true });
+    } catch (_) {}
+  } else if (tab === 'sala') {
+    try {
+      if (typeof hcInvalidateSalaTabHeavyCache === 'function') hcInvalidateSalaTabHeavyCache();
+      if (typeof hcRefreshSalaTab === 'function') {
+        hcRefreshSalaTab({ deferHeavy: true, force: true });
+      }
+    } catch (_) {}
+  } else if (tab === 'mediciones') {
+    try {
+      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
+      if (typeof initConfigUI === 'function') initConfigUI();
+    } catch (_) {}
+  } else if (tab === 'riego') {
+    try {
+      if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
+      if (typeof actualizarVistaRiegoPorTipoInstalacion === 'function') {
+        actualizarVistaRiegoPorTipoInstalacion();
+      }
+      if (typeof calcularRiego === 'function') calcularRiego({ forceRefresh: true });
+    } catch (_) {}
+  } else if (tab === 'meteo') {
+    try {
+      if (typeof cargarMeteo === 'function') cargarMeteo();
+    } catch (_) {}
+  } else if (tab === 'calendario') {
+    try {
+      if (typeof renderCalendario === 'function') renderCalendario();
+    } catch (_) {}
+  }
+  try {
+    if (typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
+  } catch (_) {}
+  try {
+    if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
+  } catch (_) {}
+  try {
+    if (typeof hcRefreshMultiSystemCoach === 'function') hcRefreshMultiSystemCoach();
+  } catch (_) {}
+}
+
 function cambiarTorreActiva(idx) {
-  // Guardar estado actual en la torre activa
+  idx = Number(idx);
+  if (!Number.isFinite(idx) || idx < 0) return;
+  if (idx === (state.torreActiva || 0)) {
+    cerrarModalTorres();
+    return;
+  }
+
   guardarEstadoTorreActual();
   torreCestasMultiSel.clear();
   torreInteraccionModo = 'editar';
 
-  // Cambiar a la nueva torre
   state.torreActiva = idx;
-  cargarEstadoTorre(idx);
-  saveState();
+  cargarEstadoTorre(idx, { deferUi: true });
+
+  const persistSwitch = function () {
+    try {
+      if (typeof saveState === 'function') saveState({ skipSlotGuard: true });
+    } catch (_) {}
+  };
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(persistSwitch, { timeout: 500 });
+  } else {
+    setTimeout(persistSwitch, 40);
+  }
+
   cerrarModalTorres();
   actualizarHeaderTorre();
-  renderTorre();
-  updateTorreStats();
-  updateDashboard();
-  actualizarBadgesNutriente();
+  try {
+    if (typeof renderTorreInstalacionPicker === 'function') renderTorreInstalacionPicker();
+  } catch (_) {}
+
   const _bE = document.getElementById('torreModoEditar');
   const _bA = document.getElementById('torreModoAsignar');
   const _pA = document.getElementById('torreAssignPanel');
-  if (_bE) { _bE.classList.add('active'); _bE.setAttribute('aria-pressed', 'true'); }
-  if (_bA) { _bA.classList.remove('active'); _bA.setAttribute('aria-pressed', 'false'); }
+  if (_bE) {
+    _bE.classList.add('active');
+    _bE.setAttribute('aria-pressed', 'true');
+  }
+  if (_bA) {
+    _bA.classList.remove('active');
+    _bA.setAttribute('aria-pressed', 'false');
+  }
   if (_pA) _pA.style.display = 'none';
   actualizarBarraMultiSel();
-  try {
-    if (typeof sincronizarInputsRiego === 'function') sincronizarInputsRiego();
-  } catch (eRiegoSync) {}
 
-  actualizarVistaRiegoPorTipoInstalacion();
-
-  // Toast con nombre de la torre
   const t = state.torres[idx];
-  const nombre = (t && t.nombre) ? String(t.nombre).trim() : '';
+  const nombre = t && t.nombre ? String(t.nombre).trim() : '';
   showToast('🌿 Ahora en: ' + (nombre || 'Instalación'));
-  // Marcar datos como obsoletos — se recargarán al abrir cada pestaña
+
   window._meteoObsoleto = true;
-  window._riegoObsoleto  = true;
+  window._riegoObsoleto = true;
   try {
     if (typeof invalidateMeteoNomiCache === 'function') invalidateMeteoNomiCache();
   } catch (_) {}
-  // Recargar si la pestaña ya está abierta (sincronizar primero)
-  if (document.getElementById('tab-riego')?.classList.contains('active')) {
-    sincronizarInputsRiego();
-    actualizarVistaRiegoPorTipoInstalacion();
-    calcularRiego({ forceRefresh: true });
-  }
-  if (document.getElementById('tab-meteo')?.classList.contains('active')) cargarMeteo();
-  if (document.getElementById('tab-calendario')?.classList.contains('active')) renderCalendario();
-  if (document.getElementById('tab-sala')?.classList.contains('active') ||
-    document.getElementById('tab-mediciones')?.classList.contains('active')) initConfigUI();
-  if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
   try {
-    if (typeof hcRefreshMultiSystemCoach === 'function') hcRefreshMultiSystemCoach();
+    if (typeof hcInvalidateSalaTabHeavyCache === 'function') hcInvalidateSalaTabHeavyCache();
   } catch (_) {}
+
+  const activeTab = typeof currentTab !== 'undefined' ? currentTab : 'inicio';
+  const gen = ++_hcCambiarTorreGen;
+  const runDeferred = function () {
+    if (gen !== _hcCambiarTorreGen) return;
+    hcRefrescarUiTrasCambioTorre(activeTab);
+  };
+  requestAnimationFrame(function () {
+    if (gen !== _hcCambiarTorreGen) return;
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(runDeferred, { timeout: 280 });
+    } else {
+      setTimeout(runDeferred, 0);
+    }
+  });
 }
 
 /** Cestas con cultivo asignado (para detectar datos de torre más recientes en la raíz del state). */
@@ -1174,15 +1285,47 @@ function renderTorreInstalacionPicker() {
 }
 
 function abrirSelectorTorres() {
-  if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
-    hcAbrirPrimeraInstalacion();
+  try {
+    initTorres();
+  } catch (eInit) {
+    try {
+      console.warn('abrirSelectorTorres initTorres', eInit);
+    } catch (_) {}
+  }
+  const torres = Array.isArray(state.torres) ? state.torres : [];
+  const visibles = torres.filter((t) => !hcEsSlotInstalacionFantasma(t));
+  if (!visibles.length) {
+    if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
+      hcAbrirPrimeraInstalacion();
+      return;
+    }
+  }
+  const mt = document.getElementById('modalTorres');
+  const lista = document.getElementById('listaTorres');
+  if (!mt) {
+    if (typeof showToast === 'function') {
+      showToast('No se pudo abrir el selector de instalaciones. Recarga la página (Ctrl+F5).', true);
+    }
     return;
   }
-  initTorres();
-  renderListaTorres();
-  const mt = document.getElementById('modalTorres');
   mt.classList.add('open');
-  a11yDialogOpened(mt);
+  try {
+    if (typeof a11yDialogOpened === 'function') a11yDialogOpened(mt);
+  } catch (_) {}
+  try {
+    renderListaTorres();
+  } catch (eList) {
+    try {
+      console.error('renderListaTorres', eList);
+    } catch (_) {}
+    if (lista) {
+      lista.innerHTML =
+        '<p class="setup-field-hint">No se pudo cargar la lista. Recarga la página (Ctrl+F5).</p>';
+    }
+    if (typeof showToast === 'function') {
+      showToast('Error al listar instalaciones. Recarga (Ctrl+F5).', true);
+    }
+  }
 }
 
 function cerrarModalTorres(e) {
@@ -1195,10 +1338,18 @@ function cerrarModalTorres(e) {
 
 function renderListaTorres() {
   const lista = document.getElementById('listaTorres');
+  if (!lista) return;
+  const torres = Array.isArray(state.torres) ? state.torres : [];
   const activa = state.torreActiva || 0;
-  const EMOJIS = ['🌿','🌱','🥬','🌿','🍃','🌾','🪴','🌻','🫛','🎍'];
+  const visibles = torres.filter((t) => !hcEsSlotInstalacionFantasma(t));
+  if (!visibles.length) {
+    lista.innerHTML =
+      '<p class="setup-field-hint">No hay instalaciones guardadas. Pulsa «Nueva instalación» para empezar.</p>';
+    return;
+  }
 
-  lista.innerHTML = state.torres.map((t, i) => {
+  lista.innerHTML = torres.map((t, i) => {
+    if (hcEsSlotInstalacionFantasma(t)) return '';
     const isActiva = i === activa;
     const cfgT = t.config || {};
     const metaInst =

@@ -69,23 +69,30 @@
     wrap.appendChild(body);
     body.appendChild(monitor);
     body.appendChild(protocol);
-    try {
-      if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
-      if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
-      var estado =
-        typeof getEstadoControlSistema === 'function' ? getEstadoControlSistema() : null;
-      if (estado && estado.resumen) {
-        var pend =
-          estado.resumen.diarioTotal +
-          estado.resumen.semanalTotal -
-          (estado.resumen.diarioOk + estado.resumen.semanalOk);
-        if (pend > 0) {
-          body.hidden = false;
-          head.classList.remove('is-collapsed');
-          head.setAttribute('aria-expanded', 'true');
+    var refreshGuiaPanels = function () {
+      try {
+        if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+        if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
+        var estado =
+          typeof getEstadoControlSistema === 'function' ? getEstadoControlSistema() : null;
+        if (estado && estado.resumen) {
+          var pend =
+            estado.resumen.diarioTotal +
+            estado.resumen.semanalTotal -
+            (estado.resumen.diarioOk + estado.resumen.semanalOk);
+          if (pend > 0) {
+            body.hidden = false;
+            head.classList.remove('is-collapsed');
+            head.setAttribute('aria-expanded', 'true');
+          }
         }
-      }
-    } catch (_) {}
+      } catch (_) {}
+    };
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(refreshGuiaPanels, { timeout: 2200 });
+    } else {
+      setTimeout(refreshGuiaPanels, 120);
+    }
   }
 
   function ensureAmbienteSaveFooter(card) {
@@ -502,7 +509,7 @@
   var _hcSalaHeavyGen = 0;
   var _hcSalaHeavySig = '';
   var _hcSalaHeavyAt = 0;
-  var SALA_HEAVY_TTL_MS = 14000;
+  var SALA_HEAVY_TTL_MS = 8000;
 
   function salaConfigRefreshSig(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
@@ -528,9 +535,11 @@
 
   function refreshSalaTabLight(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    bindSalaEquipCollapsibles();
     refreshSalaSubTabsCaminoUi(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     refreshSalaEquipMontaje({ lightOnly: true });
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
   }
 
@@ -612,20 +621,30 @@
       ensureGuiaWrap();
       wrapAmbienteCollapsible();
       mountAmbienteInMedirFlow();
-      salaSubTab(salaSubActive);
-      refreshSalaSubTabsCaminoUi();
-      refreshSalaEquipMontaje();
-      refreshSistemaCultivoExtras();
-      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
       if (typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
         ensureSalaCultivoEquipMountEnTabRoot();
       }
+      bindSalaEquipCollapsibles();
+      salaSubTab(salaSubActive);
+      refreshSalaSubTabsCaminoUi();
+      refreshSalaEquipMontaje({ lightOnly: true });
+      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       applyMedirGuiaProtocoloChrome();
-      if (typeof repositionMedirFlowPropagadorTop === 'function') {
-        repositionMedirFlowPropagadorTop();
-      }
-      if (typeof refreshMedirGerminacionUi === 'function') {
-        refreshMedirGerminacionUi();
+      var deferHeavy = function () {
+        try {
+          refreshSalaEquipMontaje();
+          if (typeof refreshSistemaCultivoExtras === 'function') refreshSistemaCultivoExtras();
+          if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+          if (typeof repositionMedirFlowPropagadorTop === 'function') {
+            repositionMedirFlowPropagadorTop();
+          }
+          if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
+        } catch (_) {}
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(deferHeavy, { timeout: 600 });
+      } else {
+        setTimeout(deferHeavy, 40);
       }
     } catch (e) {
       try {
@@ -663,7 +682,8 @@
   window.applyMedirGuiaProtocoloChrome = applyMedirGuiaProtocoloChrome;
   window.ensureSalaCultivoEquipMountEnTabRoot = ensureSalaCultivoEquipMountEnTabRoot;
 
-  function scheduleInitMedirSalaLayout() {
+  /** Solo al abrir Medir/Sala (goTab); no en arranque para no bloquear PIN/Inicio. */
+  window.scheduleInitMedirSalaLayout = function scheduleInitMedirSalaLayout() {
     if (typeof window !== 'undefined' && window._hcMedirSalaLayoutDone) return;
     if (typeof window !== 'undefined' && window._hcMedirSalaLayoutScheduled) return;
     if (typeof window !== 'undefined') window._hcMedirSalaLayoutScheduled = true;
@@ -673,11 +693,9 @@
       initMedirSalaLayout();
     };
     if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(run, { timeout: 2500 });
+      requestIdleCallback(run, { timeout: 1200 });
     } else {
-      setTimeout(run, 600);
+      setTimeout(run, 80);
     }
-  }
-
-  document.addEventListener('DOMContentLoaded', scheduleInitMedirSalaLayout);
+  };
 })();

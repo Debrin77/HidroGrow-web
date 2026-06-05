@@ -182,6 +182,7 @@ function hcResolveTabActivaBoot() {
 function hcFinishInitAppHeavyWork() {
   const appEl = document.getElementById('app');
   const tab = hcResolveTabActivaBoot();
+  if (appEl) appEl.classList.remove('hc-app-booting');
 
   try {
     if (typeof refreshTabsOperativaCamino === 'function') {
@@ -193,7 +194,21 @@ function hcFinishInitAppHeavyWork() {
       setupAbierto = !!(so && so.classList.contains('open'));
     } catch (_) {}
     if (!setupAbierto && tab === 'inicio' && typeof updateDashboard === 'function') {
-      updateDashboard();
+      updateDashboard({ lite: true });
+      var runDashFull = function () {
+        try {
+          updateDashboard();
+        } catch (eFull) {
+          try {
+            console.error('dashboard completo en initApp', eFull);
+          } catch (_) {}
+        }
+      };
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(runDashFull, { timeout: 900 });
+      } else {
+        setTimeout(runDashFull, 60);
+      }
     } else if (!setupAbierto && typeof goTabDeferredWork === 'function') {
       goTabDeferredWork(tab);
     }
@@ -201,8 +216,6 @@ function hcFinishInitAppHeavyWork() {
     try {
       console.error('dashboard en initApp', eDash);
     } catch (_) {}
-  } finally {
-    if (appEl) appEl.classList.remove('hc-app-booting');
   }
 
   requestAnimationFrame(function () {
@@ -743,6 +756,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
       applySalaMontajeRecomendadoUi();
     }
     if (typeof salaSubTab === 'function') salaSubTab(window.salaSubActive || 'agua');
+    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof hcRefreshSalaTab === 'function') {
       hcRefreshSalaTab({ deferHeavy: true });
     }
