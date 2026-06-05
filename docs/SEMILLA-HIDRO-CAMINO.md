@@ -7,12 +7,35 @@ Referencia para pruebas, soporte y copy. Resumen de los cuatro caminos: [FLUJO-C
 ## Flujo en una línea
 
 ```
-Asistente único (premium + sala + DWC/RDWC + genética + fecha siembra)
-  → Guardar → checklist prep hidro (no propagador solo)
-  → Operativa: Inicio (hub 6 fases) + Medir (cubo/depósito + sala) + Sala (visible) + Sistema (Prep hidro → Germ cubo)
-  → 6 fases obligatorias + checklist traslado
-  → Esquema DWC/RDWC completo + operativa hidro
+Asistente único (sala + equip + genética + fecha siembra + DWC/RDWC en el mismo paso)
+  → Guardar → checklist prep hidro (ITEMS_PREP_HIDRO)
+  → Sala configurada + montaje verificado
+  → DWC/RDWC confirmado (asistente inicial, no segundo asistente)
+  → Primer llenado depósito (EC baja para germinar en el cubo)
+  → 6 fases obligatorias en Inicio (modo hidro_directo: misma maceta/net pot)
+  → Checklist operativa + registro en matriz (NO «traslado desde propagador»)
+  → Esquema DWC/RDWC completo + operativa cultivo
 ```
+
+### Orden lógico (semilla en el mismo DWC/RDWC)
+
+| # | Etapa | Dónde en la app | Notas |
+|---|--------|-----------------|-------|
+| 1 | Camino + objetivo + entorno | Asistente pasos 1–3 | `semilla_hidro` fija modo `hidro_directo` |
+| 2 | Sala + equip prep cubo | Asistente paso 4 | Medidor, aire depósito, cúpulas opcionales |
+| 3 | Clima / luz | Asistente paso 5 | Fotoperiodo bajo domo/cúpula |
+| 4 | Genética + método | Asistente paso 6 | Obligatorio en «Detalle origen» |
+| 5 | Plan semillas + sustrato + **fecha siembra** | Asistente paso 7 | Mismo paso que genética (hidro) |
+| 6 | Tipo + geometría DWC/RDWC | Asistente paso 8 (`PREMIUM_END`) | **Un solo** asistente; no se repite tras germinar |
+| 7 | Checklist prep hidro | Sistema → Prep hidro | Verificación física antes de germinar |
+| 8 | Montaje sala | Sala | Obligatorio **antes** de las 6 fases |
+| 9 | Primer llenado depósito | Checklist depósito / Medir | EC baja; agua en el cubo donde germina la semilla |
+| 10 | 6 fases + registro diario | Inicio → hub germinación | Fase 6 = cerrar germ en matriz, no «traslado externo» |
+| 11 | Checklist operativa | Inicio (modal) | EC, pH, aire, luz, cesta — mismo sistema |
+| 12 | Registrar plántula en matriz | Modal «Registrar en matriz» | Asigna cesta en Cultivo e instalación |
+| 13 | Operativa completa | Sistema (SVG torre) | Veg / flor sin repetir setup DWC |
+
+**Diferencia clave vs propagador:** no hay bandeja aparte ni segundo asistente DWC. El «checklist traslado» del código (`checklistTrasladoOk`) en hidro directo es **checklist operativa + registro en matriz**, no mover la planta desde otro propagador.
 
 ---
 
@@ -79,7 +102,7 @@ Acciones clave:
 |----------------------------|----------------|-----------|
 | `prep_hidro` | Prep hidro | Checklist `ITEMS_PREP_HIDRO`, sala, montaje, depósito |
 | `germ_cubo` | Germinación en cubo | Nutrientes/registro en cubo, mini esquema |
-| `null` | Cultivo e instalación | SVG DWC/RDWC tras traslado |
+| `null` | Cultivo e instalación | SVG DWC/RDWC tras registro en matriz |
 
 Modal checklist prep: `#modalPropagadorMontaje` (mismo host; copy «Confirmar prep hidro»).
 
@@ -115,8 +138,8 @@ Tras guardar:
 
 Reaperturas:
 
-- `abrirSetupFaseHidro()` — solo si tras 6 fases falta cerrar checklist instalación (caso borde)
-- No hay segundo asistente completo de sala/DWC
+- `abrirSetupFaseHidro()` — solo para corregir geometría DWC si quedó incompleta en el asistente inicial
+- No hay segundo asistente DWC tras germinar (`hcCaminoRequiereConfigHidroPendiente` devuelve `false` en hidro directo)
 
 ---
 
@@ -136,7 +159,7 @@ Reaperturas:
 |------|------------|---------------|
 | 6 fases rail | Guía opcional | **Obligatorias** (todas con `doneAt`) |
 | % anillo hub | Días hacia objetivo | **% fases** (`pctProgreso`) |
-| Conclusión germ | Días o manual | 6 fases + checklist traslado |
+| Conclusión germ | Días o manual | 6 fases + checklist operativa + matriz |
 | Sala en barra | Oculta hasta concluir germ | **Siempre visible** |
 | Asistente DWC | Segundo paso | **Primer** asistente (página END) |
 | SVG Sistema | Bandeja propagador | Prep → cubo → torre DWC |
@@ -153,7 +176,7 @@ Orden típico:
 3. `sala_config` / `sala_montaje` — sala antes de germinar
 4. `hidro_config` — DWC no cerrado en config (raro si asistente completo)
 5. `deposito_llenado` — primer llenado
-6. `traslado` — checklist traslado tras 6 fases
+6. `traslado` — checklist **operativa** + registro en matriz (copy distinto a propagador; mismo flag `checklistTrasladoOk`)
 
 ---
 
@@ -169,7 +192,7 @@ Cada entrada en `state.torres` / `configTorre` activa lleva su propio `caminoCul
 2. Inicio: sin banner «sala oculta»; hub bloqueado hasta prep + sala + depósito.
 3. Sistema: título **Prep hidro** → checklist `ITEMS_PREP_HIDRO`.
 4. Completar prep, sala, montaje, llenado → hub visible; anillo por **% fases**.
-5. Marcar 6 fases → checklist traslado → SVG torre completo.
+5. Marcar 6 fases → checklist operativa → registrar en matriz → SVG torre completo.
 6. Medir: protocolo visible; cards depósito + sala según equipamiento.
 7. Fecha siembra editable en Inicio; calendario día 1 alineado.
 

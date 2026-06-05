@@ -237,9 +237,30 @@
     return o ? o.label : key || '—';
   }
 
+  function hcGermPlanEnPasoDetalleHidro() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (cam !== 'semilla_hidro') return false;
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      return false;
+    }
+    return typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup();
+  }
+
   function ensureGermPlanHost() {
-    var host = el('setupPremiumGermAhoraHost');
+    var propagAhora =
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm();
+    var detalleHidro = hcGermPlanEnPasoDetalleHidro();
+    var host = propagAhora ? el('setupPremiumGermAhoraHost') : null;
+    if (!host && detalleHidro) host = el('spagePremium6');
+    if (!host) host = el('setupPremiumGermAhoraHost');
     if (!host) return null;
+    if (propagAhora && host.id === 'setupPremiumGermAhoraHost') {
+      host.classList.remove('setup-hidden');
+    }
     var sec = el('setupPremiumGermPlanSection');
     if (!sec) {
       sec = document.createElement('div');
@@ -247,6 +268,22 @@
       sec.className = 'setup-mb-12';
       sec.setAttribute('role', 'group');
       sec.setAttribute('aria-label', 'Plan de germinación');
+    }
+    if (detalleHidro && host.id === 'spagePremium6') {
+      var genSec = el('setupPremiumGeneticaGermSection');
+      if (sec.parentNode !== host) {
+        if (genSec && genSec.parentNode === host && genSec.nextSibling) {
+          host.insertBefore(sec, genSec.nextSibling);
+        } else if (genSec && genSec.parentNode === host) {
+          host.insertBefore(sec, genSec.nextSibling);
+        } else {
+          host.appendChild(sec);
+        }
+      }
+      sec.classList.remove('setup-hidden');
+      return sec;
+    }
+    if (sec.parentNode !== host) {
       if (host.firstChild) host.insertBefore(sec, host.firstChild);
       else host.appendChild(sec);
     }
@@ -336,8 +373,11 @@
         '</option>'
       );
     }).join('');
+    var camPlan = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    var tituloPlan =
+      camPlan === 'semilla_hidro' ? 'Plan de germinación en cubo' : 'Plan en el propagador';
     sec.innerHTML =
-      '<div class="setup-block-title setup-mb-8">Plan en el propagador</div>' +
+      '<div class="setup-block-title setup-mb-8">' + tituloPlan + '</div>' +
       capHtml +
       '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-8">' +
       '<div><label class="setup-field-label" for="setupPremiumNumSemillasGerm">Semillas</label>' +
@@ -876,6 +916,14 @@
       return false;
     }
     if (!p.fechaSiembraGerm) {
+      if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
+      var fechaInpVal = el('setupPremiumFechaSiembraGerm');
+      if (fechaInpVal) {
+        try {
+          fechaInpVal.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          fechaInpVal.focus();
+        } catch (_) {}
+      }
       if (typeof showToast === 'function') {
         showToast('Indica la fecha en que pones las semillas en el sustrato', true);
       }

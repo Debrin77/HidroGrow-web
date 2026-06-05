@@ -109,6 +109,16 @@ test('prep hidro: tras checklist navega a montaje si sala ya configurada', () =>
   assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);
 });
 
+test('semilla_hidro: plan germinación (fecha siembra) en paso Detalle origen, no en host oculto', () => {
+  const germ = read('js/hc-premium-germ-plan.js');
+  const flujo = read('js/hc-camino-flujo-ui.js');
+  assert.match(germ, /function hcGermPlanEnPasoDetalleHidro/);
+  assert.match(germ, /host\.id === 'spagePremium6'/);
+  assert.match(germ, /setupPremiumFechaSiembraGerm/);
+  assert.match(flujo, /getCam\(\) === 'semilla_hidro'/);
+  assert.match(flujo, /setupPremiumGermPlanSection/);
+});
+
 test('refreshLuzOrigenUI no reentra en cargarGrowRoomUI (evita ciclo sala)', () => {
   const luz = read('js/hc-luz-equip-sync.js');
   const agua = read('js/hc-setup-agua-sustrato.js');
@@ -157,6 +167,42 @@ test('documentación semilla hidro presente', () => {
   const doc = read('docs/SEMILLA-HIDRO-CAMINO.md');
   assert.match(doc, /semilla_hidro/);
   assert.match(doc, /Checklist de prueba manual/);
+  assert.match(doc, /checklist operativa/i);
   const flujo = read('docs/FLUJO-CAMINOS.md');
   assert.match(flujo, /SEMILLA-HIDRO-CAMINO\.md/);
+});
+
+test('semilla_hidro: cierre sin segundo asistente DWC ni copy de traslado', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  const life = read('js/hc-instalacion-lifecycle.js');
+  assert.match(cultivo, /if \(cam === 'semilla_hidro'\) return false;/);
+  assert.match(germ, /function labelsCierreGerminacion/);
+  assert.match(germ, /checklistNombre: hidroDirecto \? 'Checklist operativa'/);
+  assert.match(germ, /Registrar en la matriz/);
+  assert.doesNotMatch(
+    germ,
+    /camTr === 'semilla_hidro'[\s\S]{0,200}abrirSetupFaseHidro/
+  );
+  assert.match(cultivo, /label: 'Checklist operativa'/);
+  assert.match(cultivo, /label: 'Planta en matriz'/);
+  assert.match(life, /Checklist operativa pendiente/);
+});
+
+test('semilla_hidro: resumen pasos orden prep → sala → hidro → depósito → fases → operativa', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const anchor = cultivo.indexOf("label: 'Prep en hidro'");
+  assert.ok(anchor > 0, 'rama semilla_hidro en getCaminoResumenPasos');
+  const b = cultivo.slice(anchor - 140, anchor + 2200);
+  assert.match(b, /id: 'prep'/);
+  assert.match(b, /id: 'hidro'/);
+  assert.match(b, /id: 'deposito_pre'/);
+  assert.match(b, /id: 'fases6'/);
+  assert.match(b, /id: 'traslado'[\s\S]*Checklist operativa/);
+  assert.match(b, /id: 'cultivo'[\s\S]*Planta en matriz/);
+  const hidroPos = b.indexOf("id: 'hidro'");
+  const fasesPos = b.indexOf("id: 'fases6'");
+  const trasladoPos = b.indexOf("id: 'traslado'");
+  assert.ok(hidroPos < fasesPos, 'DWC antes de las 6 fases');
+  assert.ok(fasesPos < trasladoPos, '6 fases antes del checklist operativa');
 });

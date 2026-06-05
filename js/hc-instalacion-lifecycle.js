@@ -467,7 +467,35 @@
       !germinacionListaParaConfigHidro(cfg)
     ) {
       var g = cfg.germinacionFlow;
+      var camGermDep =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
       var faltaTraslado = g && !g.checklistTrasladoOk;
+      if (camGermDep === 'semilla_hidro') {
+        if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+          return {
+            titulo: 'Primero: depósito para germinar en el cubo',
+            texto:
+              'Completa el <strong>primer llenado</strong> (EC baja) antes de las 6 fases en Inicio.',
+            cta: 'Checklist depósito',
+            action: 'abrirChecklist',
+          };
+        }
+        if (faltaTraslado) {
+          return {
+            titulo: 'Checklist operativa pendiente',
+            texto:
+              'Marca el <strong>checklist operativa</strong> en Inicio y registra la plántula en la matriz.',
+            cta: 'Ir a germinación',
+            action: 'irGerminacion',
+          };
+        }
+        return {
+          titulo: 'Primero: 6 fases en el cubo',
+          texto: 'Sigue el registro diario en <strong>Inicio</strong> hasta completar las 6 fases.',
+          cta: 'Ir a germinación',
+          action: 'irGerminacion',
+        };
+      }
       return {
         titulo: faltaTraslado ? 'Checklist de traslado pendiente' : 'Primero: germinación en propagador',
         texto: faltaTraslado

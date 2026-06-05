@@ -239,6 +239,23 @@
       reorderGermAhoraHost(host);
     } else if (page6) {
       if (host) host.classList.add('setup-hidden');
+      var planSec = el('setupPremiumGermPlanSection');
+      if (
+        getCam() === 'semilla_hidro' &&
+        planSec &&
+        typeof hcCaminoSemillaGermEnSetup === 'function' &&
+        hcCaminoSemillaGermEnSetup()
+      ) {
+        var genSec6 = el('setupPremiumGeneticaGermSection');
+        if (planSec.parentNode !== page6) {
+          if (genSec6 && genSec6.parentNode === page6) {
+            page6.insertBefore(planSec, genSec6.nextSibling);
+          } else {
+            page6.appendChild(planSec);
+          }
+        }
+        planSec.classList.remove('setup-hidden');
+      }
       if (genPref && bundle && genPref.parentNode !== bundle) {
         var metHint = el('setupPremiumGeneticaHint');
         if (metHint && metHint.parentNode === bundle) {

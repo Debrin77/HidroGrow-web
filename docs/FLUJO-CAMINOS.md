@@ -28,8 +28,8 @@ Módulo central: `hc-camino-fase.js` · Panel: `hc-sistema-fase-camino.js`
 ## 2. Semilla en hidro (`semilla_hidro`)
 
 - Asistente **único** con sala + DWC/RDWC (no vuelve a pedirlo).
-- Orden en Sistema (**Prep hidro**): checklist prep → sala → montaje → depósito listo → **6 fases** en Inicio.
-- Luego **Germinación en cubo**: mismo registro/nutrientes; esquema completo tras checklist traslado.
+- Orden: prep hidro → sala → montaje → **DWC/RDWC ya en asistente inicial** → depósito (EC baja) → **6 fases** en el cubo → checklist **operativa** + registro en matriz (no traslado desde propagador).
+- Esquema SVG completo tras registrar la plántula en la matriz.
 - Medir: depósito del cubo + microclima.
 - Mapa detallado: **[SEMILLA-HIDRO-CAMINO.md](./SEMILLA-HIDRO-CAMINO.md)**.
 

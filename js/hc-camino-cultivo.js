@@ -32,7 +32,7 @@
       orden: [
         'Asistente único: <strong>sala + DWC/RDWC</strong> (sin repetir después).',
         'Checklist prep → montaje → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).',
-        'Sistema muestra germinación en cubo; el esquema completo tras el traslado.',
+        'Sistema muestra germinación en cubo; esquema completo tras registrar la plántula en la matriz.',
         'Medir = agua del depósito + microclima del cubo.',
       ],
     },
@@ -485,6 +485,8 @@
       if (!germinacionListaParaConfigHidro(cfg)) return false;
       return !hidroInstalacionCerrada(cfg);
     }
+    /** Hidro directo: DWC/RDWC solo en el asistente inicial (antes de las 6 fases). */
+    if (cam === 'semilla_hidro') return false;
     if (!hcCaminoEsSemilla(cam)) return false;
     if (cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc') {
       if (cfg.checklistInstalacionConfirmada === true) return false;
@@ -1193,27 +1195,15 @@
         pasos = pasos.concat([
           {
             id: 'traslado',
-            label: 'Checklist traslado',
+            label: 'Checklist operativa',
             done: !!g.checklistTrasladoOk,
             action: 'irGerminacion',
           },
           {
-            id: 'hidro',
-            label: 'Sistema definitivo',
-            done: hidroInstalacionCerrada(cfg),
-            action: 'abrirSetupFaseHidro',
-          },
-          {
             id: 'cultivo',
-            label: 'Cultivo en matriz',
-            done: cultivoMatrizListo(),
+            label: 'Planta en matriz',
+            done: cultivoMatrizListo() || !!g.trasladoAt,
             action: 'irCultivo',
-          },
-          {
-            id: 'deposito',
-            label: 'Primer llenado depósito',
-            done: depositoListo(cfg),
-            action: 'abrirChecklist',
           },
         ]);
       }

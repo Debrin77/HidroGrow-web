@@ -93,7 +93,7 @@
     rockwool: 'Cubo en net pot al borde del DWC/RDWC; EC inicial baja; raíz solo toca niebla o 1–2 cm de agua.',
     domo: 'Microdomo sobre la maceta o HR alta; luz tenue 18/6; controla T° agua 20–24 °C.',
     netpot: 'Sube nivel gradualmente cuando la raíz salga del cubo; arcilla si ya la usas en tu sistema.',
-    dwc: 'Plántula estable: confirma checklist de traslado y asigna la cesta en la matriz.',
+    dwc: 'Plántula estable: confirma checklist operativa y asigna la cesta en la matriz.',
   };
 
   var TAREAS_DIA_FASE = {
@@ -113,7 +113,7 @@
       rockwool: 'pH cubo 5,5; EC depósito 200–400 µS; burbujas suaves.',
       domo: 'HR alta o mini domo; ventila; medición en Medir si tienes sonda de agua.',
       netpot: 'Sube 1–2 cm el nivel si la raíz blanca asoma por los agujeros.',
-      dwc: 'Revisa aireación y luz veg antes del checklist de mejora del sistema.',
+      dwc: 'Revisa aireación y luz veg antes del checklist operativa y el registro en matriz.',
     },
   };
 
@@ -133,6 +133,47 @@
     if (cam === 'semilla_hidro') return 'hidro_directo';
     if (cam === 'semilla_propagador') return 'propagador';
     return null;
+  }
+
+  /** Copy post-6-fases: hidro directo ≠ traslado desde propagador. */
+  function labelsCierreGerminacion(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var hidroDirecto = cam === 'semilla_hidro';
+    var tipo =
+      typeof etiquetaTipoInstalacion === 'function'
+        ? etiquetaTipoInstalacion(cfg)
+        : cfg.tipoInstalacion === 'rdwc'
+          ? 'RDWC'
+          : 'DWC';
+    return {
+      hidroDirecto: hidroDirecto,
+      checklistNombre: hidroDirecto ? 'Checklist operativa' : 'Checklist traslado',
+      checklistTitulo: hidroDirecto
+        ? 'Checklist · operativa en el cubo'
+        : 'Checklist · paso al ' + tipo,
+      checklistNota: hidroDirecto
+        ? 'Germinación en el mismo ' +
+          tipo +
+          '. Confirma EC, pH, aireación y luz antes de registrar la plántula en la matriz.'
+        : 'Germinación completada. Confirma que el sistema hidropónico está listo para recibir la plántula (mejora o primer llenado del depósito).',
+      btnContinuar: hidroDirecto ? 'Registrar en la matriz' : 'Continuar al traslado',
+      trasladoTitulo: hidroDirecto ? 'Registrar plántula en la matriz' : 'Trasladar al ' + tipo,
+      trasladoNota: hidroDirecto
+        ? 'La plántula ya germinó en el net pot de este ' +
+          tipo +
+          '. Asigna variedad y cesta en el esquema (no es un traslado desde otro propagador).'
+        : 'La plántula entra en la matriz con origen germinación propia y fecha de hoy. EC inicial baja (400–600 µS) hasta que enraice en el depósito.',
+      bloqueoBanner: hidroDirecto
+        ? 'Checklist operativa pendiente: confirma que el cubo está listo para pasar a cultivo en matriz.'
+        : 'Checklist de traslado pendiente antes del asistente DWC/RDWC y el depósito.',
+      bloqueoToast: hidroDirecto
+        ? 'Marca el checklist operativa antes de registrar la planta en la matriz.'
+        : 'Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.',
+      fase6Toast: hidroDirecto
+        ? 'Marca el checklist operativa antes de cerrar la fase 6.'
+        : 'Marca el checklist de traslado antes de cerrar la fase 6.',
+    };
   }
 
   function modoGerminacionFijadoPorCamino(cfg) {
@@ -177,7 +218,7 @@
         paso: paso.paso,
         titulo: 'Cerrar germinación · lista para matriz',
         desc:
-          'Plántula estable en net pot. Confirma checklist de traslado y asigna la cesta; luego cierra DWC/RDWC en el asistente.',
+          'Plántula estable en net pot. Confirma checklist operativa y registra la cesta en la matriz (DWC/RDWC ya definido en el asistente).',
         icon: '✅',
       };
     }
@@ -738,7 +779,14 @@
     o.setAttribute('aria-label', 'Fase completada');
     var sigTxt = siguiente
       ? '<p class="hc-germ-celebrate-next">Siguiente: <strong>' + esc(siguiente.titulo) + '</strong></p>'
-      : '<p class="hc-germ-celebrate-next"><strong>¡Camino completo!</strong> Ya puedes trasladar al hidro.</p>';
+      : (function () {
+          var lblFin = labelsCierreGerminacion(cfgActiva());
+          return (
+            '<p class="hc-germ-celebrate-next"><strong>¡Camino completo!</strong> ' +
+            esc(lblFin.btnContinuar) +
+            '.</p>'
+          );
+        })();
     o.innerHTML =
       '<div class="hc-germ-celebrate-card">' +
       '<div class="hc-germ-celebrate-burst" aria-hidden="true"></div>' +
@@ -781,10 +829,17 @@
             setTimeout(hcAbrirMontajeSalaChecklist, 400);
           } else if (typeof hcIrMontajeSala === 'function') setTimeout(hcIrMontajeSala, 400);
         } else if (bloqueo === 'traslado') {
-          showToast('Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.', true);
+          showToast(labelsCierreGerminacion(cfg).bloqueoToast, true);
           if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
         } else if (bloqueo === 'hidro_config') {
-          showToast('Configura DWC/RDWC en el asistente antes de las 6 fases.', true);
+          var camBloq =
+            typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+          showToast(
+            camBloq === 'semilla_hidro'
+              ? 'Confirma DWC/RDWC en el asistente inicial (paso instalación) antes de las 6 fases.'
+              : 'Configura DWC/RDWC en el asistente antes de las 6 fases.',
+            true
+          );
           if (typeof abrirSetupFaseHidro === 'function') setTimeout(abrirSetupFaseHidro, 400);
         } else if (bloqueo === 'deposito_llenado') {
           showToast('Completa el primer llenado del depósito (checklist) para iniciar la germinación.', true);
@@ -813,7 +868,7 @@
     const paso = PASOS[idx];
     if (paso.id === 'dwc' && !g.checklistTrasladoOk) {
       if (typeof showToast === 'function') {
-        showToast('Marca el checklist de traslado antes de cerrar la fase 6.', true);
+        showToast(labelsCierreGerminacion(cfg).fase6Toast, true);
       }
       if (typeof hcGerminacionAbrirChecklistTraslado === 'function') hcGerminacionAbrirChecklistTraslado();
       return;
@@ -976,6 +1031,7 @@
         : cfg.tipoInstalacion === 'rdwc'
           ? 'RDWC'
           : 'DWC';
+    var lblCl = labelsCierreGerminacion(cfg);
     var o = document.createElement('div');
     o.id = 'hcGermChecklistOverlay';
     o.className = 'checklist-pregunta-overlay';
@@ -999,17 +1055,21 @@
       '<div class="checklist-pregunta-handle"></div>' +
       '<div class="checklist-pregunta-head">' +
       '<div class="checklist-pregunta-emoji">✅</div>' +
-      '<div><div class="checklist-pregunta-title">Checklist · paso al ' +
-      esc(tipo) +
+      '<div><div class="checklist-pregunta-title">' +
+      esc(lblCl.checklistTitulo) +
       '</div></div></div>' +
-      '<p class="checklist-pregunta-nota-pasos">Germinación completada. Confirma que el sistema hidropónico está listo para recibir la plántula (mejora o primer llenado del depósito).</p>' +
+      '<p class="checklist-pregunta-nota-pasos">' +
+      esc(lblCl.checklistNota) +
+      '</p>' +
       '<div class="hc-germ-checklist-list">' +
       items +
       '</div>' +
       '<div class="checklist-bloqueo-actions">' +
       '<button type="button" id="hcGermChecklistContinuar" class="checklist-pregunta-btn-main"' +
       (g.checklistTrasladoOk ? '' : ' disabled') +
-      '>Continuar al traslado</button></div>' +
+      '>' +
+      esc(lblCl.btnContinuar) +
+      '</button></div>' +
       '<button type="button" id="hcGermChecklistLater" class="checklist-pregunta-btn-later">Más tarde</button></div>';
     document.body.appendChild(o);
     if (typeof a11yDialogOpened === 'function') a11yDialogOpened(o);
@@ -1100,7 +1160,14 @@
     const g = ensureGerminacionFlow(cfg);
     if (!fasesCompletadas(g)) {
       if (typeof showToast === 'function') {
-        showToast('Completa las 6 fases del camino antes del traslado (o marca la fase actual)', true);
+        var camFases =
+          typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+        showToast(
+          camFases === 'semilla_hidro'
+            ? 'Completa las 6 fases antes del checklist operativa y el registro en matriz.'
+            : 'Completa las 6 fases del camino antes del traslado (o marca la fase actual)',
+          true
+        );
       }
       return;
     }
@@ -1134,6 +1201,7 @@
         : cfg.tipoInstalacion === 'rdwc'
           ? 'RDWC'
           : 'DWC';
+    var lblTr = labelsCierreGerminacion(cfg);
     var o = document.createElement('div');
     o.id = 'hcGermTrasladoOverlay';
     o.className = 'checklist-pregunta-overlay';
@@ -1144,10 +1212,12 @@
       '<div class="checklist-pregunta-handle"></div>' +
       '<div class="checklist-pregunta-head">' +
       '<div class="checklist-pregunta-emoji">💧</div>' +
-      '<div><div class="checklist-pregunta-title">Trasladar al ' +
-      esc(tipo) +
+      '<div><div class="checklist-pregunta-title">' +
+      esc(lblTr.trasladoTitulo) +
       '</div></div></div>' +
-      '<p class="checklist-pregunta-nota-pasos">La plántula entra en la matriz con origen <strong>germinación propia</strong> y fecha de hoy. EC inicial baja (400–600 µS) hasta que enraice en el depósito.</p>' +
+      '<p class="checklist-pregunta-nota-pasos">' +
+      lblTr.trasladoNota +
+      '</p>' +
       '<label class="hc-germ-traslado-lbl">Variedad</label>' +
       '<select id="hcGermTrasladoVar" class="form-select hc-germ-traslado-inp">' +
       '<option value="">— Elige variedad —</option>' +
@@ -1161,7 +1231,9 @@
           '</p>'
         : '<p class="setup-box-warn">No hay cesta vacía: libera una en Cultivo e instalación o el traslado la ocupará en la primera libre.</p>') +
       '<div class="checklist-bloqueo-actions">' +
-      '<button type="button" id="hcGermTrasladoOk" class="checklist-pregunta-btn-main">Confirmar traslado</button>' +
+      '<button type="button" id="hcGermTrasladoOk" class="checklist-pregunta-btn-main">' +
+      (lblTr.hidroDirecto ? 'Confirmar en matriz' : 'Confirmar traslado') +
+      '</button>' +
       '</div>' +
       '<button type="button" id="hcGermTrasladoCancel" class="checklist-pregunta-btn-later">Cancelar</button>' +
       '</div>';
@@ -1203,19 +1275,25 @@
       refreshDashGerminacionHub();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (typeof updateDashboard === 'function') updateDashboard();
-      if (typeof showToast === 'function') showToast('✓ Planta en el ' + tipo + ' · sigue con el primer llenado del depósito', false);
       var camTr =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      if (typeof showToast === 'function') {
+        showToast(
+          camTr === 'semilla_hidro'
+            ? '✓ Plántula registrada en la matriz · sigue la operativa en Sistema'
+            : '✓ Planta en el ' + tipo + ' · sigue con el primer llenado del depósito',
+          false
+        );
+      }
       if (
+        camTr !== 'semilla_hidro' &&
         typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
         hcCaminoRequiereConfigHidroPendiente(cfg)
       ) {
         setTimeout(function () {
           if (typeof showToast === 'function') {
             showToast(
-              camTr === 'semilla_hidro'
-                ? 'Fase 2: cierra DWC/RDWC en el asistente (germinación en depósito ya hecha). Luego puntos hidro en montaje.'
-                : 'Fase 2: configura DWC/RDWC y puntos de sistema en montaje; sin repetir germinación en el depósito.',
+              'Fase 2: configura DWC/RDWC y puntos de sistema en montaje; sin repetir germinación en el depósito.',
               false,
               { durationMs: 5600 }
             );
@@ -1422,9 +1500,14 @@
         '<strong>Montaje de sala.</strong> Verifica el checklist en la pestaña Sala. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirMontajeSalaChecklist===\'function\'?hcAbrirMontajeSalaChecklist():(typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala())">Ir a montaje</button></div>';
     } else if (bloqueoSala === 'traslado') {
+      var lblBan = labelsCierreGerminacion(cfg);
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
-        '<strong>Checklist de traslado.</strong> Obligatorio antes del asistente DWC/RDWC y el depósito. ' +
+        '<strong>' +
+        esc(lblBan.checklistNombre) +
+        '.</strong> ' +
+        esc(lblBan.bloqueoBanner) +
+        ' ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcGerminacionAbrirChecklistTraslado===\'function\'&&hcGerminacionAbrirChecklistTraslado()">Abrir checklist</button></div>';
     }
 
@@ -1444,8 +1527,12 @@
       '<p class="hc-germ-hub-sub">' +
       (camGerm === 'semilla_propagador'
         ? '<strong>App de propagador:</strong> ~2–3 mm agua+nutrientes en bandeja (no seca) · registro diario (T°, HR) → hidro → traslado'
-        : 'Prep + sala + sistema + depósito → <strong>6 fases</strong> en el cubo → traslado al ' +
-          esc(tipo || 'DWC/RDWC')) +
+        : 'Prep + sala + ' +
+          esc(tipo || 'DWC/RDWC') +
+          ' + depósito → <strong>6 fases</strong> en el cubo → ' +
+          (camGerm === 'semilla_hidro'
+            ? 'checklist operativa y registro en matriz'
+            : 'traslado al ' + esc(tipo || 'DWC/RDWC'))) +
       '</p>' +
       (cultNombre || (camGerm === 'semilla_propagador' && nSemHub >= 1)
         ? '<p class="hc-germ-hub-var">' +
@@ -1480,7 +1567,7 @@
           ') o el botón «Dar por concluida» más abajo. No hace falta marcar todas las fases del rail.</p>'
         : camGerm === 'semilla_hidro'
           ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
-            '<strong>6 fases obligatorias:</strong> marca cada paso del rail antes del checklist de traslado. El anillo muestra el % de fases completadas.</p>'
+            '<strong>6 fases obligatorias:</strong> marca cada paso del rail antes del checklist operativa y el registro en matriz. El anillo muestra el % de fases completadas.</p>'
           : '') +
       (modoGerminacionFijadoPorCamino(cfg)
         ? '<p class="hc-germ-modo-fijo setup-field-hint">Modo fijado por tu camino en el asistente.</p>'
@@ -1511,10 +1598,22 @@
           : 'Fase ' + paso.paso + ' de ' + PASOS.length) +
       '</div>' +
       '<h3 class="hc-germ-focus-title">' +
-      esc(allDone ? 'Lista para el hidro' : paso.titulo) +
+      esc(
+        allDone
+          ? camGerm === 'semilla_hidro'
+            ? 'Lista para matriz'
+            : 'Lista para el hidro'
+          : paso.titulo
+      ) +
       '</h3>' +
       '<p class="hc-germ-focus-desc">' +
-      esc(allDone ? 'Asigna la plántula en la matriz y prepara el depósito con EC baja.' : pasoDesc) +
+      esc(
+        allDone
+          ? camGerm === 'semilla_hidro'
+            ? 'Abre el checklist operativa y registra la plántula en la cesta del esquema.'
+            : 'Asigna la plántula en la matriz y prepara el depósito con EC baja.'
+          : pasoDesc
+      ) +
       '</p>' +
       (equipAviso ? '<p class="hc-germ-equip-aviso" role="note">' + esc(equipAviso) + '</p>' : '') +
       (allDone
@@ -1608,15 +1707,15 @@
           '<button type="button" class="btn btn-primary btn-lg" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></div>'
         : allDone
           ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
-            '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist mejora al ' +
-            esc(tipo) +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">' +
+            (camGerm === 'semilla_hidro' ? 'Checklist operativa' : 'Checklist mejora al ' + esc(tipo)) +
             '</button>' +
-            '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
-            esc(tipo) +
-            ' →</button>' +
+            '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">' +
+            (camGerm === 'semilla_hidro' ? 'Registrar en la matriz →' : 'Trasladar al ' + esc(tipo) + ' →') +
+            '</button>' +
             '<p class="hc-germ-traslado-foot">' +
             (camGerm === 'semilla_hidro'
-              ? 'Siguiente: confirma el traslado en la matriz (DWC/RDWC ya configurado en el asistente inicial).'
+              ? 'Siguiente: asigna la cesta en Cultivo e instalación. El DWC/RDWC ya lo definiste en el asistente inicial.'
               : 'Siguiente: asistente DWC/RDWC (sin repetir germinación en el depósito) y asignar la cesta.') +
             '</p></div>'
           : '') +
