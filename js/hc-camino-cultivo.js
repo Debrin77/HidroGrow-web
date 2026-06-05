@@ -781,6 +781,13 @@
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var camAj = getCaminoCultivo(cfg);
     if (camAj !== 'semilla_propagador' && camAj !== 'semilla_hidro') return false;
+    if (
+      camAj === 'semilla_hidro' &&
+      typeof hidroInstalacionCerrada === 'function' &&
+      hidroInstalacionCerrada(cfg)
+    ) {
+      return false;
+    }
     if (typeof state === 'undefined' || !state) return false;
     if (cfg._hcAjustandoTorrePropagador) return false;
     cfg._hcAjustandoTorrePropagador = true;
@@ -846,6 +853,63 @@
     } finally {
       delete cfg._hcAjustandoTorrePropagador;
     }
+  }
+
+  /** Factoriza N cestas en filas×cols razonable (p. ej. 12 → 3×4). */
+  function hcFactorizarRejillaDwc(n) {
+    n = Math.max(1, Math.round(Number(n) || 1));
+    var best = { filas: 1, cestas: n, score: n };
+    for (var f = 2; f <= Math.min(6, n); f++) {
+      if (n % f !== 0) continue;
+      var c = n / f;
+      if (c < 2 || c > 12) continue;
+      var score = Math.abs(f - c) + (f === 3 && c === 4 ? -0.5 : 0);
+      if (score < best.score) best = { filas: f, cestas: c, score: score };
+    }
+    return { filas: best.filas, cestas: best.cestas };
+  }
+
+  /**
+   * semilla_hidro: restaura rejilla DWC tras matriz 1×N de germinación (p. ej. 1×12 → 3×4).
+   */
+  function hcRepararGeometriaSemillaHidroAlCargar(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_hidro') return false;
+    if (typeof hidroInstalacionCerrada !== 'function' || !hidroInstalacionCerrada(cfg)) return false;
+    if (typeof state === 'undefined' || !state || !state.torre) return false;
+    var torre = state.torre;
+    var flat = 0;
+    for (var i = 0; i < torre.length; i++) flat += (torre[i] && torre[i].length) || 0;
+    var filas = parseInt(String(cfg.hcDwcGeomFilas || 0), 10);
+    var cestas = parseInt(String(cfg.hcDwcGeomCestas || 0), 10);
+    if (!(filas > 1 && cestas > 1)) {
+      var n =
+        flat > 0
+          ? flat
+          : Math.max(1, parseInt(String(cfg.numCestas || 0), 10) || 1);
+      if (torre.length === 1 && n > 1 && (cfg.germinacionEnPropagador || n !== cestas)) {
+        var sug = hcFactorizarRejillaDwc(n);
+        filas = sug.filas;
+        cestas = sug.cestas;
+      } else if (filas < 1 || cestas < 1) {
+        return false;
+      }
+    }
+    if (torre.length === filas && (torre[0] && torre[0].length) === cestas && !cfg.germinacionEnPropagador) {
+      return false;
+    }
+    if (
+      typeof redimensionarMatrizTorreDwcPreservando === 'function' &&
+      (torre.length !== filas || flat !== filas * cestas)
+    ) {
+      redimensionarMatrizTorreDwcPreservando(cfg, filas, cestas);
+    }
+    cfg.numNiveles = filas;
+    cfg.numCestas = cestas;
+    cfg.hcDwcGeomFilas = filas;
+    cfg.hcDwcGeomCestas = cestas;
+    delete cfg.germinacionEnPropagador;
+    return true;
   }
 
   /**
@@ -1411,6 +1475,13 @@
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var cam = getCaminoCultivo(cfg);
     if (cam === 'semilla_propagador') return false;
+    if (
+      cam === 'semilla_hidro' &&
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      return false;
+    }
     if (!cam || !CAMINOS[cam]) return false;
     if (depositoListo(cfg)) return false;
     try {
@@ -1594,6 +1665,8 @@
   global.hcAjustarTorrePropagadorSemillas = hcAjustarTorrePropagadorSemillas;
   global.hcPropagadorTorreNecesitaAjuste = hcPropagadorTorreNecesitaAjuste;
   global.hcRepararSemillasPropagadorAlCargar = hcRepararSemillasPropagadorAlCargar;
+  global.hcRepararGeometriaSemillaHidroAlCargar = hcRepararGeometriaSemillaHidroAlCargar;
+  global.hcFactorizarRejillaDwc = hcFactorizarRejillaDwc;
   global.hcSyncGerminacionPlanCultivo = hcSyncGerminacionPlanCultivo;
   global.hcDimsTorreDesdeConfig = hcDimsTorreDesdeConfig;
   global.hcNumSemillasGermConfig = hcNumSemillasGermConfig;

@@ -148,10 +148,12 @@
     var germ =
       typeof window.hcMedirModoGerminacionPropagador === 'function' &&
       window.hcMedirModoGerminacionPropagador(cfg);
+    var hidroOper =
+      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
     var guia = document.getElementById('medirGuiaDiaCard');
     var monitor = document.getElementById('medirMonitorCard');
     var protocol = document.getElementById('medirProtocoloCard');
-    if (guia) guia.classList.toggle('setup-hidden', !!germ);
+    if (guia) guia.classList.toggle('setup-hidden', !!germ || !!hidroOper);
     if (monitor) monitor.classList.toggle('setup-hidden', !!germ);
     if (protocol) protocol.classList.add('setup-hidden');
   }
@@ -360,21 +362,142 @@
     'panelLocalidadMeteo',
   ];
 
+  function repositionMedirTorreBannerTop() {
+    var tab = document.getElementById('tab-mediciones');
+    var banner = document.getElementById('medirTorreBanner');
+    if (!tab || !banner || banner.parentNode !== tab) return;
+    var first = tab.firstElementChild;
+    if (first === banner) return;
+    tab.insertBefore(banner, first);
+  }
+
+  function ensureSalaTorreBanner() {
+    var tab = document.getElementById('tab-sala');
+    if (!tab) return;
+    var ban = document.getElementById('salaTorreBanner');
+    if (!ban) {
+      ban = document.createElement('button');
+      ban.type = 'button';
+      ban.id = 'salaTorreBanner';
+      ban.className = 'medir-torre-banner sala-torre-banner';
+      ban.setAttribute('aria-label', 'Instalación activa en sala de cultivo');
+      ban.onclick = function () {
+        if (typeof abrirSelectorTorres === 'function') abrirSelectorTorres();
+      };
+      ban.innerHTML =
+        '<div class="medir-torre-banner-row">' +
+        '<span id="salaTorreEmoji" class="medir-torre-banner-emoji" aria-hidden="true">🌿</span>' +
+        '<div><div class="medir-torre-banner-kicker">Sistema activo</div>' +
+        '<div id="salaTorreNombre" class="medir-torre-banner-nombre">Instalación</div></div></div>' +
+        '<span class="medir-torre-banner-action">Cambiar ›</span>';
+      var title = tab.querySelector('.section-title');
+      if (title) title.insertAdjacentElement('afterend', ban);
+      else tab.insertBefore(ban, tab.firstChild);
+    }
+    refreshSalaTorreBanner();
+  }
+
+  function refreshSalaTorreBanner() {
+    var torre =
+      typeof getTorreActiva === 'function'
+        ? getTorreActiva()
+        : typeof state !== 'undefined' && state.torres
+          ? state.torres[state.torreActiva || 0]
+          : null;
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var nomEl = document.getElementById('salaTorreNombre');
+    var emoEl = document.getElementById('salaTorreEmoji');
+    if (nomEl) nomEl.textContent = (torre && torre.nombre ? String(torre.nombre).trim() : '') || 'Instalación';
+    if (emoEl) {
+      if (typeof hcPintarSistemaIconoEnElemento === 'function' && torre) {
+        hcPintarSistemaIconoEnElemento(emoEl, torre, 'hc-ico--dash-torre');
+      } else if (typeof emojiSistemaUiPorTorre === 'function' && torre) {
+        emoEl.textContent = emojiSistemaUiPorTorre(torre);
+      }
+    }
+    var ban = document.getElementById('salaTorreBanner');
+    if (ban && typeof hcGeomTorreFilasCestas === 'function') {
+      var sub = ban.querySelector('.sala-torre-banner-sub');
+      if (!sub) {
+        sub = document.createElement('div');
+        sub.className = 'sala-torre-banner-sub medir-torre-banner-kicker';
+        var nom = document.getElementById('salaTorreNombre');
+        if (nom && nom.parentNode) nom.parentNode.appendChild(sub);
+      }
+      var tipo =
+        typeof etiquetaTipoInstalacion === 'function'
+          ? etiquetaTipoInstalacion(cfg)
+          : cfg.tipoInstalacion || 'DWC';
+      sub.textContent = tipo + ' · ' + hcGeomTorreFilasCestas(cfg).label;
+    }
+  }
+
+  function applyMedirAmbienteUnificadoOperativa(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (typeof hcSemillaHidroUiOperativaLista !== 'function' || !hcSemillaHidroUiOperativaLista(cfg)) {
+      return;
+    }
+    var details = document.getElementById('medirAmbienteDetails');
+    if (details) {
+      details.open = true;
+      details.classList.add('medir-ambiente-details--operativa-unificado');
+    }
+    var kicker = document.querySelector('.medir-step-kicker--solucion');
+    if (kicker) kicker.textContent = 'Depósito';
+    var ambKicker = document.querySelector('.medir-step-kicker');
+    if (ambKicker && ambKicker.closest('.medir-ambiente-summary')) {
+      ambKicker.textContent = 'Sala de cultivo';
+    }
+  }
+
   function refreshSalaPanelesDuplicadosMedirUi(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var hidroOper =
+      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
     var ocultar =
-      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
-      hcSalaOcultarPanelesDuplicadosMedir(cfg);
+      hidroOper ||
+      (typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+        hcSalaOcultarPanelesDuplicadosMedir(cfg));
     SALA_PANELES_DUPLICADOS_MEDIR.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      el.classList.toggle('setup-hidden', ocultar);
-      el.setAttribute('aria-hidden', ocultar ? 'true' : 'false');
+      var hidePanel = ocultar;
+      if (hidroOper && id === 'panelLocalidadMeteo') hidePanel = false;
+      el.classList.toggle('setup-hidden', hidePanel);
+      el.setAttribute('aria-hidden', hidePanel ? 'true' : 'false');
     });
+    if (hidroOper) {
+      var intGrow = document.getElementById('panelConfigInteriorGrow');
+      if (intGrow) {
+        intGrow.classList.add('setup-hidden');
+        intGrow.setAttribute('aria-hidden', 'true');
+        intGrow.style.display = 'none';
+      }
+      var equipDet = document.getElementById('sistemaEquipDetails');
+      var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
+      var flujoGuiado = document.getElementById('salaPropagadorFlujoGuiado');
+      if (equipDet) {
+        equipDet.classList.add('setup-hidden');
+        equipDet.open = false;
+      }
+      if (montajeDet) {
+        montajeDet.classList.add('setup-hidden');
+        montajeDet.open = false;
+      }
+      if (flujoGuiado) {
+        flujoGuiado.classList.add('setup-hidden');
+        flujoGuiado.innerHTML = '';
+      }
+    }
     var stabAgua = document.getElementById('stab-agua');
     if (stabAgua) {
       var label = ocultar ? 'Equipamiento' : 'Agua y ubicación';
-      var icon = ocultar ? '#hc-i-plug' : '#hc-i-droplet';
+      if (hidroOper) {
+        var loc = String(cfg.localidadMeteo || '').trim();
+        label = loc || 'Clima';
+      }
+      var icon = ocultar || hidroOper ? '#hc-i-pin-mapa' : '#hc-i-droplet';
+      if (hidroOper && !ocultar) icon = '#hc-i-droplet';
       stabAgua.innerHTML =
         '<svg class="hc-ico" aria-hidden="true" focusable="false"><use href="' +
         icon +
@@ -535,6 +658,7 @@
 
   function refreshSalaTabLight(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    ensureSalaTorreBanner();
     bindSalaEquipCollapsibles();
     refreshSalaSubTabsCaminoUi(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
@@ -630,6 +754,8 @@
       refreshSalaEquipMontaje({ lightOnly: true });
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       applyMedirGuiaProtocoloChrome();
+      repositionMedirTorreBannerTop();
+      applyMedirAmbienteUnificadoOperativa();
       var deferHeavy = function () {
         try {
           refreshSalaEquipMontaje();
@@ -667,6 +793,9 @@
     if (!inp) return false;
     return typeof hcApplyMedirTabQuick === 'function' ? hcApplyMedirTabQuick(inp.value) : false;
   };
+  window.applyMedirAmbienteUnificadoOperativa = applyMedirAmbienteUnificadoOperativa;
+  window.refreshSalaTorreBanner = refreshSalaTorreBanner;
+  window.repositionMedirTorreBannerTop = repositionMedirTorreBannerTop;
   window.hcRefreshSalaTab = refreshSalaTab;
   window.hcRefreshSalaTabLight = refreshSalaTabLight;
   window.scheduleHcRefreshSalaTabHeavy = scheduleHcRefreshSalaTabHeavy;

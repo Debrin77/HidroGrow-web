@@ -69,6 +69,14 @@ function hcCalendarioModoPropagadorGerm() {
   return false;
 }
 
+/** Germinación en cubo DWC (semilla_hidro operativa): rutina según fase y día desde siembra. */
+function hcCalendarioModoSemillaHidroGerm() {
+  const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_hidro') return false;
+  if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+  return false;
+}
+
 function hcCalendarioRecoSalaPropagadorPendiente() {
   const cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
   return typeof hcMostrarRecoEquipSalaInicio === 'function' && hcMostrarRecoEquipSalaInicio(cfg);
@@ -132,6 +140,12 @@ function renderCalendarioContexto() {
     );
   }
 
+  if (hcCalendarioModoSemillaHidroGerm() && typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(ctx.cfg)) {
+    parts.push(
+      '<span class="cal-context-chip cal-context-chip--hidro-germ">🌱 Germinación en cubo DWC: rutina según <strong>día desde siembra</strong> (oscuridad, cúpulas, luz, medición depósito + ambiente).</span>'
+    );
+  }
+
   const iot =
     typeof hcIotGetCalendarContext === 'function'
       ? hcIotGetCalendarContext()
@@ -185,6 +199,55 @@ function getUltimaMedicionCalendarioFecha() {
 
 function getRecordatorioMedicionDiariaCalendario() {
   if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) return null;
+
+  if (hcCalendarioModoSemillaHidroGerm()) {
+    const cfgH = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (typeof hcGerminacionActiva === 'function' && !hcGerminacionActiva(cfgH)) return null;
+    const gH =
+      typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfgH) : null;
+    const fechaIniH =
+      typeof getFechaInicioGerminacion === 'function'
+        ? getFechaInicioGerminacion(gH, cfgH)
+        : gH && gH.startedAt;
+    if (!gH || !fechaIniH) return null;
+    const hoyH = new Date();
+    hoyH.setHours(0, 0, 0, 0);
+    const medidoHoyH =
+      typeof registroHechoEnFecha === 'function' && registroHechoEnFecha(gH, hoyH);
+    const d0 = new Date(fechaIniH + 'T12:00:00');
+    d0.setHours(0, 0, 0, 0);
+    const diaN = Math.max(1, Math.floor((hoyH - d0) / 86400000) + 1);
+    let tituloH = 'Rutina germinación en cubo';
+    let descH =
+      'Registra EC, pH, volumen, T° agua y T°/HR aire en Medir según la fase del cultivo.';
+    if (diaN >= 1 && diaN <= 2) {
+      tituloH = medidoHoyH ? 'Oscuridad · día ' + diaN + ' registrado' : 'Oscuridad · día ' + diaN + ' de 2';
+      descH = medidoHoyH
+        ? 'Siguiente día: mantén cúpulas cerradas sin luz directa sobre la semilla.'
+        : 'Mantén cúpulas cerradas y sin LED directo. Humedad y calor en el cubo.';
+    } else if (diaN === 3) {
+      tituloH = 'Brote verde · luz y ventilación';
+      descH =
+        'Destapa o ventila cúpulas; activa luz tenue. Mide depósito y ambiente en Medir.';
+    } else if (diaN > 3 && diaN <= 7) {
+      tituloH = 'Ventilar cúpulas y medir';
+      descH =
+        'Quita o ventila mini cúpulas por cesta. Registra EC, pH, T° agua y T°/HR sala.';
+    }
+    const fechaObjetivoH = new Date(hoyH.getTime() + (medidoHoyH ? 86400000 : 0));
+    return {
+      fecha: fechaObjetivoH,
+      evento: {
+        tipo: 'germinacion',
+        icono: diaN <= 2 ? '🌑' : '📊',
+        color: medidoHoyH ? '#059669' : '#ca8a04',
+        label: (diaN <= 2 ? '🌑 ' : '📊 ') + tituloH,
+        titulo: tituloH,
+        desc: descH,
+        action: 'medicion',
+      },
+    };
+  }
 
   if (hcCalendarioModoPropagadorGerm()) {
     const cfgGerm = (typeof state !== 'undefined' && state && state.configTorre) || {};

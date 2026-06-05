@@ -1468,12 +1468,9 @@ async function fetchMeteoAlert() {
     typeof instalacionEsUbicacionInterior === 'function' &&
     instalacionEsUbicacionInterior(cfgAlert)
   ) {
-    clearMeteoAlertRetry();
-    _meteoAlertRetryStep = 0;
     try {
       applyInicioAmbienteExteriorVisibility();
     } catch (_) {}
-    return;
   }
 
   try {

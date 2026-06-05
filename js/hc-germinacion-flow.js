@@ -1425,6 +1425,14 @@
       hub.innerHTML = '';
       return;
     }
+    if (
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      hub.classList.add('setup-hidden');
+      hub.innerHTML = '';
+      return;
+    }
     hub.classList.remove('setup-hidden');
     var g = ensureGerminacionFlow(cfg);
     var idx = indiceFaseActual(g);
@@ -2253,7 +2261,40 @@
           desc: 'Abre 5 min por la mañana y al atardecer; evita condensación y moho.',
         });
       }
-      if (!registroHoyHecho(g) && camCal !== 'semilla_propagador') {
+      if (camCal === 'semilla_hidro' && diff === 0) {
+        if (diaN >= 1 && diaN <= 2) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '🌑',
+            titulo: 'Oscuridad · mantener cúpulas cerradas',
+            desc: 'Día ' + diaN + ' de 2: sin luz directa sobre la semilla en el cubo.',
+            action: 'medicion',
+          });
+        } else if (diaN === 3) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '💡',
+            titulo: 'Destapar y dar luz suave',
+            desc: 'Al brote verde: ventila cúpulas y activa fotoperíodo tenue en sala.',
+            action: 'medicion',
+          });
+        } else if (diaN > 2 && diaN <= 8) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '🫧',
+            titulo: 'Quitar o ventilar cúpulas',
+            desc: 'Una cúpula por cesta: ventila 24–48 h y retírala al estabilizar HR.',
+            action: 'medicion',
+          });
+        }
+        ev.push({
+          tipo: 'medicion',
+          icono: '📊',
+          titulo: registroHoyHecho(g) ? 'Medición registrada hoy' : 'Medir depósito y sala',
+          desc: 'EC, pH, volumen, T° agua + T°/HR aire en Medir (calendario e historial).',
+          action: 'medicion',
+        });
+      } else if (!registroHoyHecho(g) && camCal !== 'semilla_propagador') {
         ev.push({
           tipo: 'germinacion',
           icono: '📝',

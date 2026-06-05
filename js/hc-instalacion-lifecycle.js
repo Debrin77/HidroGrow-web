@@ -768,8 +768,14 @@
       var cfgLc = cfgActiva();
       var ocultarLcPropag =
         typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgLc);
+      var ocultarLcHidroOper =
+        typeof hcSemillaHidroUiOperativaLista === 'function' &&
+        hcSemillaHidroUiOperativaLista(cfgLc);
       var showInst =
-        !ocultarLcPropag && lc.fase !== 'operativa' && lc.fase !== 'sin_config';
+        !ocultarLcPropag &&
+        !ocultarLcHidroOper &&
+        lc.fase !== 'operativa' &&
+        lc.fase !== 'sin_config';
       box.classList.toggle('setup-hidden', !showInst);
       if (showInst) {
         var pasoUnico =

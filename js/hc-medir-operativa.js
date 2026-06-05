@@ -136,6 +136,8 @@
     var pendiente = !operativa && lc.fase !== 'sin_config';
     var cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     var germMedir = medirGerminacionPropagadorActiva(cfg);
+    var hidroOperLista =
+      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
 
     var preGate = document.getElementById('medirPreOperativaGate');
     var hub = document.getElementById('medirOperativaHub');
@@ -145,7 +147,7 @@
     var guiaCard = document.getElementById('medirGuiaDiaCard');
 
     if (preGate) {
-      preGate.classList.toggle('setup-hidden', !pendiente || germMedir);
+      preGate.classList.toggle('setup-hidden', !pendiente || germMedir || hidroOperLista);
       if (pendiente) {
         var nextEl = document.getElementById('medirPreOperativaNext');
         var ctaEl = document.getElementById('medirPreOperativaCta');
@@ -227,13 +229,24 @@
     }
 
     if (monitorCard) monitorCard.classList.toggle('medir-monitor-card--operativa', operativa);
-    if (guiaCard) guiaCard.classList.toggle('medir-guia-card--operativa', operativa);
+    if (guiaCard) {
+      guiaCard.classList.toggle('medir-guia-card--operativa', operativa);
+      guiaCard.classList.toggle('setup-hidden', !!hidroOperLista);
+    }
+    var quickParse = document.querySelector('.medir-quick-parse');
+    if (quickParse) quickParse.classList.toggle('setup-hidden', !!hidroOperLista);
 
     try {
       if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);
     } catch (_) {}
     if (typeof applyMedirGuiaProtocoloChrome === 'function') {
       applyMedirGuiaProtocoloChrome(cfg);
+    }
+    if (typeof applyMedirAmbienteUnificadoOperativa === 'function') {
+      applyMedirAmbienteUnificadoOperativa(cfg);
+    }
+    if (typeof repositionMedirTorreBannerTop === 'function') {
+      repositionMedirTorreBannerTop();
     }
     refreshTabsOperativaUi();
   }

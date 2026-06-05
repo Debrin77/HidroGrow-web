@@ -619,6 +619,15 @@
   function renderInlineEnGermHub() {
     var cfg = getCfg();
     if (!aplicaChecklistGerm(cfg) || !hcGerminacionActiva(cfg)) return '';
+    if (
+      esRutaGermHidro(cfg) &&
+      typeof propagadorMontajeCompleto === 'function' &&
+      propagadorMontajeCompleto(cfg) &&
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      return '';
+    }
     var checks = getChecks(cfg);
     var items = buildItems(cfg);
     var prog = countProgress(checks, items);

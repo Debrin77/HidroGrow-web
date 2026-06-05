@@ -81,6 +81,82 @@
     return typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg);
   }
 
+  /**
+   * Asistente semilla_hidro cerrado (prep + sala + montaje + hidro + depósito): UI operativa sin onboarding.
+   */
+  function hcSemillaHidroUiOperativaLista(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    return (
+      prepGermHidroListo(cfg) &&
+      salaLista(cfg) &&
+      hidroCerrado(cfg) &&
+      depListo(cfg)
+    );
+  }
+
+  /** Filas × cestas reales del DWC/RDWC (no matriz 1×N del propagador). */
+  function hcGeomTorreFilasCestas(cfg) {
+    cfg = cfg || cfgActiva();
+    var tipo =
+      typeof tipoInstalacionNormalizado === 'function'
+        ? tipoInstalacionNormalizado(cfg)
+        : cfg.tipoInstalacion || 'dwc';
+    var filas = 1;
+    var cestas = 1;
+    if (typeof state !== 'undefined' && state && state.torre && state.torre.length) {
+      filas = state.torre.length;
+      cestas = (state.torre[0] && state.torre[0].length) || 1;
+    }
+    if (hidroCerrado(cfg)) {
+      var gf = parseInt(String(cfg.hcDwcGeomFilas || 0), 10);
+      var gc = parseInt(String(cfg.hcDwcGeomCestas || 0), 10);
+      if (gf > 1 && gc > 1) {
+        filas = gf;
+        cestas = gc;
+      } else {
+        var niv = parseInt(String(cfg.numNiveles || 0), 10);
+        var ces = parseInt(String(cfg.numCestas || 0), 10);
+        if (niv > 1 || (niv === 1 && ces > 1 && !cfg.germinacionEnPropagador)) {
+          filas = Math.max(1, niv);
+          cestas = Math.max(1, ces);
+        } else if (filas > 1 || cestas > 1) {
+          cfg.numNiveles = filas;
+          cfg.numCestas = cestas;
+        }
+      }
+    } else {
+      filas = Math.max(1, parseInt(String(cfg.numNiveles || filas), 10) || filas);
+      cestas = Math.max(1, parseInt(String(cfg.numCestas || cestas), 10) || cestas);
+    }
+    if (tipo === 'rdwc') {
+      filas = Math.max(1, parseInt(String(cfg.rdwcRows || filas), 10) || filas);
+      cestas = Math.max(1, parseInt(String(cfg.rdwcSites || cestas), 10) || cestas);
+      return {
+        filas: filas,
+        cestas: cestas,
+        label: filas + ' filas × ' + cestas + ' módulos',
+      };
+    }
+    if (
+      tipo === 'dwc' &&
+      typeof dwcGetOxigenacionDiseno === 'function' &&
+      dwcGetOxigenacionDiseno(cfg) === 'cubos_independientes'
+    ) {
+      var nCubos =
+        typeof dwcGetNumCubosIndependientes === 'function'
+          ? dwcGetNumCubosIndependientes(cfg)
+          : filas * cestas;
+      return { filas: filas, cestas: cestas, label: nCubos + ' cubo' + (nCubos === 1 ? '' : 's') };
+    }
+    var unidad = hidroCerrado(cfg) ? 'cestas' : 'macetas';
+    return {
+      filas: filas,
+      cestas: cestas,
+      label: filas + ' filas × ' + cestas + ' ' + unidad,
+    };
+  }
+
   function depListo(cfg) {
     return typeof depositoListo === 'function' && depositoListo(cfg);
   }
@@ -253,10 +329,14 @@
 
     if (fase === 'germ_cubo') {
       var nCubo = numSemillasCaminoGerm(cfg) || 1;
+      var geomCubo =
+        cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg)
+          ? hcGeomTorreFilasCestas(cfg).label
+          : 'Semilla en hidro · ' + etiquetaFaseGermCorta(cfg);
       return {
         tipoLabel: 'Germinación en cubo',
         plantasLabel: nCubo + (nCubo === 1 ? ' cubo' : ' cubos'),
-        geomLabel: 'Semilla en hidro · ' + etiquetaFaseGermCorta(cfg),
+        geomLabel: geomCubo,
         iconTipo: 'germ_cubo',
       };
     }
@@ -521,14 +601,22 @@
       var el = document.getElementById(id);
       if (el) el.classList.add('setup-hidden');
     });
+    var ocultarLcHidro =
+      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
     var idsOcultarHidro = [
       'dashOperativaHub',
       'dashInstalacionLifecycle',
       'ecTransicionAvisoInicio',
+      'dashGerminacionHub',
     ];
     idsOcultarHidro.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.classList.toggle('setup-hidden', soloPropag);
+      if (!el) return;
+      if (id === 'dashGerminacionHub') {
+        el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro);
+      } else {
+        el.classList.toggle('setup-hidden', soloPropag || (id === 'dashInstalacionLifecycle' && ocultarLcHidro));
+      }
     });
     var opRow = document.querySelector('#tab-inicio .dash-operativa-row');
     if (opRow) opRow.classList.toggle('setup-hidden', soloPropag);
@@ -669,7 +757,56 @@
         action: 'sistema',
       });
     }
-    if (f === 'germ_cubo') {
+    if (f === 'germ_cubo' && c === 'semilla_hidro' && typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+      var gEv =
+        typeof ensureGerminacionFlow === 'function' ? ensureGerminacionFlow(cfg) : cfg.germinacionFlow || {};
+      var diaGerm = 1;
+      var isoGerm =
+        typeof getFechaInicioGerminacion === 'function'
+          ? getFechaInicioGerminacion(gEv, cfg)
+          : gEv.startedAt;
+      if (isoGerm) {
+        var d0 = new Date(isoGerm + 'T12:00:00');
+        d0.setHours(0, 0, 0, 0);
+        diaGerm = Math.max(1, Math.floor((h - d0) / 86400000) + 1);
+      }
+      if (diaGerm >= 1 && diaGerm <= 2) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '🌑',
+          titulo: 'Oscuridad · día ' + diaGerm + ' de 2',
+          desc: 'Mantén cúpulas cerradas sin luz directa. Humedad y calor en el cubo; sin LED sobre la semilla.',
+          action: 'medicion',
+        });
+      } else if (diaGerm === 3) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '💡',
+          titulo: 'Brote verde · iniciar luz suave',
+          desc: 'Destapa o ventila cúpulas y activa fotoperíodo tenue (~18 h/día) según tu sala.',
+          action: 'medicion',
+        });
+      } else if (diaGerm > 2 && diaGerm <= 7) {
+        ev.push({
+          tipo: 'germinacion',
+          icono: '🫧',
+          titulo: 'Ventilar cúpulas por cesta',
+          desc: 'Quita o ventila mini cúpulas al brote verde; burbujeo suave y registro de T°/HR en Medir.',
+          action: 'medicion',
+        });
+      }
+      var faseId =
+        typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+      if (faseId !== 'semilla' && faseId !== 'taproot') {
+        ev.push({
+          tipo: 'medicion',
+          icono: '📊',
+          titulo: 'Medir depósito y ambiente',
+          desc: 'Registra EC, pH, volumen, T° agua y T°/HR aire en Medir (alimenta calendario e historial).',
+          action: 'medicion',
+        });
+      }
+    } else if (f === 'germ_cubo') {
       ev.push({
         tipo: 'camino',
         icono: '🌱',
@@ -708,4 +845,6 @@
   }
 
   global.hcCaminoFaseEventosCalendario = hcCaminoFaseEventosCalendario;
+  global.hcSemillaHidroUiOperativaLista = hcSemillaHidroUiOperativaLista;
+  global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

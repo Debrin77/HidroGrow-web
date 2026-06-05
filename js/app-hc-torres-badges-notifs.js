@@ -983,6 +983,9 @@ function cargarEstadoTorre(idx, opts) {
             syncPremiumNutrienteGermFromConfig(state.configTorre);
           }
         }
+        if (camCargarTorre === 'semilla_hidro' && typeof hcRepararGeometriaSemillaHidroAlCargar === 'function') {
+          hcRepararGeometriaSemillaHidroAlCargar(state.configTorre);
+        }
         if (typeof hcGerminacionSyncDesdePremium === 'function') {
           hcGerminacionSyncDesdePremium(state.configTorre);
         }
@@ -1391,9 +1394,11 @@ function renderListaTorres() {
       const tipoNorm =
         typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'dwc';
       geomTxt =
-        tipoNorm === 'rdwc'
-          ? (cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' cubos'
-          : (cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' cubos';
+        typeof hcGeomTorreFilasCestas === 'function'
+          ? hcGeomTorreFilasCestas(cfgT).label
+          : tipoNorm === 'rdwc'
+            ? (cfgT.rdwcRows || 1) + ' filas × ' + (cfgT.rdwcSites || 4) + ' cubos'
+            : (cfgT.numNiveles || 1) + ' filas × ' + (cfgT.numCestas || 1) + ' cubos';
       tipoTag = tipoNorm === 'rdwc' ? 'RDWC' : 'DWC';
       plantasLine = plantasCount + (plantasCount === 1 ? ' planta' : ' plantas');
       listIco =
@@ -1796,24 +1801,12 @@ function actualizarBadgesNutriente() {
     if (infoPropag) {
       dashTorreInfo.textContent = infoPropag;
     } else {
-      const niv = cfg.numNiveles || 5;
-      const ces = cfg.numCestas  || 5;
-      const tipoDash =
-        typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
       let geomTxt;
-      if (tipoDash === 'dwc') {
-        const esMc =
-          typeof dwcGetOxigenacionDiseno === 'function' && dwcGetOxigenacionDiseno(cfg) === 'cubos_independientes';
-        if (esMc) {
-          const nCubos =
-            typeof dwcGetNumCubosIndependientes === 'function' ? dwcGetNumCubosIndependientes(cfg) : niv * ces;
-          geomTxt = nCubos + ' cubo' + (nCubos === 1 ? '' : 's');
-        } else {
-          geomTxt = niv + ' filas · ' + ces + ' macetas';
-        }
-      } else if (tipoDash === 'rdwc') {
-        geomTxt = (cfg.rdwcRows || 1) + ' filas · ' + (cfg.rdwcSites || 4) + ' módulos';
+      if (typeof hcGeomTorreFilasCestas === 'function') {
+        geomTxt = hcGeomTorreFilasCestas(cfg).label;
       } else {
+        const niv = cfg.numNiveles || 5;
+        const ces = cfg.numCestas || 5;
         geomTxt = niv + ' filas · ' + ces + ' macetas';
       }
       const vMax = getVolumenDepositoMaxLitros(cfg);
@@ -1839,6 +1832,9 @@ function actualizarBadgesNutriente() {
     }
   }
   if (medirTorreNombre) medirTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
+  try {
+    if (typeof refreshSalaTorreBanner === 'function') refreshSalaTorreBanner();
+  } catch (_) {}
   actualizarEstadoOperativaUI();
 
   try { refreshUbicacionInstalacionUI(); } catch (_) {}

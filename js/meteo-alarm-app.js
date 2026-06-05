@@ -630,31 +630,12 @@ async function renderMeteoAvisosPanelCompleto() {
   const meteoZonaPropagador =
     int && typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg);
   if (int && !meteoZonaPropagador) {
-    const wo = document.getElementById('meteoAvisosOficiales');
-    const prev = document.getElementById('meteoPrevisionDia');
     const ali = document.getElementById('meteoAlertas');
-    const mc = document.getElementById('meteoMeteoclimaticBox');
-    if (wo) {
-      wo.classList.add('setup-hidden');
-      wo.innerHTML = '';
-    }
-    if (mc) {
-      mc.classList.add('setup-hidden');
-      const mcIn = document.getElementById('meteoMeteoclimaticInner');
-      if (mcIn) mcIn.innerHTML = '';
-    }
-    if (prev) {
-      prev.innerHTML =
-        '<div class="meteo-aviso-kicker meteo-aviso-kicker--spaced">Instalación en interior</div>' +
-        '<div class="meteo-alerta-item ok"><span class="meteo-alerta-icon" aria-hidden="true">🏠</span><span>Los avisos de <strong>viento, lluvia y sol directo</strong> de la previsión exterior no aplican a tu cultivo en interior. El ambiente útil lo registras en <strong>Medir</strong> (y el historial de mediciones).</span></div>';
-      prev.classList.remove('setup-hidden');
-    }
     if (ali) {
       ali.innerHTML =
-        '<div class="meteo-alerta-item ok"><span class="meteo-alerta-icon" aria-hidden="true">📅</span><span>La previsión de <strong>7 días</strong> debajo es solo referencia de temperaturas en la zona; no sustituye el control de sala o armario.</span></div>';
+        '<div class="meteo-alerta-item ok"><span class="meteo-alerta-icon" aria-hidden="true">🏠</span><span>Cultivo en <strong>interior</strong>: la previsión de tu <strong>localidad</strong> sirve de referencia climática. El ambiente real de sala lo registras en <strong>Medir</strong>.</span></div>';
       ali.classList.remove('setup-hidden');
     }
-    return;
   }
   if (meteoZonaPropagador) {
     const ali = document.getElementById('meteoAlertas');

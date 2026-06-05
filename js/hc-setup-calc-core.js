@@ -2427,6 +2427,9 @@ function guardarSetupYContinuarCore() {
     state.configTorre.numCestas = cestas;
   } else if (isDwc && typeof redimensionarMatrizTorreDwcPreservando === 'function') {
     redimensionarMatrizTorreDwcPreservando(state.configTorre, niveles, cestas);
+    delete state.configTorre.germinacionEnPropagador;
+    state.configTorre.hcDwcGeomFilas = niveles;
+    state.configTorre.hcDwcGeomCestas = cestas;
   } else if (!faseSalaPreGerm) {
     state.torre = [];
     for (let n = 0; n < niveles; n++) {

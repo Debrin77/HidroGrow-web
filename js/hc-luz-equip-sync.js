@@ -191,12 +191,29 @@
           ? cfg.premiumSetup.horasLuz
           : 16;
 
+    var operativaHidro =
+      typeof global.hcSemillaHidroUiOperativaLista === 'function' &&
+      global.hcSemillaHidroUiOperativaLista(cfg);
+
     if (!hasEquip) {
       mount.innerHTML =
         '<p class="luz-origen-equip-empty">' +
         'Aún no hay equipamiento de sala registrado. Primero <strong>configura la sala y el equipamiento</strong> ' +
         '(asistente o <strong>Sala → Equipamiento</strong>); después el checklist de montaje y aquí verás la luz y el domo que elegiste.</p>';
       if (manualWrap) manualWrap.classList.remove('luz-origen-manual-wrap--collapsed');
+      if (manualLabel) manualLabel.classList.add('setup-hidden');
+      return;
+    }
+
+    if (operativaHidro) {
+      var ledCard = cards.find(function (c) {
+        return /led|luz|hps|fluorescente/i.test(String(c.label || '') + String(c.title || ''));
+      }) || cards[0];
+      mount.innerHTML =
+        '<p class="luz-origen-equip-solo-led"><strong>' +
+        (ledCard ? ledCard.title : 'Iluminación') +
+        '</strong></p>';
+      if (manualWrap) manualWrap.classList.add('luz-origen-manual-wrap--collapsed');
       if (manualLabel) manualLabel.classList.add('setup-hidden');
       return;
     }
@@ -544,9 +561,56 @@
     });
   }
 
+  function applySalaSemillaHidroOperativaChrome(cfg) {
+    cfg = cfg || getCfg();
+    if (
+      typeof global.hcSemillaHidroUiOperativaLista !== 'function' ||
+      !global.hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      return false;
+    }
+    var equipDet = el('sistemaEquipDetails');
+    var montajeDet = el('sistemaMontajeChecksDetails');
+    var flujo = el('salaPropagadorFlujoGuiado');
+    var puente = el('salaPropagadorPuenteMontaje');
+    if (equipDet) {
+      equipDet.classList.remove('setup-hidden');
+      equipDet.open = true;
+      equipDet.classList.remove('sala-equip-details--paso-activo');
+      var eqTitle = el('salaEquipSummaryTitleText');
+      if (eqTitle) eqTitle.textContent = 'Equipamiento configurado';
+      var eqBadge = el('salaEquipPasoBadge');
+      if (eqBadge) eqBadge.classList.add('setup-hidden');
+    }
+    if (montajeDet) {
+      montajeDet.classList.add('setup-hidden');
+      montajeDet.open = false;
+    }
+    if (flujo) {
+      flujo.classList.add('setup-hidden');
+      flujo.innerHTML = '';
+    }
+    if (puente) {
+      puente.classList.add('setup-hidden');
+      puente.innerHTML = '';
+    }
+    var subTabs = el('salaSubTabs');
+    if (subTabs) subTabs.classList.remove('setup-hidden');
+    return true;
+  }
+
   function applySalaMontajeRecomendadoUi(cfg) {
     try {
       cfg = cfg || getCfg();
+      if (applySalaSemillaHidroOperativaChrome(cfg)) {
+        if (typeof global.refreshSistemaEquipResumen === 'function') {
+          global.refreshSistemaEquipResumen();
+        }
+        if (typeof global.renderSalaLayoutPanel === 'function') {
+          global.renderSalaLayoutPanel();
+        }
+        return;
+      }
       var det = el('sistemaMontajeChecksDetails');
       if (!det) return;
       bindSalaMontajeBloqueadoSummary();
@@ -585,6 +649,7 @@
   global.renderLuzOrigenEquipBlock = renderLuzOrigenEquipBlock;
   global.refreshLuzOrigenUI = refreshLuzOrigenUI;
   global.applySalaMontajeRecomendadoUi = applySalaMontajeRecomendadoUi;
+  global.applySalaSemillaHidroOperativaChrome = applySalaSemillaHidroOperativaChrome;
   global.renderSalaPropagadorFlujoGuiado = renderSalaPropagadorFlujoGuiado;
   global.hcSalaPropagadorVistaMinima = hcSalaPropagadorVistaMinima;
   global.hcSalaPropagadorVistaMinimaSoloMontaje = hcSalaPropagadorVistaMinimaSoloMontaje;

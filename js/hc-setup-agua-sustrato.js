@@ -903,7 +903,12 @@ function syncMedirAguaResumen() {
   if (!el) return;
   const k = state.configAgua || 'destilada';
   const labels = { destilada: 'Agua destilada', osmosis: 'Agua de ósmosis', grifo: 'Agua del grifo' };
-  el.innerHTML = 'Tipo de agua en el sistema: <strong class="u-text-gold">' + (labels[k] || '—') + '</strong>.';
+  const cfg = state.configTorre || {};
+  const operativa =
+    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+  el.innerHTML = operativa
+    ? '<strong class="u-text-gold">' + (labels[k] || '—') + '</strong>'
+    : 'Tipo de agua en el sistema: <strong class="u-text-gold">' + (labels[k] || '—') + '</strong>.';
 }
 
 function toggleMedirOpcionesSustrato() {
@@ -917,7 +922,12 @@ function syncMedirSustratoResumen() {
   if (!el) return;
   const k = normalizaSustratoKey(state.configTorre?.sustrato || state.configSustrato || 'esponja');
   const nombre = CONFIG_SUSTRATO[k]?.nombre || '—';
-  el.innerHTML = 'Sustrato configurado: <strong class="u-text-gold">' + nombre + '</strong>.';
+  const cfg = state.configTorre || {};
+  const operativa =
+    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+  el.innerHTML = operativa
+    ? '<strong class="u-text-gold">' + nombre + '</strong>'
+    : 'Sustrato configurado: <strong class="u-text-gold">' + nombre + '</strong>.';
 }
 
 function setSustrato(tipo) {
@@ -1681,8 +1691,15 @@ function toggleMedirDwcConfigBlock(n) {
 function initConfigUI() {
   const cfgTorre = state.configTorre || {};
   if (cfgTorre.operativa == null) cfgTorre.operativa = true;
+  const operativaHidro =
+    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfgTorre);
   const cp = document.getElementById('configPanel');
-  if (cp) cp.classList.toggle('config-panel--dwc', cfgTorre.tipoInstalacion === 'dwc');
+  if (cp) {
+    cp.classList.toggle('config-panel--dwc', cfgTorre.tipoInstalacion === 'dwc');
+    cp.classList.toggle('config-panel--hidro-operativa', operativaHidro);
+  }
+  const noteUbic = document.querySelector('#panelUbicacionLuzMediciones .medir-note-block--ubic-luz');
+  if (noteUbic) noteUbic.classList.toggle('setup-hidden', operativaHidro);
 
   const b1 = document.getElementById('medirDwcBlock1Body');
   const b2 = document.getElementById('medirDwcBlock2Body');

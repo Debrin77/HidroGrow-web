@@ -275,16 +275,34 @@
         '</div>'
       : '';
 
+    var faseSala = '';
+    var prem = cfg.premiumSetup || {};
+    var faseKey = prem.faseSala || cfg.faseCultivoAmbiental || '';
+    var faseMap = {
+      esqueje: 'Esqueje / plántula',
+      plantula: 'Plántula',
+      vegetativo: 'Vegetativo',
+      floracion: 'Floración',
+      produccion: 'Producción',
+    };
+    if (faseKey && faseMap[faseKey]) {
+      faseSala =
+        '<div class="hc-sala-fase-chip" role="status">Fase sala: <strong>' +
+        esc(faseMap[faseKey]) +
+        '</strong></div>';
+    }
+
     host.innerHTML =
-      '<p class="hc-sala-layout-hint">Vista de solo lectura según el <strong>configurador</strong>. ' +
-      'Para cambiar modelos, abre el asistente (editable hasta el primer llenado del depósito).</p>' +
+      '<div class="hc-sala-layout-card">' +
+      faseSala +
+      '<p class="hc-sala-layout-hint">Resumen de tu sala según el configurador.</p>' +
       armarioHtml +
-      '<div class="hc-sala-plano-wrap">' +
+      '<div class="hc-sala-plano-wrap hc-sala-plano-wrap--premium">' +
       renderPlanoSvg(cfg, inst) +
       '</div>' +
-      '<div class="hc-sala-zonas-grid">' +
+      '<div class="hc-sala-zonas-grid hc-sala-zonas-grid--premium">' +
       zonasHtml +
-      '</div>';
+      '</div></div>';
   }
 
   global.renderSalaLayoutPanel = renderSalaLayoutPanel;

@@ -506,12 +506,20 @@
       'hc-modo-propagador-sin-sala'
     );
 
-    if (!fase) {
+    var ocultarPanelUsuario =
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg) &&
+      (fase === 'prep_hidro' || fase === 'germ_cubo');
+
+    if (!fase || ocultarPanelUsuario) {
       panel.classList.add('setup-hidden');
       panel.innerHTML = '';
       toggleTorreChrome(false, cfg, null);
       if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
       refreshTorreExtrasCaminoUi(cfg);
+      try {
+        if (typeof redibujarTorre === 'function') redibujarTorre();
+      } catch (_) {}
       return;
     }
 
