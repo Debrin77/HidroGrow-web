@@ -187,7 +187,7 @@ function hidrogrowInstalacionPersistible(st) {
   }
   const cfg = st.configTorre;
   if (!cfg || typeof cfg !== 'object') return false;
-  if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
+  // No persistir solo por elegir camino en el asistente (sin guardar instalación).
   if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks || cfg.germinacionFlow) return true;
   if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;

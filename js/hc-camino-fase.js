@@ -82,6 +82,15 @@
   }
 
   /**
+   * Tras cerrar el asistente DWC y prep hidro: ocultar onboarding (6 fases, CTAs, lifecycle…).
+   */
+  function hcSemillaHidroPostAsistenteUi(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    return hidroCerrado(cfg) && prepGermHidroListo(cfg);
+  }
+
+  /**
    * Asistente semilla_hidro cerrado (prep + sala + montaje + hidro + depósito): UI operativa sin onboarding.
    */
   function hcSemillaHidroUiOperativaLista(cfg) {
@@ -93,6 +102,20 @@
       hidroCerrado(cfg) &&
       depListo(cfg)
     );
+  }
+
+  /** Ocultar seguimiento clásico / tareas en Medir (germinación en cubo usa flujo directo). */
+  function hcSemillaHidroOcultarSeguimientoMedir(cfg) {
+    cfg = cfg || cfgActiva();
+    if (hcSemillaHidroUiOperativaLista(cfg)) return true;
+    if (!hcSemillaHidroPostAsistenteUi(cfg)) return false;
+    try {
+      if (typeof getInstalacionLifecycle === 'function') {
+        var lc = getInstalacionLifecycle(cfg);
+        if (lc && lc.operativaDiaria) return true;
+      }
+    } catch (_) {}
+    return true;
   }
 
   /** Filas × cestas reales del DWC/RDWC (no matriz 1×N del propagador). */
@@ -412,6 +435,12 @@
     if (!summary) return;
     var usarGerm =
       typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg);
+    var ocultarGermResumen =
+      typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
+    if (ocultarGermResumen) {
+      summary.classList.add('setup-hidden');
+      return;
+    }
     summary.classList.remove('setup-hidden');
     if (!usarGerm) {
       summary.classList.remove('torre-summary--propagador');
@@ -602,7 +631,7 @@
       if (el) el.classList.add('setup-hidden');
     });
     var ocultarLcHidro =
-      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+      typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
     var idsOcultarHidro = [
       'dashOperativaHub',
       'dashInstalacionLifecycle',
@@ -846,5 +875,7 @@
 
   global.hcCaminoFaseEventosCalendario = hcCaminoFaseEventosCalendario;
   global.hcSemillaHidroUiOperativaLista = hcSemillaHidroUiOperativaLista;
+  global.hcSemillaHidroPostAsistenteUi = hcSemillaHidroPostAsistenteUi;
+  global.hcSemillaHidroOcultarSeguimientoMedir = hcSemillaHidroOcultarSeguimientoMedir;
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

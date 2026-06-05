@@ -623,8 +623,8 @@
       esRutaGermHidro(cfg) &&
       typeof propagadorMontajeCompleto === 'function' &&
       propagadorMontajeCompleto(cfg) &&
-      typeof hcSemillaHidroUiOperativaLista === 'function' &&
-      hcSemillaHidroUiOperativaLista(cfg)
+      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+      hcSemillaHidroPostAsistenteUi(cfg)
     ) {
       return '';
     }

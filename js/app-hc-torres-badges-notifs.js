@@ -265,7 +265,18 @@ function hcLegacyMereceMigrarASlot(cfg, st) {
   }
   const cam =
     cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
-  if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return true;
+  if (cam === 'semilla_propagador' || cam === 'semilla_hidro') {
+    return !!(
+      cfg.germinacionFlow ||
+      cfg.preparacionGermHidroChecks ||
+      cfg.propagadorMontajeChecks ||
+      cfg.salaPreGermConfigAt ||
+      cfg.nutriente ||
+      cfg.checklistInstalacionConfirmada ||
+      (st && hcTorreTienePlantasAsignadas(st.torre)) ||
+      (st && Array.isArray(st.mediciones) && st.mediciones.length > 0)
+    );
+  }
   if (cfg.hcSetupFase === 'germinacion' && cam) return true;
   if (cfg.germinacionFlow && typeof cfg.germinacionFlow === 'object') return true;
   if (cfg.salaPreGermConfigAt || cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks) return true;
@@ -367,9 +378,6 @@ function hcMigrarLegacyTorresSiProcede() {
 function hcTieneInstalacionesUsuario() {
   if (!state || typeof state !== 'object') return false;
   if (!Array.isArray(state.torres)) state.torres = [];
-  if (!state.torres.length && typeof hcAsegurarSlotInstalacionDesdeConfig === 'function') {
-    hcAsegurarSlotInstalacionDesdeConfig();
-  }
   if (!state.torres.length) return false;
   return state.torres.some((t) => !hcEsSlotInstalacionFantasma(t));
 }
@@ -1834,6 +1842,8 @@ function actualizarBadgesNutriente() {
   if (medirTorreNombre) medirTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
   try {
     if (typeof refreshSalaTorreBanner === 'function') refreshSalaTorreBanner();
+    if (typeof ensureSistemaTorreBanner === 'function') ensureSistemaTorreBanner();
+    else if (typeof refreshSistemaTorreBanner === 'function') refreshSistemaTorreBanner();
   } catch (_) {}
   actualizarEstadoOperativaUI();
 

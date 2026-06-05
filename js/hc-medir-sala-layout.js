@@ -150,10 +150,13 @@
       window.hcMedirModoGerminacionPropagador(cfg);
     var hidroOper =
       typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+    var ocultarSeguimiento =
+      typeof hcSemillaHidroOcultarSeguimientoMedir === 'function' &&
+      hcSemillaHidroOcultarSeguimientoMedir(cfg);
     var guia = document.getElementById('medirGuiaDiaCard');
     var monitor = document.getElementById('medirMonitorCard');
     var protocol = document.getElementById('medirProtocoloCard');
-    if (guia) guia.classList.toggle('setup-hidden', !!germ || !!hidroOper);
+    if (guia) guia.classList.toggle('setup-hidden', !!germ || !!ocultarSeguimiento);
     if (monitor) monitor.classList.toggle('setup-hidden', !!germ);
     if (protocol) protocol.classList.add('setup-hidden');
   }
@@ -395,6 +398,71 @@
       else tab.insertBefore(ban, tab.firstChild);
     }
     refreshSalaTorreBanner();
+  }
+
+  function ensureSistemaTorreBanner() {
+    var tab = document.getElementById('tab-sistema');
+    if (!tab) return;
+    var ban = document.getElementById('sistemaTorreBanner');
+    if (!ban) {
+      ban = document.createElement('button');
+      ban.type = 'button';
+      ban.id = 'sistemaTorreBanner';
+      ban.className = 'medir-torre-banner sistema-torre-banner';
+      ban.setAttribute('aria-label', 'Instalación activa en sistema de cultivo');
+      ban.onclick = function () {
+        if (typeof abrirSelectorTorres === 'function') abrirSelectorTorres();
+      };
+      ban.innerHTML =
+        '<div class="medir-torre-banner-row">' +
+        '<span id="sistemaTorreEmoji" class="medir-torre-banner-emoji" aria-hidden="true">🌿</span>' +
+        '<div><div class="medir-torre-banner-kicker">Sistema activo</div>' +
+        '<div id="sistemaTorreNombre" class="medir-torre-banner-nombre">Instalación</div></div></div>' +
+        '<span class="medir-torre-banner-action">Cambiar ›</span>';
+      var title = tab.querySelector('.section-title');
+      if (title) title.insertAdjacentElement('afterend', ban);
+      else tab.insertBefore(ban, tab.firstChild);
+    }
+    refreshSistemaTorreBanner();
+  }
+
+  function refreshSistemaTorreBanner() {
+    var torre =
+      typeof getTorreActiva === 'function'
+        ? getTorreActiva()
+        : typeof state !== 'undefined' && state.torres
+          ? state.torres[state.torreActiva || 0]
+          : null;
+    var cfg = (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var ban = document.getElementById('sistemaTorreBanner');
+    if (!ban) return;
+    var hay =
+      typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+    ban.classList.toggle('setup-hidden', !hay);
+    var nomEl = document.getElementById('sistemaTorreNombre');
+    var emoEl = document.getElementById('sistemaTorreEmoji');
+    if (nomEl) nomEl.textContent = (torre && torre.nombre ? String(torre.nombre).trim() : '') || 'Instalación';
+    if (emoEl) {
+      if (typeof hcPintarSistemaIconoEnElemento === 'function' && torre) {
+        hcPintarSistemaIconoEnElemento(emoEl, torre, 'hc-ico--dash-torre');
+      } else if (typeof emojiSistemaUiPorTorre === 'function' && torre) {
+        emoEl.textContent = emojiSistemaUiPorTorre(torre);
+      }
+    }
+    if (typeof hcGeomTorreFilasCestas === 'function') {
+      var sub = ban.querySelector('.sistema-torre-banner-sub');
+      if (!sub) {
+        sub = document.createElement('div');
+        sub.className = 'sistema-torre-banner-sub medir-torre-banner-kicker';
+        var nom = document.getElementById('sistemaTorreNombre');
+        if (nom && nom.parentNode) nom.parentNode.appendChild(sub);
+      }
+      var tipo =
+        typeof etiquetaTipoInstalacion === 'function'
+          ? etiquetaTipoInstalacion(cfg)
+          : cfg.tipoInstalacion || 'DWC';
+      sub.textContent = tipo + ' · ' + hcGeomTorreFilasCestas(cfg).label;
+    }
   }
 
   function refreshSalaTorreBanner() {
@@ -795,6 +863,8 @@
   };
   window.applyMedirAmbienteUnificadoOperativa = applyMedirAmbienteUnificadoOperativa;
   window.refreshSalaTorreBanner = refreshSalaTorreBanner;
+  window.ensureSistemaTorreBanner = ensureSistemaTorreBanner;
+  window.refreshSistemaTorreBanner = refreshSistemaTorreBanner;
   window.repositionMedirTorreBannerTop = repositionMedirTorreBannerTop;
   window.hcRefreshSalaTab = refreshSalaTab;
   window.hcRefreshSalaTabLight = refreshSalaTabLight;

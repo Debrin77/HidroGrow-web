@@ -769,8 +769,8 @@
       var ocultarLcPropag =
         typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgLc);
       var ocultarLcHidroOper =
-        typeof hcSemillaHidroUiOperativaLista === 'function' &&
-        hcSemillaHidroUiOperativaLista(cfgLc);
+        typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+        hcSemillaHidroPostAsistenteUi(cfgLc);
       var showInst =
         !ocultarLcPropag &&
         !ocultarLcHidroOper &&

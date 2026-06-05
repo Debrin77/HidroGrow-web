@@ -138,6 +138,9 @@
     var germMedir = medirGerminacionPropagadorActiva(cfg);
     var hidroOperLista =
       typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+    var ocultarSeguimientoMedir =
+      typeof hcSemillaHidroOcultarSeguimientoMedir === 'function' &&
+      hcSemillaHidroOcultarSeguimientoMedir(cfg);
 
     var preGate = document.getElementById('medirPreOperativaGate');
     var hub = document.getElementById('medirOperativaHub');
@@ -147,7 +150,7 @@
     var guiaCard = document.getElementById('medirGuiaDiaCard');
 
     if (preGate) {
-      preGate.classList.toggle('setup-hidden', !pendiente || germMedir || hidroOperLista);
+      preGate.classList.toggle('setup-hidden', !pendiente || germMedir || ocultarSeguimientoMedir);
       if (pendiente) {
         var nextEl = document.getElementById('medirPreOperativaNext');
         var ctaEl = document.getElementById('medirPreOperativaCta');
@@ -166,7 +169,7 @@
     }
 
     if (hub) {
-      hub.classList.toggle('setup-hidden', !operativa);
+      hub.classList.toggle('setup-hidden', !operativa || ocultarSeguimientoMedir);
       if (operativa) {
         var sub = document.getElementById('medirOpHubSub');
         var rangos = document.getElementById('medirOpHubRangos');
@@ -231,10 +234,14 @@
     if (monitorCard) monitorCard.classList.toggle('medir-monitor-card--operativa', operativa);
     if (guiaCard) {
       guiaCard.classList.toggle('medir-guia-card--operativa', operativa);
-      guiaCard.classList.toggle('setup-hidden', !!hidroOperLista);
+      guiaCard.classList.toggle('setup-hidden', !!ocultarSeguimientoMedir);
     }
     var quickParse = document.querySelector('.medir-quick-parse');
-    if (quickParse) quickParse.classList.toggle('setup-hidden', !!hidroOperLista);
+    if (quickParse) {
+      if (ocultarSeguimientoMedir || hidroOperLista) {
+        quickParse.remove();
+      }
+    }
 
     try {
       if (typeof actualizarRangosParametrosMedir === 'function') actualizarRangosParametrosMedir(cfg);

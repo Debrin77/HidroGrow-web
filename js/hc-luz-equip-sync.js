@@ -192,8 +192,10 @@
           : 16;
 
     var operativaHidro =
-      typeof global.hcSemillaHidroUiOperativaLista === 'function' &&
-      global.hcSemillaHidroUiOperativaLista(cfg);
+      (typeof global.hcSemillaHidroPostAsistenteUi === 'function' &&
+        global.hcSemillaHidroPostAsistenteUi(cfg)) ||
+      (typeof global.hcSemillaHidroUiOperativaLista === 'function' &&
+        global.hcSemillaHidroUiOperativaLista(cfg));
 
     if (!hasEquip) {
       mount.innerHTML =
@@ -563,10 +565,12 @@
 
   function applySalaSemillaHidroOperativaChrome(cfg) {
     cfg = cfg || getCfg();
-    if (
-      typeof global.hcSemillaHidroUiOperativaLista !== 'function' ||
-      !global.hcSemillaHidroUiOperativaLista(cfg)
-    ) {
+    var simplificar =
+      (typeof global.hcSemillaHidroPostAsistenteUi === 'function' &&
+        global.hcSemillaHidroPostAsistenteUi(cfg)) ||
+      (typeof global.hcSemillaHidroUiOperativaLista === 'function' &&
+        global.hcSemillaHidroUiOperativaLista(cfg));
+    if (!simplificar) {
       return false;
     }
     var equipDet = el('sistemaEquipDetails');

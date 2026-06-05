@@ -1426,8 +1426,8 @@
       return;
     }
     if (
-      typeof hcSemillaHidroUiOperativaLista === 'function' &&
-      hcSemillaHidroUiOperativaLista(cfg)
+      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+      hcSemillaHidroPostAsistenteUi(cfg)
     ) {
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';

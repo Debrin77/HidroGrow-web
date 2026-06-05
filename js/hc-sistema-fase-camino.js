@@ -490,6 +490,10 @@
 
   function hcRefreshSistemaFasePanel() {
     var cfg = cfgActiva();
+    try {
+      if (typeof ensureSistemaTorreBanner === 'function') ensureSistemaTorreBanner();
+      else if (typeof refreshSistemaTorreBanner === 'function') refreshSistemaTorreBanner();
+    } catch (_) {}
     var panel = document.getElementById('hcSistemaPropagadorPanel');
     if (!panel) return;
 
@@ -507,8 +511,8 @@
     );
 
     var ocultarPanelUsuario =
-      typeof hcSemillaHidroUiOperativaLista === 'function' &&
-      hcSemillaHidroUiOperativaLista(cfg) &&
+      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+      hcSemillaHidroPostAsistenteUi(cfg) &&
       (fase === 'prep_hidro' || fase === 'germ_cubo');
 
     if (!fase || ocultarPanelUsuario) {

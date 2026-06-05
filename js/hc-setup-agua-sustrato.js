@@ -905,7 +905,8 @@ function syncMedirAguaResumen() {
   const labels = { destilada: 'Agua destilada', osmosis: 'Agua de ósmosis', grifo: 'Agua del grifo' };
   const cfg = state.configTorre || {};
   const operativa =
-    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+    (typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg)) ||
+    (typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg));
   el.innerHTML = operativa
     ? '<strong class="u-text-gold">' + (labels[k] || '—') + '</strong>'
     : 'Tipo de agua en el sistema: <strong class="u-text-gold">' + (labels[k] || '—') + '</strong>.';
@@ -924,7 +925,8 @@ function syncMedirSustratoResumen() {
   const nombre = CONFIG_SUSTRATO[k]?.nombre || '—';
   const cfg = state.configTorre || {};
   const operativa =
-    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
+    (typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg)) ||
+    (typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg));
   el.innerHTML = operativa
     ? '<strong class="u-text-gold">' + nombre + '</strong>'
     : 'Sustrato configurado: <strong class="u-text-gold">' + nombre + '</strong>.';
@@ -1692,7 +1694,8 @@ function initConfigUI() {
   const cfgTorre = state.configTorre || {};
   if (cfgTorre.operativa == null) cfgTorre.operativa = true;
   const operativaHidro =
-    typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfgTorre);
+    (typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfgTorre)) ||
+    (typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfgTorre));
   const cp = document.getElementById('configPanel');
   if (cp) {
     cp.classList.toggle('config-panel--dwc', cfgTorre.tipoInstalacion === 'dwc');
