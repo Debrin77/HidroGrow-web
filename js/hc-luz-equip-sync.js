@@ -269,7 +269,9 @@
       cfg = cfg || getCfg();
       syncLuzDesdeEquipamiento(cfg);
       renderLuzOrigenEquipBlock(cfg);
-      if (typeof global.cargarInteriorGrowUI === 'function') global.cargarInteriorGrowUI();
+      if (typeof global.cargarInteriorGrowUI === 'function') {
+        global.cargarInteriorGrowUI({ skipGrowRoom: true });
+      }
     } catch (e) {
       try {
         console.warn('refreshLuzOrigenUI', e);

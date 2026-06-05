@@ -1544,8 +1544,9 @@ function cargarLocalidadMeteoUI() {
   if (v) void geocodificarLocalidadMeteoParaAvisos();
 }
 
-function cargarInteriorGrowUI() {
-  if (typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
+function cargarInteriorGrowUI(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  if (!opts.skipGrowRoom && typeof cargarGrowRoomUI === 'function') cargarGrowRoomUI();
   if (!state.configTorre) state.configTorre = {};
   const cfg = state.configTorre;
   const tEl = document.getElementById('interiorTempC');

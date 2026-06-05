@@ -109,6 +109,23 @@ test('prep hidro: tras checklist navega a montaje si sala ya configurada', () =>
   assert.match(setup, /wizardHidroGermCompleto[\s\S]*'germinacion'/);
 });
 
+test('refreshLuzOrigenUI no reentra en cargarGrowRoomUI (evita ciclo sala)', () => {
+  const luz = read('js/hc-luz-equip-sync.js');
+  const agua = read('js/hc-setup-agua-sustrato.js');
+  assert.match(luz, /cargarInteriorGrowUI\(\{ skipGrowRoom: true \}\)/);
+  assert.match(agua, /opts\.skipGrowRoom/);
+});
+
+test('salaPreGermConfigurada no llama salaConfiguradaCamino (evita stack overflow)', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const fase = read('js/hc-camino-fase.js');
+  assert.match(fase, /salaPreGermConfigurada\(cfg\)/);
+  assert.doesNotMatch(
+    cultivo,
+    /function salaPreGermConfigurada\(cfg\)[\s\S]{0,420}salaConfiguradaCamino\(cfg\)/
+  );
+});
+
 test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () => {
   const torres = read('js/app-hc-torres-badges-notifs.js');
   const boot = read('js/hc-bootstrap-state.js');

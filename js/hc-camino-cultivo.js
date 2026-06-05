@@ -262,9 +262,7 @@
   function salaPreGermConfigurada(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (cfg.salaPreGermConfigAt) return true;
-    if (typeof salaConfiguradaCamino === 'function') {
-      return salaConfiguradaCamino(cfg);
-    }
+    /* No llamar salaConfiguradaCamino: esa función ya delega aquí y provoca recursión infinita. */
     var p = cfg.premiumSetup || {};
     if (Number(p.anchoM) > 0 && Number(p.largoM) > 0) return true;
     if (Number(cfg.growRoomAnchoM) > 0 && Number(cfg.growRoomLargoM) > 0) return true;

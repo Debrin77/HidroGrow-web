@@ -1348,8 +1348,15 @@ function renderListaTorres() {
     return;
   }
 
-  lista.innerHTML = torres.map((t, i) => {
-    if (hcEsSlotInstalacionFantasma(t)) return '';
+  function hcPlantasEnSlotTorre(torreMat) {
+    if (!Array.isArray(torreMat)) return 0;
+    return torreMat.reduce((sum, nivel) => {
+      if (!Array.isArray(nivel)) return sum;
+      return sum + nivel.filter((c) => c && c.variedad).length;
+    }, 0);
+  }
+
+  function hcFilaListaTorreHtml(t, i, activa) {
     const isActiva = i === activa;
     const cfgT = t.config || {};
     const metaInst =
@@ -1367,8 +1374,7 @@ function renderListaTorres() {
           ? hcSistemaIconMarkup(metaInst.iconTipo, 'hc-ico--torre-list')
           : emojiSistemaUiPorTorre(t);
     } else {
-      const plantasCount = (t.torre || []).reduce((sum, nivel) =>
-        sum + (nivel || []).filter(c => c && c.variedad).length, 0);
+      const plantasCount = hcPlantasEnSlotTorre(t.torre);
       const tipoNorm =
         typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfgT) : 'dwc';
       geomTxt =
@@ -1383,6 +1389,7 @@ function renderListaTorres() {
           : emojiSistemaUiPorTorre(t);
     }
     const listIcoHtml = listIco;
+    const nTorres = torres.length;
 
     return `<div class="torre-list-row${isActiva ? ' torre-list-row--active' : ''}">
       <button type="button" class="torre-list-main"
@@ -1401,14 +1408,42 @@ function renderListaTorres() {
       <div class="torre-list-actions">
         <button type="button" onclick="editarNombreTorre(${i})"
           class="torre-list-btn-icon" aria-label="Editar nombre de la instalación">${typeof hcIcon === 'function' ? hcIcon('hc-i-pencil', 'hc-ico--btn') : '✏️'}</button>
-        ${state.torres.length > 1 && !isActiva ? `
+        ${nTorres > 1 && !isActiva ? `
         <button type="button" onclick="borrarTorre(${i})"
           class="torre-list-btn-del" aria-label="Borrar esta instalación">${typeof hcIcon === 'function' ? hcIcon('hc-i-trash', 'hc-ico--btn') : '🗑'}</button>` : ''}
       </div>
     </div>`;
-  }).join('');
+  }
 
-  actualizarHeaderTorre();
+  lista.innerHTML = torres
+    .map((t, i) => {
+      if (hcEsSlotInstalacionFantasma(t)) return '';
+      try {
+        return hcFilaListaTorreHtml(t, i, activa);
+      } catch (eRow) {
+        try {
+          console.warn('renderListaTorres fila', i, eRow);
+        } catch (_) {}
+        const nom = String((t && t.nombre) || '').trim() || 'Instalación ' + (i + 1);
+        return `<div class="torre-list-row">
+      <button type="button" class="torre-list-main" onclick="cambiarTorreActiva(${i})">
+      <span class="torre-list-body">
+        <span class="torre-list-name">${nom}</span>
+        <span class="torre-list-meta">Instalación guardada</span>
+      </span>
+      </button>
+    </div>`;
+      }
+    })
+    .join('');
+
+  try {
+    actualizarHeaderTorre();
+  } catch (eHdr) {
+    try {
+      console.warn('actualizarHeaderTorre tras lista', eHdr);
+    } catch (_) {}
+  }
 }
 
 function abrirSetupNuevaTorre() {
