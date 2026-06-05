@@ -115,8 +115,12 @@ test('prep hidro: tras checklist navega al siguiente paso pendiente', () => {
   const prop = read('js/hc-propagador-montaje.js');
   assert.match(prop, /hcAvanzarSemillaHidroTrasPrepChecklist/);
   assert.match(prop, /hcSiguientePasoSemillaHidro/);
+  assert.match(prop, /caminoGuardadoEnCfg/);
+  assert.match(prop, /preparacionGermHidroChecks/);
   const cultivo = read('js/hc-camino-cultivo.js');
   assert.match(cultivo, /function hcSiguientePasoSemillaHidro/);
+  assert.match(cultivo, /asistenteSetupActivo/);
+  assert.match(cultivo, /leerCaminoDeObj/);
   assert.match(cultivo, /abrirSetupFaseHidro/);
   const sis = read('js/hc-sistema-fase-camino.js');
   assert.match(sis, /Siguiente:/);

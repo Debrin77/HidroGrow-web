@@ -134,6 +134,23 @@
     }
   }
 
+  function asistenteSetupActivo() {
+    try {
+      if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+      var so = document.getElementById('setupOverlay');
+      return !!(so && so.classList.contains('open'));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function leerCaminoDeObj(c) {
+    var v = String(
+      (c && c.caminoCultivo) || (c && c.premiumSetup && c.premiumSetup.caminoCultivo) || ''
+    ).trim();
+    return v && CAMINOS[v] ? v : '';
+  }
+
   function getCaminoCultivo(cfgOpt) {
     var cfg =
       cfgOpt && typeof cfgOpt === 'object'
@@ -143,6 +160,16 @@
           : {};
     var esNueva =
       typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && !cfgOpt;
+    var enAsistente = asistenteSetupActivo();
+
+    if (!esNueva && !enAsistente) {
+      var fromInst = leerCaminoDeObj(cfg);
+      if (fromInst) return fromInst;
+    }
+    if (cfgOpt) {
+      var fromCfgOpt = leerCaminoDeObj(cfg);
+      if (fromCfgOpt) return fromCfgOpt;
+    }
     try {
       if (typeof ensurePremiumSetup === 'function') {
         var p = ensurePremiumSetup();
@@ -153,10 +180,8 @@
         if (p.caminoCultivo && CAMINOS[p.caminoCultivo]) return p.caminoCultivo;
       }
     } catch (_) {}
-    var fromCfg = String(
-      cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || ''
-    ).trim();
-    if (fromCfg && CAMINOS[fromCfg]) return fromCfg;
+    var fromCfg = leerCaminoDeObj(cfg);
+    if (fromCfg) return fromCfg;
     try {
       if (typeof ensurePremiumSetup === 'function') {
         var p2 = ensurePremiumSetup();

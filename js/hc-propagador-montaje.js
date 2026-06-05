@@ -141,8 +141,19 @@
     return esRutaEsqueje(cfg);
   }
 
+  function caminoGuardadoEnCfg(cfg) {
+    return String(
+      (cfg && cfg.caminoCultivo) ||
+        (cfg && cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+        ''
+    ).trim();
+  }
+
   function getChecksKey(cfg) {
     cfg = cfg || getCfg();
+    var cDirect = caminoGuardadoEnCfg(cfg);
+    if (cDirect === 'semilla_hidro') return 'preparacionGermHidroChecks';
+    if (cDirect === 'esqueje_hidro') return 'enraizadoMontajeChecks';
     if (esRutaEsqueje(cfg)) return 'enraizadoMontajeChecks';
     return esRutaGermHidro(cfg) ? 'preparacionGermHidroChecks' : 'propagadorMontajeChecks';
   }
@@ -151,6 +162,12 @@
     cfg = cfg || getCfg();
     var key = getChecksKey(cfg);
     if (!cfg[key] || typeof cfg[key] !== 'object') cfg[key] = {};
+    if (key === 'preparacionGermHidroChecks' && !cfg[key].completedAt) {
+      var wrong = cfg.propagadorMontajeChecks;
+      if (wrong && typeof wrong === 'object' && Object.keys(wrong).length) {
+        Object.assign(cfg[key], wrong);
+      }
+    }
     return cfg[key];
   }
 
@@ -600,6 +617,16 @@
     }
     checks.completedAt = new Date().toISOString();
     saveChecks(cfg, checks);
+    if (!propagadorMontajeCompleto(cfg)) {
+      var keyFix = getChecksKey(cfg);
+      if (typeof state !== 'undefined' && state && state.configTorre) {
+        state.configTorre[keyFix] = checks;
+        try {
+          if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+          if (typeof saveState === 'function') saveState();
+        } catch (_) {}
+      }
+    }
     try {
       if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(getCfg());
     } catch (_) {}
