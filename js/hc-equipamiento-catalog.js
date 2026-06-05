@@ -688,9 +688,13 @@ function getEquipCatalogGroups(entorno) {
     ];
   }
 
+  var enBloquePremiumGerm =
+    typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm();
   var hidroGermEquip =
     camino === 'semilla_hidro' &&
+    !faseSala &&
     (faseGerm ||
+      enBloquePremiumGerm ||
       (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()));
 
   if (hidroGermEquip) {

@@ -1460,6 +1460,7 @@ function renderListaTorres() {
 }
 
 function abrirSetupNuevaTorre() {
+  setupEsNuevaTorre = true;
   try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession({ keepNuevaFlag: true });
   } catch (_) {}
@@ -1469,7 +1470,11 @@ function abrirSetupNuevaTorre() {
   try {
     if (typeof hcForzarSetupPaginaCamino === 'function') hcForzarSetupPaginaCamino();
   } catch (_) {}
-  setupEsNuevaTorre = true;
+  try {
+    if (typeof hcResetPremiumBorradorNuevaInstalacion === 'function') {
+      hcResetPremiumBorradorNuevaInstalacion();
+    }
+  } catch (_) {}
   setupPagina =
     typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
   setupTipoInstalacion = '';
@@ -1499,6 +1504,13 @@ function abrirSetupNuevaTorre() {
     if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
   } catch (_) {}
   a11yDialogOpened(so);
+  if (typeof showToast === 'function') {
+    showToast(
+      'Nueva instalación: elige de nuevo el camino. La instalación anterior sigue en la lista hasta que guardes esta.',
+      false,
+      { durationMs: 6400 }
+    );
+  }
   var runSetupHeavy = function () {
     try {
       renderNutrientesGrid();

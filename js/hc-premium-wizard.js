@@ -20,6 +20,8 @@
       return {};
     }
     if (!setupData.premium) {
+      var esNuevaPrem =
+        typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre;
       setupData.premium = {
         objetivo: 'autocultivo',
         entorno: 'interior',
@@ -34,11 +36,11 @@
         horasLuz: 18,
         intensidadLuz: 'baja',
         climaManual: false,
-        climaPresetCamino: 'semilla_propagador',
+        climaPresetCamino: esNuevaPrem ? '' : 'semilla_propagador',
         geneticaPref: 'foto',
         origenPlanta: 'semilla',
-        caminoCultivo: 'semilla_propagador',
-        germinacionModoPreferido: 'propagador',
+        caminoCultivo: esNuevaPrem ? '' : 'semilla_propagador',
+        germinacionModoPreferido: esNuevaPrem ? '' : 'propagador',
         variedadGerminacion: '',
         numSemillasGerm: 6,
         sustratoGerm: 'lana',

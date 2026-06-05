@@ -356,6 +356,31 @@
       }
     });
     if (!host.childNodes.length) {
+      var camFb =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      if (camFb === 'semilla_hidro' && typeof window.getEquipCatalogGroups === 'function') {
+        var fbGroups = window.getEquipCatalogGroups(entorno);
+        if (fbGroups && fbGroups.length) {
+          fbGroups.forEach(function (group) {
+            var section = document.createElement('section');
+            section.className = 'equip-catalog-group';
+            section.setAttribute('data-equip-group', group.id || 'all');
+            var grid = document.createElement('div');
+            grid.className = 'equip-catalog-grid equip-catalog-grid--group';
+            (group.keys || []).forEach(function (key) {
+              var cat = cats[key];
+              if (!cat) return;
+              renderEquipCatalogCard(grid, cat, key, inst, prefix, group);
+            });
+            if (grid.childNodes.length) {
+              section.appendChild(grid);
+              host.appendChild(section);
+            }
+          });
+        }
+      }
+    }
+    if (!host.childNodes.length) {
       const err = document.createElement('p');
       err.className = 'setup-box-warn';
       err.setAttribute('role', 'alert');

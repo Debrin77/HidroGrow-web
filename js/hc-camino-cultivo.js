@@ -83,6 +83,57 @@
     return 'semilla_propagador';
   }
 
+  function asistenteEnBloquePremiumGerm() {
+    try {
+      if (typeof hcSetupWizardEnBloquePremiumGerm === 'function') {
+        return hcSetupWizardEnBloquePremiumGerm();
+      }
+      if (typeof setupPagina === 'undefined') return false;
+      var start =
+        typeof SETUP_PAGE_PREMIUM_START !== 'undefined' ? SETUP_PAGE_PREMIUM_START : 1;
+      var end = typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      return setupPagina >= start && setupPagina <= end;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /** Restaura premium del asistente desde la instalación activa (tras reset de sesión). */
+  function hcSyncPremiumAsistenteDesdeConfig(cfg) {
+    cfg =
+      cfg && typeof cfg === 'object'
+        ? cfg
+        : typeof state !== 'undefined' && state && state.configTorre
+          ? state.configTorre
+          : null;
+    if (!cfg || typeof ensurePremiumSetup !== 'function') return;
+    var p = ensurePremiumSetup();
+    if (cfg.premiumSetup && typeof cfg.premiumSetup === 'object') {
+      Object.assign(p, cfg.premiumSetup);
+    }
+    var cam = String(
+      cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || ''
+    ).trim();
+    if (cam && CAMINOS[cam]) {
+      p.caminoCultivo = cam;
+      var def = getCaminoDef(cam);
+      if (def.origenPlanta) p.origenPlanta = def.origenPlanta;
+      if (def.germModo) p.germinacionModoPreferido = def.germModo;
+    }
+  }
+
+  /** Borrador limpio al abrir «Nueva instalación» (no heredar camino de la ranura activa). */
+  function hcResetPremiumBorradorNuevaInstalacion() {
+    if (typeof ensurePremiumSetup !== 'function') return;
+    var p = ensurePremiumSetup();
+    p.caminoCultivo = '';
+    p.germinacionModoPreferido = '';
+    p.origenPlanta = 'semilla';
+    if (typeof hcResetPremiumGermPlanBorrador === 'function') {
+      hcResetPremiumGermPlanBorrador(p);
+    }
+  }
+
   function getCaminoCultivo(cfgOpt) {
     var cfg =
       cfgOpt && typeof cfgOpt === 'object'
@@ -90,15 +141,26 @@
         : typeof state !== 'undefined' && state && state.configTorre
           ? state.configTorre
           : {};
+    var esNueva =
+      typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && !cfgOpt;
+    try {
+      if (typeof ensurePremiumSetup === 'function') {
+        var p = ensurePremiumSetup();
+        if (esNueva) {
+          if (p.caminoCultivo && CAMINOS[p.caminoCultivo]) return p.caminoCultivo;
+          return '';
+        }
+        if (p.caminoCultivo && CAMINOS[p.caminoCultivo]) return p.caminoCultivo;
+      }
+    } catch (_) {}
     var fromCfg = String(
       cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || ''
     ).trim();
     if (fromCfg && CAMINOS[fromCfg]) return fromCfg;
     try {
       if (typeof ensurePremiumSetup === 'function') {
-        var p = ensurePremiumSetup();
-        if (p.caminoCultivo && CAMINOS[p.caminoCultivo]) return p.caminoCultivo;
-        return inferCaminoFromOrigen(p.origenPlanta, p.germinacionModoPreferido);
+        var p2 = ensurePremiumSetup();
+        return inferCaminoFromOrigen(p2.origenPlanta, p2.germinacionModoPreferido);
       }
     } catch (_) {}
     return inferCaminoFromOrigen(
@@ -361,7 +423,7 @@
     var def = getCaminoDef(cam);
     if (!def || def.faseInicial !== 'germinacion') return false;
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
-    if (hcSetupWizardEnBloquePremiumGerm()) return true;
+    if (asistenteEnBloquePremiumGerm()) return true;
     try {
       var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
       if (cfg && cfg.hcSetupFase === 'hidro') return false;
@@ -1466,6 +1528,9 @@
   global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
+  global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;
+  global.hcSyncPremiumAsistenteDesdeConfig = hcSyncPremiumAsistenteDesdeConfig;
+  global.hcResetPremiumBorradorNuevaInstalacion = hcResetPremiumBorradorNuevaInstalacion;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
   global.hcPropagadorEquipSalaSinHidro = hcPropagadorEquipSalaSinHidro;

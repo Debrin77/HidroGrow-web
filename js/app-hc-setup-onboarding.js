@@ -62,6 +62,21 @@ function hcResetSetupWizardSession(opts) {
   if (typeof ensurePremiumSetup === 'function') {
     setupData.premium = null;
     ensurePremiumSetup();
+    try {
+      var esNuevaSes =
+        typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre;
+      if (esNuevaSes && typeof hcResetPremiumBorradorNuevaInstalacion === 'function') {
+        hcResetPremiumBorradorNuevaInstalacion();
+      } else if (
+        !esNuevaSes &&
+        typeof hcSyncPremiumAsistenteDesdeConfig === 'function' &&
+        typeof state !== 'undefined' &&
+        state &&
+        state.configTorre
+      ) {
+        hcSyncPremiumAsistenteDesdeConfig(state.configTorre);
+      }
+    } catch (_) {}
   }
   if (typeof seleccionarConsejosModoSetup === 'function') {
     seleccionarConsejosModoSetup('principiante');

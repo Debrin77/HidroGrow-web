@@ -2121,6 +2121,19 @@ function abrirSetup() {
     humedad: !!sh.humedad,
   };
   const c = state.configTorre || {};
+  try {
+    if (typeof hcSyncPremiumAsistenteDesdeConfig === 'function') {
+      hcSyncPremiumAsistenteDesdeConfig(c);
+    }
+  } catch (_) {}
+  var camReab =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(c) : '';
+  if (
+    (camReab === 'semilla_hidro' || camReab === 'semilla_propagador') &&
+    c.hcSetupFase === 'hidro'
+  ) {
+    c.hcSetupFase = 'germinacion';
+  }
   syncSetupEquipamientoDesdeConfig(c);
   setupTipoInstalacion = tipoInstalacionNormalizado(c);
   setupRdwcDraft = setupTipoInstalacion === 'rdwc' ? hcSetupClonePlain(c, {}) : null;
