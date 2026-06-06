@@ -40,12 +40,18 @@
   }
 
   function cultivoEstaAsignado() {
+    var cfg = cfgActiva();
     if (
       typeof hcCultivoMatrizDisponible === 'function' &&
-      !hcCultivoMatrizDisponible(cfgActiva())
+      !hcCultivoMatrizDisponible(cfg)
     ) {
       return false;
     }
+    try {
+      if (typeof hcSyncTorreDesdeGerminacionSiAplica === 'function') {
+        hcSyncTorreDesdeGerminacionSiAplica(cfg);
+      }
+    } catch (_) {}
     if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) {
       return false;
     }

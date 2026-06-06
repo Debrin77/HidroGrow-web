@@ -4,10 +4,18 @@
  */
 function renderTorre() {
   const cfg = state.configTorre || {};
-  if (typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino(cfg)) {
-    try {
-      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
-    } catch (_) {}
+  try {
+    if (typeof hcSyncTorreDesdeGerminacionSiAplica === 'function') {
+      hcSyncTorreDesdeGerminacionSiAplica(cfg);
+    }
+  } catch (_) {}
+  const bloquearEsquemaPorFase =
+    typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
+    hcRenderTorreBloqueadoPorFaseCamino(cfg);
+  try {
+    if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+  } catch (_) {}
+  if (bloquearEsquemaPorFase) {
     try {
       if (
         typeof getSistemaFaseCamino === 'function' &&

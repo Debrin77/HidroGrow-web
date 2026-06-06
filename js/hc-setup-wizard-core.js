@@ -3037,6 +3037,191 @@ function sincronizarSistemaNftMontajeUI() {
     }
   }
   applySistemaTipoPanelesColapsablesUI();
+  try {
+    applySistemaDwcSoloConsultaUi(cfg);
+  } catch (_) {}
+  try {
+    if (typeof applySistemaSemillaHidroOperativaChrome === 'function') {
+      applySistemaSemillaHidroOperativaChrome(cfg);
+    }
+  } catch (_) {}
+  try {
+    applySistemaEsquemaChromeSemillaHidro(cfg);
+  } catch (_) {}
+}
+
+function hcBloquearEdicionSistemaDwcSiConsulta() {
+  const cfg = state.configTorre || {};
+  if (typeof hcSistemaDwcSoloConsulta !== 'function' || !hcSistemaDwcSoloConsulta(cfg)) {
+    return false;
+  }
+  try {
+    if (typeof showToast === 'function') {
+      showToast(
+        'Depósito definido en el asistente. Aquí solo consulta; para cambiar medidas, vuelve al asistente desde Inicio.'
+      );
+    }
+  } catch (_) {}
+  return true;
+}
+
+function buildSistemaDwcEquipResumenSh(cfg) {
+  cfg = cfg || {};
+  const inst = cfg.equipamientoInstalado || {};
+  const parts = [];
+  if (cfg.dwcCupulas || inst.cupula_maceta) {
+    const cu = inst.cupula_maceta;
+    parts.push(
+      'Cúpulas por cesta' +
+        (cu && (cu.marca || cu.modelo) ? ' · ' + String(cu.marca || '') + ' ' + String(cu.modelo || '') : '') +
+        ' (asistente)'
+    );
+  }
+  if (cfg.dwcEntradaAire !== false || inst.bomba_aire) {
+    const ba = inst.bomba_aire;
+    parts.push(
+      'Aireación depósito' +
+        (ba && (ba.marca || ba.modelo) ? ' · ' + String(ba.marca || '') + ' ' + String(ba.modelo || '') : '') +
+        ' (asistente)'
+    );
+  }
+  return parts.join(' · ');
+}
+
+function sistemaDwcResumenVolumenSh(cfg) {
+  cfg = cfg || state.configTorre || {};
+  if (!cfg || cfg.tipoInstalacion !== 'dwc') return '';
+  try {
+    if (typeof dwcNormalizeDepositoForma === 'function' && dwcNormalizeDepositoForma(cfg.dwcDepositoForma) === 'troncopiramidal') {
+      const vT = typeof dwcTroncoLitrosDesdeConfig === 'function' ? dwcTroncoLitrosDesdeConfig(cfg) : null;
+      const vO =
+        typeof getDwcVolumenSeguroMaxLitrosDesdeConfig === 'function'
+          ? getDwcVolumenSeguroMaxLitrosDesdeConfig(cfg)
+          : null;
+      if (vT != null || vO != null) {
+        return 'Total ~' + (vT != null ? vT : '—') + ' L · Recomendable ~' + (vO != null ? vO : '—') + ' L';
+      }
+      return '';
+    }
+    const cap =
+      typeof getDwcCapacidadLitrosDesdeConfig === 'function' ? getDwcCapacidadLitrosDesdeConfig(cfg) : null;
+    const vO =
+      typeof getDwcVolumenSeguroMaxLitrosDesdeConfig === 'function'
+        ? getDwcVolumenSeguroMaxLitrosDesdeConfig(cfg)
+        : null;
+    if (cap != null && cap > 0) {
+      return 'Total ~' + cap + ' L · Recomendable ~' + (vO != null ? vO : '—') + ' L';
+    }
+  } catch (_) {}
+  return '';
+}
+
+function applySistemaDwcSoloConsultaUi(cfg) {
+  cfg = cfg || state.configTorre || {};
+  const card = document.getElementById('sistemaDwcAyudaCard');
+  const body = document.getElementById('sistemaDwcAyudaBody');
+  if (!card || !body) return;
+  const solo =
+    typeof hcSistemaDwcSoloConsulta === 'function' && hcSistemaDwcSoloConsulta(cfg);
+  card.classList.toggle('torre-sistema-dwc--solo-consulta', !!solo);
+  let hint = document.getElementById('sistemaDwcSoloConsultaHint');
+  if (solo && !hint) {
+    hint = document.createElement('p');
+    hint.id = 'sistemaDwcSoloConsultaHint';
+    hint.className = 'torre-sistema-dwc-consulta-hint sistema-dwc-sh-visible';
+    hint.setAttribute('role', 'note');
+    body.insertBefore(hint, body.firstChild);
+  }
+  if (hint) {
+    hint.classList.toggle('setup-hidden', !solo);
+    if (solo) {
+      hint.textContent = 'Depósito configurado en el asistente. Consulta volumen y montaje; el esquema está abajo.';
+    }
+  }
+  let equipHint = document.getElementById('sistemaDwcEquipResumenSh');
+  const equipTxt = solo ? buildSistemaDwcEquipResumenSh(cfg) : '';
+  if (solo && equipTxt) {
+    if (!equipHint) {
+      equipHint = document.createElement('p');
+      equipHint.id = 'sistemaDwcEquipResumenSh';
+      equipHint.className = 'torre-sistema-dwc-equip-hint sistema-dwc-sh-visible';
+      equipHint.setAttribute('role', 'note');
+      const anchor = hint || body.firstChild;
+      if (anchor && anchor.parentNode === body) {
+        anchor.insertAdjacentElement('afterend', equipHint);
+      } else {
+        body.appendChild(equipHint);
+      }
+    }
+    equipHint.textContent = equipTxt;
+    equipHint.classList.remove('setup-hidden');
+  } else if (equipHint) {
+    equipHint.classList.add('setup-hidden');
+    equipHint.textContent = '';
+  }
+  const volHint = document.getElementById('sysDwcVolumenLitrosHint');
+  const troncoVol = document.getElementById('sysDwcTroncoVolBlock');
+  if (volHint) volHint.classList.toggle('sistema-dwc-sh-visible', !!solo);
+  if (troncoVol) troncoVol.classList.toggle('sistema-dwc-sh-visible', !!solo);
+  if (solo) {
+    try {
+      refreshDwcSistemaMedidasUI();
+    } catch (_) {}
+    const dwcRes = document.getElementById('sistemaDwcResumen');
+    if (dwcRes && typeof textoResumenSistemaDwcPanel === 'function') {
+      const volLine = sistemaDwcResumenVolumenSh(cfg);
+      const geom = textoResumenSistemaDwcPanel(cfg);
+      dwcRes.textContent = volLine || geom || dwcRes.textContent;
+    }
+  }
+  const actionSel =
+    'button.torre-dwc-save-btn, button.torre-dwc-apply-grid-btn, #btnDwcAplicarRejillaVoluntaria';
+  body.querySelectorAll('input, select, textarea').forEach(function (el) {
+    el.readOnly = !!solo;
+    el.disabled = !!solo;
+    el.classList.toggle('torre-dwc-input--readonly', !!solo);
+    if (solo) {
+      el.setAttribute('aria-readonly', 'true');
+    } else {
+      el.removeAttribute('aria-readonly');
+    }
+  });
+  body.querySelectorAll(actionSel).forEach(function (el) {
+    el.classList.toggle('setup-hidden', !!solo);
+    el.disabled = !!solo;
+  });
+  body.querySelectorAll('label.torre-dwc-check-row').forEach(function (el) {
+    el.classList.toggle('setup-hidden', !!solo);
+  });
+}
+
+function applySistemaEsquemaChromeSemillaHidro(cfg) {
+  cfg = cfg || state.configTorre || {};
+  if (typeof hcSistemaDwcSoloConsulta !== 'function' || !hcSistemaDwcSoloConsulta(cfg)) return;
+  const sub = document.getElementById('torreEsquemaSub');
+  if (sub) {
+    const g = cfg.germinacionFlow || {};
+    const vid = String(
+      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+    ).trim();
+    let nomVar = '';
+    if (vid && typeof getCultivoDB === 'function') {
+      const cu = getCultivoDB(vid);
+      if (cu && cu.nombre) nomVar = cu.nombre;
+      else nomVar = vid;
+    }
+    sub.innerHTML = nomVar
+      ? '<strong>Esquema del montaje</strong> · genética del asistente: <strong>' +
+        escHtmlUi(nomVar) +
+        '</strong>. Toca el cubo para notas o registro.'
+      : '<strong>Esquema del montaje</strong> · toca una cesta/cubo o usa <strong>Lista</strong> para asignar variedad.';
+  }
+  const wrap = document.getElementById('torreSVGWrap');
+  if (wrap) {
+    wrap.classList.remove('setup-hidden', 'torre-svg-canvas--propagador');
+    wrap.hidden = false;
+    wrap.style.display = '';
+  }
 }
 
 function aplicarSistemaTorreObjetivoDesdeFormulario() {
@@ -3087,6 +3272,12 @@ function persistTorreObjetivoDesdeChecklist() {
 
 function aplicarSistemaEcPhStrategyDesdeFormulario() {
   if (!state.configTorre) return;
+  if (
+    typeof hcSistemaOcultarEcPhStrategy === 'function' &&
+    hcSistemaOcultarEcPhStrategy(state.configTorre)
+  ) {
+    return;
+  }
   const cfg = state.configTorre;
   const tipoInst =
     typeof tipoInstalacionNormalizado === 'function'

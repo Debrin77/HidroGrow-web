@@ -256,6 +256,17 @@
     return !!getSistemaFaseCamino(cfg || cfgActiva());
   }
 
+  /**
+   * Panel fase (prep/germ) sí; esquema DWC/RDWC no debe bloquearse en semilla_hidro operativa.
+   */
+  function hcRenderTorreBloqueadoPorFaseCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    var fase = getSistemaFaseCamino(cfg);
+    if (!fase) return false;
+    if (cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg)) return false;
+    return true;
+  }
+
   function hcMostrarSistemaPropagador(cfg) {
     return getSistemaFaseCamino(cfg) === 'propagador';
   }
@@ -722,6 +733,12 @@
     return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
   }
 
+  /** Depósito DWC en Sistema: solo consulta (valores fijados en asistente). */
+  function hcSistemaDwcSoloConsulta(cfg) {
+    cfg = cfg || cfgActiva();
+    return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+  }
+
   /** Depósito DWC/RDWC en Sistema: colapsado por defecto en semilla_hidro operativa. */
   function hcSistemaDwcPanelColapsado(cfg) {
     cfg = cfg || cfgActiva();
@@ -775,6 +792,7 @@
 
   global.getSistemaFaseCamino = getSistemaFaseCamino;
   global.hcMostrarSistemaFaseCamino = hcMostrarSistemaFaseCamino;
+  global.hcRenderTorreBloqueadoPorFaseCamino = hcRenderTorreBloqueadoPorFaseCamino;
   global.hcMostrarSistemaPropagador = hcMostrarSistemaPropagador;
   global.hcSistemaPropagadorSinHidro = hcSistemaPropagadorSinHidro;
   global.hcTituloSistemaTab = hcTituloSistemaTab;
@@ -913,6 +931,7 @@
   global.hcMedirEsSemillaHidro = hcMedirEsSemillaHidro;
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
   global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
+  global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
   global.hcSistemaDwcPanelColapsado = hcSistemaDwcPanelColapsado;
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

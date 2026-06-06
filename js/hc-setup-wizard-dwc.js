@@ -2202,6 +2202,9 @@ function dwcCalcRejillaDesdeTotalCestas(o, nDeseado) {
 }
 
 function aplicarDwcRejillaVoluntariaDesdeFormularioSistema() {
+  if (typeof hcBloquearEdicionSistemaDwcSiConsulta === 'function' && hcBloquearEdicionSistemaDwcSiConsulta()) {
+    return;
+  }
   if (!state.configTorre || state.configTorre.tipoInstalacion !== 'dwc') return;
   initTorres();
   const cfg = state.configTorre;
@@ -2263,6 +2266,9 @@ function aplicarDwcRejillaVoluntariaDesdeFormularioSistema() {
 }
 
 function aplicarDwcRejillaDesdeFormularioSistema(modoAplicacion) {
+  if (typeof hcBloquearEdicionSistemaDwcSiConsulta === 'function' && hcBloquearEdicionSistemaDwcSiConsulta()) {
+    return;
+  }
   if (!state.configTorre || state.configTorre.tipoInstalacion !== 'dwc') return;
   initTorres();
   const cfg = state.configTorre;
@@ -3900,6 +3906,9 @@ function onDwcModoChanged(formIds) {
 }
 
 function aplicarSistemaDwcDesdeFormulario() {
+  if (typeof hcBloquearEdicionSistemaDwcSiConsulta === 'function' && hcBloquearEdicionSistemaDwcSiConsulta()) {
+    return;
+  }
   if (!state.configTorre || state.configTorre.tipoInstalacion !== 'dwc') return;
   initTorres();
   const cfg = state.configTorre;

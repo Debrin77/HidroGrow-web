@@ -16354,6 +16354,53 @@ html.hc-theme-dark #tab-sistema #torreSVGWrap.torre-svg-canvas svg.hc-illo-torre
 .torre-sistema-panel--dwc .torre-sistema-panel-body {
   margin-top: 0;
 }
+.torre-sistema-dwc-consulta-hint {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #475569;
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+}
+.torre-sistema-dwc--solo-consulta .torre-dwc-input--readonly,
+.torre-sistema-dwc--solo-consulta .torre-dwc-input:disabled {
+  opacity: 0.92;
+  cursor: default;
+  background: rgba(248, 250, 252, 0.9);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+html.hc-theme-dark .torre-sistema-dwc--solo-consulta .torre-dwc-input:disabled {
+  background: rgba(15, 23, 42, 0.55);
+}
+.torre-sistema-dwc--solo-consulta .config-section-collapse-head {
+  pointer-events: none;
+  opacity: 0.85;
+}
+.torre-sistema-dwc--solo-consulta #sistemaDwcAyudaBody > :not(.sistema-dwc-sh-visible) {
+  display: none !important;
+}
+.torre-sistema-dwc-equip-hint {
+  margin: 0 0 10px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: #475569;
+}
+.torre-sistema-dwc--solo-consulta #sysDwcVolumenLitrosHint.sistema-dwc-sh-visible {
+  display: block !important;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px solid rgba(13, 148, 136, 0.22);
+}
+.torre-sistema-dwc--solo-consulta #sysDwcTroncoVolBlock.sistema-dwc-sh-visible {
+  display: block !important;
+}
 .torre-sistema-panel--rdwc .torre-sistema-panel-body {
   margin-top: 0;
 }

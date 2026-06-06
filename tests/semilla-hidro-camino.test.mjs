@@ -306,15 +306,38 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
 });
 
+test('semilla_hidro operativa: esquema DWC no bloqueado por fase germ_cubo', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const torre = read('js/torre-render-main.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  const nav = read('js/hc-bootstrap-init-nav.js');
+  assert.match(fase, /function hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.match(fase, /semilla_hidro.*hidroCerrado/);
+  assert.match(torre, /hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.match(torre, /hcSyncTorreDesdeGerminacionSiAplica/);
+  assert.match(cultivo, /function hcSyncTorreDesdeGerminacionSiAplica/);
+  assert.match(cultivo, /semilla_hidro[\s\S]*hidroInstalacionCerrada/);
+  assert.match(sis, /renderTorre\(\)/);
+  assert.match(nav, /hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.doesNotMatch(sis, /redibujarTorre/);
+});
+
 test('semilla_hidro operativa: Sistema sin EC/pH y depósito colapsable', () => {
   const fase = read('js/hc-camino-fase.js');
   const setup = read('js/hc-setup-wizard-core.js');
   const sis = read('js/hc-sistema-fase-camino.js');
+  const dwc = read('js/hc-setup-wizard-dwc.js');
   assert.match(fase, /function hcSistemaOcultarEcPhStrategy/);
   assert.match(fase, /function hcSistemaDwcPanelColapsado/);
-  assert.match(setup, /hcSistemaOcultarEcPhStrategy/);
-  assert.match(setup, /hcSistemaDwcPanelColapsado/);
+  assert.match(fase, /function hcSistemaDwcSoloConsulta/);
+  assert.match(setup, /function applySistemaDwcSoloConsultaUi/);
+  assert.match(setup, /hcBloquearEdicionSistemaDwcSiConsulta/);
+  assert.match(dwc, /hcBloquearEdicionSistemaDwcSiConsulta/);
   assert.match(sis, /function applySistemaSemillaHidroOperativaChrome/);
+  const chromeIds = sis.match(/var TORRE_HIDRO_CHROME_IDS = \[([\s\S]*?)\];/);
+  assert.ok(chromeIds, 'TORRE_HIDRO_CHROME_IDS definido');
+  assert.doesNotMatch(chromeIds[1], /sistemaEcPhStrategyCard/);
 });
 
 test('checklist prep hidro: iconos SVG y vista net pot', () => {

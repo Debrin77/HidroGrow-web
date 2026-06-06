@@ -780,14 +780,22 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof renderCalendario === 'function') renderCalendario();
   }
   if (tab === 'sistema') {
+    const cfgSistema =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
     const modoFase =
-      typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino();
+      typeof hcMostrarSistemaFaseCamino === 'function' && hcMostrarSistemaFaseCamino(cfgSistema);
+    const bloquearEsquemaPorFase =
+      typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
+      hcRenderTorreBloqueadoPorFaseCamino(cfgSistema);
     const runSistema = function () {
       if (gen !== _hcGoTabWorkGen) return;
       if (modoFase) {
         if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
         else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
           hcRefreshSistemaPropagadorPanel();
+        }
+        if (!bloquearEsquemaPorFase && typeof renderTorre === 'function') {
+          renderTorre();
         }
         return;
       }

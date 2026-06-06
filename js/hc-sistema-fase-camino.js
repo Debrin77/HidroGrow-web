@@ -378,7 +378,6 @@
     'torreSistemaResumenWrap',
     'torreQuickTip',
     'sistemaDwcAyudaCard',
-    'sistemaEcPhStrategyCard',
   ];
 
   function setTorreHidroChromeVisible(visible) {
@@ -480,6 +479,16 @@
         applySistemaTipoPanelesColapsablesUI();
       }
     } catch (_) {}
+    try {
+      if (typeof applySistemaDwcSoloConsultaUi === 'function') {
+        applySistemaDwcSoloConsultaUi(cfg);
+      }
+    } catch (_) {}
+    try {
+      if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
+        applySistemaEsquemaChromeSemillaHidro(cfg);
+      }
+    } catch (_) {}
   }
 
   function refreshTorreExtrasCaminoUi(cfg) {
@@ -549,10 +558,21 @@
         }
       } catch (_) {}
       if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
-      refreshTorreExtrasCaminoUi(cfg);
       try {
-        if (typeof redibujarTorre === 'function') redibujarTorre();
+        if (typeof hcSyncTorreDesdeGerminacionSiAplica === 'function') {
+          hcSyncTorreDesdeGerminacionSiAplica(cfg);
+        }
       } catch (_) {}
+      try {
+        if (
+          typeof renderTorre === 'function' &&
+          typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
+          !hcRenderTorreBloqueadoPorFaseCamino(cfg)
+        ) {
+          renderTorre();
+        }
+      } catch (_) {}
+      refreshTorreExtrasCaminoUi(cfg);
       return;
     }
 
