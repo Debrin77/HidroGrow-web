@@ -2588,4 +2588,4 @@
   global.hcGerminacionMarcarConcluida = hcGerminacionMarcarConcluida;
   global.renderGermTrayViz = renderGermTrayViz;
   global.renderGermHidroNetPotViz = renderGermHidroNetPotViz;
-})();
+})(typeof window !== 'undefined' ? window : globalThis);

@@ -899,4 +899,4 @@
   global.onPremiumNutrienteGermVolChange = onPremiumNutrienteGermVolChange;
   global.onPremiumNutrienteGermSelectChange = onPremiumNutrienteGermSelectChange;
   global.renderPremiumNutrienteGermDosis = renderPremiumNutrienteGermDosis;
-})();
+})(typeof window !== 'undefined' ? window : globalThis);

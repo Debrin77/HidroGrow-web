@@ -362,6 +362,15 @@ test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna 
   assert.match(dash, /hcMedirEsSemillaHidro\(cfgConfirm\)/);
 });
 
+test('arranque: IIFE exportan a window (PIN y germinación)', () => {
+  const germ = read('js/hc-germinacion-flow.js');
+  const nut = read('js/hc-premium-nutriente-germ.js');
+  assert.match(germ, /\(function \(global\)/);
+  assert.match(germ, /\}\)\(typeof window !== 'undefined' \? window : globalThis\);/);
+  assert.match(nut, /\(function \(global\)/);
+  assert.match(nut, /\}\)\(typeof window !== 'undefined' \? window : globalThis\);/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');
