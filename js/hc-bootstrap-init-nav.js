@@ -750,8 +750,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio' && typeof updateDashboard === 'function') {
-    if (skipHeavy) updateDashboard({ lite: true });
-    else updateDashboard();
+    updateDashboard();
   }
   if (tab === 'meteo') {
     try {
@@ -848,25 +847,11 @@ function goTabDeferredWorkHeavy(tab, gen) {
 
 function goTabDeferredWork(tab) {
   var gen = _hcGoTabWorkGen;
-  var now = Date.now();
-  var lastHeavy = _hcTabHeavyLast[tab] || 0;
-  var skipHeavy =
-    tab !== 'historial' &&
-    tab !== 'calendario' &&
-    now - lastHeavy < 15000;
-
   goTabDeferredWorkLite(tab);
-
-  if (skipHeavy) return;
-
   var runHeavy = function () {
     goTabDeferredWorkHeavy(tab, gen);
   };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: tab === 'sistema' ? 400 : 120 });
-  } else {
-    setTimeout(runHeavy, tab === 'sistema' ? 16 : 0);
-  }
+  requestAnimationFrame(runHeavy);
 }
 
 function goTab(tab) {

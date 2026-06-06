@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-05-31-pin-fix')
+      .register('service-worker.js?v=2026-05-31-boot-fix')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -79,11 +79,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 function hcSplashMinVisibleMs() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 520;
-    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 520;
-  } catch (_) {}
-  return 280;
+  return 0;
 }
 const splashShownAtMs = Date.now();
 
@@ -195,28 +191,7 @@ window.addEventListener('load', function () {
   if (!window._hcAppBootSequenceStarted) hcRunAppBootSequence();
 });
 
-function scheduleHcPreinitWhilePin() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
-      return;
-    }
-  } catch (_) {}
-  const run = function () {
-    try {
-      if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
-      if (typeof hcPreinitTorreStateWhileLocked === 'function') hcPreinitTorreStateWhileLocked();
-    } catch (e) {
-      try {
-        console.warn('scheduleHcPreinitWhilePin', e);
-      } catch (_) {}
-    }
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: 1200 });
-  } else {
-    setTimeout(run, 200);
-  }
-}
+function scheduleHcPreinitWhilePin() {}
 
 // ══════════════════════════════════════════════════
 // FOTODB — IndexedDB para fotos (sin límite de tamaño)

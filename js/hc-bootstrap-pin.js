@@ -180,6 +180,10 @@ function lockAppWithPin() {
   const statusEl = document.getElementById('pinAuthStatus');
   if (appEl) appEl.inert = true;
   if (statusEl) statusEl.textContent = '';
+  var stamp = document.getElementById('pinBuildStamp');
+  if (stamp && typeof APP_BUILD_VERSION !== 'undefined') {
+    stamp.textContent = 'build ' + APP_BUILD_VERSION;
+  }
   if (pinEl) {
     pinEl.style.display = '';
     a11yAttachFocusTrap(pinEl);
