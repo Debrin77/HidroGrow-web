@@ -103,11 +103,16 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
+        if (typeof hcBootStartDeferredPhase === 'function') {
+          try {
+            hcBootStartDeferredPhase();
+          } catch (_) {}
+        }
         var startInit = function () {
           initApp();
         };
         if (typeof hcWhenAppScriptsReady === 'function') {
-          hcWhenAppScriptsReady(startInit, { timeoutMs: 90000 });
+          hcWhenAppScriptsReady(startInit, { timeoutMs: 120000 });
           return;
         }
         var intentosInit = 0;
