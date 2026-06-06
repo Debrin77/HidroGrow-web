@@ -103,26 +103,19 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
-        var startInit = function () {
-          initApp();
-        };
-        if (typeof hcWhenAppScriptsReady === 'function') {
-          hcWhenAppScriptsReady(startInit, { timeoutMs: 45000 });
-          return;
-        }
         var intentosInit = 0;
-        var pollInit = function () {
+        var runInit = function () {
           if (typeof initApp !== 'function') {
             intentosInit++;
             if (intentosInit > 120) {
-              throw new Error('initApp no cargó — Ctrl+Shift+R o borra caché del sitio.');
+              throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
             }
-            setTimeout(pollInit, 50);
+            setTimeout(runInit, 50);
             return;
           }
           initApp();
         };
-        pollInit();
+        runInit();
       } catch (eInit) {
         try {
           console.error('initApp tras PIN', eInit);
