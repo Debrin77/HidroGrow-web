@@ -187,9 +187,6 @@ function hcFinishInitAppHeavyWork() {
   if (appEl) appEl.classList.remove('hc-app-booting');
 
   try {
-    if (typeof refreshTabsOperativaCamino === 'function') {
-      refreshTabsOperativaCamino({ visibilidadOnly: true });
-    }
     var setupAbierto = false;
     try {
       var so = document.getElementById('setupOverlay');
@@ -296,19 +293,7 @@ function hcFinishInitAppHeavyWork() {
         }
         if (dimsDirty && typeof saveState === 'function') saveState();
       }
-      if (tab === 'sistema') {
-        try {
-          if (typeof updateTorreStats === 'function') updateTorreStats();
-          if (typeof renderTorre === 'function') renderTorre();
-          if (typeof renderCompatGrid === 'function') renderCompatGrid();
-          if (typeof calcularRotacion === 'function') calcularRotacion();
-          if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
-        } catch (eRenderTorre) {
-          try {
-            console.error('renderTorre en initApp', eRenderTorre);
-          } catch (_) {}
-        }
-      } else if (tab === 'mediciones' && typeof renderTorreMedirDiagram === 'function') {
+      if (tab === 'mediciones' && typeof renderTorreMedirDiagram === 'function') {
         renderTorreMedirDiagram();
       }
       if (tab === 'riego' && typeof actualizarVistaRiegoPorTipoInstalacion === 'function') {
@@ -318,9 +303,9 @@ function hcFinishInitAppHeavyWork() {
   };
 
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runBackground, { timeout: 900 });
+    requestIdleCallback(runBackground, { timeout: 3500 });
   } else {
-    setTimeout(runBackground, 80);
+    setTimeout(runBackground, 400);
   }
 }
 
@@ -793,8 +778,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
         if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
         else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
           hcRefreshSistemaPropagadorPanel();
-        }
-        if (!bloquearEsquemaPorFase && typeof renderTorre === 'function') {
+        } else if (!bloquearEsquemaPorFase && typeof renderTorre === 'function') {
           renderTorre();
         }
         return;
@@ -867,10 +851,9 @@ function goTabDeferredWork(tab) {
   var now = Date.now();
   var lastHeavy = _hcTabHeavyLast[tab] || 0;
   var skipHeavy =
-    tab !== 'sistema' &&
     tab !== 'historial' &&
     tab !== 'calendario' &&
-    now - lastHeavy < 12000;
+    now - lastHeavy < 15000;
 
   goTabDeferredWorkLite(tab);
 
@@ -880,9 +863,9 @@ function goTabDeferredWork(tab) {
     goTabDeferredWorkHeavy(tab, gen);
   };
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: 180 });
+    requestIdleCallback(runHeavy, { timeout: tab === 'sistema' ? 400 : 120 });
   } else {
-    setTimeout(runHeavy, 0);
+    setTimeout(runHeavy, tab === 'sistema' ? 16 : 0);
   }
 }
 

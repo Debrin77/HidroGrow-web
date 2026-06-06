@@ -79,11 +79,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 function hcSplashMinVisibleMs() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 520;
-    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 520;
-  } catch (_) {}
-  return 280;
+  return 0;
 }
 const splashShownAtMs = Date.now();
 
@@ -129,6 +125,25 @@ function hcBindPinScreenListeners() {
   }
 }
 
+function hcShowPinScreenEarly() {
+  if (window._hcPinEarlyShown) return;
+  window._hcPinEarlyShown = true;
+  try {
+    hcBindPinScreenListeners();
+  } catch (_) {}
+  try {
+    hideSplash();
+  } catch (_) {}
+  if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
+  if (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress) return;
+  try {
+    if (typeof hasValidAuthSession === 'function' && hasValidAuthSession()) return;
+  } catch (_) {}
+  try {
+    if (typeof lockAppWithPin === 'function') lockAppWithPin();
+  } catch (_) {}
+}
+
 function hcRunAppBootSequence() {
   if (window._hcAppBootSequenceStarted) return;
   window._hcAppBootSequenceStarted = true;
@@ -146,17 +161,19 @@ function hcRunAppBootSequence() {
   hcBindPinScreenListeners();
 
   (async function () {
-    scheduleHcPreinitWhilePin();
-    await waitSplashMinimumVisible();
     hideSplash();
 
     if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
 
     if (hasValidAuthSession()) {
-      unlockAndInitApp();
+      if (typeof hcWhenAppScriptsReady === 'function') {
+        hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 45000 });
+      } else {
+        unlockAndInitApp();
+      }
       return;
     }
-    lockAppWithPin();
+    if (!window._hcPinEarlyShown && typeof lockAppWithPin === 'function') lockAppWithPin();
     setTimeout(async function () {
       if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) {
         return;
@@ -165,7 +182,11 @@ function hcRunAppBootSequence() {
       var ok = await tryBiometricUnlock();
       if (appBootstrapped) return;
       if (ok) {
-        unlockAndInitApp();
+        if (typeof hcWhenAppScriptsReady === 'function') {
+          hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 45000 });
+        } else {
+          unlockAndInitApp();
+        }
       } else {
         var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
@@ -192,6 +213,12 @@ function hcScheduleVersionCheckOnIdle() {
   }
 }
 
+if (document.body) {
+  requestAnimationFrame(hcShowPinScreenEarly);
+} else {
+  document.addEventListener('DOMContentLoaded', hcShowPinScreenEarly);
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function () {
     hcScheduleVersionCheckOnIdle();
@@ -206,28 +233,7 @@ window.addEventListener('load', function () {
   if (!window._hcAppBootSequenceStarted) hcRunAppBootSequence();
 });
 
-function scheduleHcPreinitWhilePin() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
-      return;
-    }
-  } catch (_) {}
-  const run = function () {
-    try {
-      if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
-      if (typeof hcPreinitTorreStateWhileLocked === 'function') hcPreinitTorreStateWhileLocked();
-    } catch (e) {
-      try {
-        console.warn('scheduleHcPreinitWhilePin', e);
-      } catch (_) {}
-    }
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: 1200 });
-  } else {
-    setTimeout(run, 200);
-  }
-}
+function scheduleHcPreinitWhilePin() {}
 
 // ══════════════════════════════════════════════════
 // FOTODB — IndexedDB para fotos (sin límite de tamaño)

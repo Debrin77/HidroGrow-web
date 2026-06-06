@@ -2,19 +2,16 @@
  * renderTorre, gestos swipe, bind cestas, compatibilidad grid, updateTorreStats, depósito.
  * Tras torre-render-build.js.
  */
+var _hcRenderTorreDepth = 0;
+
 function renderTorre() {
-  const cfg = state.configTorre || {};
+  if (_hcRenderTorreDepth > 0) return;
+  _hcRenderTorreDepth++;
   try {
-    if (typeof hcSyncTorreDesdeGerminacionSiAplica === 'function') {
-      hcSyncTorreDesdeGerminacionSiAplica(cfg);
-    }
-  } catch (_) {}
+  const cfg = state.configTorre || {};
   const bloquearEsquemaPorFase =
     typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
     hcRenderTorreBloqueadoPorFaseCamino(cfg);
-  try {
-    if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
-  } catch (_) {}
   if (bloquearEsquemaPorFase) {
     try {
       if (
@@ -162,6 +159,9 @@ function renderTorre() {
   try {
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   } catch (_) {}
+  } finally {
+    _hcRenderTorreDepth--;
+  }
 }
 
 /** Medir: esquema retirado — solo en Cultivo e instalación. */

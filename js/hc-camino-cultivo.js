@@ -687,6 +687,9 @@
   /** Copia genética del asistente/germinación a cestas vacías tras cerrar hidro (semilla). */
   function hcSyncTorreDesdeGerminacionSiAplica(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var torreId = cfg.id || cfg.torreId || (typeof state !== 'undefined' && state && state.torreActiva);
+    var syncKey = String(torreId || '0') + ':' + String(cfg.hidroCerradoAt || cfg.germinacionFlow && cfg.germinacionFlow.cerradoAt || '');
+    if (global._hcGermTorreSyncKey === syncKey) return false;
     if (typeof hcCaminoEsSemilla === 'function' && !hcCaminoEsSemilla(getCaminoCultivo(cfg))) {
       return false;
     }
@@ -704,6 +707,7 @@
       }
     } catch (_) {}
     if (JSON.stringify(torreArr) === antes) return false;
+    global._hcGermTorreSyncKey = syncKey;
     try {
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       if (typeof saveState === 'function') saveState();
