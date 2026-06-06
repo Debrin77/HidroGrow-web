@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-05-31-pin-fix')
+      .register('service-worker.js?v=2026-05-31-boot3')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -132,6 +132,17 @@ function hcBindPinScreenListeners() {
 function hcRunAppBootSequence() {
   if (window._hcAppBootSequenceStarted) return;
   window._hcAppBootSequenceStarted = true;
+  if (typeof pinPress !== 'function' || typeof unlockAndInitApp !== 'function') {
+    var err0 = document.getElementById('pinErr');
+    if (err0) {
+      err0.textContent =
+        'Scripts no cargados. Cierra la pestaña, Ctrl+Shift+R, o borra datos del sitio (hidrogrow).';
+    }
+    try {
+      hideSplash();
+    } catch (_) {}
+    return;
+  }
   hcBindPinScreenListeners();
 
   (async function () {

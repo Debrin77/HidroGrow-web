@@ -108,7 +108,7 @@ function unlockAndInitApp() {
           if (typeof initApp !== 'function') {
             intentosInit++;
             if (intentosInit > 120) {
-              throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
+              throw new Error('initApp no cargó — Ctrl+Shift+R o borra caché del sitio.');
             }
             setTimeout(runInit, 50);
             return;

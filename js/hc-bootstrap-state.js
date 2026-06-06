@@ -881,6 +881,17 @@ function gestionarCambioVersionEnArranque() {
     const transition = String((prev || 'none') + '->' + APP_BUILD_VERSION);
     const yaGuardada = localStorage.getItem(AUTO_RESTORE_POINT_TRANSITION_KEY) === transition;
     localStorage.setItem(APP_BUILD_VERSION_KEY, APP_BUILD_VERSION);
+    try {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+        navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (r) {
+            try {
+              r.unregister();
+            } catch (_) {}
+          });
+        });
+      }
+    } catch (_) {}
     if (!yaGuardada) {
       const backupOpts = {
         reason: 'before-version-upgrade',
@@ -898,7 +909,13 @@ function gestionarCambioVersionEnArranque() {
         setTimeout(runBackup, 50);
       }
     }
-    showToast('ℹ️ Nueva versión detectada. Recomendado: Exportar copia de seguridad ahora.');
+    showToast(
+      'Nueva versión (' +
+        APP_BUILD_VERSION +
+        '). Recarga forzada: Ctrl+Shift+R. Tus datos se conservan.',
+      false,
+      { durationMs: 9000 }
+    );
   } catch (_) {}
 }
 
