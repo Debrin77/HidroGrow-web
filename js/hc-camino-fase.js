@@ -104,9 +104,16 @@
     );
   }
 
+  /** Medir unificado: semilla_hidro con DWC cerrado en asistente. */
+  function hcMedirEsSemillaHidro(cfg) {
+    cfg = cfg || cfgActiva();
+    return cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg);
+  }
+
   /** Ocultar seguimiento clásico / tareas en Medir (germinación en cubo usa flujo directo). */
   function hcSemillaHidroOcultarSeguimientoMedir(cfg) {
     cfg = cfg || cfgActiva();
+    if (hcMedirEsSemillaHidro(cfg)) return true;
     if (hcSemillaHidroUiOperativaLista(cfg)) return true;
     if (!hcSemillaHidroPostAsistenteUi(cfg)) return false;
     try {
@@ -702,11 +709,22 @@
       );
     }
     if (cam(cfg) === 'semilla_hidro') {
-      if (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg)) {
-        return false;
-      }
+      return !!(
+        typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)
+      );
     }
     return true;
+  }
+
+  /** UI de recarga completa visible al usuario (la lógica interna sigue activa en semilla_hidro). */
+  function hcRecargaUiVisibleUsuario(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) {
+      return false;
+    }
+    return typeof hcRecargaCompletaAplicaEnCamino === 'function'
+      ? hcRecargaCompletaAplicaEnCamino(cfg)
+      : true;
   }
 
   /** Texto para Inicio cuando la tarjeta de recarga completa no aplica (propagador). */
@@ -877,5 +895,7 @@
   global.hcSemillaHidroUiOperativaLista = hcSemillaHidroUiOperativaLista;
   global.hcSemillaHidroPostAsistenteUi = hcSemillaHidroPostAsistenteUi;
   global.hcSemillaHidroOcultarSeguimientoMedir = hcSemillaHidroOcultarSeguimientoMedir;
+  global.hcMedirEsSemillaHidro = hcMedirEsSemillaHidro;
+  global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

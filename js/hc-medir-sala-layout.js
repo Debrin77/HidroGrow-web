@@ -148,8 +148,6 @@
     var germ =
       typeof window.hcMedirModoGerminacionPropagador === 'function' &&
       window.hcMedirModoGerminacionPropagador(cfg);
-    var hidroOper =
-      typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg);
     var ocultarSeguimiento =
       typeof hcSemillaHidroOcultarSeguimientoMedir === 'function' &&
       hcSemillaHidroOcultarSeguimientoMedir(cfg);
@@ -157,8 +155,9 @@
     var monitor = document.getElementById('medirMonitorCard');
     var protocol = document.getElementById('medirProtocoloCard');
     if (guia) guia.classList.toggle('setup-hidden', !!germ || !!ocultarSeguimiento);
-    if (monitor) monitor.classList.toggle('setup-hidden', !!germ);
+    if (monitor) monitor.classList.toggle('setup-hidden', !!germ || !!ocultarSeguimiento);
     if (protocol) protocol.classList.add('setup-hidden');
+    applyMedirSemillaHidroChrome(cfg);
   }
 
   /** Medir propagador: formulario de domo/sala justo bajo el banner. */
@@ -220,31 +219,26 @@
     flow.id = 'medirFlow';
     flow.innerHTML =
       '<p class="medir-flow-lead">' +
-      'Valores del depósito. Evaluación al instante.' +
+      'Depósito y sala en un solo registro. Evaluación al instante frente a los rangos de tu instalación.' +
       '</p>' +
-      '<div class="medir-quick-parse medir-quick-parse--premium">' +
-      '<div class="medir-quick-parse-head">' +
-      '<span class="medir-quick-parse-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sparkle"/></svg></span>' +
-      '<label class="form-label medir-quick-label" for="medirQuickInput">Entrada rápida</label>' +
-      '</div>' +
-      '<div class="medir-quick-parse-row">' +
-      '<input id="medirQuickInput" class="form-input medir-quick-input" type="text" inputmode="text" autocomplete="off" ' +
-      'placeholder="EC 1350 · pH 6.0 · T 20 · V 18">' +
-      '<button type="button" class="btn btn-secondary btn-sm medir-quick-apply" onclick="hcMedirTabQuickApply()">Aplicar</button>' +
-      '</div>' +
-      '<p id="medirQuickParseHint" class="medir-quick-hint" role="status" aria-live="polite"></p>' +
-      '</div>' +
-      '<div class="medir-step-panel medir-step-panel--solucion">' +
+      '<div class="medir-step-panel medir-step-panel--unificado" id="medirFlowUnificadoPanel">' +
       '<div class="medir-step-head medir-step-head--solucion">' +
       '<span class="medir-step-head-icon medir-step-head-icon--solucion" aria-hidden="true">' +
       '<svg class="hc-ico" focusable="false"><use href="#hc-i-droplet"/></svg></span>' +
       '<span class="medir-step-head-text">' +
-      '<span class="medir-step-kicker medir-step-kicker--solucion">Paso 1 · solución</span>' +
-      '<span class="medir-step-sub">EC, pH, temperatura y volumen del depósito</span>' +
+      '<span class="medir-step-kicker medir-step-kicker--solucion">Depósito</span>' +
+      '<span class="medir-step-sub">EC, pH, temperatura del agua y volumen</span>' +
       '</span></div>' +
       '<div id="medirFlowSolucion" class="medir-flow-solucion-mount"></div>' +
-      '</div>' +
+      '<div class="medir-step-head medir-step-head--ambiente medir-step-head--inline-amb">' +
+      '<span class="medir-step-head-icon medir-step-head-icon--ambiente" aria-hidden="true">' +
+      '<svg class="hc-ico" focusable="false"><use href="#hc-i-home"/></svg></span>' +
+      '<span class="medir-step-head-text">' +
+      '<span class="medir-step-kicker">Sala de cultivo</span>' +
+      '<span class="medir-step-sub">Temperatura del aire, humedad relativa y VPD</span>' +
+      '</span></div>' +
       '<div id="medirFlowAmbienteMount" class="medir-flow-ambiente-mount"></div>' +
+      '</div>' +
       '<div class="medir-flow-actions">' +
       '<button type="button" id="btnGuardarMedicion" class="btn btn-primary medir-save-btn" onclick="guardarMedicion()">' +
       'Guardar medición</button>' +
@@ -265,16 +259,6 @@
       '</div>';
 
     banner.insertAdjacentElement('afterend', flow);
-
-    var quickInp = document.getElementById('medirQuickInput');
-    if (quickInp) {
-      quickInp.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (typeof hcMedirTabQuickApply === 'function') hcMedirTabQuickApply();
-        }
-      });
-    }
 
     var solMount = document.getElementById('medirFlowSolucion');
     sync.classList.remove('setup-hidden');
@@ -341,21 +325,95 @@
     shell.appendChild(mount);
     mount.classList.add('sala-sub-mount-inner');
 
+    var cfgInit =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    var ocultarRecargaSala =
+      typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfgInit);
     SALA_SUB_ORDER.forEach(function (key) {
       var panel = document.getElementById('salaPanel' + key.charAt(0).toUpperCase() + key.slice(1));
       (SALA_GROUPS[key] || []).forEach(function (id) {
         var el = document.getElementById(id);
-        if (el && panel) panel.appendChild(el);
+        if (!el) return;
+        if (key === 'recarga' && ocultarRecargaSala && id === 'recargaCardMediciones') {
+          var pool = getRecargaCardHiddenPool();
+          if (pool) pool.appendChild(el);
+          return;
+        }
+        if (panel) panel.appendChild(el);
       });
     });
   }
 
   function salaRecargaSubTabVisible(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (typeof hcRecargaUiVisibleUsuario === 'function') {
+      return hcRecargaUiVisibleUsuario(cfg);
+    }
     if (typeof hcRecargaCompletaAplicaEnCamino === 'function') {
       return hcRecargaCompletaAplicaEnCamino(cfg);
     }
     return true;
+  }
+
+  function getRecargaCardHiddenPool() {
+    var tab = document.getElementById('tab-mediciones');
+    if (!tab) return null;
+    var pool = document.getElementById('hcRecargaInternoPool');
+    if (!pool) {
+      pool = document.createElement('div');
+      pool.id = 'hcRecargaInternoPool';
+      pool.className = 'hc-recarga-interno-pool setup-hidden';
+      pool.setAttribute('aria-hidden', 'true');
+      tab.appendChild(pool);
+    }
+    return pool;
+  }
+
+  function ensureMedirRecargaVolAvisoSlim(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (typeof hcMedirEsSemillaHidro !== 'function' || !hcMedirEsSemillaHidro(cfg)) {
+      var old = document.getElementById('medirRecargaVolAvisoSlim');
+      if (old) old.classList.add('setup-hidden');
+      return;
+    }
+    var slim = document.getElementById('medirRecargaVolAvisoSlim');
+    if (!slim) {
+      slim = document.createElement('div');
+      slim.id = 'medirRecargaVolAvisoSlim';
+      slim.className = 'medir-recarga-vol-aviso-slim setup-hidden';
+      slim.setAttribute('role', 'status');
+      slim.setAttribute('aria-live', 'polite');
+      var flow = document.getElementById('medirFlow');
+      if (flow) flow.insertAdjacentElement('afterend', slim);
+      else {
+        var ban = document.getElementById('medirTorreBanner');
+        if (ban) ban.insertAdjacentElement('afterend', slim);
+      }
+    }
+  }
+
+  function ocultarRecargaUiSemillaHidro(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var card = document.getElementById('recargaCardMediciones');
+    if (!card) return;
+    var esSh = typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+    if (!esSh) {
+      card.classList.remove('recarga-card--interno', 'setup-hidden');
+      card.removeAttribute('aria-hidden');
+      card.querySelectorAll('.recarga-collapse-wrap--vol-aviso').forEach(function (el) {
+        el.classList.remove('setup-hidden');
+      });
+      return;
+    }
+    var pool = getRecargaCardHiddenPool();
+    if (pool && card.parentNode !== pool) pool.appendChild(card);
+    card.classList.add('recarga-card--interno', 'setup-hidden');
+    card.setAttribute('aria-hidden', 'true');
+    card.querySelectorAll('.recarga-collapse-wrap--vol-aviso').forEach(function (el) {
+      el.classList.add('setup-hidden');
+    });
+    ensureMedirRecargaVolAvisoSlim(cfg);
+    if (typeof refreshMedirRecargaVolAvisoSlim === 'function') refreshMedirRecargaVolAvisoSlim();
   }
 
   var SALA_PANELES_DUPLICADOS_MEDIR = [
@@ -368,10 +426,21 @@
   function repositionMedirTorreBannerTop() {
     var tab = document.getElementById('tab-mediciones');
     var banner = document.getElementById('medirTorreBanner');
-    if (!tab || !banner || banner.parentNode !== tab) return;
+    if (!tab || !banner) return;
+    var title = tab.querySelector('.section-title');
+    if (title) {
+      if (banner.previousElementSibling === title) return;
+      title.insertAdjacentElement('afterend', banner);
+      return;
+    }
+    if (banner.parentNode !== tab) return;
     var first = tab.firstElementChild;
     if (first === banner) return;
     tab.insertBefore(banner, first);
+  }
+
+  function ensureRecargaCardEnMedirTab(cfg) {
+    ocultarRecargaUiSemillaHidro(cfg);
   }
 
   function ensureSalaTorreBanner() {
@@ -502,20 +571,41 @@
 
   function applyMedirAmbienteUnificadoOperativa(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
-    if (typeof hcSemillaHidroUiOperativaLista !== 'function' || !hcSemillaHidroUiOperativaLista(cfg)) {
-      return;
-    }
+    var unificado =
+      (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) ||
+      (typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfg));
+    if (!unificado) return;
     var details = document.getElementById('medirAmbienteDetails');
     if (details) {
       details.open = true;
       details.classList.add('medir-ambiente-details--operativa-unificado');
+      var sum = details.querySelector('.medir-ambiente-summary');
+      if (sum) sum.classList.add('setup-hidden');
     }
-    var kicker = document.querySelector('.medir-step-kicker--solucion');
-    if (kicker) kicker.textContent = 'Depósito';
-    var ambKicker = document.querySelector('.medir-step-kicker');
-    if (ambKicker && ambKicker.closest('.medir-ambiente-summary')) {
-      ambKicker.textContent = 'Sala de cultivo';
-    }
+    var flow = document.getElementById('medirFlow');
+    if (flow) flow.classList.add('medir-flow--semilla-hidro-unificado');
+    var ambCard = document.getElementById('medirAmbienteCard');
+    if (ambCard) ambCard.classList.add('medir-ambiente-card--inline-unificado');
+  }
+
+  function applyMedirSemillaHidroChrome(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (typeof hcMedirEsSemillaHidro !== 'function' || !hcMedirEsSemillaHidro(cfg)) return;
+    [
+      'medirPreOperativaGate',
+      'medirOperativaHub',
+      'medirPuestaMarchaCard',
+      'medirMonitorCard',
+      'medirProtocoloCard',
+      'medirGuiaDiaCard',
+      'ultimaMedicionCard',
+    ].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('setup-hidden');
+    });
+    ensureRecargaCardEnMedirTab(cfg);
+    applyMedirAmbienteUnificadoOperativa(cfg);
+    repositionMedirTorreBannerTop();
   }
 
   function refreshSalaPanelesDuplicadosMedirUi(cfg) {
@@ -728,6 +818,7 @@
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
     ensureSalaTorreBanner();
     bindSalaEquipCollapsibles();
+    ocultarRecargaUiSemillaHidro(cfg);
     refreshSalaSubTabsCaminoUi(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     refreshSalaEquipMontaje({ lightOnly: true });
@@ -823,7 +914,12 @@
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       applyMedirGuiaProtocoloChrome();
       repositionMedirTorreBannerTop();
-      applyMedirAmbienteUnificadoOperativa();
+      applyMedirAmbienteUnificadoOperativa(
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
+      );
+      applyMedirSemillaHidroChrome(
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {}
+      );
       var deferHeavy = function () {
         try {
           refreshSalaEquipMontaje();
@@ -865,6 +961,9 @@
   window.refreshSalaTorreBanner = refreshSalaTorreBanner;
   window.ensureSistemaTorreBanner = ensureSistemaTorreBanner;
   window.refreshSistemaTorreBanner = refreshSistemaTorreBanner;
+  window.ensureRecargaCardEnMedirTab = ensureRecargaCardEnMedirTab;
+  window.ocultarRecargaUiSemillaHidro = ocultarRecargaUiSemillaHidro;
+  window.applyMedirSemillaHidroChrome = applyMedirSemillaHidroChrome;
   window.repositionMedirTorreBannerTop = repositionMedirTorreBannerTop;
   window.hcRefreshSalaTab = refreshSalaTab;
   window.hcRefreshSalaTabLight = refreshSalaTabLight;

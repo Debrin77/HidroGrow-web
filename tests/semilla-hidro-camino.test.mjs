@@ -306,6 +306,19 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
 });
 
+test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna activa', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const layout = read('js/hc-medir-sala-layout.js');
+  const dash = read('js/meteo-forecast-dashboard.js');
+  assert.match(fase, /function hcRecargaUiVisibleUsuario/);
+  assert.match(fase, /hcMedirEsSemillaHidro\(cfg\)/);
+  assert.match(layout, /function ocultarRecargaUiSemillaHidro/);
+  assert.match(layout, /hcRecargaUiVisibleUsuario/);
+  assert.match(layout, /medirRecargaVolAvisoSlim/);
+  assert.match(dash, /function refreshMedirRecargaVolAvisoSlim/);
+  assert.match(dash, /hcMedirEsSemillaHidro\(cfgConfirm\)/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');

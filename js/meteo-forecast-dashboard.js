@@ -508,15 +508,14 @@ function refreshDashRecargaCardCamino() {
   const cfg = state.configTorre || {};
   const card = document.getElementById('dashRecargaCard');
   const alt = document.getElementById('dashRecargaPropagadorAviso');
-  const aplica =
-    typeof hcRecargaCompletaAplicaEnCamino !== 'function' || hcRecargaCompletaAplicaEnCamino(cfg);
-  if (card) card.classList.toggle('setup-hidden', !aplica);
+  const uiVisible =
+    typeof hcRecargaUiVisibleUsuario === 'function'
+      ? hcRecargaUiVisibleUsuario(cfg)
+      : typeof hcRecargaCompletaAplicaEnCamino !== 'function' || hcRecargaCompletaAplicaEnCamino(cfg);
+  if (card) card.classList.toggle('setup-hidden', !uiVisible);
   if (alt) alt.classList.add('setup-hidden');
-  if (!aplica) {
-    return;
-  }
   const quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
-  if (quickRec) quickRec.classList.toggle('setup-hidden', !aplica);
+  if (quickRec) quickRec.classList.toggle('setup-hidden', !uiVisible);
 }
 
 function updateRecargaBar() {
@@ -528,9 +527,15 @@ function updateRecargaBar() {
   const notaEl = document.getElementById('recargaNota');
   if (!diasEl || !barEl || !notaEl) return;
   const cfgRec = state.configTorre || {};
-  if (typeof hcRecargaCompletaAplicaEnCamino === 'function' && !hcRecargaCompletaAplicaEnCamino(cfgRec)) {
-    return;
-  }
+  const logicaRecarga =
+    typeof hcRecargaCompletaAplicaEnCamino === 'function'
+      ? hcRecargaCompletaAplicaEnCamino(cfgRec)
+      : true;
+  if (!logicaRecarga) return;
+  const uiRecargaVisible =
+    typeof hcRecargaUiVisibleUsuario === 'function'
+      ? hcRecargaUiVisibleUsuario(cfgRec)
+      : logicaRecarga;
   hydrateRecargaVolumenAvisoMedirUI();
 
   const sysLbl =
@@ -680,6 +685,45 @@ function updateRecargaBar() {
     state.ultimaRecarga ? diasRestantes : diasRecarga,
     nPlantasTorre
   );
+  if (!uiRecargaVisible) {
+    refreshMedirRecargaVolAvisoSlim();
+  }
+}
+
+/** semilla_hidro: aviso visible solo por volumen repuesto acumulado (sin UI de recarga completa). */
+function refreshMedirRecargaVolAvisoSlim() {
+  const cfg = state.configTorre || {};
+  const slim = document.getElementById('medirRecargaVolAvisoSlim');
+  if (!slim) return;
+  const interno =
+    typeof hcRecargaUiVisibleUsuario === 'function' && !hcRecargaUiVisibleUsuario(cfg);
+  if (!interno) {
+    slim.classList.add('setup-hidden');
+    slim.innerHTML = '';
+    slim.classList.remove('recarga-repos-turnover--warn', 'recarga-repos-turnover--over');
+    return;
+  }
+  const turnoverHint = document.getElementById('recargaReposTurnoverHint');
+  const warn =
+    turnoverHint &&
+    (turnoverHint.classList.contains('recarga-repos-turnover--warn') ||
+      turnoverHint.classList.contains('recarga-repos-turnover--over'));
+  const html =
+    turnoverHint && turnoverHint.style.display !== 'none' && warn ? turnoverHint.innerHTML : '';
+  if (!html) {
+    slim.classList.add('setup-hidden');
+    slim.innerHTML = '';
+    slim.classList.remove('recarga-repos-turnover--warn', 'recarga-repos-turnover--over');
+    return;
+  }
+  slim.classList.remove('setup-hidden');
+  slim.innerHTML = html;
+  slim.classList.remove('recarga-repos-turnover--warn', 'recarga-repos-turnover--over');
+  if (turnoverHint.classList.contains('recarga-repos-turnover--over')) {
+    slim.classList.add('recarga-repos-turnover--over');
+  } else if (turnoverHint.classList.contains('recarga-repos-turnover--warn')) {
+    slim.classList.add('recarga-repos-turnover--warn');
+  }
 }
 
 /**
@@ -689,6 +733,16 @@ function updateRecargaConfirmUI(pct, diasTranscurridos, diasRestantes, nPlantas)
   const banner = document.getElementById('recargaUrgenteBanner');
   const snoozeHint = document.getElementById('recargaSnoozeHint');
   if (!banner || !snoozeHint) return;
+
+  const cfgConfirm = state.configTorre || {};
+  if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfgConfirm)) {
+    banner.style.display = 'none';
+    banner.textContent = '';
+    banner.classList.remove('bad');
+    snoozeHint.style.display = 'none';
+    snoozeHint.textContent = '';
+    return;
+  }
 
   const sysLbl =
     typeof etiquetaSistemaHidroponicoBreve === 'function'
@@ -1051,6 +1105,12 @@ function fmtMultRecargaVolumen(mult) {
 }
 
 function hydrateRecargaVolumenAvisoMedirUI() {
+  const cfgHydrate = state.configTorre || {};
+  const ocultarVolAvisoUi =
+    typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfgHydrate);
+  document.querySelectorAll('.recarga-collapse-wrap--vol-aviso').forEach(function (el) {
+    el.classList.toggle('setup-hidden', ocultarVolAvisoUi);
+  });
   const av =
     typeof getRecargaVolumenAvisoCfg === 'function'
       ? getRecargaVolumenAvisoCfg()
