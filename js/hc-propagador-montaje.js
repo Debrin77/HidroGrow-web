@@ -648,6 +648,16 @@
         ', quitar cúpulas al brote y aire suave. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases.'
       : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+    if (verificada) {
+      return (
+        '<div class="hc-prop-inline hc-prop-inline--premium hc-prop-inline--ok" id="hcPropagadorMontajeInline">' +
+        '<span class="hc-prop-inline-pct hc-prop-inline-pct--ok">✓ ' +
+        (esHidro ? 'Prep hidro' : 'Propagador') +
+        ' listo</span>' +
+        '<button type="button" class="btn btn-link btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">Revisar checklist</button>' +
+        '</div>'
+      );
+    }
     return (
       '<div class="hc-prop-inline hc-prop-inline--premium" id="hcPropagadorMontajeInline">' +
       '<div class="hc-prop-inline-head">' +
@@ -659,23 +669,14 @@
       '<h3 class="hc-prop-inline-title">' +
       esc(titulo) +
       '</h3>' +
-      '<span class="hc-prop-inline-pct' +
-      (verificada ? ' hc-prop-inline-pct--ok' : '') +
-      '">' +
-      (verificada ? 'Listo' : prog.done + '/' + prog.total + ' · ' + pct + '%') +
+      '<span class="hc-prop-inline-pct">' +
+      prog.done + '/' + prog.total + ' · ' + pct + '%' +
       '</span></div>' +
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
       '<p class="hc-prop-inline-lead">' + lead + '</p>' +
-      '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
-      (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
-      '</button>' +
-      (verificada &&
-      typeof hcFaltaConfigurarSalaEquipPropagador === 'function' &&
-      hcFaltaConfigurarSalaEquipPropagador(cfg)
-        ? '<button type="button" class="btn btn-secondary btn-sm hc-prop-cta-sala" style="margin-left:8px" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar equipamiento de sala</button>'
-        : '') +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">Abrir checklist de montaje</button>' +
       '</div>'
     );
   }
@@ -964,8 +965,7 @@
       (typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg)) ||
       (cam === 'semilla_hidro' &&
         typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-        hcSemillaHidroPostAsistenteUi(cfg)) ||
-      cam === 'semilla_hidro';
+        hcSemillaHidroPostAsistenteUi(cfg));
     det.classList.toggle('setup-hidden', ocultar);
     if (ocultar) det.open = false;
   }

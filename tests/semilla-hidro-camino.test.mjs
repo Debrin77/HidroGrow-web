@@ -362,6 +362,19 @@ test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna 
   assert.match(dash, /hcMedirEsSemillaHidro\(cfgConfirm\)/);
 });
 
+test('semilla_hidro: hub visible durante germ y postAsistente solo tras matriz', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(fase, /function hcSemillaHidroHubEsPrincipal/);
+  assert.match(fase, /if \(typeof hcGerminacionActiva === 'function' && hcGerminacionActiva\(cfg\)\) return false/);
+  assert.doesNotMatch(germ, /hcSemillaHidroPostAsistenteUi/);
+});
+
+test('propagador: sala reco tras germinacionConcluida', () => {
+  const luz = read('js/hc-luz-equip-sync.js');
+  assert.match(luz, /germinacionConcluida\(cfg\)/);
+});
+
 test('arranque: IIFE exportan a window (PIN y germinación)', () => {
   const germ = read('js/hc-germinacion-flow.js');
   const nut = read('js/hc-premium-nutriente-germ.js');

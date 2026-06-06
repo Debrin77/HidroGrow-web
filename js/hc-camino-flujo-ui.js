@@ -404,10 +404,12 @@
       );
     }
     if (f === 'germ_cubo') {
-      return (
-        '<strong>Germinación activa.</strong> Registro del domo en ' +
-        '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>. Medir también el cubo.'
-      );
+      var camHint = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      return camHint === 'semilla_hidro'
+        ? '<strong>Germinación en cubo.</strong> Marca fases y registro en ' +
+            '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>. Agua del cubo en Medir.'
+        : '<strong>Germinación activa.</strong> Registro del domo en ' +
+            '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>. Medir también el cubo.';
     }
     if (f === 'prep_hidro') {
       return '<strong>Prep hidro.</strong> Completa los pasos en la pestaña Sistema antes de las 6 fases en el cubo.';

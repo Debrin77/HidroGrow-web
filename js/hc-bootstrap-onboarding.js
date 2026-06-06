@@ -730,7 +730,20 @@ function actualizarPostSetupChecklistRail() {
         ids.forEach((id) => {
           if (pasos[id] && pasos[id].doneAt) done++;
         });
-        statusTxt = 'Camino: ' + done + '/6 fases · traslado: ' + (g && g.checklistTrasladoOk ? '✓' : 'pendiente');
+        if (cam === 'semilla_propagador') {
+          var diaGerm =
+            typeof diasDesdeInicioGerminacion === 'function'
+              ? diasDesdeInicioGerminacion(g, cfg) + 1
+              : done;
+          statusTxt =
+            'Germinación: día ' +
+            diaGerm +
+            (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+              ? ' · lista para hidro'
+              : '');
+        } else {
+          statusTxt = 'Camino: ' + done + '/6 fases · operativa: ' + (g && g.checklistTrasladoOk ? '✓' : 'pendiente');
+        }
       } catch (_) {}
     }
   }

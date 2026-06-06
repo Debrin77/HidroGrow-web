@@ -544,9 +544,7 @@
     );
 
     var ocultarPanelUsuario =
-      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-      hcSemillaHidroPostAsistenteUi(cfg) &&
-      (fase === 'prep_hidro' || fase === 'germ_cubo');
+      typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
 
     if (!fase || ocultarPanelUsuario) {
       panel.classList.add('setup-hidden');

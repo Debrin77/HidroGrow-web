@@ -1511,8 +1511,8 @@
     if (cam === 'semilla_propagador') return false;
     if (
       cam === 'semilla_hidro' &&
-      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-      hcSemillaHidroPostAsistenteUi(cfg)
+      ((typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)) ||
+        (typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg)))
     ) {
       return false;
     }

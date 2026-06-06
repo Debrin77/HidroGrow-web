@@ -713,6 +713,9 @@
     ) {
       return false;
     }
+    if (typeof global.germinacionConcluida === 'function' && !global.germinacionConcluida(cfg)) {
+      return false;
+    }
     if (typeof global.salaPreGermConfigurada === 'function' && global.salaPreGermConfigurada(cfg)) {
       if (typeof global.getCamposEquipamientoFaltantes === 'function') {
         var faltOk = global.getCamposEquipamientoFaltantes(cfg);
@@ -760,6 +763,9 @@
       typeof global.propagadorMontajeCompleto === 'function' &&
       !global.propagadorMontajeCompleto(cfg)
     ) {
+      return false;
+    }
+    if (typeof global.germinacionConcluida === 'function' && !global.germinacionConcluida(cfg)) {
       return false;
     }
     var paso = getSalaRecoPasoInicio(cfg);

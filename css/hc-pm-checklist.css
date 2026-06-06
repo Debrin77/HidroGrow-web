@@ -638,6 +638,14 @@ html.hc-theme-dark .hc-pm-card--germ {
   background: linear-gradient(90deg, #22c55e, #14b8a6);
   transition: width 0.35s ease;
 }
+.hc-prop-inline--ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+}
+
 .hc-prop-inline-pct--ok {
   color: #047857;
   background: rgba(34, 197, 94, 0.15);
