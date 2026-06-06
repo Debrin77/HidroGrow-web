@@ -89,7 +89,7 @@ function unlockAndInitApp() {
       const splash = document.getElementById('splashScreen');
       if (splash) splash.style.display = 'none';
     }
-    a11yDetachFocusTrap(pinEl);
+    if (typeof a11yDetachFocusTrap === 'function') a11yDetachFocusTrap(pinEl);
     if (appEl) {
       appEl.inert = false;
       appEl.removeAttribute('inert');
@@ -103,19 +103,26 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
+        var startInit = function () {
+          initApp();
+        };
+        if (typeof hcWhenAppScriptsReady === 'function') {
+          hcWhenAppScriptsReady(startInit, { timeoutMs: 90000 });
+          return;
+        }
         var intentosInit = 0;
-        var runInit = function () {
+        var pollInit = function () {
           if (typeof initApp !== 'function') {
             intentosInit++;
             if (intentosInit > 120) {
               throw new Error('initApp no está disponible (recarga con Ctrl+F5).');
             }
-            setTimeout(runInit, 50);
+            setTimeout(pollInit, 50);
             return;
           }
           initApp();
         };
-        runInit();
+        pollInit();
       } catch (eInit) {
         try {
           console.error('initApp tras PIN', eInit);
@@ -156,7 +163,7 @@ function unlockAndInitApp() {
     if (appEl) appEl.inert = true;
     if (pinEl) {
       pinEl.style.display = '';
-      a11yAttachFocusTrap(pinEl);
+      if (typeof a11yAttachFocusTrap === 'function') a11yAttachFocusTrap(pinEl);
     }
     const pinErr = document.getElementById('pinErr');
     let det = '';
@@ -186,7 +193,7 @@ function lockAppWithPin() {
   }
   if (pinEl) {
     pinEl.style.display = '';
-    a11yAttachFocusTrap(pinEl);
+    if (typeof a11yAttachFocusTrap === 'function') a11yAttachFocusTrap(pinEl);
     requestAnimationFrame(() => {
       try { pinEl.focus(); } catch (_) {}
     });

@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-05-31-boot-fix')
+      .register('service-worker.js?v=2026-05-31-boot-fast')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -128,17 +128,30 @@ function hcBindPinScreenListeners() {
 function hcRunAppBootSequence() {
   if (window._hcAppBootSequenceStarted) return;
   window._hcAppBootSequenceStarted = true;
+  if (typeof pinPress !== 'function' || typeof unlockAndInitApp !== 'function') {
+    try {
+      hideSplash();
+    } catch (_) {}
+    return;
+  }
   hcBindPinScreenListeners();
 
   (async function () {
-    scheduleHcPreinitWhilePin();
-    await waitSplashMinimumVisible();
     hideSplash();
+    if (typeof hcBootUpdatePinProgress === 'function') {
+      try {
+        hcBootUpdatePinProgress();
+      } catch (_) {}
+    }
 
     if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
 
     if (hasValidAuthSession()) {
-      unlockAndInitApp();
+      if (typeof hcWhenAppScriptsReady === 'function') {
+        hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 90000 });
+      } else {
+        unlockAndInitApp();
+      }
       return;
     }
     lockAppWithPin();
@@ -150,7 +163,11 @@ function hcRunAppBootSequence() {
       var ok = await tryBiometricUnlock();
       if (appBootstrapped) return;
       if (ok) {
-        unlockAndInitApp();
+        if (typeof hcWhenAppScriptsReady === 'function') {
+          hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 90000 });
+        } else {
+          unlockAndInitApp();
+        }
       } else {
         var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
@@ -175,6 +192,34 @@ function hcScheduleVersionCheckOnIdle() {
   } else {
     setTimeout(run, 800);
   }
+}
+
+function hcShowPinAsap() {
+  if (window._hcPinEarlyShown) return;
+  window._hcPinEarlyShown = true;
+  try {
+    hcBindPinScreenListeners();
+  } catch (_) {}
+  try {
+    hideSplash();
+  } catch (_) {}
+  if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
+  if (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress) return;
+  try {
+    if (typeof hasValidAuthSession === 'function' && hasValidAuthSession()) return;
+  } catch (_) {}
+  try {
+    if (typeof lockAppWithPin === 'function') lockAppWithPin();
+  } catch (_) {}
+  try {
+    if (typeof hcBootUpdatePinProgress === 'function') hcBootUpdatePinProgress();
+  } catch (_) {}
+}
+
+if (document.body) {
+  requestAnimationFrame(hcShowPinAsap);
+} else {
+  document.addEventListener('DOMContentLoaded', hcShowPinAsap);
 }
 
 if (document.readyState === 'loading') {
