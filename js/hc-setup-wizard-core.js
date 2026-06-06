@@ -2742,9 +2742,13 @@ function applySistemaTipoPanelesColapsablesUI() {
     syncSistemaDwcRdwcPanelIndependienteUI(cfg);
     applySistemaDwcRdwcBodyVisibilitySegunTipo(cfg);
     if (dwcRes) dwcRes.textContent = cfg.tipoInstalacion === 'rdwc' ? textoResumenSistemaRdwcPanel(cfg) : textoResumenSistemaDwcPanel(cfg);
-    const colD = cfg.uiSistemaDwcColapsado === true;
+    const colD =
+      typeof hcSistemaDwcPanelColapsado === 'function'
+        ? hcSistemaDwcPanelColapsado(cfg)
+        : cfg.uiSistemaDwcColapsado === true;
     dwcBody.hidden = colD;
     dwcBtn.setAttribute('aria-expanded', colD ? 'false' : 'true');
+    dwcBtn.classList.toggle('is-collapsed', colD);
   }
   const srfCard = document.getElementById('sistemaSrfAyudaCard');
   if (srfCard) {
@@ -2998,13 +3002,15 @@ function sincronizarSistemaNftMontajeUI() {
       ? tipoInstalacionNormalizado(cfg)
       : cfg && cfg.tipoInstalacion;
   const ocultarEcPhRdwc = tipoInst === 'rdwc';
+  const ocultarEcPhSh =
+    typeof hcSistemaOcultarEcPhStrategy === 'function' && hcSistemaOcultarEcPhStrategy(cfg);
   if (ecphCard) {
-    const mostrarEcPh = cfg && !ocultarEcPhRdwc;
+    const mostrarEcPh = cfg && !ocultarEcPhRdwc && !ocultarEcPhSh;
     ecphCard.style.display = mostrarEcPh ? 'block' : 'none';
     ecphCard.classList.toggle('setup-hidden', !mostrarEcPh);
     ecphCard.hidden = !mostrarEcPh;
   }
-  if (cfg && !ocultarEcPhRdwc) {
+  if (cfg && !ocultarEcPhRdwc && !ocultarEcPhSh) {
     try {
       syncSistemaEcPhStrategyUI();
     } catch (_) {}

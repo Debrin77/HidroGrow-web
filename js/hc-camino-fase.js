@@ -716,6 +716,21 @@
     return true;
   }
 
+  /** Sistema operativo semilla_hidro: sin panel estrategia EC/pH (recomendación automática por fase). */
+  function hcSistemaOcultarEcPhStrategy(cfg) {
+    cfg = cfg || cfgActiva();
+    return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+  }
+
+  /** Depósito DWC/RDWC en Sistema: colapsado por defecto en semilla_hidro operativa. */
+  function hcSistemaDwcPanelColapsado(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) {
+      return cfg.uiSistemaDwcColapsado !== false;
+    }
+    return cfg.uiSistemaDwcColapsado === true;
+  }
+
   /** UI de recarga completa visible al usuario (la lógica interna sigue activa en semilla_hidro). */
   function hcRecargaUiVisibleUsuario(cfg) {
     cfg = cfg || cfgActiva();
@@ -897,5 +912,7 @@
   global.hcSemillaHidroOcultarSeguimientoMedir = hcSemillaHidroOcultarSeguimientoMedir;
   global.hcMedirEsSemillaHidro = hcMedirEsSemillaHidro;
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
+  global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
+  global.hcSistemaDwcPanelColapsado = hcSistemaDwcPanelColapsado;
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

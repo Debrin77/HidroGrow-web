@@ -306,6 +306,26 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
 });
 
+test('semilla_hidro operativa: Sistema sin EC/pH y depósito colapsable', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const setup = read('js/hc-setup-wizard-core.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  assert.match(fase, /function hcSistemaOcultarEcPhStrategy/);
+  assert.match(fase, /function hcSistemaDwcPanelColapsado/);
+  assert.match(setup, /hcSistemaOcultarEcPhStrategy/);
+  assert.match(setup, /hcSistemaDwcPanelColapsado/);
+  assert.match(sis, /function applySistemaSemillaHidroOperativaChrome/);
+});
+
+test('checklist prep hidro: iconos SVG y vista net pot', () => {
+  const montaje = read('js/hc-propagador-montaje.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(montaje, /PROP_ICON_SVG/);
+  assert.match(montaje, /hc-pm-card-ico-svg/);
+  assert.match(germ, /function renderGermHidroNetPotViz/);
+  assert.match(germ, /htmlNetPotSchematicSvg/);
+});
+
 test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna activa', () => {
   const fase = read('js/hc-camino-fase.js');
   const layout = read('js/hc-medir-sala-layout.js');

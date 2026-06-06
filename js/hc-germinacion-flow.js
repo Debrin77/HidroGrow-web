@@ -1893,15 +1893,121 @@
   function htmlDomoPropagadorSvg() {
     return (
       '<div class="hc-prop-dome-viz" aria-hidden="true">' +
-      '<svg class="hc-prop-dome-svg" viewBox="0 0 220 100" xmlns="http://www.w3.org/2000/svg">' +
-      '<defs><linearGradient id="hcPropDomeGl" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="rgba(186,230,253,0.55)"/>' +
-      '<stop offset="100%" stop-color="rgba(34,197,94,0.12)"/></linearGradient></defs>' +
-      '<ellipse cx="110" cy="88" rx="92" ry="10" fill="rgba(15,23,42,0.08)"/>' +
-      '<rect x="28" y="52" width="164" height="36" rx="6" fill="#a8a29e" stroke="#78716c" stroke-width="1.2"/>' +
-      '<path d="M36 52 Q110 8 184 52 Z" fill="url(#hcPropDomeGl)" stroke="rgba(34,197,94,0.45)" stroke-width="1.5"/>' +
-      '<path d="M44 52 Q110 18 176 52" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1"/>' +
+      '<svg class="hc-prop-dome-svg" viewBox="0 0 220 96" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="110" cy="86" rx="88" ry="8" fill="currentColor" opacity="0.08"/>' +
+      '<rect x="32" y="54" width="156" height="30" rx="4" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.55"/>' +
+      '<path d="M40 54 Q110 14 180 54" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>' +
+      '<path d="M48 54 Q110 24 172 54" fill="none" stroke="currentColor" stroke-width="1" opacity="0.45"/>' +
+      '<line x1="56" y1="68" x2="164" y2="68" stroke="currentColor" stroke-width="1" opacity="0.35"/>' +
       '</svg></div>'
+    );
+  }
+
+  function htmlNetPotSchematicSvg(state) {
+    var seed = '';
+    var dome = '';
+    if (state === 'sem' || state === 'germ') {
+      seed = '<circle cx="20" cy="30" r="2.8" fill="currentColor" opacity="0.5"/>';
+    }
+    if (state === 'germ') {
+      seed +=
+        '<path d="M20 27 V20 M20 20 Q17 18 18.5 15" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>';
+    }
+    if (state === 'sem') {
+      dome =
+        '<path d="M11 17 Q20 9 29 17" fill="none" stroke="currentColor" stroke-width="1.1" opacity="0.55"/>';
+    }
+    return (
+      '<svg class="hc-germ-net-svg" viewBox="0 0 40 48" aria-hidden="true" focusable="false">' +
+      '<ellipse cx="20" cy="44" rx="13" ry="2.5" fill="currentColor" opacity="0.1"/>' +
+      '<path d="M13 18 L13 40 Q13 43 20 43 Q27 43 27 40 L27 18" fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+      '<path d="M15 18 L25 18 L27 22 L11 22 Z" fill="none" stroke="currentColor" stroke-width="1.2"/>' +
+      '<line x1="15" y1="22" x2="15" y2="40" stroke="currentColor" stroke-width="0.75" opacity="0.35"/>' +
+      '<line x1="25" y1="22" x2="25" y2="40" stroke="currentColor" stroke-width="0.75" opacity="0.35"/>' +
+      dome +
+      seed +
+      '</svg>'
+    );
+  }
+
+  /** Vista técnica de cubos/net pots (semilla_hidro), no bandeja propagador. */
+  function renderGermHidroNetPotViz(g, cfgOrOpts, optsIn) {
+    var cfg =
+      cfgOrOpts && (cfgOrOpts.premiumSetup || cfgOrOpts.germinacionFlow || cfgOrOpts.equipamientoInstalado)
+        ? cfgOrOpts
+        : cfgActiva();
+    var opts = optsIn || (cfgOrOpts && cfgOrOpts.idPrefix ? cfgOrOpts : {});
+    var enSistema = !!opts.sistemaPanel || String(opts.idPrefix || '').indexOf('hcSis') === 0;
+    var geom =
+      typeof hcGeomTorreFilasCestas === 'function'
+        ? hcGeomTorreFilasCestas(cfg)
+        : { filas: 1, cestas: 1, label: '1×1' };
+    var filas = Math.max(1, parseInt(String(geom.filas || 1), 10) || 1);
+    var cols = Math.max(1, parseInt(String(geom.cestas || 1), 10) || 1);
+    var total = filas * cols;
+    var planN =
+      cfg.premiumSetup && Number.isFinite(cfg.premiumSetup.numSemillasGerm)
+        ? Math.round(cfg.premiumSetup.numSemillasGerm)
+        : 0;
+    var activas = Math.min(total, Math.max(0, Math.round(Number(g.numSemillas) || planN || total)));
+    var subKey = sustratoGermKey(cfg, g);
+    var subLbl = etiquetaSustratoGermLocal(subKey);
+    var germinadas = 0;
+    var pasoIdx = indiceFaseActual(g);
+    if (pasoIdx >= 1) {
+      germinadas = Math.min(activas, Math.max(1, Math.round(activas * (pasoIdx / PASOS.length))));
+    }
+    var cells = '';
+    for (var i = 0; i < total; i++) {
+      var cls = 'hc-germ-net-cell';
+      var svgState = 'empty';
+      if (i < activas) {
+        cls += ' hc-germ-net-cell--active';
+        if (i < germinadas) {
+          cls += ' hc-germ-net-cell--germ';
+          svgState = 'germ';
+        } else {
+          cls += ' hc-germ-net-cell--sem';
+          svgState = 'sem';
+        }
+      } else {
+        cls += ' hc-germ-net-cell--empty';
+      }
+      cells +=
+        '<div class="' +
+        cls +
+        '" title="Cesta ' +
+        (i + 1) +
+        ' · ' +
+        (svgState === 'empty' ? 'vacía' : subLbl) +
+        '">' +
+        htmlNetPotSchematicSvg(svgState) +
+        '<span class="hc-germ-net-label">' +
+        (i + 1) +
+        '</span></div>';
+    }
+    return (
+      '<div class="hc-germ-netpot-block' +
+      (enSistema ? ' hc-germ-netpot-block--sistema' : '') +
+      '">' +
+      '<h4 class="hc-germ-block-lbl">Cubos · ' +
+      esc(geom.label || filas + '×' + cols) +
+      '</h4>' +
+      '<div class="hc-germ-netpot-legend">' +
+      '<span><i class="hc-germ-net-dot hc-germ-net-dot--sem"></i> Semilla</span>' +
+      '<span><i class="hc-germ-net-dot hc-germ-net-dot--germ"></i> Germinando</span>' +
+      '<span><i class="hc-germ-net-dot hc-germ-net-dot--empty"></i> Vacía</span></div>' +
+      '<div class="hc-germ-netpot-grid" style="--hc-net-cols:' +
+      cols +
+      '" role="img" aria-label="' +
+      filas +
+      ' filas por ' +
+      cols +
+      ' cestas, ' +
+      activas +
+      ' con semilla">' +
+      cells +
+      '</div></div>'
     );
   }
 
@@ -2481,4 +2587,5 @@
   global.diasObjetivoConclusionGerm = diasObjetivoConclusionGerm;
   global.hcGerminacionMarcarConcluida = hcGerminacionMarcarConcluida;
   global.renderGermTrayViz = renderGermTrayViz;
+  global.renderGermHidroNetPotViz = renderGermHidroNetPotViz;
 })();

@@ -303,7 +303,11 @@
 
     if (fase === 'germ_cubo') {
       var tray2 =
-        typeof renderGermTrayViz === 'function' ? renderGermTrayViz(g) : '';
+        typeof renderGermHidroNetPotViz === 'function'
+          ? renderGermHidroNetPotViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true })
+          : typeof renderGermTrayViz === 'function'
+            ? renderGermTrayViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true, sinDomo: true })
+            : '';
       var fasesN =
         typeof contarFasesGermHechas === 'function' ? contarFasesGermHechas(cfg) : 0;
       return (
@@ -455,7 +459,27 @@
           sincronizarSistemaNftMontajeUI();
         }
       } catch (_) {}
+      try {
+        applySistemaSemillaHidroOperativaChrome(cfg || cfgActiva());
+      } catch (_) {}
     }
+  }
+
+  function applySistemaSemillaHidroOperativaChrome(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof hcMedirEsSemillaHidro !== 'function' || !hcMedirEsSemillaHidro(cfg)) return;
+    var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
+    if (ecphCard) {
+      ecphCard.style.display = 'none';
+      ecphCard.hidden = true;
+      ecphCard.classList.add('setup-hidden');
+      ecphCard.setAttribute('aria-hidden', 'true');
+    }
+    try {
+      if (typeof applySistemaTipoPanelesColapsablesUI === 'function') {
+        applySistemaTipoPanelesColapsablesUI();
+      }
+    } catch (_) {}
   }
 
   function refreshTorreExtrasCaminoUi(cfg) {
@@ -519,6 +543,11 @@
       panel.classList.add('setup-hidden');
       panel.innerHTML = '';
       toggleTorreChrome(false, cfg, null);
+      try {
+        if (typeof applySistemaSemillaHidroOperativaChrome === 'function') {
+          applySistemaSemillaHidroOperativaChrome(cfg);
+        }
+      } catch (_) {}
       if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
       refreshTorreExtrasCaminoUi(cfg);
       try {
@@ -549,6 +578,7 @@
   }
 
   global.hcRefreshSistemaFasePanel = hcRefreshSistemaFasePanel;
+  global.applySistemaSemillaHidroOperativaChrome = applySistemaSemillaHidroOperativaChrome;
   global.refreshTorreExtrasCaminoUi = refreshTorreExtrasCaminoUi;
   global.hcRefreshSistemaPropagadorPanel = hcRefreshSistemaFasePanel;
 })(typeof window !== 'undefined' ? window : globalThis);
