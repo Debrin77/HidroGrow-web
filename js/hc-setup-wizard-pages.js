@@ -246,29 +246,6 @@ function hcScrollSetupWizardAlFalloGuardado() {
   } catch (_) {}
 }
 
-function hcWhenSetupWizardCoreReady(cb) {
-  if (typeof cb !== 'function') return;
-  if (typeof guardarSetupYContinuar === 'function' && typeof setupFlowAdvancePage === 'function') {
-    try {
-      cb();
-    } catch (_) {}
-    return;
-  }
-  var n = 0;
-  var t = setInterval(function () {
-    if (
-      (typeof guardarSetupYContinuar === 'function' &&
-        typeof setupFlowAdvancePage === 'function') ||
-      ++n > 150
-    ) {
-      clearInterval(t);
-      try {
-        cb();
-      } catch (_) {}
-    }
-  }, 40);
-}
-
 function setupNext() {
   try {
     return setupNextCore();
@@ -296,11 +273,6 @@ function setupNextCore() {
     if (typeof showToast === 'function') {
       showToast('Preparando asistente… espera un momento y pulsa otra vez', true, { durationMs: 4200 });
     }
-    hcWhenSetupWizardCoreReady(function () {
-      try {
-        setupNextCore();
-      } catch (_) {}
-    });
     return false;
   }
   if (setupPagina === SETUP_PAGE_WELCOME) {

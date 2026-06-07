@@ -316,6 +316,8 @@ function hcFinishInitAppHeavyWork() {
 
 function initApp() {
   try {
+    const appElBoot = document.getElementById('app');
+    if (appElBoot) appElBoot.classList.remove('hc-app-booting');
     try {
       if (typeof hcScrollAppToTop === 'function') hcScrollAppToTop();
     } catch (_) {}
