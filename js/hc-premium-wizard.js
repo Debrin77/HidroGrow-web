@@ -784,13 +784,25 @@
       setupData.consejosModoUi = p.consejosModoUi;
     }
     if (opts.lite) {
+      var pagLite =
+        opts.pagina != null
+          ? opts.pagina
+          : typeof setupPagina !== 'undefined'
+            ? setupPagina
+            : null;
       if (el('setupPremiumNumSemillasGerm') && typeof persistPremiumGermPlanFromUI === 'function') {
         persistPremiumGermPlanFromUI(true);
       }
-      if (typeof persistVariedadGermFromUI === 'function') {
+      if (
+        pagLite !== SETUP_PAGE_ORIGEN &&
+        typeof persistVariedadGermFromUI === 'function'
+      ) {
         persistVariedadGermFromUI();
       }
-      if (typeof persistPremiumNutrienteGermFromUI === 'function') {
+      if (
+        pagLite !== SETUP_PAGE_ORIGEN &&
+        typeof persistPremiumNutrienteGermFromUI === 'function'
+      ) {
         persistPremiumNutrienteGermFromUI();
       }
       return;
@@ -1033,11 +1045,17 @@
       (propagadorGerm &&
         typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' &&
         pagina === SETUP_PAGE_PREMIUM_4);
-    persistPremiumSetupFromUI({ lite: lite });
+    persistPremiumSetupFromUI({ lite: lite, pagina: pagina });
     if (pagina === SETUP_PAGE_ORIGEN) {
       const cam =
-        typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
-      if (!cam || typeof getCaminoDef !== 'function' || !getCaminoDef(cam)) {
+        typeof getCaminoElegidoEnAsistente === 'function'
+          ? getCaminoElegidoEnAsistente()
+          : typeof getCaminoCultivo === 'function'
+            ? getCaminoCultivo()
+            : '';
+      const def =
+        cam && typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
+      if (!cam || !def || def.id !== cam) {
         if (typeof showToast === 'function') showToast('Elige una de las cuatro rutas de cultivo', true);
         return false;
       }

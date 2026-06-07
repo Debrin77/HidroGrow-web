@@ -69,10 +69,27 @@
   function ensurePremiumCamino() {
     if (typeof ensurePremiumSetup !== 'function') return null;
     var p = ensurePremiumSetup();
-    if (!p.caminoCultivo) {
+    var esNueva =
+      typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre;
+    if (!p.caminoCultivo && !esNueva) {
       p.caminoCultivo = inferCaminoFromOrigen(p.origenPlanta || 'semilla', p.germinacionModoPreferido);
     }
     return p;
+  }
+
+  /** Camino elegido en el asistente (borrador setupData.premium). */
+  function getCaminoElegidoEnAsistente() {
+    try {
+      if (typeof setupData !== 'undefined' && setupData.premium) {
+        var direct = String(setupData.premium.caminoCultivo || '').trim();
+        if (direct && CAMINOS[direct]) return direct;
+      }
+    } catch (_) {}
+    if (typeof getCaminoCultivo === 'function') {
+      var g = String(getCaminoCultivo() || '').trim();
+      if (g && CAMINOS[g]) return g;
+    }
+    return '';
   }
 
   function inferCaminoFromOrigen(origen, modoPref) {
@@ -132,6 +149,15 @@
     if (typeof hcResetPremiumGermPlanBorrador === 'function') {
       hcResetPremiumGermPlanBorrador(p);
     }
+    try {
+      if (typeof state !== 'undefined' && state && state.configTorre) {
+        state.configTorre.caminoCultivo = '';
+        if (state.configTorre.premiumSetup && typeof state.configTorre.premiumSetup === 'object') {
+          state.configTorre.premiumSetup.caminoCultivo = '';
+          state.configTorre.premiumSetup.germinacionModoPreferido = '';
+        }
+      }
+    } catch (_) {}
   }
 
   function asistenteSetupActivo() {
@@ -205,26 +231,24 @@
   }
 
   function seleccionarCaminoCultivo(caminoId) {
-    var def = getCaminoDef(caminoId);
-    if (!def) return;
-    if (typeof setupData === 'undefined' || typeof ensurePremiumSetup !== 'function') {
-      try {
+    try {
+      var id = String(caminoId || '').trim();
+      if (!id || !CAMINOS[id]) return;
+      var def = CAMINOS[id];
+      if (typeof ensurePremiumSetup !== 'function' || typeof setupData === 'undefined') {
         if (typeof showToast === 'function') {
           showToast('Cargando asistente… espera un momento y vuelve a pulsar', true);
         }
-      } catch (_) {}
-      return;
-    }
-    var p = ensurePremiumCamino();
-    if (!p || p !== setupData.premium) {
-      try {
+        return;
+      }
+      var p = ensurePremiumSetup();
+      if (!p || !setupData.premium) {
         if (typeof showToast === 'function') {
           showToast('Cargando asistente… espera un momento y vuelve a pulsar', true);
         }
-      } catch (_) {}
-      return;
-    }
-    p.caminoCultivo = def.id;
+        return;
+      }
+      p.caminoCultivo = def.id;
     p.origenPlanta = def.origenPlanta;
     p.germinacionModoPreferido = def.germModo || '';
     p.climaManual = false;
@@ -281,6 +305,14 @@
     if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
     if (typeof refreshSetupCaminoStepBanner === 'function' && typeof setupPagina !== 'undefined') {
       refreshSetupCaminoStepBanner(setupPagina);
+    }
+    } catch (err) {
+      try {
+        console.error('seleccionarCaminoCultivo', err);
+      } catch (_) {}
+      if (typeof showToast === 'function') {
+        showToast('No se pudo guardar la ruta. Recarga la página e inténtalo de nuevo.', true);
+      }
     }
   }
 
@@ -1666,6 +1698,7 @@
   global.HC_CAMINOS_CULTIVO = CAMINOS;
   global.ensurePremiumCamino = ensurePremiumCamino;
   global.getCaminoCultivo = getCaminoCultivo;
+  global.getCaminoElegidoEnAsistente = getCaminoElegidoEnAsistente;
   global.getCaminoDef = getCaminoDef;
   global.seleccionarCaminoCultivo = seleccionarCaminoCultivo;
   global.refreshCaminoCultivoUI = refreshCaminoCultivoUI;
