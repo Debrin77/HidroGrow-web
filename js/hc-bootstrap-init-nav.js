@@ -9,6 +9,7 @@ function hcResetSessionUiFlags() {
   try {
     if (typeof window === 'undefined') return;
     if (typeof hcInvalidateTabDomCache === 'function') hcInvalidateTabDomCache();
+    if (typeof hcInvalidateTabHeavyCache === 'function') hcInvalidateTabHeavyCache();
     window._hcMedirSalaLayoutDone = false;
     window._hcMedirSalaLayoutScheduled = false;
     window._hcPreinitTorreDone = false;
@@ -668,10 +669,19 @@ var _hcTabBtnsCache = null;
 var _hcGoTabWorkGen = 0;
 var _hcTabPersistTimer = null;
 var _hcTabHeavyLast = {};
+var HC_TAB_HEAVY_COOLDOWN_MS = 2800;
 
 function hcInvalidateTabDomCache() {
   _hcTabPanelsCache = null;
   _hcTabBtnsCache = null;
+}
+
+function hcInvalidateTabHeavyCache(tab) {
+  if (tab) {
+    delete _hcTabHeavyLast[tab];
+    return;
+  }
+  _hcTabHeavyLast = {};
 }
 
 function hcTabLeavingNeedsPersist(tab) {
@@ -718,6 +728,20 @@ function goTabDeferredWorkLite(tab) {
 
 function goTabDeferredWorkHeavy(tab, gen) {
   if (gen !== _hcGoTabWorkGen) return;
+  var nowHeavy = Date.now();
+  var lastHeavy = _hcTabHeavyLast[tab] || 0;
+  var skipHeavy = nowHeavy - lastHeavy < HC_TAB_HEAVY_COOLDOWN_MS;
+  if (skipHeavy) {
+    if (tab === 'inicio' && typeof updateDashboard === 'function') {
+      try {
+        updateDashboard({ lite: true });
+      } catch (_) {}
+    }
+    try {
+      if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
+    } catch (_) {}
+    return;
+  }
   if (
     (tab === 'mediciones' || tab === 'sala') &&
     typeof hcInitMedirSalaLayout === 'function' &&
@@ -752,7 +776,18 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio' && typeof updateDashboard === 'function') {
-    updateDashboard();
+    updateDashboard({ lite: true });
+    var runDashTab = function () {
+      if (gen !== _hcGoTabWorkGen) return;
+      try {
+        updateDashboard();
+      } catch (_) {}
+    };
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(runDashTab, { timeout: 700 });
+    } else {
+      setTimeout(runDashTab, 48);
+    }
   }
   if (tab === 'meteo') {
     try {
@@ -853,7 +888,11 @@ function goTabDeferredWork(tab) {
   var runHeavy = function () {
     goTabDeferredWorkHeavy(tab, gen);
   };
-  requestAnimationFrame(runHeavy);
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(runHeavy, { timeout: 160 });
+  } else {
+    requestAnimationFrame(runHeavy);
+  }
 }
 
 function goTab(tab) {

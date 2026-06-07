@@ -587,6 +587,9 @@ var _hcCambiarTorreGen = 0;
 function hcRefrescarUiTrasCambioTorre(tab) {
   tab = tab || (typeof currentTab !== 'undefined' ? currentTab : 'inicio');
   try {
+    if (typeof hcInvalidateTabHeavyCache === 'function') hcInvalidateTabHeavyCache();
+  } catch (_) {}
+  try {
     if (typeof hcSincronizarUiInstalacionActiva === 'function') {
       hcSincronizarUiInstalacionActiva({ soloVisibilidad: tab !== 'inicio' });
     }

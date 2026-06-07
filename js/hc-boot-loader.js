@@ -141,8 +141,8 @@
 
   async function loadQueue(queue) {
     var mobile = hcBootIsMobile();
-    var batchSize = mobile ? 2 : 4;
-    var yieldMs = mobile ? 24 : 8;
+    var batchSize = mobile ? 1 : 4;
+    var yieldMs = mobile ? 40 : 8;
 
     for (var i = 0; i < queue.length; i += batchSize) {
       var slice = queue.slice(i, i + batchSize);
@@ -178,17 +178,25 @@
     criticalDone = true;
     hcBootUpdatePinProgress();
 
-    if (!hcBootIsMobile() && q.deferred.length) {
-      await loadQueue(q.deferred);
-    }
-
-    loading = false;
-    if (!q.deferred.length || !hcBootIsMobile()) {
+    if (q.deferred.length) {
+      if (hcBootIsMobile()) {
+        /* Adelantar diferidos mientras el usuario ve el PIN (no bloquear pestañas tras desbloqueo). */
+        hcBootStartDeferredPhase();
+      } else {
+        await loadQueue(q.deferred);
+        global._hcBootLoadDone = true;
+        try {
+          global.dispatchEvent(new Event('hcBootScriptsLoaded'));
+        } catch (_) {}
+      }
+    } else {
       global._hcBootLoadDone = true;
       try {
         global.dispatchEvent(new Event('hcBootScriptsLoaded'));
       } catch (_) {}
     }
+
+    loading = false;
   }
 
   function hcBootStartDeferredPhase() {
