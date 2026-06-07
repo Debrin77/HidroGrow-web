@@ -30,11 +30,10 @@ function hcFinishResetHeavyWork() {
     }
     if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     if (typeof refreshTabsOperativaCamino === 'function') {
-      refreshTabsOperativaCamino({ full: true, inmediato: true });
+      refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
     }
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof updateDashboard === 'function') updateDashboard();
-    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   } catch (e) {
     try {
@@ -194,17 +193,13 @@ function hcFinishInitAppHeavyWork() {
       setupAbierto = !!(so && so.classList.contains('open'));
     } catch (_) {}
     if (!setupAbierto && tab === 'inicio' && typeof updateDashboard === 'function') {
-      updateDashboard({ lite: true });
-      var runDashFull = function () {
+      try {
+        updateDashboard();
+      } catch (eFull) {
         try {
-          updateDashboard();
-        } catch (eFull) {
-          try {
-            console.error('dashboard completo en initApp', eFull);
-          } catch (_) {}
-        }
-      };
-      setTimeout(runDashFull, 16);
+          console.error('dashboard en initApp', eFull);
+        } catch (_) {}
+      }
     } else if (!setupAbierto && typeof goTabDeferredWork === 'function') {
       goTabDeferredWork(tab);
     }
@@ -239,9 +234,11 @@ function hcFinishInitAppHeavyWork() {
       if (typeof refreshTabsOperativaCamino === 'function') {
         refreshTabsOperativaCamino();
       }
-      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-      if (!setupAbiertoIdle && typeof refreshDashGerminacionHub === 'function') {
-        refreshDashGerminacionHub();
+      if (tab !== 'inicio') {
+        if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+        if (!setupAbiertoIdle && typeof refreshDashGerminacionHub === 'function') {
+          refreshDashGerminacionHub();
+        }
       }
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
       if (typeof refreshDashNotificacionesUI === 'function') refreshDashNotificacionesUI();
@@ -812,12 +809,11 @@ function goTabDeferredWorkHeavy(tab, gen) {
   }
   if (
     (tab === 'mediciones' || tab === 'sala') &&
-    typeof hcInitMedirSalaLayout === 'function' &&
+    typeof scheduleInitMedirSalaLayout === 'function' &&
     !window._hcMedirSalaLayoutDone
   ) {
-    window._hcMedirSalaLayoutDone = true;
     try {
-      hcInitMedirSalaLayout();
+      scheduleInitMedirSalaLayout();
     } catch (_) {}
   }
   if (tab === 'mediciones') {
@@ -849,18 +845,16 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio' && typeof updateDashboard === 'function') {
-    try {
-      updateDashboard({ lite: true });
-    } catch (_) {}
     var dashStale = Date.now() - _hcDashTabFullLast > HC_DASH_TAB_FULL_COOLDOWN_MS;
     if (dashStale) {
-      setTimeout(function () {
-        if (gen !== _hcGoTabWorkGen) return;
-        try {
-          updateDashboard();
-          _hcDashTabFullLast = Date.now();
-        } catch (_) {}
-      }, 16);
+      try {
+        updateDashboard();
+        _hcDashTabFullLast = Date.now();
+      } catch (_) {}
+    } else {
+      try {
+        updateDashboard({ lite: true });
+      } catch (_) {}
     }
   }
   if (tab === 'meteo') {
@@ -971,11 +965,6 @@ function goTabDeferredWorkHeavy(tab, gen) {
   }
   try {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
-  } catch (_) {}
-  try {
-    if (typeof refreshTabsOperativaUi === 'function') {
-      refreshTabsOperativaUi();
-    }
   } catch (_) {}
   _hcTabHeavyLast[tab] = Date.now();
 }

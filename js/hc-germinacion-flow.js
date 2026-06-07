@@ -1638,7 +1638,23 @@
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcGerminacionAbrirChecklistTraslado===\'function\'&&hcGerminacionAbrirChecklistTraslado()">Abrir checklist</button></div>';
     }
 
-    hub.innerHTML =
+    var germHubFp = [
+      camGermHub,
+      idx,
+      paso.id,
+      pct,
+      pctRingLbl,
+      modo,
+      allDone ? 1 : 0,
+      nSemHub,
+      cultNombre,
+      faseGermHub,
+      domo.temp,
+      domo.hr,
+      (propInline || '').length,
+      (salaCtaHtml || '').length,
+    ].join('|');
+    var germHubHtml =
       '<div class="hc-germ-hub-card">' +
       (propInline || '') +
       salaCtaHtml +
@@ -1865,6 +1881,10 @@
             '</p></div>'
           : '') +
       '</div>';
+    if (hub.dataset.hcGermHubFp !== germHubFp || hub.innerHTML !== germHubHtml) {
+      hub.innerHTML = germHubHtml;
+      hub.dataset.hcGermHubFp = germHubFp;
+    }
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     } catch (_) {}
@@ -1872,8 +1892,11 @@
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}
     try {
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
-      else if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
+      if (typeof refreshTabsOperativaCaminoForTab === 'function') {
+        refreshTabsOperativaCaminoForTab('inicio');
+      } else if (typeof aplicarVisibilidadTabsCamino === 'function') {
+        aplicarVisibilidadTabsCamino(cfg);
+      }
     } catch (_) {}
     if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);
     if (typeof hcRefreshGerminacionMedEvaluacion === 'function') hcRefreshGerminacionMedEvaluacion(cfg);

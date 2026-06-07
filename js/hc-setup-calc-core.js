@@ -2590,8 +2590,9 @@ function guardarSetupYContinuarCore() {
       if (typeof renderConsejos === 'function') renderConsejos();
     } catch (_) {}
     try {
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
-      else renderTorre();
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
+      } else renderTorre();
     } catch (eRenderTorre) {
       try {
         console.error('renderTorre (post-guardado asistente)', eRenderTorre);
@@ -2696,7 +2697,9 @@ function guardarSetupYContinuarCore() {
       if (typeof renderSalaPropagadorFlujoGuiado === 'function') renderSalaPropagadorFlujoGuiado();
       if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
+      }
       if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
       if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
       if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();

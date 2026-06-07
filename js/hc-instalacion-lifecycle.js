@@ -761,9 +761,15 @@
     try {
       germAct = typeof hcGerminacionActiva === 'function' && hcGerminacionActiva();
     } catch (_) {}
-    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
-    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
+    var inicioActivo =
+      document.getElementById('tab-inicio') &&
+      document.getElementById('tab-inicio').classList.contains('active');
+    if (inicioActivo && typeof refreshDashGerminacionHub === 'function') {
+      refreshDashGerminacionHub();
+    }
+    if (inicioActivo && typeof refreshDashSalaEquipRecoBanner === 'function') {
+      refreshDashSalaEquipRecoBanner();
+    }
     var rutina = document.getElementById('dashRutinaDia');
     var pctEl = document.getElementById('dashInstLifecyclePct');
     var trackEl = document.getElementById('dashInstLifecycleTrack');
@@ -807,8 +813,17 @@
 
     refreshLegacyInstalacionBanner(lc);
 
+    var germHub = document.getElementById('dashGerminacionHub');
+    var germHubVisible =
+      germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
+    if (box && germHubVisible) {
+      box.classList.add('setup-hidden');
+    }
+
     if (rutina) {
-      var showRut = lc.operativaDiaria;
+      var opHub = document.getElementById('dashOperativaHub');
+      var opHubVisible = opHub && !opHub.classList.contains('setup-hidden');
+      var showRut = lc.operativaDiaria && !germHubVisible && !opHubVisible;
       rutina.classList.toggle('setup-hidden', !showRut);
       if (showRut) {
         var badge = document.getElementById('dashRutinaTareasBadge');
@@ -834,10 +849,13 @@
     }
 
     try {
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+    } catch (_) {}
+    try {
       if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
     } catch (_) {}
     try {
-      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+      if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
     } catch (_) {}
   }
 
@@ -1007,7 +1025,9 @@
             if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
           } catch (_) {}
           try {
-            if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
+            if (typeof refreshTabsOperativaCamino === 'function') {
+              refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
+            }
           } catch (_) {}
           if (propagadorTrasSetup && !checklistYaAbierto) {
             try {

@@ -171,43 +171,7 @@
     }
 
     if (hub) {
-      hub.classList.toggle('setup-hidden', !operativa || ocultarSeguimientoMedir);
-      if (operativa) {
-        var sub = document.getElementById('medirOpHubSub');
-        var rangos = document.getElementById('medirOpHubRangos');
-        var badge = document.getElementById('medirOpHubTareasBadge');
-        var nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
-        if (sub) {
-          sub.textContent =
-            'EC, pH, temperatura y volumen según tu ' +
-            (nut ? nut.nombre : 'nutriente') +
-            ' configurado.';
-        }
-        if (rangos) rangos.innerHTML = buildRangosHtml(cfg);
-        try {
-          if (typeof getEstadoControlSistema === 'function') {
-            var est = getEstadoControlSistema();
-            if (est && est.resumen && badge) {
-              var tot = est.resumen.diarioTotal + est.resumen.semanalTotal;
-              var ok = est.resumen.diarioOk + est.resumen.semanalOk;
-              badge.textContent = ok + '/' + tot;
-              badge.classList.toggle('medir-tareas-badge--ok', tot > 0 && ok >= tot);
-              badge.classList.toggle('medir-tareas-badge--pend', tot > 0 && ok < tot);
-            }
-          }
-        } catch (_) {}
-        var iotEl = document.getElementById('medirOpHubIot');
-        if (iotEl) {
-          var iotTxt = 'Manual';
-          try {
-            if (typeof hcIotGetCalendarContext === 'function') {
-              var iot = hcIotGetCalendarContext();
-              if (iot && iot.linked) iotTxt = 'Gateway IoT vinculado';
-            }
-          } catch (_) {}
-          iotEl.textContent = iotTxt;
-        }
-      }
+      hub.classList.add('setup-hidden');
     }
 
     var ambImport = document.getElementById('medirAmbienteImportanteBanner');
@@ -229,12 +193,7 @@
     }
 
     if (pmCard) {
-      var ocultarPm =
-        operativa ||
-        lc.fase === 'sin_config' ||
-        ocultarSeguimientoMedir ||
-        (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg));
-      pmCard.classList.toggle('setup-hidden', !!ocultarPm);
+      pmCard.classList.add('setup-hidden');
     }
 
     if (monitorCard) {

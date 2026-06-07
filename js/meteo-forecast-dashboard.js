@@ -58,12 +58,11 @@ function updateDashboard(opts) {
   }
 
   if (opts.lite) {
-    try {
-      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-    } catch (_) {}
-    try {
-      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-    } catch (_) {}
+    if (!opts.skipLifecycle) {
+      try {
+        if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+      } catch (_) {}
+    }
     try {
       if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     } catch (_) {}
@@ -117,24 +116,6 @@ function updateDashboard(opts) {
     if (typeof refreshTabsOperativaUi === 'function') {
       refreshTabsOperativaUi();
     }
-  } catch (_) {}
-
-  try {
-    if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-  } catch (_) {}
-
-  try {
-    if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
-  } catch (_) {}
-
-  try {
-    if (typeof refreshDashSalaEquipRecoBanner === 'function') {
-      refreshDashSalaEquipRecoBanner(cfgDash);
-    }
-  } catch (_) {}
-
-  try {
-    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
   } catch (_) {}
 
 }

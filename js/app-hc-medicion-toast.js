@@ -348,7 +348,7 @@ async function guardarMedicion(payloadOverride) {
     if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
     if (typeof refreshMonitorLive === 'function') refreshMonitorLive();
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-    if (typeof updateDashboard === 'function') updateDashboard();
+    if (typeof updateDashboard === 'function') updateDashboard({ lite: true, skipLifecycle: true });
     if (typeof updateRecargaBar === 'function') updateRecargaBar();
     if (vol && typeof actualizarBadgesNutriente === 'function') actualizarBadgesNutriente();
     if (vol) {

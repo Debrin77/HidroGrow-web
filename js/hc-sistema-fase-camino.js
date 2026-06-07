@@ -229,10 +229,6 @@
           '<strong>Siguiente:</strong> asistente DWC/RDWC para el traslado.' +
           '<button type="button" class="btn btn-primary btn-sm" style="margin-left:8px" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar</button></div>';
       }
-      var tray =
-        typeof renderGermTrayViz === 'function'
-          ? renderGermTrayViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true, sinDomo: true })
-          : '';
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -240,7 +236,7 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">Esquema del <strong>domo y bandeja</strong> arriba (SVG). Ajusta semillas aquí; el color de cada alvéolo es tu <strong>sustrato</strong>.</p>' +
+        '<p class="hc-sis-prop-lead">El esquema del <strong>domo</strong> está arriba (SVG). Aquí: genética, semillas y nutrientes de la bandeja.</p>' +
         aviso +
         '<div class="hc-sis-prop-grid">' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Genética</span><strong>' +
@@ -255,7 +251,6 @@
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Día</span><strong>' +
         esc(String(diaN)) +
         '</strong></div></div>' +
-        tray +
         '<div class="hc-sis-prop-nut"><h3 class="hc-sis-prop-subtitle">Nutrientes en agua</h3>' +
         htmlNutrientesGerm(g, 'propagador') +
         '</div>' +
@@ -581,11 +576,13 @@
     panel.classList.remove('setup-hidden');
     panel.hidden = false;
     panel.style.display = '';
-    panel.innerHTML = buildPanelHtml(cfg, fase);
-    toggleTorreChrome(true, cfg, fase);
-    if (fase === 'propagador' && typeof hcRenderPropagadorSvg === 'function') {
-      hcRenderPropagadorSvg(cfg);
+    var panelHtml = buildPanelHtml(cfg, fase);
+    var panelFp = fase + '|' + (cfg.id || '') + '|' + panelHtml.length;
+    if (panel.dataset.hcSisFaseFp !== panelFp) {
+      panel.innerHTML = panelHtml;
+      panel.dataset.hcSisFaseFp = panelFp;
     }
+    toggleTorreChrome(true, cfg, fase);
     try {
       if (typeof renderTorreInstalacionPicker === 'function') renderTorreInstalacionPicker();
     } catch (_) {}

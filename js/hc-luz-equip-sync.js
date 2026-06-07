@@ -779,6 +779,16 @@
   function renderDashSalaEquipRecoBanner(cfg) {
     var host = el('dashSalaEquipReco');
     if (!host) return;
+    var germHub = el('dashGerminacionHub');
+    if (
+      germHub &&
+      !germHub.classList.contains('setup-hidden') &&
+      (germHub.querySelector('.hc-germ-sala-cta') || germHub.innerHTML.indexOf('hc-germ-sala-cta') >= 0)
+    ) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
     var show = hcMostrarRecoEquipSalaInicio(cfg);
     host.classList.toggle('setup-hidden', !show);
     if (!show) {

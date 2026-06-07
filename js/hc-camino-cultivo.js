@@ -1655,6 +1655,16 @@
     var host = document.getElementById('dashCaminoResumen');
     if (!host) return;
     var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    var germHub = document.getElementById('dashGerminacionHub');
+    var germHubVisible =
+      germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
+    var lcBox = document.getElementById('dashInstalacionLifecycle');
+    var lcVisible = lcBox && !lcBox.classList.contains('setup-hidden');
+    if (germHubVisible || lcVisible) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
     if (!caminoResumenDebeMostrarse(cfg)) {
       host.classList.add('setup-hidden');
       host.innerHTML = '';

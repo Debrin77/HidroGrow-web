@@ -995,12 +995,24 @@ function updateTorreStats() {
   renderTablaVariedades();
   const locStr = textoLocalidadMeteoCfg(cfg);
   const locCard = document.getElementById('torreNombreCardLocalidad');
+  const meteoEnMeteoTab =
+    typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+    hcSalaOcultarPanelesDuplicadosMedir(cfg);
   if (locCard) {
-    locCard.textContent = locStr ? '📍 ' + locStr : '📍 Sin municipio — configúralo en Medir';
+    locCard.textContent = locStr
+      ? '📍 ' + locStr
+      : meteoEnMeteoTab
+        ? '📍 Sin municipio — configúralo en Meteo'
+        : '📍 Sin municipio — configúralo en Medir o Sala';
     locCard.classList.toggle('torre-nombre-localidad-line--vacío', !locStr);
   }
   const locBtn = document.getElementById('torreBtnIrMedirMunicipio');
-  if (locBtn) locBtn.classList.toggle('setup-hidden', !!locStr);
+  if (locBtn) {
+    locBtn.classList.toggle('setup-hidden', !!locStr);
+    if (!locStr) {
+      locBtn.textContent = meteoEnMeteoTab ? 'Ir a Meteo — municipio' : 'Ir a Sala — municipio (clima)';
+    }
+  }
 
   // Info depósito (oculto en camino propagador hasta cerrar hidro)
   const depEl = document.getElementById('depositoTitulo');

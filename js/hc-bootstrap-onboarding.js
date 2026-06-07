@@ -627,6 +627,15 @@ function ensurePostSetupChecklistRail() {
 
 function actualizarPostSetupChecklistRail() {
   const el = document.getElementById('hcPostSetupChecklistRail');
+  const germHub = document.getElementById('dashGerminacionHub');
+  if (
+    germHub &&
+    !germHub.classList.contains('setup-hidden') &&
+    germHub.innerHTML.trim()
+  ) {
+    if (el) el.classList.add('setup-hidden');
+    return;
+  }
   const guidada =
     typeof instalacionGuidadaActiva === 'function' ? instalacionGuidadaActiva() : !!(state && state.hcPostSetupChecklistPendiente);
   if (!state || !guidada) {

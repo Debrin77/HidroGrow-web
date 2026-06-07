@@ -520,17 +520,10 @@
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(cfg);
       }
-      if (typeof refreshTabsOperativaCamino === 'function') {
-        refreshTabsOperativaCamino({ full: true, inmediato: true });
-      }
       if (typeof goTab === 'function') goTab('inicio');
       var run = function () {
         try {
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-          if (typeof refreshInstalacionLifecycleUi === 'function') {
-            refreshInstalacionLifecycleUi();
-          }
-          if (typeof updateDashboard === 'function') updateDashboard();
           if (!opts.sinScroll) {
             document
               .getElementById('dashGerminacionHub')
@@ -600,53 +593,84 @@
 
   var _refreshTabsFullTimer = null;
 
+  function hcActiveMainTab() {
+    var order = ['inicio', 'mediciones', 'sala', 'sistema', 'meteo', 'calendario', 'historial', 'riego', 'consejos', 'ayuda'];
+    for (var i = 0; i < order.length; i++) {
+      var panel = document.getElementById('tab-' + order[i]);
+      if (panel && panel.classList.contains('active')) return order[i];
+    }
+    return 'inicio';
+  }
+
   function refreshTabsOperativaCaminoCore(opts) {
     opts = opts || {};
+    if (opts.allTabs) {
+      ['inicio', 'mediciones', 'sistema', 'sala'].forEach(function (t) {
+        refreshTabsOperativaCaminoCore({ tab: t });
+      });
+      return;
+    }
     var cfg = cfgActiva();
+    var tab = opts.tab || hcActiveMainTab();
 
-    ensureOperativaBanner(
-      'propagadorSalaOcultaBanner',
-      propagadorSalaOcultaBannerHtml(cfg),
-      'tab-inicio',
-      'dashGerminacionHub'
-    );
-
-    ensureOperativaBanner(
-      'medirPropagadorFaseBanner',
-      medirBannerHtml(cfg),
-      'tab-mediciones',
-      'medirTorreBanner'
-    );
-
-    if (typeof hcRefreshSistemaFasePanel === 'function') {
-      hcRefreshSistemaFasePanel();
-    } else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
-      hcRefreshSistemaPropagadorPanel();
+    if (tab === 'inicio' || tab === 'mediciones' || tab === 'sistema' || tab === 'sala') {
+      aplicarVisibilidadTabsCamino(cfg);
     }
 
-    var hub = el('dashGerminacionHub');
-    var hubVisible = hub && !hub.classList.contains('setup-hidden');
-    if (!hubVisible) mountTrasladoBanner('hcTrasladoSalaBannerHost');
-    else {
-      var hostTr = el('hcTrasladoSalaBannerHost');
-      if (hostTr) {
-        var prevTr = hostTr.querySelector('.hc-traslado-sala-banner');
-        if (prevTr) prevTr.remove();
+    if (tab === 'inicio') {
+      ensureOperativaBanner(
+        'propagadorSalaOcultaBanner',
+        propagadorSalaOcultaBannerHtml(cfg),
+        'tab-inicio',
+        'dashGerminacionHub'
+      );
+      var hub = el('dashGerminacionHub');
+      var hubVisible = hub && !hub.classList.contains('setup-hidden');
+      if (!hubVisible) mountTrasladoBanner('hcTrasladoSalaBannerHost');
+      else {
+        var hostTr = el('hcTrasladoSalaBannerHost');
+        if (hostTr) {
+          var prevTr = hostTr.querySelector('.hc-traslado-sala-banner');
+          if (prevTr) prevTr.remove();
+        }
       }
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      return;
     }
-    if (typeof refreshMedirOperativaUi === 'function') {
-      refreshMedirOperativaUi({ skipTabsUi: true });
+
+    if (tab === 'mediciones') {
+      ensureOperativaBanner(
+        'medirPropagadorFaseBanner',
+        medirBannerHtml(cfg),
+        'tab-mediciones',
+        'medirTorreBanner'
+      );
+      if (typeof refreshMedirOperativaUi === 'function') {
+        refreshMedirOperativaUi({ skipTabsUi: true });
+      }
+      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
+      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+      try {
+        if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
+        if (typeof refreshAvisoUbicacionExteriorPendiente === 'function') refreshAvisoUbicacionExteriorPendiente();
+      } catch (_) {}
+      return;
     }
-    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
-    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
-    if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
-    if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
-    if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
-    if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
-    try {
-      if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
-      if (typeof refreshAvisoUbicacionExteriorPendiente === 'function') refreshAvisoUbicacionExteriorPendiente();
-    } catch (_) {}
+
+    if (tab === 'sistema') {
+      if (typeof hcRefreshSistemaFasePanel === 'function') {
+        hcRefreshSistemaFasePanel();
+      } else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+        hcRefreshSistemaPropagadorPanel();
+      }
+      return;
+    }
+
+    if (tab === 'sala') {
+      if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
+      if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
+      if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
+    }
   }
 
   function refreshTabsOperativaCamino(opts) {
