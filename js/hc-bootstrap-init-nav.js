@@ -242,7 +242,9 @@ function hcFinishInitAppHeavyWork() {
       setupAbiertoIdle = !!(soIdle && soIdle.classList.contains('open'));
     } catch (_) {}
     try {
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ visibilidadOnly: true });
+      }
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (!setupAbiertoIdle && typeof refreshDashGerminacionHub === 'function') {
         refreshDashGerminacionHub();
