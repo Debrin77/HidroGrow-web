@@ -201,7 +201,7 @@
   function seleccionarCaminoCultivo(caminoId) {
     var def = getCaminoDef(caminoId);
     if (!def) return;
-    if (typeof setupData === 'undefined') {
+    if (typeof setupData === 'undefined' || typeof ensurePremiumSetup !== 'function') {
       try {
         if (typeof showToast === 'function') {
           showToast('Cargando asistente… espera un momento y vuelve a pulsar', true);
@@ -210,7 +210,14 @@
       return;
     }
     var p = ensurePremiumCamino();
-    if (!p) return;
+    if (!p || p !== setupData.premium) {
+      try {
+        if (typeof showToast === 'function') {
+          showToast('Cargando asistente… espera un momento y vuelve a pulsar', true);
+        }
+      } catch (_) {}
+      return;
+    }
     p.caminoCultivo = def.id;
     p.origenPlanta = def.origenPlanta;
     p.germinacionModoPreferido = def.germModo || '';

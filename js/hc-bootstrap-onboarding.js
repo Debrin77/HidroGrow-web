@@ -225,7 +225,8 @@ function dismissTabBarCoach() {
         return;
       }
     } catch (_) {}
-    if (typeof abrirSetup === 'function') abrirSetup();
+    if (typeof abrirSetupNuevaTorre === 'function') abrirSetupNuevaTorre();
+    else if (typeof abrirSetup === 'function') abrirSetup();
   }, 450);
 }
 
@@ -244,7 +245,8 @@ function welcomeAbrirSetup() {
   cerrarBienvenidaPrimeraVez({ skipLanzarSetup: true });
   try {
     setTimeout(function () {
-      if (typeof abrirSetup === 'function') abrirSetup();
+      if (typeof abrirSetupNuevaTorre === 'function') abrirSetupNuevaTorre();
+      else if (typeof abrirSetup === 'function') abrirSetup();
     }, 450);
   } catch (_) {}
 }

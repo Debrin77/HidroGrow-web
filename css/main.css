@@ -6286,6 +6286,24 @@ html.hc-theme-dark .torre-activa-nombre-text--vacío {
   border-color: #86efac;
   background: #dcfce7;
 }
+.dash-nutriente-tag--estado.is-germ {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+.dash-nutriente-tag--estado.is-germ .dash-nutriente-estado::before {
+  content: "🌱 ";
+}
+.medir-flow--semilla-hidro-unificado .medir-step-head--inline-amb {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border, #e5e7eb);
+}
+.medir-flow--semilla-hidro-unificado .medir-ambiente-summary.setup-hidden {
+  display: none;
+}
+.medir-ambiente-card--inline-unificado .medir-ambiente-lead {
+  margin-top: 0;
+}
 .dash-nutriente-tag--estado.is-mismatch {
   border-color: #f87171;
   background: #fee2e2;
@@ -15562,6 +15580,25 @@ button.config-option:focus-visible,
 .medir-recarga-switch-footnote strong {
   font-weight: 800;
   color: var(--white);
+}
+.hc-recarga-interno-pool,
+.recarga-card--interno {
+  display: none !important;
+}
+.medir-recarga-vol-aviso-slim {
+  margin: 12px 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #9a3412;
+}
+.medir-recarga-vol-aviso-slim.recarga-repos-turnover--over {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
 }
 .medir-notas-textarea {
   min-height: 80px;

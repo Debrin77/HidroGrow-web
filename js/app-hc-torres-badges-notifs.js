@@ -1635,8 +1635,16 @@ function actualizarBadgesNutriente() {
   const dashAviso   = document.getElementById('dashNutrienteAviso');
   const propagDashInicio =
     typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg);
+  const camDash =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+  const dashSemillaHidroGerm =
+    camDash === 'semilla_hidro' &&
+    ((typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) ||
+      (typeof getSistemaFaseCamino === 'function' &&
+        (getSistemaFaseCamino(cfg) === 'prep_hidro' || getSistemaFaseCamino(cfg) === 'germ_cubo')));
   const dashUsaGermNut =
     propagDashInicio ||
+    dashSemillaHidroGerm ||
     (typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg));
   if (dashUsaGermNut) {
     try {
@@ -1654,9 +1662,11 @@ function actualizarBadgesNutriente() {
   const dashSisInfo = document.getElementById('dashSistemaInfo');
   if (dashNutLabel) {
     dashNutLabel.classList.remove('setup-hidden');
-    dashNutLabel.textContent = dashUsaGermNut
-      ? 'Nutriente · bandeja propagador'
-      : 'Nutriente seleccionado';
+    dashNutLabel.textContent = dashSemillaHidroGerm
+      ? 'Nutriente · germinación en cubo'
+      : dashUsaGermNut
+        ? 'Nutriente · bandeja propagador'
+        : 'Nutriente seleccionado';
   }
   if (dashSisInfo) dashSisInfo.classList.remove('setup-hidden');
   if (dashNombre) {
@@ -1678,7 +1688,42 @@ function actualizarBadgesNutriente() {
         : 'Configura tu instalación en el asistente';
   }
   if (dashEstado || dashRecomendado || dashRazon || dashFuente) {
-    if (dashUsaGermNut) {
+    if (dashSemillaHidroGerm) {
+      var vidGerm =
+        (cfg.germinacionFlow && cfg.germinacionFlow.variedadId) ||
+        (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) ||
+        '';
+      var faseGermDash =
+        typeof hcGerminacionFaseActualId === 'function'
+          ? hcGerminacionFaseActualId(cfg)
+          : typeof getSistemaFaseCamino === 'function'
+            ? getSistemaFaseCamino(cfg)
+            : 'germ_cubo';
+      var rangosHidro =
+        typeof getGerminacionRangosMonitoreo === 'function'
+          ? getGerminacionRangosMonitoreo(vidGerm, faseGermDash, cfg)
+          : null;
+      var ecMin = rangosHidro && rangosHidro.ec ? rangosHidro.ec.min : 400;
+      var ecMax = rangosHidro && rangosHidro.ec ? rangosHidro.ec.max : 800;
+      if (dashEstado) {
+        dashEstado.textContent = nut ? 'Actual: VEG' : 'Actual: —';
+      }
+      if (dashRecomendado) {
+        dashRecomendado.textContent = nut
+          ? 'Recomendado ahora: VEG · EC depósito ' + ecMin + '–' + ecMax + ' µS/cm'
+          : 'Recomendado ahora: VEG';
+      }
+      if (dashTagEstado) {
+        dashTagEstado.classList.remove('is-mismatch', 'is-germ');
+        dashTagEstado.classList.add('is-match');
+      }
+      if (dashFuente) dashFuente.textContent = 'Fuente: germinación en cubo · línea veg';
+      if (dashRazon) {
+        dashRazon.textContent = nut
+          ? 'Motivo: plántula o semilla en el mismo DWC; la línea es VEG con dosis baja en el depósito.'
+          : 'Motivo: elige nutriente en el asistente antes de medir el depósito.';
+      }
+    } else if (dashUsaGermNut) {
       const volL =
         typeof getNutrienteGermVolLFromCfg === 'function' ? getNutrienteGermVolLFromCfg(cfg) : 2;
       const ecObj =
@@ -1695,7 +1740,10 @@ function actualizarBadgesNutriente() {
           ? 'Línea elegida en configurador propagador'
           : 'Recomendado: Canna Aqua Vega u otra línea veg A+B';
       }
-      if (dashTagEstado) dashTagEstado.classList.toggle('is-match', !!nut);
+      if (dashTagEstado) {
+        dashTagEstado.classList.remove('is-germ');
+        dashTagEstado.classList.toggle('is-match', !!nut);
+      }
       if (dashFuente) dashFuente.textContent = 'Fuente: plan germinación · bandeja domo';
       if (dashRazon) {
         dashRazon.textContent = nut

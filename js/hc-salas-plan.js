@@ -33,18 +33,7 @@
   }
 
   function isFirstInstallPending() {
-    try {
-      if (typeof hcEsPrimeraVezAsistenteInstalacion === 'function' && !hcEsPrimeraVezAsistenteInstalacion()) {
-        return false;
-      }
-    } catch (_) {
-      return false;
-    }
-    try {
-      return localStorage.getItem(DONE_KEY) !== '1';
-    } catch (_) {
-      return false;
-    }
+    return false;
   }
 
   function loadPlan() {

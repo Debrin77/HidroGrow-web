@@ -948,8 +948,14 @@
     cfg = cfg || getCfg();
     var det = document.getElementById('hcMontajeInicioDetails');
     if (!det) return;
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var ocultar =
-      typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg);
+      (typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg)) ||
+      (cam === 'semilla_hidro' &&
+        typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+        hcSemillaHidroPostAsistenteUi(cfg)) ||
+      cam === 'semilla_hidro';
     det.classList.toggle('setup-hidden', ocultar);
     if (ocultar) det.open = false;
   }
