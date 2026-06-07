@@ -20,13 +20,14 @@ page.on('console', (m) => {
 await page.goto(indexUrl, { waitUntil: 'load', timeout: 90000 });
 await page.waitForTimeout(1500);
 
-for (let i = 0; i < 4; i++) {
-  await page.click('.pin-key[data-digit="2"]').catch(() => {});
+for (const d of '2506') {
+  await page.locator('.pin-key[data-digit="' + d + '"]').click();
+  await page.waitForTimeout(100);
 }
-await page.click('.pin-key[data-digit="0"]').catch(() => {});
-await page.click('.pin-key[data-digit="0"]').catch(() => {});
-await page.click('.pin-key[data-digit="0"]').catch(() => {});
-await page.waitForTimeout(2500);
+await page.waitForFunction(
+  () => typeof appBootstrapped !== 'undefined' && appBootstrapped === true,
+  { timeout: 90000 }
+);
 
 const seedErr = await page.evaluate(() => {
   try {

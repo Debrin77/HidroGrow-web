@@ -315,12 +315,12 @@ test('semilla_hidro operativa: esquema DWC no bloqueado por fase germ_cubo', () 
   assert.match(fase, /function hcRenderTorreBloqueadoPorFaseCamino/);
   assert.match(fase, /semilla_hidro.*hidroCerrado/);
   assert.match(torre, /hcRenderTorreBloqueadoPorFaseCamino/);
-  assert.match(torre, /hcSyncTorreDesdeGerminacionSiAplica/);
+  assert.match(torre, /hcRenderPropagadorSvg/);
   assert.match(cultivo, /function hcSyncTorreDesdeGerminacionSiAplica/);
   assert.match(cultivo, /semilla_hidro[\s\S]*hidroInstalacionCerrada/);
   assert.match(sis, /renderTorre\(\)/);
   assert.match(nav, /hcRenderTorreBloqueadoPorFaseCamino/);
-  assert.doesNotMatch(sis, /redibujarTorre/);
+  assert.match(sis, /hcSyncTorreDesdeGerminacionSiAplica/);
 });
 
 test('semilla_hidro operativa: Sistema sin EC/pH y depósito colapsable', () => {
@@ -396,15 +396,15 @@ test('nutriente germ: variedad no obligatoria en clima antes del paso genética'
   assert.match(wiz, /persistVariedadGermFromUI/);
 });
 
-test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
-  const html = read('index.html');
+test('catálogo: genetics-db en boot manifest y helper por id', () => {
+  const manifest = read('js/hc-boot-manifest.js');
   const cfg = read('js/hc-bootstrap-config.js');
   const cultivo = read('js/hc-camino-cultivo.js');
-  const iGen = html.indexOf('genetics-db.js');
-  const iCult = html.indexOf('cultivos-db.js');
-  const iBoot = html.indexOf('hc-bootstrap-config.js');
-  assert.ok(iGen >= 0 && iCult >= 0 && iBoot >= 0, 'scripts de catálogo presentes');
-  assert.ok(iGen < iBoot && iCult < iBoot, 'genetics y cultivos-db antes de bootstrap-config');
+  const iGen = manifest.indexOf('genetics-db.js');
+  const iCult = manifest.indexOf('cultivos-db.js');
+  const iPrem = manifest.indexOf('hc-premium-wizard.js');
+  assert.ok(iGen >= 0 && iCult >= 0 && iPrem >= 0, 'scripts de catálogo en boot manifest');
+  assert.ok(iGen < iPrem && iCult < iPrem, 'genetics y cultivos-db antes del asistente premium');
   assert.match(cfg, /function getDiasCosechaVariedad/);
   assert.match(cfg, /if \(c\.id\) out\[c\.id\]/);
   assert.match(cultivo, /camAj !== 'semilla_propagador' && camAj !== 'semilla_hidro'/);

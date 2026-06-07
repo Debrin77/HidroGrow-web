@@ -144,7 +144,33 @@ function auditScript() {
     tabOculta: !!salaTabOculta,
   };
 
-  return { inicio, medir, sala };
+  if (typeof aplicarVisibilidadTabsCamino === 'function') {
+    aplicarVisibilidadTabsCamino(cfg);
+  }
+  const btnRiego = document.getElementById('btn-riego');
+  const riego = {
+    tabOculta: !!(btnRiego && btnRiego.classList.contains('hc-tab-camino-oculta')),
+    sinRiegoBody: document.body.classList.contains('hc-modo-propagador-sin-riego'),
+    title: btnRiego ? btnRiego.getAttribute('title') || '' : '',
+  };
+
+  if (typeof goTab === 'function') goTab('sistema');
+  if (typeof renderTorre === 'function') renderTorre();
+  if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel(cfg);
+  const wrap = document.getElementById('torreSVGWrap');
+  const numSem =
+    (cfg.germinacionFlow && cfg.germinacionFlow.numSemillas) ||
+    (cfg.premiumSetup && cfg.premiumSetup.numSemillasGerm) ||
+    3;
+  const sistema = {
+    fase: typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : '',
+    propagadorSvg: !!(wrap && wrap.classList.contains('torre-svg-canvas--propagador')),
+    celdasOn: wrap ? wrap.querySelectorAll('.hc-prop-cell--on').length : 0,
+    numSem: numSem,
+    aria: wrap ? wrap.getAttribute('aria-label') || '' : '',
+  };
+
+  return { inicio, medir, sala, riego, sistema };
 }
 
 test('propagador: Inicio solo hub (sin bloques DWC duplicados)', async () => {
@@ -207,6 +233,33 @@ test('propagador: Sala sin seguimiento duplicado; pestaña oculta en germ', asyn
   assert.equal(snap.sala.seguimiento, false, 'salaSeguimientoCta');
   assert.equal(snap.sala.flujoGuiado, false, 'salaPropagadorFlujoGuiado');
   assert.equal(snap.sala.layout, false, 'salaLayoutPanel grow room');
+
+  await browser.close();
+});
+
+test('propagador: Riego oculto y clase body sin depósito', async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await unlockPin(page);
+  const snap = await page.evaluate(auditScript);
+
+  assert.equal(snap.riego.tabOculta, true, 'btn-riego oculto');
+  assert.equal(snap.riego.sinRiegoBody, true, 'hc-modo-propagador-sin-riego');
+  assert.match(snap.riego.title, /bandeja|depósito/i, 'tooltip riego explica bandeja');
+
+  await browser.close();
+});
+
+test('propagador: Sistema SVG con celdas = semillas del plan', async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await unlockPin(page);
+  const snap = await page.evaluate(auditScript);
+
+  assert.equal(snap.sistema.fase, 'propagador', 'fase sistema propagador');
+  assert.equal(snap.sistema.propagadorSvg, true, 'SVG propagador renderizado');
+  assert.equal(snap.sistema.celdasOn, snap.sistema.numSem, 'celdas activas = semillas');
+  assert.match(snap.sistema.aria, /semillas/i, 'aria-label del SVG');
 
   await browser.close();
 });

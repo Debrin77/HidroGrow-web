@@ -2267,7 +2267,10 @@ function guardarSetupYContinuarCore() {
       }
       if (typeof validarPlanGerminacionCompleto === 'function') {
         const vPlan = validarPlanGerminacionCompleto(state.configTorre, {
-          requierePropagador: !wizardHidroGermCompleto,
+          requierePropagador:
+            camPersist === 'semilla_propagador'
+              ? false
+              : !wizardHidroGermCompleto,
         });
         if (!vPlan.ok) {
           showToast(

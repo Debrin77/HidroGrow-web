@@ -796,7 +796,11 @@
         hcAsegurarNutrienteGermEnCfg(cfg);
       }
       persistHcPropPlanFromModal();
-      var planVal = validarPlanGerminacionCompleto(cfg);
+      var camFin =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      var planVal = validarPlanGerminacionCompleto(cfg, {
+        requierePropagador: camFin !== 'semilla_propagador',
+      });
       if (!planVal.ok) {
         if (typeof showToast === 'function') {
           showToast(
