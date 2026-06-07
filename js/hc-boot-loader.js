@@ -162,11 +162,7 @@
         } catch (_) {}
         resolve();
       };
-      if (hcBootIsMobile() && typeof global.requestIdleCallback === 'function') {
-        global.requestIdleCallback(done, { timeout: 80 });
-      } else {
-        setTimeout(done, hcBootIsMobile() ? 8 : 0);
-      }
+      setTimeout(done, hcBootIsMobile() ? 8 : 0);
     });
   }
 
@@ -217,6 +213,13 @@
     await loadQueue(q.critical);
     criticalDone = true;
     hcBootUpdatePinProgress();
+    setTimeout(function () {
+      try {
+        if (typeof global.hcPreinitTorreStateWhileLocked === 'function') {
+          global.hcPreinitTorreStateWhileLocked();
+        }
+      } catch (_) {}
+    }, 0);
 
     var deferredPromise = null;
     if (q.deferred.length) {
@@ -229,6 +232,9 @@
     }
     essentialDone = true;
     hcBootUpdatePinProgress();
+    try {
+      global.dispatchEvent(new Event('hcBootEssentialReady'));
+    } catch (_) {}
 
     if (deferredPromise) {
       deferredPromise

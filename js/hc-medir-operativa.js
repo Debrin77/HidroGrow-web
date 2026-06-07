@@ -131,7 +131,8 @@
     );
   }
 
-  function refreshMedirOperativaUi() {
+  function refreshMedirOperativaUi(opts) {
+    opts = opts && typeof opts === 'object' ? opts : {};
     var lc = getLc();
     var operativa = !!lc.operativaDiaria;
     var pendiente = !operativa && lc.fase !== 'sin_config';
@@ -263,7 +264,9 @@
     if (typeof applyMedirSemillaHidroChrome === 'function') {
       applyMedirSemillaHidroChrome(cfg);
     }
-    refreshTabsOperativaUi({ visibilidadOnly: true });
+    if (!opts.skipTabsUi && typeof refreshTabsOperativaUi === 'function') {
+      refreshTabsOperativaUi();
+    }
   }
 
   function avisarPrimeraMedicionOperativa() {

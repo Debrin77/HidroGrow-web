@@ -756,9 +756,10 @@ function saveState(opts) {
     }
     const snapshot = hidrogrowPrepararSnapshotPersistencia(state);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
-    // Verificar que se guardó correctamente
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) console.error('Error: estado no guardado en localStorage');
+    if (opts.verify !== false) {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) console.error('Error: estado no guardado en localStorage');
+    }
     return true;
   } catch(e) {
     console.error('Error saving state:', e);

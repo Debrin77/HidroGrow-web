@@ -840,7 +840,7 @@
       else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
         hcRefreshSistemaPropagadorPanel();
       }
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true });
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     } catch (_) {}
     refreshPropagadorMontajeUi();

@@ -1007,7 +1007,7 @@
             if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
           } catch (_) {}
           try {
-            if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true });
+            if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true, inmediato: true });
           } catch (_) {}
           if (propagadorTrasSetup && !checklistYaAbierto) {
             try {

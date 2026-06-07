@@ -101,7 +101,7 @@
       global._hcPersistStateTimer = global.setTimeout(function () {
         global._hcPersistStateTimer = null;
         try {
-          origSave();
+          origSave({ verify: false });
         } catch (_) {}
       }, 180);
     };

@@ -115,7 +115,7 @@ function updateDashboard(opts) {
   } catch (_) {}
   try {
     if (typeof refreshTabsOperativaUi === 'function') {
-      refreshTabsOperativaUi({ visibilidadOnly: true });
+      refreshTabsOperativaUi();
     }
   } catch (_) {}
 

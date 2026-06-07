@@ -482,9 +482,14 @@
     document.body.classList.toggle('hc-modo-propagador-sin-riego', !!ocultarRiego);
 
     if (ocultarRiego && document.getElementById('tab-riego')?.classList.contains('active')) {
-      try {
-        if (typeof goTab === 'function') goTab('inicio');
-      } catch (_) {}
+      setTimeout(function () {
+        try {
+          var riegoPanel = document.getElementById('tab-riego');
+          if (riegoPanel && riegoPanel.classList.contains('active') && typeof goTab === 'function') {
+            goTab('inicio');
+          }
+        } catch (_) {}
+      }, 0);
     }
   }
 
@@ -515,7 +520,9 @@
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(cfg);
       }
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true });
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ full: true, inmediato: true });
+      }
       if (typeof goTab === 'function') goTab('inicio');
       var run = function () {
         try {
@@ -591,11 +598,11 @@
     }
   }
 
-  function refreshTabsOperativaCamino(opts) {
+  var _refreshTabsFullTimer = null;
+
+  function refreshTabsOperativaCaminoCore(opts) {
     opts = opts || {};
     var cfg = cfgActiva();
-    aplicarVisibilidadTabsCamino(cfg);
-    if (!opts.full) return;
 
     ensureOperativaBanner(
       'propagadorSalaOcultaBanner',
@@ -627,7 +634,9 @@
         if (prevTr) prevTr.remove();
       }
     }
-    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof refreshMedirOperativaUi === 'function') {
+      refreshMedirOperativaUi({ skipTabsUi: true });
+    }
     if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
     if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
     if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
@@ -640,6 +649,21 @@
     } catch (_) {}
   }
 
+  function refreshTabsOperativaCamino(opts) {
+    opts = opts || {};
+    aplicarVisibilidadTabsCamino(cfgActiva());
+    if (!opts.full) return;
+    if (opts.inmediato) {
+      refreshTabsOperativaCaminoCore(opts);
+      return;
+    }
+    if (_refreshTabsFullTimer) clearTimeout(_refreshTabsFullTimer);
+    _refreshTabsFullTimer = setTimeout(function () {
+      _refreshTabsFullTimer = null;
+      refreshTabsOperativaCaminoCore(opts);
+    }, 48);
+  }
+
   var _tabsHooked = false;
   function hookTabsOperativaRefresh() {
     if (_tabsHooked) return;
@@ -649,14 +673,14 @@
       opts = opts && typeof opts === 'object' ? opts : {};
       if (typeof prev === 'function') prev(opts);
       if (opts.full) {
-        refreshTabsOperativaCamino({ full: true });
+        refreshTabsOperativaCamino({ full: true, inmediato: !!opts.inmediato });
         return;
       }
       if (opts.tab) {
         refreshTabsOperativaCaminoForTab(opts.tab);
         return;
       }
-      refreshTabsOperativaCamino({ visibilidadOnly: true });
+      refreshTabsOperativaCamino();
     };
   }
 
@@ -729,7 +753,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     try {
       hookGoTabCamino();
-      refreshTabsOperativaCamino({ visibilidadOnly: true });
+      refreshTabsOperativaCamino();
     } catch (_) {}
   });
 

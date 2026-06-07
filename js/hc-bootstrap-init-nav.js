@@ -30,12 +30,10 @@ function hcFinishResetHeavyWork() {
     }
     if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     if (typeof refreshTabsOperativaCamino === 'function') {
-      refreshTabsOperativaCamino({ full: true });
+      refreshTabsOperativaCamino({ full: true, inmediato: true });
     }
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof updateDashboard === 'function') updateDashboard();
-    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
     if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
   } catch (e) {
@@ -117,7 +115,7 @@ async function resetApp() {
 
   try {
     if (typeof refreshTabsOperativaCamino === 'function') {
-      refreshTabsOperativaCamino({ visibilidadOnly: true });
+      refreshTabsOperativaCamino();
     }
     if (typeof actualizarHeaderTorre === 'function') actualizarHeaderTorre();
     if (typeof refreshModoInfoText === 'function') refreshModoInfoText();
@@ -239,7 +237,7 @@ function hcFinishInitAppHeavyWork() {
     } catch (_) {}
     try {
       if (typeof refreshTabsOperativaCamino === 'function') {
-        refreshTabsOperativaCamino({ visibilidadOnly: true });
+        refreshTabsOperativaCamino();
       }
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (!setupAbiertoIdle && typeof refreshDashGerminacionHub === 'function') {
@@ -666,7 +664,9 @@ var _hcGoTabWorkGen = 0;
 var _hcTabPersistTimer = null;
 var _hcTabHeavyLast = {};
 var _hcTabEverVisited = {};
+var _hcDashTabFullLast = 0;
 var HC_TAB_HEAVY_COOLDOWN_MS = 180000;
+var HC_DASH_TAB_FULL_COOLDOWN_MS = 45000;
 
 function hcInvalidateTabDomCache() {
   _hcTabPanelsCache = null;
@@ -792,7 +792,7 @@ function hcRefreshCalendarioTab(gen) {
 function goTabDeferredWorkLite(tab) {
   try {
     if (typeof refreshTabsOperativaUi === 'function') {
-      refreshTabsOperativaUi({ visibilidadOnly: true });
+      refreshTabsOperativaUi();
     }
   } catch (_) {}
   if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
@@ -821,15 +821,17 @@ function goTabDeferredWorkHeavy(tab, gen) {
     } catch (_) {}
   }
   if (tab === 'mediciones') {
+    if (typeof refreshTabsOperativaCaminoForTab === 'function') {
+      refreshTabsOperativaCaminoForTab('mediciones');
+    } else if (typeof refreshMedirOperativaUi === 'function') {
+      refreshMedirOperativaUi();
+    }
     if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
-    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
     setTimeout(function () {
       if (gen !== _hcGoTabWorkGen) return;
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
       if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
-      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
-      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
     }, 16);
   }
   if (tab === 'sala') {
@@ -850,12 +852,16 @@ function goTabDeferredWorkHeavy(tab, gen) {
     try {
       updateDashboard({ lite: true });
     } catch (_) {}
-    setTimeout(function () {
-      if (gen !== _hcGoTabWorkGen) return;
-      try {
-        updateDashboard();
-      } catch (_) {}
-    }, 16);
+    var dashStale = Date.now() - _hcDashTabFullLast > HC_DASH_TAB_FULL_COOLDOWN_MS;
+    if (dashStale) {
+      setTimeout(function () {
+        if (gen !== _hcGoTabWorkGen) return;
+        try {
+          updateDashboard();
+          _hcDashTabFullLast = Date.now();
+        } catch (_) {}
+      }, 16);
+    }
   }
   if (tab === 'meteo') {
     try {
@@ -877,7 +883,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
     const finishSistemaTab = function () {
       try {
         if (typeof refreshTabsOperativaUi === 'function') {
-          refreshTabsOperativaUi({ visibilidadOnly: true });
+          refreshTabsOperativaUi();
         }
       } catch (_) {}
       _hcTabHeavyLast[tab] = Date.now();
@@ -968,7 +974,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
   } catch (_) {}
   try {
     if (typeof refreshTabsOperativaUi === 'function') {
-      refreshTabsOperativaUi({ visibilidadOnly: true });
+      refreshTabsOperativaUi();
     }
   } catch (_) {}
   _hcTabHeavyLast[tab] = Date.now();
