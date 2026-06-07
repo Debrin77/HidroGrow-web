@@ -557,6 +557,7 @@
         }
       }
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
       return;
     }
     if (tab === 'mediciones') {
@@ -635,6 +636,7 @@
         }
       }
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
       return;
     }
 
@@ -670,6 +672,7 @@
       if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
       if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
       if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
+      if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfg);
     }
   }
 

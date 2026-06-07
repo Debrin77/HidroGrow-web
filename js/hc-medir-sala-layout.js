@@ -820,6 +820,7 @@
     refreshSalaEquipMontaje({ lightOnly: true });
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
+    if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfg);
   }
 
   function refreshSalaTabHeavy(cfg, opts) {

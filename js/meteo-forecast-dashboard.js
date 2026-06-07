@@ -36,6 +36,7 @@ function updateDashboard(opts) {
   const cfgDash = state.configTorre || {};
   try {
     if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
+    if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfgDash);
   } catch (_) {}
 
   // Última medición / lecturas germinación
@@ -248,6 +249,18 @@ function valorGermTile(key, lecturas) {
 
 function refreshDashTilesGerminacion(cfg) {
   cfg = cfg || state.configTorre || {};
+  var germHub = document.getElementById('dashGerminacionHub');
+  var hubVisible =
+    germHub &&
+    !germHub.classList.contains('setup-hidden') &&
+    !!String(germHub.innerHTML || '').trim();
+  if (
+    hubVisible &&
+    typeof hcSistemaPropagadorSinHidro === 'function' &&
+    hcSistemaPropagadorSinHidro(cfg)
+  ) {
+    return;
+  }
   if (typeof getGerminacionDashTilesPlan !== 'function') {
     updateTiles(state.ultimaMedicion || null);
     return;

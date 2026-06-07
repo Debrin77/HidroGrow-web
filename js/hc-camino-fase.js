@@ -661,6 +661,9 @@
     cfg = cfg || cfgActiva();
     var soloPropag =
       typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    var germHub = document.getElementById('dashGerminacionHub');
+    var germHubVisible =
+      germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
     ['dashBloqueAmbienteExterior', 'meteoFlashAviso'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.classList.add('setup-hidden');
@@ -686,6 +689,43 @@
         el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro);
       }
     });
+    var idsOcultarPropag = [
+      'dashRutinaDia',
+      'dashCaminoResumen',
+      'dashNutrienteLabel',
+      'dashSistemaInfo',
+      'hcPlantasInstalacionInicioDetails',
+      'hcMontajeInicioDetails',
+      'dashRecargaCard',
+      'dashSalaEquipReco',
+    ];
+    idsOcultarPropag.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.toggle('setup-hidden', soloPropag);
+    });
+    if (soloPropag) {
+      var salaReco = document.getElementById('dashSalaEquipReco');
+      if (salaReco) salaReco.innerHTML = '';
+    }
+    if (soloPropag && germHubVisible) {
+      var trasladoHost = document.getElementById('hcTrasladoSalaBannerHost');
+      if (trasladoHost) {
+        var trBan = trasladoHost.querySelector('.hc-traslado-sala-banner');
+        if (trBan) trBan.remove();
+      }
+    }
+    var medYcult = document.querySelector('.dash-medicion-y-cultivo');
+    if (medYcult) {
+      if (soloPropag && germHubVisible) {
+        medYcult.classList.add('setup-hidden');
+      } else {
+        medYcult.classList.remove('setup-hidden');
+        var grid = medYcult.querySelector('.params-grid');
+        if (grid) grid.classList.toggle('setup-hidden', soloPropag && germHubVisible);
+        var summary = medYcult.querySelector('.torre-summary');
+        if (summary) summary.classList.toggle('setup-hidden', soloPropag && germHubVisible);
+      }
+    }
     var opRow = document.querySelector('#tab-inicio .dash-operativa-row');
     if (opRow) opRow.classList.toggle('setup-hidden', soloPropag);
     var avisoCestas = document.getElementById('avisoCestasSinFechaInicio');
@@ -693,6 +733,15 @@
       avisoCestas.style.display = 'none';
       avisoCestas.innerHTML = '';
     }
+    var ocultarSalaTab =
+      typeof hcOcultarTabSalaDuranteCamino === 'function' && hcOcultarTabSalaDuranteCamino(cfg);
+    var quickSala = document.querySelector('.quick-btn[data-quick-icon="sala"]');
+    if (quickSala) quickSala.classList.toggle('setup-hidden', !!ocultarSalaTab);
+    var quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
+    if (quickRec) quickRec.classList.toggle('setup-hidden', !!soloPropag);
+    try {
+      if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
+    } catch (_) {}
     try {
       if (typeof clearMeteoAlertRetry === 'function') clearMeteoAlertRetry();
     } catch (_) {}
@@ -830,7 +879,51 @@
   global.hcOcultarTabRiegoEnCaminoPropagador = hcOcultarTabRiegoEnCaminoPropagador;
   global.hcMeteoRequiereLocalidad = hcMeteoRequiereLocalidad;
   global.hcMeteoTabPermitidaSinOperativa = hcMeteoTabPermitidaSinOperativa;
+  /**
+   * Sala: solo equipamiento + montaje en propagador; sin CTA duplicado de Medir/Historial.
+   */
+  function refreshSalaVistaCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = getCaminoCultivo(cfg);
+    var soloEquip =
+      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+      hcSalaOcultarPanelesDuplicadosMedir(cfg);
+    var ocultarSalaTab =
+      typeof hcOcultarTabSalaDuranteCamino === 'function' && hcOcultarTabSalaDuranteCamino(cfg);
+    var seg = document.getElementById('salaSeguimientoCta');
+    if (seg) {
+      var ocultarSeg =
+        cam === 'semilla_propagador' ||
+        soloEquip ||
+        ocultarSalaTab ||
+        (typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg));
+      if (ocultarSeg) {
+        seg.classList.add('setup-hidden');
+        seg.innerHTML = '';
+      }
+    }
+    var layout = document.getElementById('salaLayoutPanel');
+    if (layout) layout.classList.toggle('setup-hidden', !!soloEquip);
+    var puente = document.getElementById('salaPropagadorPuenteMontaje');
+    if (puente && (soloEquip || ocultarSalaTab)) {
+      puente.classList.add('setup-hidden');
+      puente.innerHTML = '';
+    }
+    var flujo = document.getElementById('salaPropagadorFlujoGuiado');
+    if (flujo && (soloEquip || ocultarSalaTab)) {
+      flujo.classList.add('setup-hidden');
+      flujo.innerHTML = '';
+    }
+    var hint = document.getElementById('tabContextHintSala');
+    if (hint && (soloEquip || ocultarSalaTab)) hint.classList.add('setup-hidden');
+    var intro = document.querySelector('.medir-sala-intro');
+    if (intro) intro.classList.add('setup-hidden');
+    var tabSalaMount = document.getElementById('tabSalaMount');
+    if (tabSalaMount && ocultarSalaTab) tabSalaMount.classList.add('setup-hidden');
+  }
+
   global.refreshDashInicioVistaCamino = refreshDashInicioVistaCamino;
+  global.refreshSalaVistaCamino = refreshSalaVistaCamino;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;

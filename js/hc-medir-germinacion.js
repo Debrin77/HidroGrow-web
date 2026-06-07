@@ -458,14 +458,35 @@
       'medirOperativaHub',
       'tabContextHintMediciones',
       'hcMultiCoachMedir',
+      'medirDatosFacilesBanner',
+      'ultimaMedicionCard',
+      'medirMonitorCard',
+      'medirProtocoloCard',
+      'medirGuiaDiaCard',
+      'medirIotCard',
+      'medirAmbienteCard',
+      'panelLocalidadMeteo',
+      'ecTransicionAvisoMedir',
+      'configPanel',
+      'recargaCardMediciones',
     ];
     hideWhenProp.forEach(function (id) {
       var n = document.getElementById(id);
       if (n) n.classList.toggle('setup-hidden', !!activo);
     });
+    if (tab) {
+      var notas = tab.querySelector('.medir-notas-card');
+      if (notas) notas.classList.toggle('setup-hidden', !!activo);
+      tab.querySelectorAll('.medir-assistant-cta-wrap, .guardar-medicion-bar').forEach(function (n) {
+        n.classList.toggle('setup-hidden', !!activo);
+      });
+    }
 
     var loc = document.getElementById('panelLocalidadMeteo');
-    if (loc) loc.classList.toggle('medir-localidad--propagador', !!activo);
+    if (loc) {
+      loc.classList.toggle('medir-localidad--propagador', !!activo);
+      if (activo) loc.classList.add('setup-hidden');
+    }
 
     var titleWrap = tab && tab.querySelector('.section-title > span');
     if (titleWrap) {
