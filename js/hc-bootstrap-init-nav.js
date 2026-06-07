@@ -721,6 +721,37 @@ function hcWhenDiagramScriptsReady(cb) {
   }, 40);
 }
 
+function hcWhenCalendarioReady(cb) {
+  if (typeof cb !== 'function') return;
+  if (typeof renderCalendario === 'function') {
+    try {
+      cb();
+    } catch (_) {}
+    return;
+  }
+  var n = 0;
+  var t = setInterval(function () {
+    if (typeof renderCalendario === 'function' || ++n > 120) {
+      clearInterval(t);
+      try {
+        cb();
+      } catch (_) {}
+    }
+  }, 40);
+}
+
+function hcRefreshCalendarioTab(gen) {
+  var run = function () {
+    if (gen != null && gen !== _hcGoTabWorkGen) return;
+    try {
+      if (typeof renderCalendario !== 'function') return;
+      renderCalendario();
+      _hcTabHeavyLast.calendario = Date.now();
+    } catch (_) {}
+  };
+  hcWhenCalendarioReady(run);
+}
+
 function goTabDeferredWorkLite(tab) {
   if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
   if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
@@ -732,6 +763,10 @@ function goTabDeferredWorkHeavy(tab, gen) {
   var lastHeavy = _hcTabHeavyLast[tab] || 0;
   var skipHeavy = nowHeavy - lastHeavy < HC_TAB_HEAVY_COOLDOWN_MS;
   if (skipHeavy) {
+    if (tab === 'calendario' && typeof renderCalendario !== 'function') {
+      hcRefreshCalendarioTab(gen);
+      return;
+    }
     if (tab === 'inicio' && typeof updateDashboard === 'function') {
       try {
         updateDashboard({ lite: true });
@@ -796,9 +831,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
     } catch (_) {}
   }
   if (tab === 'calendario') {
-    calFecha = new Date();
-    calDiaSeleccionado = null;
-    if (typeof renderCalendario === 'function') renderCalendario();
+    hcRefreshCalendarioTab(gen);
   }
   if (tab === 'sistema') {
     const cfgSistema =
