@@ -2,7 +2,7 @@
  * HidroGrow — Service Worker ligero (PWA).
  * Precache: shell offline básico. APIs (Open-Meteo, etc.) siguen yendo a red.
  */
-const CACHE_NAME = 'hidrogrow-shell-v51-fix';
+const CACHE_NAME = 'hidrogrow-shell-v52-perf';
 const PRECACHE_URLS = [
   './manifest.json',
   './css/main.css',

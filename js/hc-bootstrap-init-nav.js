@@ -206,11 +206,7 @@ function hcFinishInitAppHeavyWork() {
           } catch (_) {}
         }
       };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runDashFull, { timeout: 900 });
-      } else {
-        setTimeout(runDashFull, 60);
-      }
+      setTimeout(runDashFull, 16);
     } else if (!setupAbierto && typeof goTabDeferredWork === 'function') {
       goTabDeferredWork(tab);
     }
@@ -307,11 +303,7 @@ function hcFinishInitAppHeavyWork() {
     } catch (_) {}
   };
 
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runBackground, { timeout: 3500 });
-  } else {
-    setTimeout(runBackground, 400);
-  }
+  setTimeout(runBackground, 32);
 }
 
 function initApp() {
@@ -937,14 +929,9 @@ function goTabDeferredWork(tab, opts) {
   var gen = _hcGoTabWorkGen;
   goTabDeferredWorkLite(tab);
   if (opts.liteOnly) return;
-  var runHeavy = function () {
+  setTimeout(function () {
     goTabDeferredWorkHeavy(tab, gen);
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: 2400 });
-  } else {
-    setTimeout(runHeavy, 32);
-  }
+  }, 0);
 }
 
 function goTab(tab) {
@@ -1005,17 +992,11 @@ function goTab(tab) {
   } catch (_) {}
 
   var tabWork = tab;
-  var gen = ++_hcGoTabWorkGen;
+  ++_hcGoTabWorkGen;
   var needsHeavy = hcTabNeedsHeavyRefresh(tabWork);
   if (needsHeavy) _hcTabEverVisited[tabWork] = true;
-  requestAnimationFrame(function () {
-    if (gen !== _hcGoTabWorkGen) return;
-    requestAnimationFrame(function () {
-      if (gen !== _hcGoTabWorkGen) return;
-      hcScheduleTabPersist(prevTab);
-      goTabDeferredWork(tabWork, { liteOnly: !needsHeavy });
-    });
-  });
+  hcScheduleTabPersist(prevTab);
+  goTabDeferredWork(tabWork, { liteOnly: !needsHeavy });
 }
 
 function irMedirMunicipioClima() {

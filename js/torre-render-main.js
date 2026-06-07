@@ -4,6 +4,21 @@
  */
 var _hcRenderTorreDepth = 0;
 
+function hcTorreRenderFingerprint(cfg) {
+  cfg = cfg || {};
+  var tipo =
+    typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : cfg.tipoInstalacion || '';
+  return [
+    tipo,
+    cfg.numNiveles,
+    cfg.numCestas,
+    cfg.numPlantas,
+    cfg.caminoCultivo,
+    cfg.faseCultivoAmbiental,
+    cfg.torreAnimSvg !== false ? 1 : 0,
+  ].join('|');
+}
+
 function renderTorre() {
   if (_hcRenderTorreDepth > 0) return;
   _hcRenderTorreDepth++;
@@ -40,6 +55,17 @@ function renderTorre() {
 
   const wrap = document.getElementById('torreSVGWrap');
   if (!wrap) return;
+
+  var fp = hcTorreRenderFingerprint(cfg);
+  if (
+    wrap.dataset.hcTorreFp === fp &&
+    wrap.innerHTML &&
+    String(wrap.innerHTML).length > 800 &&
+    !wrap.querySelector('.torre-loading-placeholder')
+  ) {
+    return;
+  }
+  wrap.dataset.hcTorreFp = fp;
 
   if (typeof disposeNftThreeIfAny === 'function') {
     try {

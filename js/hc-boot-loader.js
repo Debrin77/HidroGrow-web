@@ -22,12 +22,12 @@
     return false;
   }
 
-  /** APIs mínimas para que Inicio, Sistema y Medir funcionen al desbloquear PIN. */
+  /** APIs mínimas al PIN: dash, Medir y guardado del asistente (torre SVG en diferido). */
   function hcBootEssentialListos() {
     return (
       typeof updateDashboard === 'function' &&
-      typeof renderTorre === 'function' &&
-      typeof refreshMedirOperativaUi === 'function'
+      typeof refreshMedirOperativaUi === 'function' &&
+      typeof guardarSetupYContinuar === 'function'
     );
   }
 
@@ -78,7 +78,7 @@
     var mobile = hcBootIsMobile();
     if (statusEl && !global.appBootstrapped) {
       if (hcAppScriptsListos()) {
-        statusEl.textContent = mobile ? 'Listo — introduce tu PIN' : '';
+        statusEl.textContent = 'Listo — introduce tu PIN';
       } else if (total > 0) {
         statusEl.textContent = 'Preparando… ' + pct + '%';
       }
@@ -174,8 +174,8 @@
     opts = opts || {};
     var mobile = hcBootIsMobile();
     var idle = !!opts.idle;
-    var batchSize = idle ? 1 : mobile ? 3 : 5;
-    var yieldMs = idle ? 0 : mobile ? 10 : 6;
+    var batchSize = idle ? (mobile ? 2 : 4) : mobile ? 4 : 6;
+    var yieldMs = idle ? (mobile ? 6 : 4) : mobile ? 8 : 2;
 
     for (var i = 0; i < queue.length; i += batchSize) {
       if (idle) {
@@ -218,16 +218,30 @@
     criticalDone = true;
     hcBootUpdatePinProgress();
 
-    if (q.essential.length) {
-      await loadQueue(q.essential);
-      essentialDone = true;
-      hcBootUpdatePinProgress();
-    } else {
-      essentialDone = true;
+    var deferredPromise = null;
+    if (q.deferred.length) {
+      deferredStarted = true;
+      deferredPromise = loadQueue(q.deferred, { idle: hcBootIsMobile() });
     }
 
-    if (q.deferred.length) {
-      hcBootStartDeferredPhase();
+    if (q.essential.length) {
+      await loadQueue(q.essential);
+    }
+    essentialDone = true;
+    hcBootUpdatePinProgress();
+
+    if (deferredPromise) {
+      deferredPromise
+        .then(function () {
+          global._hcBootLoadDone = true;
+          hcBootUpdatePinProgress();
+          try {
+            global.dispatchEvent(new Event('hcBootScriptsLoaded'));
+          } catch (_) {}
+        })
+        .catch(function () {
+          global._hcBootLoadDone = true;
+        });
     } else {
       global._hcBootLoadDone = true;
       try {
@@ -247,7 +261,7 @@
     }
     deferredStarted = true;
     (async function () {
-      await loadQueue(q.deferred, { idle: true });
+      await loadQueue(q.deferred, { idle: hcBootIsMobile() });
       global._hcBootLoadDone = true;
       hcBootUpdatePinProgress();
       try {
