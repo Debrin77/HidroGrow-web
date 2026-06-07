@@ -65,14 +65,16 @@ async function resetApp() {
   }
 
   try {
-    sessionStorage.setItem('hc_forzar_bienvenida_tras_reset', '1');
     sessionStorage.clear();
-    sessionStorage.setItem('hc_forzar_bienvenida_tras_reset', '1');
   } catch (_) {}
   try {
     if (typeof hidrogrowLimpiarAlmacenamientoCompleto === 'function') {
       hidrogrowLimpiarAlmacenamientoCompleto({ skipIndexedDb: true });
     }
+    localStorage.setItem('hc_forzar_bienvenida_tras_reset', '1');
+    sessionStorage.setItem('hc_forzar_bienvenida_tras_reset', '1');
+  } catch (_) {}
+  try {
     if (typeof vaciarFotoDBEnArranque === 'function') {
       await vaciarFotoDBEnArranque();
     }

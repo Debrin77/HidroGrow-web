@@ -22,7 +22,13 @@
   }
 
   function hcAppScriptsListos() {
-    return typeof initApp === 'function' && typeof goTab === 'function';
+    if (loading && !criticalDone) return false;
+    return (
+      typeof initApp === 'function' &&
+      typeof goTab === 'function' &&
+      typeof mostrarBienvenidaOContinuarArranque === 'function' &&
+      (typeof abrirSetupNuevaTorre === 'function' || typeof abrirSetup === 'function')
+    );
   }
 
   function hcBootQueues() {
@@ -125,8 +131,7 @@
     });
   }
 
-  async function loadQueue(queue, opts) {
-    opts = opts || {};
+  async function loadQueue(queue) {
     var mobile = hcBootIsMobile();
     var batchSize = mobile ? 2 : 4;
     var yieldMs = mobile ? 24 : 8;
@@ -143,14 +148,10 @@
         if (!results[r]) failed++;
       }
       hcBootUpdatePinProgress();
-      if (opts.stopWhenReady && hcAppScriptsListos()) {
-        return true;
-      }
       if (i + batchSize < queue.length) {
         await hcBootYield(yieldMs);
       }
     }
-    return false;
   }
 
   async function hcBootStartLoading() {
@@ -161,16 +162,16 @@
       return;
     }
     loading = true;
-    total = q.critical.length + q.deferred.length;
+    total = q.critical.length;
     loaded = 0;
     failed = 0;
 
-    await loadQueue(q.critical, { stopWhenReady: true });
+    await loadQueue(q.critical);
     criticalDone = true;
     hcBootUpdatePinProgress();
 
     if (!hcBootIsMobile() && q.deferred.length) {
-      await loadQueue(q.deferred, {});
+      await loadQueue(q.deferred);
     }
 
     loading = false;
@@ -191,7 +192,7 @@
     }
     deferredStarted = true;
     (async function () {
-      await loadQueue(q.deferred, {});
+      await loadQueue(q.deferred);
       global._hcBootLoadDone = true;
       hcBootUpdatePinProgress();
       try {
