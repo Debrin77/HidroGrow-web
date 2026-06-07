@@ -43,7 +43,23 @@ function getNutrienteTorre() {
   const cfg = state.configTorre || {};
   const tieneInst =
     typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
-  if (!tieneInst) return null;
+  if (!tieneInst) {
+    if (
+      typeof asistenteSetupActivo === 'function' &&
+      asistenteSetupActivo() &&
+      typeof ensurePremiumSetup === 'function' &&
+      Array.isArray(NUTRIENTES_DB)
+    ) {
+      const p = ensurePremiumSetup();
+      const idDraft = p.nutrienteGerm || p.nutriente || 'canna_aqua';
+      return (
+        NUTRIENTES_DB.find((n) => n.id === idDraft) ||
+        NUTRIENTES_DB.find((n) => n.id === 'canna_aqua') ||
+        null
+      );
+    }
+    return null;
+  }
   let idNorm = resolveNutrienteIdInstalacionActiva(cfg);
   if (!idNorm) {
     if (cfg.hcPlantillaAutogenerada) return null;
@@ -1394,7 +1410,7 @@ function usarCalMagConsejosFilaBlanda(nut) {
  */
 function usarCalMagEnRecarga() {
   const nut = getNutrienteTorre();
-  if (!nut.calmagNecesario) return false;
+  if (!nut || !nut.calmagNecesario) return false;
   return usarPreferenciaCalMagRecargaGlobal();
 }
 

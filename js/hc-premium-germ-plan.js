@@ -991,14 +991,50 @@
     return !validarPlanGerminacionCompleto(cfg).ok;
   }
 
+  function hcCompletarGermPlanPropagadorDefaults() {
+    if (
+      typeof esSetupPropagadorGermPaso3 !== 'function' ||
+      !esSetupPropagadorGermPaso3()
+    ) {
+      return;
+    }
+    var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
+    if (!p) return;
+    ensurePremiumGermFields(p, { forceDefaults: true });
+    if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) {
+      p.numSemillasGerm = sugerirNumSemillas(getWizardCfg(), p);
+    }
+    if (!p.sustratoGerm) p.sustratoGerm = 'lana';
+    if (!p.fechaSiembraGerm) p.fechaSiembraGerm = hoyIsoGerm();
+  }
+
   function validarPremiumGermPlan() {
     if (typeof hcCaminoSemillaGermEnSetup !== 'function' || !hcCaminoSemillaGermEnSetup()) {
       return true;
     }
+    if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
+      hcCompletarGermPlanPropagadorDefaults();
+    }
     persistPremiumGermPlanFromUIImmediate(true);
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
     var cam =
-      typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      typeof hcResolverCaminoSetup === 'function'
+        ? hcResolverCaminoSetup()
+        : typeof getCaminoCultivo === 'function'
+          ? getCaminoCultivo()
+          : '';
+    if (
+      cam === 'semilla_propagador' &&
+      typeof esSetupPropagadorGermPaso3 === 'function' &&
+      esSetupPropagadorGermPaso3()
+    ) {
+      ensurePremiumGermFields(p, { forceDefaults: true });
+      if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) {
+        p.numSemillasGerm = sugerirNumSemillas(getWizardCfg(), p);
+      }
+      if (!p.sustratoGerm) p.sustratoGerm = 'lana';
+      if (!p.fechaSiembraGerm) p.fechaSiembraGerm = hoyIsoGerm();
+    }
     if (!Number.isFinite(p.numSemillasGerm) || p.numSemillasGerm < 1) {
       if (typeof showToast === 'function') {
         showToast(
@@ -1057,6 +1093,7 @@
   global.syncPremiumGermPlanFromConfig = syncPremiumGermPlanFromConfig;
   global.seleccionarPremiumSustratoGerm = seleccionarPremiumSustratoGerm;
   global.validarPremiumGermPlan = validarPremiumGermPlan;
+  global.hcCompletarGermPlanPropagadorDefaults = hcCompletarGermPlanPropagadorDefaults;
   global.onPropagadorEquipSeleccionado = onPropagadorEquipSeleccionado;
   global.etiquetaSustratoGerm = etiquetaSustratoGerm;
   global.PROPAGADOR_CAPACIDAD_ES = PROPAGADOR_CAPACIDAD;

@@ -475,8 +475,39 @@
   }
 
   /** Semilla (propagador o hidro): bloque premium de germinación en el asistente inicial. */
-  function hcCaminoSemillaGermEnSetup() {
+  /** Camino semilla durante el asistente (premium o setupData). */
+  function hcResolverCaminoSetup() {
     var cam = getCaminoCultivo();
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return cam;
+    if (typeof getCaminoElegidoEnAsistente === 'function') {
+      var elegido = getCaminoElegidoEnAsistente();
+      if (elegido === 'semilla_propagador' || elegido === 'semilla_hidro') return elegido;
+    }
+    return cam;
+  }
+
+  /** Paso 3 propagador: germinación ahora (no validar sala interior). */
+  function esSetupPropagadorGermPaso3() {
+    var cam = hcResolverCaminoSetup();
+    if (cam !== 'semilla_propagador') return false;
+    if (
+      typeof getPremiumOrigenPlanta === 'function' &&
+      getPremiumOrigenPlanta() !== 'semilla'
+    ) {
+      return false;
+    }
+    if (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' && hcCaminoSemillaPropagadorSetupGerm()) {
+      return true;
+    }
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+    if (typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm()) {
+      return true;
+    }
+    return false;
+  }
+
+  function hcCaminoSemillaGermEnSetup() {
+    var cam = hcResolverCaminoSetup();
     if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
     if (hcSetupEnFaseSalaPreGerm()) return false;
     if (hcSetupEnFaseGerminacion()) return true;
@@ -1280,7 +1311,8 @@
       }
       return skip;
     }
-    var cam = getCaminoCultivo();
+    var cam =
+      typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
     if (cam === 'semilla_hidro') {
       [
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
@@ -1774,4 +1806,6 @@
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;
   global.refreshDashCaminoResumen = refreshDashCaminoResumen;
   global.inferCaminoFromOrigen = inferCaminoFromOrigen;
+  global.hcResolverCaminoSetup = hcResolverCaminoSetup;
+  global.esSetupPropagadorGermPaso3 = esSetupPropagadorGermPaso3;
 })(typeof window !== 'undefined' ? window : this);

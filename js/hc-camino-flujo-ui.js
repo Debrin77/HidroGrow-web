@@ -131,9 +131,13 @@
   }
 
   function isGermAhoraPropagadorUi() {
+    var propagador =
+      typeof esSetupPropagadorGermPaso3 === 'function'
+        ? esSetupPropagadorGermPaso3()
+        : typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+          hcCaminoSemillaPropagadorSetupGerm();
     return (
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm() &&
+      propagador &&
       (typeof getPremiumOrigenPlanta === 'function'
         ? getPremiumOrigenPlanta()
         : 'semilla') === 'semilla'
@@ -160,12 +164,13 @@
 
   function applySalaPreGermEquipMinimalChrome() {
     var show = hcSetupSalaPreGermPropagadorEquip();
+    var germAhora = isGermAhoraPropagadorUi();
     var page3 = el('spagePremium3');
     var overlay = el('setupOverlay');
     if (overlay) overlay.classList.toggle('hc-sala-pre-germ-equip', !!show);
     if (page3) page3.classList.toggle('hc-sala-pre-germ-equip-page', !!show);
     var t3 = page3 ? page3.querySelector('.setup-title') : null;
-    if (t3) {
+    if (t3 && !germAhora) {
       t3.textContent = show ? 'Equipamiento de la sala' : 'Espacio y equipamiento';
     }
     var hideIds = [

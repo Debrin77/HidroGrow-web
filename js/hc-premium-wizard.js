@@ -1039,8 +1039,7 @@
 
   function validarPremiumSetupPaso(pagina) {
     const propagadorGerm =
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm();
+      typeof esSetupPropagadorGermPaso3 === 'function' && esSetupPropagadorGermPaso3();
     const lite =
       pagina === SETUP_PAGE_ORIGEN ||
       pagina === SETUP_PAGE_PREMIUM_1 ||
@@ -1090,9 +1089,14 @@
     }
     if (pagina === SETUP_PAGE_PREMIUM_3) {
       if (
-        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-        hcCaminoSemillaPropagadorSetupGerm()
+        typeof esSetupPropagadorGermPaso3 === 'function' &&
+        esSetupPropagadorGermPaso3()
       ) {
+        if (
+          typeof hcCompletarGermPlanPropagadorDefaults === 'function'
+        ) {
+          hcCompletarGermPlanPropagadorDefaults();
+        }
         if (
           typeof validarGeneticaGermObligatoria === 'function' &&
           !validarGeneticaGermObligatoria()
@@ -1129,6 +1133,11 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_3 && ensurePremiumSetup().entorno === 'interior') {
+      var camP3Interior =
+        typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : '';
+      if (camP3Interior === 'semilla_propagador') {
+        return true;
+      }
       if (
         typeof hcSetupSalaPreGermPropagadorEquip === 'function' &&
         hcSetupSalaPreGermPropagadorEquip()
