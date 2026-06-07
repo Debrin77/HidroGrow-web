@@ -159,7 +159,6 @@ test('propagador: wizard completo → checklist → hub Inicio', async () => {
   const page = await browser.newPage();
   const pageErrors = [];
   page.on('pageerror', (e) => pageErrors.push(e.message));
-  page.on('dialog', (d) => d.accept());
 
   await unlockPin(page);
   await avanzarWizardPropagador(page);
@@ -193,14 +192,12 @@ test('propagador: wizard completo → checklist → hub Inicio', async () => {
   assert.ok(postSave.numSem >= 1, 'semillas en config');
   assert.ok(postSave.torres >= 1, 'instalación creada');
 
-  await page.evaluate((ids) => {
-    window.confirm = () => true;
-    ids.forEach((id) => {
-      if (typeof hcPropagadorToggleItem === 'function') hcPropagadorToggleItem(id, true);
-    });
-    if (typeof hcFinishPropagadorMontaje === 'function') hcFinishPropagadorMontaje();
-  }, PROP_CHECK_IDS);
-  await page.waitForTimeout(600);
+  for (const id of PROP_CHECK_IDS) {
+    await page.locator('[data-prop-id="' + id + '"]').click();
+    await page.waitForTimeout(80);
+  }
+  await page.locator('#hcPropagadorMontajeFinishBtn').click();
+  await page.waitForTimeout(800);
 
   const fin = await page.evaluate(() => {
     const cfg = state && state.configTorre ? state.configTorre : {};

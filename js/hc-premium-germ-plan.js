@@ -691,6 +691,31 @@
     return cam === 'semilla_propagador' || cam === 'semilla_hidro';
   }
 
+  function hcOptsValidacionPlanGerm(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    return { requierePropagador: cam !== 'semilla_propagador' };
+  }
+
+  /** Sincroniza plan germ desde cfg antes de validar/confirmar checklist (evita borrar fecha del asistente). */
+  function hcAsegurarGermPlanAntesConfirmar(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (!requiereValidacionPlanGerm(cfg)) return;
+    if (typeof syncPremiumGermPlanFromConfig === 'function') {
+      syncPremiumGermPlanFromConfig(cfg);
+    }
+    var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
+    if (!p || !cfg) return;
+    var fechaCfg = leerFechaSiembraGermDesdeCfg(cfg);
+    if (fechaCfg && !p.fechaSiembraGerm) p.fechaSiembraGerm = fechaCfg;
+    if (!fechaCfg && !p.fechaSiembraGerm) p.fechaSiembraGerm = hoyIsoGerm();
+    if (!p.sustratoGerm) p.sustratoGerm = 'lana';
+    if (typeof persistPremiumGermPlanToConfig === 'function') {
+      persistPremiumGermPlanToConfig(cfg, { adjustTorre: false, syncNutrient: true });
+    }
+    if (typeof resolverNutrienteGermBandeja === 'function') resolverNutrienteGermBandeja(cfg);
+  }
+
   function resolveNumSemillasGermPlan(cfg, g, prem) {
     prem = prem || (cfg && cfg.premiumSetup) || {};
     g = g || {};
@@ -837,7 +862,15 @@
       var sub = el('hcPropSustratoGerm');
       if (sub) p.sustratoGerm = String(sub.value || p.sustratoGerm || 'lana');
       var fechaProp = el('hcPropFechaSiembraGerm');
-      if (fechaProp) p.fechaSiembraGerm = normalizarFechaSiembraGermInput(fechaProp.value);
+      if (fechaProp) {
+        var fechaNorm = normalizarFechaSiembraGermInput(fechaProp.value);
+        if (fechaNorm) {
+          p.fechaSiembraGerm = fechaNorm;
+        } else if (!p.fechaSiembraGerm) {
+          var fechaExistente = leerFechaSiembraGermDesdeCfg(cfg);
+          p.fechaSiembraGerm = fechaExistente || hoyIsoGerm();
+        }
+      }
     }
     if (typeof persistPremiumGermPlanToConfig === 'function') {
       persistPremiumGermPlanToConfig(cfg, { adjustTorre: true });
@@ -861,7 +894,7 @@
   function renderPlanGermModalBlock(cfg) {
     if (!requiereValidacionPlanGerm(cfg)) return '';
     var st = getPlanGermEstado(cfg);
-    var v = validarPlanGerminacionCompleto(cfg);
+    var v = validarPlanGerminacionCompleto(cfg, hcOptsValidacionPlanGerm(cfg));
     var prem = cfg.premiumSetup || {};
     var pref = prem.geneticaPref === 'auto' ? 'auto' : prem.geneticaPref === 'foto' ? 'foto' : '';
     var opts =
@@ -967,19 +1000,30 @@
     if (!btn) return;
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var hint = document.getElementById('hcPmFootHint');
+    var hints = [];
+    var prog =
+      typeof hcGetPropagadorMontajeProg === 'function' ? hcGetPropagadorMontajeProg(cfg) : null;
+    if (prog && prog.done < prog.total) {
+      hints.push('Marca todos los puntos (' + prog.done + '/' + prog.total + ').');
+    }
+    var planVal = validarPlanGerminacionCompleto(cfg, hcOptsValidacionPlanGerm(cfg));
+    if (!planVal.ok) hints.push(planVal.message);
+    if (hint) {
+      hint.textContent = hints.length ? hints.join(' ') : '';
+      hint.classList.toggle('hc-pm-foot-hint--warn', hints.length > 0);
+    }
+    btn.disabled = false;
+    btn.removeAttribute('aria-disabled');
     if (cam === 'esqueje_hidro') {
       btn.textContent = 'Confirmar enraizado';
       return;
     }
     if (cam === 'semilla_hidro') {
-      btn.textContent = validarPlanGerminacionCompleto(cfg).ok
-        ? 'Confirmar prep hidro'
-        : 'Completa el plan de germinación';
+      btn.textContent = planVal.ok ? 'Confirmar prep hidro' : 'Completa el plan de germinación';
       return;
     }
-    btn.textContent = validarPlanGerminacionCompleto(cfg).ok
-      ? 'Confirmar propagador'
-      : 'Completa genética y semillas';
+    btn.textContent = planVal.ok ? 'Confirmar propagador' : 'Completa genética y semillas';
   }
 
   function hcGerminacionBloqueadaPorPlanDatos(cfg) {
@@ -988,7 +1032,7 @@
     if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
       return false;
     }
-    return !validarPlanGerminacionCompleto(cfg).ok;
+    return !validarPlanGerminacionCompleto(cfg, hcOptsValidacionPlanGerm(cfg)).ok;
   }
 
   function hcCompletarGermPlanPropagadorDefaults() {
@@ -1110,6 +1154,8 @@
   global.updatePropagadorMontajeFoot = updatePropagadorMontajeFoot;
   global.hcGerminacionBloqueadaPorPlanDatos = hcGerminacionBloqueadaPorPlanDatos;
   global.requiereValidacionPlanGerm = requiereValidacionPlanGerm;
+  global.hcOptsValidacionPlanGerm = hcOptsValidacionPlanGerm;
+  global.hcAsegurarGermPlanAntesConfirmar = hcAsegurarGermPlanAntesConfirmar;
   global.leerFechaSiembraGermDesdeCfg = leerFechaSiembraGermDesdeCfg;
   global.aplicarFechaSiembraGermEnCfg = aplicarFechaSiembraGermEnCfg;
   global.formatearFechaSiembraGermDisplay = formatearFechaSiembraGermDisplay;

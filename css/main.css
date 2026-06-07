@@ -22296,6 +22296,7 @@ button.hc-monitor-check { cursor: pointer; }
 .hc-pm-opt { font-size: var(--text-xs); color: var(--muted); font-weight: 600; }
 .hc-pm-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
 .hc-pm-foot-hint { flex: 1 1 100%; font-size: 12px; line-height: 1.45; color: var(--muted); margin: 0 0 4px; }
+.hc-pm-foot-hint--warn { color: var(--red); font-weight: 600; }
 .hc-pm-config-link, .hc-pm-inline-config { margin: 8px 0 0; }
 .hc-pm-item--locked { opacity: 0.85; }
 .torre-btn-puesta-marcha { width: 100%; margin-top: 10px; }

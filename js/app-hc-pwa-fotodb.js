@@ -1,16 +1,16 @@
-﻿/**
- * Service Worker / PWA, arranque PIN/biometría, IndexedDB fotos.
+/**
+ * Service Worker / PWA, arranque PIN/biometr�a, IndexedDB fotos.
  * Tras app-hc-torres-badges-notifs.js.
  */
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 // SERVICE WORKER + ARRANQUE
-// ══════════════════════════════════════════════════
+// --------------------------------------------------
 
 // Registrar Service Worker para PWA
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-06-01-perf10')
+      .register('service-worker.js?v=2026-06-01-perf11')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -27,7 +27,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-/** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalación es manual. */
+/** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalaci�n es manual. */
 function esPlataformaIOSWeb() {
   const ua = navigator.userAgent || '';
   const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -40,7 +40,7 @@ function instalarPWA() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(result => {
       if (result.outcome === 'accepted') {
-        showToast('✅ Instalando HidroGrow…');
+        showToast('? Instalando HidroGrow�');
       }
       deferredPrompt = null;
     });
@@ -48,23 +48,23 @@ function instalarPWA() {
   }
   if (esPlataformaIOSWeb()) {
     showToast(
-      'En iPhone/iPad: Safari → icono compartir ↑ → «Añadir a la pantalla de inicio». Así tendrás icono propio como una app.',
+      'En iPhone/iPad: Safari ? icono compartir ? ? �A�adir a la pantalla de inicio�. As� tendr�s icono propio como una app.',
       false
     );
     return;
   }
   showToast(
-    'Si no aparece el instalador, usa el menú del navegador («Instalar app» o «Crear acceso directo»). En escritorio suele salir tras usar la página un rato.',
+    'Si no aparece el instalador, usa el men� del navegador (�Instalar app� o �Crear acceso directo�). En escritorio suele salir tras usar la p�gina un rato.',
     false
   );
 }
 
-// Detectar instalación PWA
+// Detectar instalaci�n PWA
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  // Mostrar botón de instalación si está disponible
+  // Mostrar bot�n de instalaci�n si est� disponible
   const installBtn = document.getElementById('installPWABtn');
   if (installBtn) installBtn.style.display = 'flex';
 });
@@ -73,7 +73,7 @@ window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
   const installBtn = document.getElementById('installPWABtn');
   if (installBtn) installBtn.style.display = 'none';
-  showToast('✅ HidroGrow instalada correctamente');
+  showToast('? HidroGrow instalada correctamente');
 });
 
 function hcSplashMinVisibleMs() {
@@ -170,7 +170,7 @@ function hcRunAppBootSequence() {
         var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
         if (statusEl) {
-          statusEl.textContent = 'Biometría no disponible. Introduce tu PIN.';
+          statusEl.textContent = 'Biometr�a no disponible. Introduce tu PIN.';
         }
       }
     }, 150);
@@ -232,10 +232,10 @@ window.addEventListener('load', function () {
 
 function scheduleHcPreinitWhilePin() {}
 
-// ══════════════════════════════════════════════════
-// FOTODB — IndexedDB para fotos (sin límite de tamaño)
-// ══════════════════════════════════════════════════
-// FOTO_DB_NAME — hc-bootstrap-config.js
+// --------------------------------------------------
+// FOTODB � IndexedDB para fotos (sin l�mite de tama�o)
+// --------------------------------------------------
+// FOTO_DB_NAME � hc-bootstrap-config.js
 const FOTO_DB_VERSION = 1;
 const FOTO_STORE      = 'fotos';
 let fotoDB = null;

@@ -425,6 +425,32 @@
     return { done: done, total: total };
   }
 
+  function hcGetPropagadorMontajeProg(cfg) {
+    cfg = cfg || getCfg();
+    return countProgress(getChecks(cfg), buildItems(cfg));
+  }
+
+  function hcPmModalAbierto() {
+    var modal = document.getElementById('modalPropagadorMontaje');
+    return !!(modal && modal.classList.contains('open'));
+  }
+
+  function hcPmToast(msg, isErr, opts) {
+    opts = opts && typeof opts === 'object' ? Object.assign({}, opts) : {};
+    if (hcPmModalAbierto()) {
+      opts.zIndex = 12750;
+      opts.prominent = true;
+    }
+    if (typeof showToast === 'function') showToast(msg, !!isErr, opts);
+  }
+
+  function hcPmSetFootHint(msg, isErr) {
+    var hint = document.getElementById('hcPmFootHint');
+    if (!hint) return;
+    hint.textContent = msg || '';
+    hint.classList.toggle('hc-pm-foot-hint--warn', !!isErr && !!msg);
+  }
+
   function esc(s) {
     return String(s || '')
       .replace(/&/g, '&amp;')
@@ -709,6 +735,7 @@
     saveChecks(cfg, checks);
     var body = document.getElementById('propagadorMontajeBody');
     if (body) body.innerHTML = renderBodyHtml(cfg);
+    if (typeof updatePropagadorMontajeFoot === 'function') updatePropagadorMontajeFoot(cfg);
     refreshPropagadorMontajeUi();
   }
 
@@ -749,7 +776,9 @@
     var cfg = getCfg();
     try {
       if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
+      if (typeof hcAsegurarGermPlanAntesConfirmar === 'function') hcAsegurarGermPlanAntesConfirmar(cfg);
     } catch (_) {}
+    hcPmSetFootHint('', false);
     var body = document.getElementById('propagadorMontajeBody');
     if (body) body.innerHTML = renderBodyHtml(cfg);
     var title = document.getElementById('propagadorMontajeTitle');
@@ -775,87 +804,84 @@
   }
 
   function hcFinishPropagadorMontaje() {
-    var cfg = getCfg();
-    var checks = getChecks(cfg);
-    var items = buildItems(cfg);
-    var prog = countProgress(checks, items);
-    if (prog.done < prog.total) {
-      if (typeof showToast === 'function') {
-        showToast('Marca todos los puntos (' + prog.done + '/' + prog.total + ').', true);
+    try {
+      var cfg = getCfg();
+      if (typeof hcAsegurarGermPlanAntesConfirmar === 'function') {
+        hcAsegurarGermPlanAntesConfirmar(cfg);
       }
-      return;
-    }
-    if (
-      typeof requiereValidacionPlanGerm === 'function' &&
-      requiereValidacionPlanGerm(cfg) &&
-      typeof validarPlanGerminacionCompleto === 'function'
-    ) {
-      if (typeof resolverNutrienteGermBandeja === 'function') {
-        resolverNutrienteGermBandeja(cfg);
-      } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
-        hcAsegurarNutrienteGermEnCfg(cfg);
-      }
-      persistHcPropPlanFromModal();
-      var camFin =
-        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-      var planVal = validarPlanGerminacionCompleto(cfg, {
-        requierePropagador: camFin !== 'semilla_propagador',
-      });
-      if (!planVal.ok) {
-        if (typeof showToast === 'function') {
-          showToast(
-            planVal.message || 'Completa genética, semillas y sustrato en el bloque superior.',
-            true,
-            { durationMs: 6200 }
-          );
-        }
-        try {
-          document.getElementById('hcPropPlanGermBlock')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        } catch (_) {}
+      var checks = getChecks(cfg);
+      var items = buildItems(cfg);
+      var prog = countProgress(checks, items);
+      if (prog.done < prog.total) {
+        var msgProg = 'Marca todos los puntos (' + prog.done + '/' + prog.total + ').';
+        hcPmSetFootHint(msgProg, true);
+        hcPmToast(msgProg, true, { durationMs: 5200 });
+        if (typeof updatePropagadorMontajeFoot === 'function') updatePropagadorMontajeFoot(cfg);
         return;
       }
-    }
-    var msgConfirm = esRutaEsqueje(cfg)
-      ? '¿Confirmas que el domo de enraizado está listo?'
-      : esRutaGermHidro(cfg)
-        ? '¿Confirmas el preparativo en hidro?'
-        : '¿Confirmas el propagador/domo?';
-    if (!confirm(msgConfirm)) {
-      return;
-    }
-    checks.completedAt = new Date().toISOString();
-    saveChecks(cfg, checks);
-    if (!propagadorMontajeCompleto(cfg)) {
-      var keyFix = getChecksKey(cfg);
-      if (typeof state !== 'undefined' && state && state.configTorre) {
-        state.configTorre[keyFix] = checks;
-        try {
-          if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
-          if (typeof saveState === 'function') saveState();
-        } catch (_) {}
+      if (
+        typeof requiereValidacionPlanGerm === 'function' &&
+        requiereValidacionPlanGerm(cfg) &&
+        typeof validarPlanGerminacionCompleto === 'function'
+      ) {
+        if (typeof resolverNutrienteGermBandeja === 'function') {
+          resolverNutrienteGermBandeja(cfg);
+        } else if (typeof hcAsegurarNutrienteGermEnCfg === 'function') {
+          hcAsegurarNutrienteGermEnCfg(cfg);
+        }
+        if (typeof persistHcPropPlanFromModal === 'function') persistHcPropPlanFromModal();
+        var planOpts =
+          typeof hcOptsValidacionPlanGerm === 'function'
+            ? hcOptsValidacionPlanGerm(cfg)
+            : { requierePropagador: getCamino(cfg) !== 'semilla_propagador' };
+        var planVal = validarPlanGerminacionCompleto(cfg, planOpts);
+        if (!planVal.ok) {
+          var msgPlan =
+            planVal.message || 'Completa genética, semillas y sustrato en el bloque superior.';
+          hcPmSetFootHint(msgPlan, true);
+          hcPmToast(msgPlan, true, { durationMs: 6200 });
+          try {
+            document
+              .getElementById('hcPropPlanGermBlock')
+              ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+          if (typeof updatePropagadorMontajeFoot === 'function') updatePropagadorMontajeFoot(cfg);
+          return;
+        }
       }
-    }
-    try {
-      if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(getCfg());
-    } catch (_) {}
-    hcClosePropagadorMontajeChecklist();
-    try {
-      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
-      else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
-        hcRefreshSistemaPropagadorPanel();
+      hcPmSetFootHint('', false);
+      checks.completedAt = new Date().toISOString();
+      saveChecks(cfg, checks);
+      if (!propagadorMontajeCompleto(cfg)) {
+        var keyFix = getChecksKey(cfg);
+        if (typeof state !== 'undefined' && state && state.configTorre) {
+          state.configTorre[keyFix] = checks;
+          try {
+            if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+            if (typeof saveState === 'function') saveState();
+          } catch (_) {}
+        }
       }
-      if (typeof refreshTabsOperativaCamino === 'function') {
-        refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
-      }
-      if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
-    } catch (_) {}
-    refreshPropagadorMontajeUi();
-    var nextHidro =
-      esRutaGermHidro(cfg) && typeof hcSiguientePasoSemillaHidro === 'function'
-        ? hcSiguientePasoSemillaHidro(getCfg())
-        : null;
-    if (typeof showToast === 'function') {
-      showToast(
+      try {
+        if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(getCfg());
+      } catch (_) {}
+      hcClosePropagadorMontajeChecklist();
+      try {
+        if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+        else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+          hcRefreshSistemaPropagadorPanel();
+        }
+        if (typeof refreshTabsOperativaCamino === 'function') {
+          refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
+        }
+        if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
+      } catch (_) {}
+      refreshPropagadorMontajeUi();
+      var nextHidro =
+        esRutaGermHidro(cfg) && typeof hcSiguientePasoSemillaHidro === 'function'
+          ? hcSiguientePasoSemillaHidro(getCfg())
+          : null;
+      hcPmToast(
         esRutaEsqueje(cfg)
           ? '✓ Enraizado listo. Asigna clones en Cultivo e instalación.'
           : esRutaGermHidro(cfg)
@@ -866,22 +892,30 @@
         false,
         { durationMs: 4200 }
       );
-    }
-    if (esRutaEsqueje(cfg)) {
-      refreshPropagadorMontajeUi();
-      return;
-    }
-    var cam =
-      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    if (cam === 'semilla_propagador') {
-      if (typeof hcIrHubGerminacionOperativa === 'function') {
-        hcIrHubGerminacionOperativa();
+      if (esRutaEsqueje(cfg)) {
+        refreshPropagadorMontajeUi();
+        return;
       }
-      return;
-    }
-    if (cam === 'semilla_hidro') {
-      hcAvanzarSemillaHidroTrasPrepChecklist(getCfg());
-      return;
+      var cam =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      if (cam === 'semilla_propagador') {
+        if (typeof hcIrHubGerminacionOperativa === 'function') {
+          hcIrHubGerminacionOperativa();
+        }
+        return;
+      }
+      if (cam === 'semilla_hidro') {
+        hcAvanzarSemillaHidroTrasPrepChecklist(getCfg());
+        return;
+      }
+    } catch (errFinish) {
+      try {
+        console.error('hcFinishPropagadorMontaje', errFinish);
+      } catch (_) {}
+      hcPmSetFootHint('Error al confirmar. Recarga e inténtalo de nuevo.', true);
+      hcPmToast('Error al confirmar el propagador. Recarga e inténtalo de nuevo.', true, {
+        durationMs: 6500,
+      });
     }
   }
 
@@ -1133,6 +1167,7 @@
   global.hcOpenPropagadorMontajeChecklist = hcOpenPropagadorMontajeChecklist;
   global.hcClosePropagadorMontajeChecklist = hcClosePropagadorMontajeChecklist;
   global.hcFinishPropagadorMontaje = hcFinishPropagadorMontaje;
+  global.hcGetPropagadorMontajeProg = hcGetPropagadorMontajeProg;
   global.hcPropagadorToggleItem = hcPropagadorToggleItem;
   global.hcPropCardActivate = hcPropCardActivate;
   global.hcPropCardKey = hcPropCardKey;
