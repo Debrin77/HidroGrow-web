@@ -30,7 +30,7 @@ function hcFinishResetHeavyWork() {
     }
     if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     if (typeof refreshTabsOperativaCamino === 'function') {
-      refreshTabsOperativaCamino();
+      refreshTabsOperativaCamino({ full: true });
     }
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
     if (typeof updateDashboard === 'function') updateDashboard();
@@ -307,6 +307,8 @@ function hcFinishInitAppHeavyWork() {
 }
 
 function initApp() {
+  if (typeof window !== 'undefined' && window._hcInitAppDone) return;
+  if (typeof window !== 'undefined') window._hcInitAppDone = true;
   try {
     const appElBoot = document.getElementById('app');
     if (appElBoot) appElBoot.classList.remove('hc-app-booting');
@@ -755,15 +757,24 @@ function hcWhenCalendarioReady(cb) {
     } catch (_) {}
     return;
   }
+  var done = false;
+  var run = function () {
+    if (done || typeof renderCalendario !== 'function') return;
+    done = true;
+    try {
+      cb();
+    } catch (_) {}
+  };
+  try {
+    window.addEventListener('hcBootScriptsLoaded', run, { once: true });
+  } catch (_) {}
   var n = 0;
   var t = setInterval(function () {
-    if (typeof renderCalendario === 'function' || ++n > 120) {
+    if (typeof renderCalendario === 'function' || ++n > 60) {
       clearInterval(t);
-      try {
-        cb();
-      } catch (_) {}
+      run();
     }
-  }, 40);
+  }, 32);
 }
 
 function hcRefreshCalendarioTab(gen) {

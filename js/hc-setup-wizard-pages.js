@@ -24,6 +24,8 @@ function hcSetupRedirectSiPaginaOmitida() {
   return true;
 }
 
+var _hcSetupPagesCache = null;
+
 function renderSetupPage() {
   if (
     typeof setupEsNuevaTorre !== 'undefined' &&
@@ -55,8 +57,12 @@ function renderSetupPage() {
     }
   }
 
-  // Ocultar todas las páginas
-  document.querySelectorAll('.setup-page').forEach(p => p.classList.remove('active'));
+  if (!_hcSetupPagesCache) {
+    _hcSetupPagesCache = Array.prototype.slice.call(document.querySelectorAll('.setup-page'));
+  }
+  _hcSetupPagesCache.forEach(function (p) {
+    p.classList.remove('active');
+  });
 
   // Mostrar página actual
   const pageId = (typeof SETUP_PAGE_IDS !== 'undefined' && SETUP_PAGE_IDS[setupPagina])

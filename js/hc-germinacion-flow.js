@@ -1872,7 +1872,7 @@
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}
     try {
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true });
       else if (typeof aplicarVisibilidadTabsCamino === 'function') aplicarVisibilidadTabsCamino();
     } catch (_) {}
     if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);

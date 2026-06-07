@@ -263,7 +263,7 @@
     if (typeof applyMedirSemillaHidroChrome === 'function') {
       applyMedirSemillaHidroChrome(cfg);
     }
-    refreshTabsOperativaUi();
+    refreshTabsOperativaUi({ visibilidadOnly: true });
   }
 
   function avisarPrimeraMedicionOperativa() {

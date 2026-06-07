@@ -515,7 +515,7 @@
       if (typeof hcGerminacionSyncDesdePremium === 'function') {
         hcGerminacionSyncDesdePremium(cfg);
       }
-      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino();
+      if (typeof refreshTabsOperativaCamino === 'function') refreshTabsOperativaCamino({ full: true });
       if (typeof goTab === 'function') goTab('inicio');
       var run = function () {
         try {
@@ -595,7 +595,7 @@
     opts = opts || {};
     var cfg = cfgActiva();
     aplicarVisibilidadTabsCamino(cfg);
-    if (opts.visibilidadOnly) return;
+    if (!opts.full) return;
 
     ensureOperativaBanner(
       'propagadorSalaOcultaBanner',
@@ -648,15 +648,15 @@
     global.refreshTabsOperativaUi = function (opts) {
       opts = opts && typeof opts === 'object' ? opts : {};
       if (typeof prev === 'function') prev(opts);
-      if (opts.visibilidadOnly) {
-        refreshTabsOperativaCamino({ visibilidadOnly: true });
+      if (opts.full) {
+        refreshTabsOperativaCamino({ full: true });
         return;
       }
       if (opts.tab) {
         refreshTabsOperativaCaminoForTab(opts.tab);
         return;
       }
-      refreshTabsOperativaCamino(opts);
+      refreshTabsOperativaCamino({ visibilidadOnly: true });
     };
   }
 

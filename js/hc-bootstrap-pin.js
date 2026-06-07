@@ -103,7 +103,10 @@ function unlockAndInitApp() {
     appBootstrapped = true;
     const runInit = function () {
       try {
-        if (typeof hcBootStartDeferredPhase === 'function') {
+        if (
+          typeof hcBootStartDeferredPhase === 'function' &&
+          !(typeof window !== 'undefined' && window._hcBootLoadDone)
+        ) {
           try {
             hcBootStartDeferredPhase();
           } catch (_) {}

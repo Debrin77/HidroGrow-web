@@ -114,7 +114,9 @@ function updateDashboard(opts) {
     if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
   } catch (_) {}
   try {
-    if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+    if (typeof refreshTabsOperativaUi === 'function') {
+      refreshTabsOperativaUi({ visibilidadOnly: true });
+    }
   } catch (_) {}
 
   try {
@@ -455,11 +457,7 @@ function updateDashTorre() {
           }
         } catch (_) {}
       };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runRepair, { timeout: 2500 });
-      } else {
-        setTimeout(runRepair, 80);
-      }
+      setTimeout(runRepair, 80);
     }
   } catch (_) {}
   if (

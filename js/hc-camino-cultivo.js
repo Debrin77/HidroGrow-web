@@ -574,7 +574,7 @@
     } catch (_) {}
     try {
       if (typeof refreshTabsOperativaCamino === 'function') {
-        refreshTabsOperativaCamino({ visibilidadOnly: !!opts.soloVisibilidad });
+        refreshTabsOperativaCamino(opts.soloVisibilidad ? {} : { full: true });
       }
     } catch (_) {}
     try {
