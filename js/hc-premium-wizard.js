@@ -787,12 +787,16 @@
       if (el('setupPremiumNumSemillasGerm') && typeof persistPremiumGermPlanFromUI === 'function') {
         persistPremiumGermPlanFromUI(true);
       }
+      if (typeof persistVariedadGermFromUI === 'function') {
+        persistVariedadGermFromUI();
+      }
       if (typeof persistPremiumNutrienteGermFromUI === 'function') {
         persistPremiumNutrienteGermFromUI();
       }
       return;
     }
     if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
+    if (typeof persistVariedadGermFromUI === 'function') persistVariedadGermFromUI();
     if (typeof persistPremiumNutrienteGermFromUI === 'function') persistPremiumNutrienteGermFromUI();
   }
 

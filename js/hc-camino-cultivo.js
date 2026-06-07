@@ -165,6 +165,12 @@
     if (!esNueva && !enAsistente) {
       var fromInst = leerCaminoDeObj(cfg);
       if (fromInst) return fromInst;
+      if (
+        typeof hcTieneInstalacionesUsuario === 'function' &&
+        !hcTieneInstalacionesUsuario()
+      ) {
+        return '';
+      }
     }
     if (cfgOpt) {
       var fromCfgOpt = leerCaminoDeObj(cfg);

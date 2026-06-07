@@ -741,6 +741,18 @@
 
   function hcGerminacionSyncDesdePremium(cfg) {
     if (!cfg) return;
+    try {
+      var enSetup =
+        (typeof asistenteSetupActivo === 'function' && asistenteSetupActivo()) ||
+        (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre);
+      if (
+        !enSetup &&
+        typeof hcTieneInstalacionesUsuario === 'function' &&
+        !hcTieneInstalacionesUsuario()
+      ) {
+        return;
+      }
+    } catch (_) {}
     var camSync =
       (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
       cfg.caminoCultivo ||

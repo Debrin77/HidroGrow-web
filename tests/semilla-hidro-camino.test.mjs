@@ -384,6 +384,18 @@ test('arranque: IIFE exportan a window (PIN y germinación)', () => {
   assert.match(nut, /\}\)\(typeof window !== 'undefined' \? window : globalThis\);/);
 });
 
+test('nutriente germ: variedad no obligatoria en clima antes del paso genética', () => {
+  const nut = read('js/hc-premium-nutriente-germ.js');
+  const wiz = read('js/hc-premium-wizard.js');
+  assert.match(nut, /function debeExigirVariedadEnNutrienteGerm/);
+  assert.match(nut, /hcCaminoSemillaPropagadorSetupGerm/);
+  assert.match(nut, /SETUP_PAGE_PREMIUM_6/);
+  assert.match(nut, /debeExigirVariedadEnNutrienteGerm\(\) && !getPremiumGermVariedadId\(\)/);
+  assert.match(nut, /persistVariedadGermFromUI/);
+  assert.match(nut, /setupPremiumVariedadGermSelect/);
+  assert.match(wiz, /persistVariedadGermFromUI/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');
