@@ -34,10 +34,6 @@ function updateDashboard(opts) {
   }
 
   const cfgDash = state.configTorre || {};
-  try {
-    if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
-    if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfgDash);
-  } catch (_) {}
 
   // Última medición / lecturas germinación
   const elUltima = document.getElementById('dashUltimaMedicion');
@@ -117,6 +113,10 @@ function updateDashboard(opts) {
     if (typeof refreshTabsOperativaUi === 'function') {
       refreshTabsOperativaUi();
     }
+  } catch (_) {}
+
+  try {
+    if (typeof hcReaplicarVistasCaminoUi === 'function') hcReaplicarVistasCaminoUi(cfgDash);
   } catch (_) {}
 
 }

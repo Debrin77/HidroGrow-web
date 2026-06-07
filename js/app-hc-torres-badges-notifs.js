@@ -1650,15 +1650,28 @@ function actualizarBadgesNutriente() {
   }
   const dashNutLabel = document.getElementById('dashNutrienteLabel');
   const dashSisInfo = document.getElementById('dashSistemaInfo');
+  const ocultarNutInicioPropag =
+    typeof hcSistemaPropagadorSinHidro === 'function' &&
+    hcSistemaPropagadorSinHidro(cfg) &&
+    (typeof hcDashGermHubVisibleEnInicio === 'function'
+      ? hcDashGermHubVisibleEnInicio()
+      : false);
   if (dashNutLabel) {
-    dashNutLabel.classList.remove('setup-hidden');
-    dashNutLabel.textContent = dashSemillaHidroGerm
-      ? 'Nutriente · germinación en cubo'
-      : dashUsaGermNut
-        ? 'Nutriente · bandeja propagador'
-        : 'Nutriente seleccionado';
+    if (ocultarNutInicioPropag) {
+      dashNutLabel.classList.add('setup-hidden');
+    } else {
+      dashNutLabel.classList.remove('setup-hidden');
+      dashNutLabel.textContent = dashSemillaHidroGerm
+        ? 'Nutriente · germinación en cubo'
+        : dashUsaGermNut
+          ? 'Nutriente · bandeja propagador'
+          : 'Nutriente seleccionado';
+    }
   }
-  if (dashSisInfo) dashSisInfo.classList.remove('setup-hidden');
+  if (dashSisInfo) {
+    if (ocultarNutInicioPropag) dashSisInfo.classList.add('setup-hidden');
+    else dashSisInfo.classList.remove('setup-hidden');
+  }
   if (dashNombre) {
     dashNombre.textContent = nut
       ? nut.nombre
@@ -1898,6 +1911,9 @@ function actualizarBadgesNutriente() {
   } catch (_) {}
   try {
     if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+  } catch (_) {}
+  try {
+    if (typeof hcReaplicarVistasCaminoUi === 'function') hcReaplicarVistasCaminoUi(cfg);
   } catch (_) {}
 }
 

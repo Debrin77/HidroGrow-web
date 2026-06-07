@@ -1704,10 +1704,20 @@ function refreshPlantasInstalacionResumen() {
     if (!el) return;
     el.innerHTML = html;
   });
+  const ocultarPlantasInicio =
+    typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
   ['hcPlantasInstalacionInicioDetails', 'hcPlantasInstalacionSistemaDetails'].forEach(id => {
     const det = document.getElementById(id);
-    if (det) det.classList.remove('setup-hidden');
+    if (!det) return;
+    if (id === 'hcPlantasInstalacionInicioDetails' && ocultarPlantasInicio) {
+      det.classList.add('setup-hidden');
+    } else {
+      det.classList.remove('setup-hidden');
+    }
   });
+  try {
+    if (typeof hcReaplicarVistasCaminoUi === 'function') hcReaplicarVistasCaminoUi(cfg);
+  } catch (_) {}
   try {
     if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();

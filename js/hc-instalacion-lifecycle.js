@@ -857,6 +857,9 @@
     try {
       if (typeof refreshDashOperativaHub === 'function') refreshDashOperativaHub();
     } catch (_) {}
+    try {
+      if (typeof hcReaplicarVistasCaminoUi === 'function') hcReaplicarVistasCaminoUi(cfgActiva());
+    } catch (_) {}
   }
 
   function refreshLegacyInstalacionBanner(lc) {

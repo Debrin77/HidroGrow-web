@@ -465,6 +465,15 @@
     cfg = cfg || cfgActiva();
     var summary = document.querySelector('.dash-medicion-y-cultivo .torre-summary');
     if (!summary) return;
+    if (
+      typeof hcSistemaPropagadorSinHidro === 'function' &&
+      hcSistemaPropagadorSinHidro(cfg) &&
+      typeof hcDashGermHubVisibleEnInicio === 'function' &&
+      hcDashGermHubVisibleEnInicio()
+    ) {
+      summary.classList.add('setup-hidden');
+      return;
+    }
     var usarGerm =
       typeof hcDashUsaTilesGerminacion === 'function' && hcDashUsaTilesGerminacion(cfg);
     var ocultarGermResumen =
@@ -652,6 +661,36 @@
       );
     }
     return false;
+  }
+
+  /** Hub germinación visible = vista principal en Inicio (sin tiles DWC ni nutriente duplicado). */
+  function hcDashGermHubVisibleEnInicio() {
+    var germHub = document.getElementById('dashGerminacionHub');
+    return !!(
+      germHub &&
+      !germHub.classList.contains('setup-hidden') &&
+      !!String(germHub.innerHTML || '').trim()
+    );
+  }
+
+  /** Reaplica vistas por camino tras refrescos que pueden volver a mostrar bloques DWC. */
+  function hcReaplicarVistasCaminoUi(cfg) {
+    cfg = cfg || cfgActiva();
+    try {
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+    } catch (_) {}
+    try {
+      if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfg);
+    } catch (_) {}
+    try {
+      if (
+        typeof refreshMedirPropagadorTabChrome === 'function' &&
+        document.getElementById('tab-mediciones') &&
+        document.getElementById('tab-mediciones').classList.contains('active')
+      ) {
+        refreshMedirPropagadorTabChrome(cfg);
+      }
+    } catch (_) {}
   }
 
   /**
@@ -922,6 +961,8 @@
     if (tabSalaMount && ocultarSalaTab) tabSalaMount.classList.add('setup-hidden');
   }
 
+  global.hcDashGermHubVisibleEnInicio = hcDashGermHubVisibleEnInicio;
+  global.hcReaplicarVistasCaminoUi = hcReaplicarVistasCaminoUi;
   global.refreshDashInicioVistaCamino = refreshDashInicioVistaCamino;
   global.refreshSalaVistaCamino = refreshSalaVistaCamino;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
