@@ -362,6 +362,15 @@ function torreTodasLasCestasConVariedadTienenFechaValida() {
 /** Modo EC automático: bloquear checklist hasta tener variedad y fechas en todas las cestas ocupadas. */
 function torreBloqueaChecklistPorFaltaDatosCultivo() {
   const cfg = state.configTorre || {};
+  const cam =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+  if (
+    cam === 'semilla_hidro' &&
+    typeof hcGerminacionActiva === 'function' &&
+    hcGerminacionActiva(cfg)
+  ) {
+    return false;
+  }
   if (typeof getEcPhStrategy === 'function' && getEcPhStrategy(cfg) === 'manual') return false;
   if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) return true;
   return !torreTodasLasCestasConVariedadTienenFechaValida();

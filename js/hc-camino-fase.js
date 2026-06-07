@@ -82,12 +82,24 @@
   }
 
   /**
-   * Tras cerrar el asistente DWC y prep hidro: ocultar onboarding (6 fases, CTAs, lifecycle…).
+   * Semilla_hidro en operativa plena (germinación cerrada en matriz): ocultar paneles de onboarding duplicados.
    */
   function hcSemillaHidroPostAsistenteUi(cfg) {
     cfg = cfg || cfgActiva();
     if (cam(cfg) !== 'semilla_hidro') return false;
-    return hidroCerrado(cfg) && prepGermHidroListo(cfg);
+    if (!hidroCerrado(cfg) || !prepGermHidroListo(cfg)) return false;
+    var g = cfg.germinacionFlow;
+    if (g && g.trasladoAt) return true;
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return false;
+    if (typeof germChecklistCierreOk === 'function' && g && germChecklistCierreOk(g)) return true;
+    return false;
+  }
+
+  /** Hub germinación activo: ocultar rails duplicados (lifecycle, resumen camino). */
+  function hcSemillaHidroHubEsPrincipal(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    return typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
   }
 
   /**
@@ -256,6 +268,17 @@
     return !!getSistemaFaseCamino(cfg || cfgActiva());
   }
 
+  /**
+   * Panel fase (prep/germ) sí; esquema DWC/RDWC no debe bloquearse en semilla_hidro operativa.
+   */
+  function hcRenderTorreBloqueadoPorFaseCamino(cfg) {
+    cfg = cfg || cfgActiva();
+    var fase = getSistemaFaseCamino(cfg);
+    if (!fase) return false;
+    if (cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg)) return false;
+    return true;
+  }
+
   function hcMostrarSistemaPropagador(cfg) {
     return getSistemaFaseCamino(cfg) === 'propagador';
   }
@@ -306,15 +329,17 @@
   }
 
   function etiquetaFaseGermCorta(cfg) {
+    cfg = cfg || cfgActiva();
     var faseId =
       typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+    var esHidro = cam(cfg) === 'semilla_hidro';
     var map = {
       semilla: 'Fase semilla',
       taproot: 'Radícula',
       rockwool: 'Cubo lana',
-      domo: 'Domo + luz',
+      domo: esHidro ? 'Cúpula + luz' : 'Domo + luz',
       netpot: 'Net pot',
-      dwc: 'Traslado hidro',
+      dwc: esHidro ? 'Matriz' : 'Traslado hidro',
     };
     return map[faseId] || faseId;
   }
@@ -595,6 +620,9 @@
    */
   function hcOcultarTabRiegoEnCaminoPropagador(cfg) {
     cfg = cfg || cfgActiva();
+    if (cam(cfg) === 'semilla_hidro') {
+      return !(typeof depListo === 'function' && depListo(cfg));
+    }
     if (cam(cfg) !== 'semilla_propagador') return false;
     if (typeof hcRecargaCompletaAplicaEnCamino === 'function') {
       return !hcRecargaCompletaAplicaEnCamino(cfg);
@@ -639,6 +667,8 @@
     });
     var ocultarLcHidro =
       typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
+    var ocultarLcHidroHub =
+      typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg);
     var idsOcultarHidro = [
       'dashOperativaHub',
       'dashInstalacionLifecycle',
@@ -649,9 +679,11 @@
       var el = document.getElementById(id);
       if (!el) return;
       if (id === 'dashGerminacionHub') {
-        el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro);
+        el.classList.toggle('setup-hidden', ocultarLcHidro);
+      } else if (id === 'dashInstalacionLifecycle') {
+        el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro || ocultarLcHidroHub);
       } else {
-        el.classList.toggle('setup-hidden', soloPropag || (id === 'dashInstalacionLifecycle' && ocultarLcHidro));
+        el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro);
       }
     });
     var opRow = document.querySelector('#tab-inicio .dash-operativa-row');
@@ -716,6 +748,30 @@
     return true;
   }
 
+<<<<<<< HEAD
+=======
+  /** Sistema operativo semilla_hidro: sin panel estrategia EC/pH (recomendación automática por fase). */
+  function hcSistemaOcultarEcPhStrategy(cfg) {
+    cfg = cfg || cfgActiva();
+    return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+  }
+
+  /** Depósito DWC en Sistema: solo consulta (valores fijados en asistente). */
+  function hcSistemaDwcSoloConsulta(cfg) {
+    cfg = cfg || cfgActiva();
+    return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+  }
+
+  /** Depósito DWC/RDWC en Sistema: colapsado por defecto en semilla_hidro operativa. */
+  function hcSistemaDwcPanelColapsado(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) {
+      return cfg.uiSistemaDwcColapsado !== false;
+    }
+    return cfg.uiSistemaDwcColapsado === true;
+  }
+
+>>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
   /** UI de recarga completa visible al usuario (la lógica interna sigue activa en semilla_hidro). */
   function hcRecargaUiVisibleUsuario(cfg) {
     cfg = cfg || cfgActiva();
@@ -760,6 +816,7 @@
 
   global.getSistemaFaseCamino = getSistemaFaseCamino;
   global.hcMostrarSistemaFaseCamino = hcMostrarSistemaFaseCamino;
+  global.hcRenderTorreBloqueadoPorFaseCamino = hcRenderTorreBloqueadoPorFaseCamino;
   global.hcMostrarSistemaPropagador = hcMostrarSistemaPropagador;
   global.hcSistemaPropagadorSinHidro = hcSistemaPropagadorSinHidro;
   global.hcTituloSistemaTab = hcTituloSistemaTab;
@@ -894,8 +951,15 @@
   global.hcCaminoFaseEventosCalendario = hcCaminoFaseEventosCalendario;
   global.hcSemillaHidroUiOperativaLista = hcSemillaHidroUiOperativaLista;
   global.hcSemillaHidroPostAsistenteUi = hcSemillaHidroPostAsistenteUi;
+  global.hcSemillaHidroHubEsPrincipal = hcSemillaHidroHubEsPrincipal;
   global.hcSemillaHidroOcultarSeguimientoMedir = hcSemillaHidroOcultarSeguimientoMedir;
   global.hcMedirEsSemillaHidro = hcMedirEsSemillaHidro;
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
+<<<<<<< HEAD
+=======
+  global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
+  global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
+  global.hcSistemaDwcPanelColapsado = hcSistemaDwcPanelColapsado;
+>>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-05-31-pin-fix')
+      .register('service-worker.js?v=2026-05-31-boot-fast')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -79,11 +79,7 @@ window.addEventListener('appinstalled', () => {
 });
 
 function hcSplashMinVisibleMs() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) return 520;
-    if (navigator.maxTouchPoints > 0 && window.innerWidth < 900) return 520;
-  } catch (_) {}
-  return 280;
+  return 0;
 }
 const splashShownAtMs = Date.now();
 
@@ -132,17 +128,30 @@ function hcBindPinScreenListeners() {
 function hcRunAppBootSequence() {
   if (window._hcAppBootSequenceStarted) return;
   window._hcAppBootSequenceStarted = true;
+  if (typeof pinPress !== 'function' || typeof unlockAndInitApp !== 'function') {
+    try {
+      hideSplash();
+    } catch (_) {}
+    return;
+  }
   hcBindPinScreenListeners();
 
   (async function () {
-    scheduleHcPreinitWhilePin();
-    await waitSplashMinimumVisible();
     hideSplash();
+    if (typeof hcBootUpdatePinProgress === 'function') {
+      try {
+        hcBootUpdatePinProgress();
+      } catch (_) {}
+    }
 
     if (appBootstrapped || (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress)) return;
 
     if (hasValidAuthSession()) {
-      unlockAndInitApp();
+      if (typeof hcWhenAppScriptsReady === 'function') {
+        hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 90000 });
+      } else {
+        unlockAndInitApp();
+      }
       return;
     }
     lockAppWithPin();
@@ -154,7 +163,11 @@ function hcRunAppBootSequence() {
       var ok = await tryBiometricUnlock();
       if (appBootstrapped) return;
       if (ok) {
-        unlockAndInitApp();
+        if (typeof hcWhenAppScriptsReady === 'function') {
+          hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 90000 });
+        } else {
+          unlockAndInitApp();
+        }
       } else {
         var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
@@ -181,6 +194,34 @@ function hcScheduleVersionCheckOnIdle() {
   }
 }
 
+function hcShowPinAsap() {
+  if (window._hcPinEarlyShown) return;
+  window._hcPinEarlyShown = true;
+  try {
+    hcBindPinScreenListeners();
+  } catch (_) {}
+  try {
+    hideSplash();
+  } catch (_) {}
+  if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
+  if (typeof appUnlockInProgress !== 'undefined' && appUnlockInProgress) return;
+  try {
+    if (typeof hasValidAuthSession === 'function' && hasValidAuthSession()) return;
+  } catch (_) {}
+  try {
+    if (typeof lockAppWithPin === 'function') lockAppWithPin();
+  } catch (_) {}
+  try {
+    if (typeof hcBootUpdatePinProgress === 'function') hcBootUpdatePinProgress();
+  } catch (_) {}
+}
+
+if (document.body) {
+  requestAnimationFrame(hcShowPinAsap);
+} else {
+  document.addEventListener('DOMContentLoaded', hcShowPinAsap);
+}
+
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', function () {
     hcScheduleVersionCheckOnIdle();
@@ -195,28 +236,7 @@ window.addEventListener('load', function () {
   if (!window._hcAppBootSequenceStarted) hcRunAppBootSequence();
 });
 
-function scheduleHcPreinitWhilePin() {
-  try {
-    if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
-      return;
-    }
-  } catch (_) {}
-  const run = function () {
-    try {
-      if (typeof appBootstrapped !== 'undefined' && appBootstrapped) return;
-      if (typeof hcPreinitTorreStateWhileLocked === 'function') hcPreinitTorreStateWhileLocked();
-    } catch (e) {
-      try {
-        console.warn('scheduleHcPreinitWhilePin', e);
-      } catch (_) {}
-    }
-  };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: 1200 });
-  } else {
-    setTimeout(run, 200);
-  }
-}
+function scheduleHcPreinitWhilePin() {}
 
 // ══════════════════════════════════════════════════
 // FOTODB — IndexedDB para fotos (sin límite de tamaño)

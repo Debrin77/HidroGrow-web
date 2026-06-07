@@ -2,7 +2,11 @@
  * HidroGrow — Service Worker ligero (PWA).
  * Precache: shell offline básico. APIs (Open-Meteo, etc.) siguen yendo a red.
  */
+<<<<<<< HEAD
 const CACHE_NAME = 'hidrogrow-shell-v38-sh-b5';
+=======
+const CACHE_NAME = 'hidrogrow-shell-v42-boot-ios';
+>>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
 const PRECACHE_URLS = [
   './index.html',
   './manifest.json',
@@ -67,8 +71,16 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Resto: red (sin estrategia agresiva — evita romper APIs y fuentes)
+  // JS/CSS: siempre red (evita JS antiguo en caché tras actualizar)
+  if (/\.(js|css)(\?|$)/i.test(u.pathname + (u.search || ''))) {
+    event.respondWith(fetch(req, { cache: 'no-store' }));
+    return;
+  }
+
+  // Resto: red; fallback caché solo offline
   event.respondWith(
-    fetch(req).catch(() => caches.match(req).then((r) => r || Response.error()))
+    fetch(req, { cache: 'no-store' }).catch(() =>
+      caches.match(req).then((r) => r || Response.error())
+    )
   );
 });

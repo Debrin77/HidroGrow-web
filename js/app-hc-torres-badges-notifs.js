@@ -1706,6 +1706,7 @@ function actualizarBadgesNutriente() {
       var ecMin = rangosHidro && rangosHidro.ec ? rangosHidro.ec.min : 400;
       var ecMax = rangosHidro && rangosHidro.ec ? rangosHidro.ec.max : 800;
       if (dashEstado) {
+<<<<<<< HEAD
         dashEstado.textContent = nut ? 'Actual: VEG' : 'Actual: —';
       }
       if (dashRecomendado) {
@@ -1721,6 +1722,25 @@ function actualizarBadgesNutriente() {
       if (dashRazon) {
         dashRazon.textContent = nut
           ? 'Motivo: plántula o semilla en el mismo DWC; la línea es VEG con dosis baja en el depósito.'
+=======
+        dashEstado.textContent = nut
+          ? 'Germinación: EC depósito ' + ecMin + '–' + ecMax + ' µS/cm (no VEG floración)'
+          : 'Germinación: dosis baja en depósito';
+      }
+      if (dashRecomendado) {
+        dashRecomendado.textContent = nut
+          ? 'Línea ' + nut.nombre + ' · fase plántula/semilla en cubo'
+          : 'Recomendado: línea veg A+B a dosis inicial baja';
+      }
+      if (dashTagEstado) {
+        dashTagEstado.classList.remove('is-match', 'is-mismatch');
+        dashTagEstado.classList.add('is-germ');
+      }
+      if (dashFuente) dashFuente.textContent = 'Fuente: plan germinación · cubo DWC';
+      if (dashRazon) {
+        dashRazon.textContent = nut
+          ? 'Motivo: en germinación el depósito va con EC baja; VEG/BLOOM del envase aplica más adelante.'
+>>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
           : 'Motivo: elige nutriente en el asistente antes de medir el depósito.';
       }
     } else if (dashUsaGermNut) {

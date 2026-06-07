@@ -9,6 +9,7 @@ const HC_GUIDE_DISMISS_KEY = 'hc_guia_primer_dia_dismiss';
 const HC_ONBOARD_RIEGO_VISIT_KEY = 'hc_onboarding_visit_riego';
 const HC_HINT_CTX = { mediciones: 'hc_hint_ctx_med', sala: 'hc_hint_ctx_sala', sistema: 'hc_hint_ctx_sis', riego: 'hc_hint_ctx_riego' };
 const HC_BIENVENIDA_KEY = 'hc_bienvenida_v2026_7_camino';
+const HC_FORZAR_BIENVENIDA_RESET_KEY = 'hc_forzar_bienvenida_tras_reset';
 const HC_TAB_BAR_COACH_KEY = 'hc_tab_bar_coach_dismiss_v2';
 const HC_WELCOME_THEME_PREVIEW_KEY = 'hc_welcome_theme_preview';
 
@@ -138,13 +139,19 @@ function initWelcomeValueCarousel() {
   setTimeout(() => { try { update(); } catch (_) {} }, 80);
 }
 
-/** Bienvenida + coach «Barra inferior» desactivados: no bloquean arranque ni reset. */
-function hcOcultarOverlaysOnboardingUi() {
+/**
+ * Oculta bienvenida/coach. Solo marca «ya visto» si opts.markDismissed (cierre explícito).
+ * En arranque no marcar visto: si no, tras reset nunca vuelve la bienvenida ni el asistente.
+ */
+function hcOcultarOverlaysOnboardingUi(opts) {
+  opts = opts || {};
   _clearTabCoachRetryTimer();
-  try {
-    localStorage.setItem(HC_BIENVENIDA_KEY, '1');
-    localStorage.setItem(HC_TAB_BAR_COACH_KEY, '1');
-  } catch (_) {}
+  if (opts.markDismissed) {
+    try {
+      localStorage.setItem(HC_BIENVENIDA_KEY, '1');
+      localStorage.setItem(HC_TAB_BAR_COACH_KEY, '1');
+    } catch (_) {}
+  }
   const wov = document.getElementById('welcomeOverlay');
   if (wov) {
     wov.classList.add('setup-hidden');
@@ -308,7 +315,7 @@ function applyWelcomeScrollLock(open) {
 }
 
 function resetBienvenidaParaPruebas() {
-  hcOcultarOverlaysOnboardingUi();
+  hcOcultarOverlaysOnboardingUi({ markDismissed: true });
   if (typeof showToast === 'function') {
     showToast('La guía de bienvenida ya no se muestra en arranque', false);
   }
@@ -389,6 +396,15 @@ function tabBarCoachYaDescartado() {
 }
 
 /** Sin instalación real: abrir asistente en «¿Cómo empiezas el cultivo?» (spage0). */
+function hcClearForzarBienvenidaTrasReset() {
+  try {
+    sessionStorage.removeItem(HC_FORZAR_BIENVENIDA_RESET_KEY);
+  } catch (_) {}
+  try {
+    localStorage.removeItem(HC_FORZAR_BIENVENIDA_RESET_KEY);
+  } catch (_) {}
+}
+
 function hcAbrirAsistenteCaminoSiSinInstalacion() {
   if (document.body.classList.contains('hc-welcome-open')) return;
   try {
@@ -412,7 +428,13 @@ function hcAbrirAsistenteCaminoSiSinInstalacion() {
     abrirSetupNuevaTorre();
     return;
   }
-  if (typeof abrirSetup === 'function') abrirSetup();
+  if (typeof abrirSetup === 'function') {
+    abrirSetup();
+    return;
+  }
+  if (typeof hcWhenAppScriptsReady === 'function') {
+    hcWhenAppScriptsReady(hcAbrirAsistenteCaminoSiSinInstalacion, { timeoutMs: 120000 });
+  }
 }
 
 function lanzarSetupOChecklistSiCorresponde() {
@@ -423,7 +445,8 @@ function hcDebeMostrarBienvenida(opts) {
   opts = opts || {};
   if (opts.force) return true;
   try {
-    if (sessionStorage.getItem('hc_forzar_bienvenida_tras_reset') === '1') return true;
+    if (localStorage.getItem(HC_FORZAR_BIENVENIDA_RESET_KEY) === '1') return true;
+    if (sessionStorage.getItem(HC_FORZAR_BIENVENIDA_RESET_KEY) === '1') return true;
   } catch (_) {}
   try {
     if (localStorage.getItem(HC_BIENVENIDA_KEY) === '1') return false;
@@ -460,15 +483,11 @@ function mostrarBienvenidaOContinuarArranque(opts) {
   }
   if (hcDebeMostrarBienvenida(opts)) {
     if (abrirOverlayBienvenida()) {
-      try {
-        sessionStorage.removeItem('hc_forzar_bienvenida_tras_reset');
-      } catch (_) {}
+      hcClearForzarBienvenidaTrasReset();
       return;
     }
   }
-  try {
-    sessionStorage.removeItem('hc_forzar_bienvenida_tras_reset');
-  } catch (_) {}
+  hcClearForzarBienvenidaTrasReset();
   hcAbrirAsistenteCaminoSiSinInstalacion();
 }
 
@@ -476,7 +495,7 @@ function mostrarBienvenidaOContinuarArranque(opts) {
  * @param {{ skipLanzarSetup?: boolean }} [opts] — si el usuario elige abrir el asistente desde la guía, evitar doble `abrirSetup`.
  */
 function cerrarBienvenidaPrimeraVez(opts) {
-  hcOcultarOverlaysOnboardingUi();
+  hcOcultarOverlaysOnboardingUi({ markDismissed: true });
   if (!opts || !opts.skipLanzarSetup) {
     lanzarSetupOChecklistSiCorresponde();
   }
@@ -732,7 +751,20 @@ function actualizarPostSetupChecklistRail() {
         ids.forEach((id) => {
           if (pasos[id] && pasos[id].doneAt) done++;
         });
-        statusTxt = 'Camino: ' + done + '/6 fases · traslado: ' + (g && g.checklistTrasladoOk ? '✓' : 'pendiente');
+        if (cam === 'semilla_propagador') {
+          var diaGerm =
+            typeof diasDesdeInicioGerminacion === 'function'
+              ? diasDesdeInicioGerminacion(g, cfg) + 1
+              : done;
+          statusTxt =
+            'Germinación: día ' +
+            diaGerm +
+            (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+              ? ' · lista para hidro'
+              : '');
+        } else {
+          statusTxt = 'Camino: ' + done + '/6 fases · operativa: ' + (g && g.checklistTrasladoOk ? '✓' : 'pendiente');
+        }
       } catch (_) {}
     }
   }
@@ -1048,12 +1080,40 @@ function iniciarFlujoSistemaAntesChecklistPostSetup() {
   }, 120);
 }
 
+function hcRetryArranquePrimeraVezTrasBoot() {
+  try {
+    if (typeof appBootstrapped === 'undefined' || !appBootstrapped) return;
+    if (document.body.classList.contains('hc-welcome-open')) return;
+    const so = document.getElementById('setupOverlay');
+    if (so && so.classList.contains('open')) return;
+    if (
+      localStorage.getItem(HC_FORZAR_BIENVENIDA_RESET_KEY) === '1' ||
+      sessionStorage.getItem(HC_FORZAR_BIENVENIDA_RESET_KEY) === '1'
+    ) {
+      mostrarBienvenidaOContinuarArranque();
+      return;
+    }
+    if (typeof hcEsPrimeraVezAsistenteInstalacion === 'function' && hcEsPrimeraVezAsistenteInstalacion()) {
+      hcAbrirAsistenteCaminoSiSinInstalacion();
+    }
+  } catch (_) {}
+}
+
+try {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('hcBootScriptsLoaded', hcRetryArranquePrimeraVezTrasBoot);
+  }
+} catch (_) {}
+
 try {
   if (typeof document !== 'undefined') {
+    const prehide = function () {
+      hcOcultarOverlaysOnboardingUi({ markDismissed: false });
+    };
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', hcOcultarOverlaysOnboardingUi);
+      document.addEventListener('DOMContentLoaded', prehide);
     } else {
-      hcOcultarOverlaysOnboardingUi();
+      prehide();
     }
   }
 } catch (_) {}

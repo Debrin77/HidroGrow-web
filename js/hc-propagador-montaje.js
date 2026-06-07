@@ -104,31 +104,31 @@
     { id: 'ph_aire', label: 'Aireación del depósito comprobada', hint: 'Burbujeo suave; sin burbujas fuertes sobre la semilla.', accent: 'air' },
   ];
 
-  var PROP_ICONS = {
-    prop_domo: '🫧',
-    prop_mat: '🔥',
-    prop_dosis_sol: '🧪',
-    prop_agua_sustrato: '💧',
-    prop_termo: '🌡️',
-    prop_luz: '💡',
-    prop_rockwool: '🧊',
-    prop_higiene: '✂️',
-    prop_vent: '💨',
-    enr_domo: '🫧',
-    enr_rockwool: '🧊',
-    enr_higiene: '✂️',
-    enr_luz: '💡',
-    enr_termo: '🌡️',
-    enr_aire: '🫧',
-    ph_sem_una: '🌱',
-    ph_netpot: '🪴',
-    ph_nivel: '💧',
-    ph_domo_mini: '🫧',
-    ph_oscuridad: '🌑',
-    ph_quitar_cupula: '🔓',
-    ph_medidor: '📟',
-    ph_aire: '💨',
-    ph_luz: '💡',
+  var PROP_ICON_SVG = {
+    prop_domo: 'hc-i-sys-propagador',
+    prop_mat: 'hc-i-therm',
+    prop_dosis_sol: 'hc-i-flask',
+    prop_agua_sustrato: 'hc-i-droplet',
+    prop_termo: 'hc-i-therm',
+    prop_luz: 'hc-i-bulb',
+    prop_rockwool: 'hc-i-package',
+    prop_higiene: 'hc-i-wrench',
+    prop_vent: 'hc-i-wind',
+    enr_domo: 'hc-i-sys-propagador',
+    enr_rockwool: 'hc-i-package',
+    enr_higiene: 'hc-i-wrench',
+    enr_luz: 'hc-i-bulb',
+    enr_termo: 'hc-i-therm',
+    enr_aire: 'hc-i-bubbles',
+    ph_sem_una: 'hc-i-sprout',
+    ph_netpot: 'hc-i-sys-dwc',
+    ph_nivel: 'hc-i-droplet',
+    ph_domo_mini: 'hc-i-layers',
+    ph_oscuridad: 'hc-i-moon',
+    ph_quitar_cupula: 'hc-i-wind',
+    ph_medidor: 'hc-i-trend',
+    ph_aire: 'hc-i-bubbles',
+    ph_luz: 'hc-i-bulb',
   };
 
   function prepHidroSustratoKey(cfg) {
@@ -432,8 +432,16 @@
       .replace(/"/g, '&quot;');
   }
 
+  function propHeroIcon(cfg) {
+    var sym = esRutaGermHidro(cfg) ? 'hc-i-sys-dwc' : esRutaEsqueje(cfg) ? 'hc-i-sprout' : 'hc-i-sys-propagador';
+    if (typeof hcIcon === 'function') return hcIcon(sym, 'hc-prop-hero-ico-svg');
+    return '<span class="hc-prop-hero-ico-fallback" aria-hidden="true">•</span>';
+  }
+
   function propItemIcon(it) {
-    return PROP_ICONS[it.id] || '🌱';
+    var sym = PROP_ICON_SVG[it.id] || 'hc-i-alert-ok';
+    if (typeof hcIcon === 'function') return hcIcon(sym, 'hc-pm-card-ico-svg');
+    return '<span class="hc-pm-card-ico-fallback" aria-hidden="true">•</span>';
   }
 
   function renderPropProgressHtml(prog, verificada, titulo) {
@@ -594,7 +602,7 @@
       sustratoAgua +
       '<div class="hc-prop-hero">' +
       '<span class="hc-prop-hero-ico" aria-hidden="true">' +
-      (esRutaGermHidro(cfg) ? '💧' : esRutaEsqueje(cfg) ? '🌿' : '🫧') +
+      propHeroIcon(cfg) +
       '</span>' +
       '<div class="hc-prop-hero-text">' +
       '<h3 class="hc-prop-modal-title">' +
@@ -640,32 +648,35 @@
         ', quitar cúpulas al brote y aire suave. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases.'
       : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
+    if (verificada) {
+      return (
+        '<div class="hc-prop-inline hc-prop-inline--premium hc-prop-inline--ok" id="hcPropagadorMontajeInline">' +
+        '<span class="hc-prop-inline-pct hc-prop-inline-pct--ok">✓ ' +
+        (esHidro ? 'Prep hidro' : 'Propagador') +
+        ' listo</span>' +
+        '<button type="button" class="btn btn-link btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">Revisar checklist</button>' +
+        '</div>'
+      );
+    }
     return (
       '<div class="hc-prop-inline hc-prop-inline--premium" id="hcPropagadorMontajeInline">' +
       '<div class="hc-prop-inline-head">' +
       '<span class="hc-prop-inline-ico" aria-hidden="true">' +
-      (esHidro ? '💧' : '🫧') +
+      (typeof hcIcon === 'function'
+        ? hcIcon(esHidro ? 'hc-i-sys-dwc' : 'hc-i-sys-propagador', 'hc-prop-inline-ico-svg')
+        : '') +
       '</span>' +
       '<h3 class="hc-prop-inline-title">' +
       esc(titulo) +
       '</h3>' +
-      '<span class="hc-prop-inline-pct' +
-      (verificada ? ' hc-prop-inline-pct--ok' : '') +
-      '">' +
-      (verificada ? '✓ Listo' : prog.done + '/' + prog.total + ' · ' + pct + '%') +
+      '<span class="hc-prop-inline-pct">' +
+      prog.done + '/' + prog.total + ' · ' + pct + '%' +
       '</span></div>' +
       '<div class="hc-prop-inline-bar" aria-hidden="true"><span style="width:' +
       pct +
       '%"></span></div>' +
       '<p class="hc-prop-inline-lead">' + lead + '</p>' +
-      '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">' +
-      (verificada ? 'Revisar checklist' : 'Abrir checklist de montaje') +
-      '</button>' +
-      (verificada &&
-      typeof hcFaltaConfigurarSalaEquipPropagador === 'function' &&
-      hcFaltaConfigurarSalaEquipPropagador(cfg)
-        ? '<button type="button" class="btn btn-secondary btn-sm hc-prop-cta-sala" style="margin-left:8px" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar equipamiento de sala</button>'
-        : '') +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="hcOpenPropagadorMontajeChecklist()">Abrir checklist de montaje</button>' +
       '</div>'
     );
   }
@@ -954,8 +965,12 @@
       (typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg)) ||
       (cam === 'semilla_hidro' &&
         typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+<<<<<<< HEAD
         hcSemillaHidroPostAsistenteUi(cfg)) ||
       cam === 'semilla_hidro';
+=======
+        hcSemillaHidroPostAsistenteUi(cfg));
+>>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
     det.classList.toggle('setup-hidden', ocultar);
     if (ocultar) det.open = false;
   }

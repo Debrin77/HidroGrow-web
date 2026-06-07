@@ -203,7 +203,35 @@
 
   function getPremiumGermVariedadId() {
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
-    return String(p.variedadGerminacion || '').trim();
+    var vid = String((p && p.variedadGerminacion) || '').trim();
+    if (vid) return vid;
+    var sel = el('setupPremiumVariedadGermSelect');
+    if (sel && String(sel.value || '').trim()) return String(sel.value).trim();
+    var cfg = getCfgNutriente();
+    if (!cfg || typeof cfg !== 'object') return '';
+    var g = cfg.germinacionFlow || {};
+    vid = String(g.variedadId || '').trim();
+    if (vid) return vid;
+    var prem = cfg.premiumSetup || {};
+    return String(prem.variedadGerminacion || cfg.variedadGerminacion || '').trim();
+  }
+
+  /** Variedad obligatoria solo tras el paso de genética (p.3 propagador o p.6 hidro). */
+  function debeExigirVariedadEnNutrienteGerm() {
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      return true;
+    }
+    var pag =
+      typeof setupPagina !== 'undefined' && Number.isFinite(Number(setupPagina))
+        ? Number(setupPagina)
+        : null;
+    if (pag == null) return false;
+    var p6 =
+      typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+    return pag >= p6;
   }
 
   function getPremiumGermSustratoId() {
@@ -721,6 +749,7 @@
 
   function validarPremiumNutrienteGerm() {
     if (!isPremiumNutrienteGermActivo(getCfgNutriente())) return true;
+    if (typeof persistVariedadGermFromUI === 'function') persistVariedadGermFromUI();
     var cfg = getCfgNutriente();
     var nid = '';
     if (typeof resolverNutrienteGermBandeja === 'function') {
@@ -756,7 +785,7 @@
       }
       return false;
     }
-    if (!getPremiumGermVariedadId()) {
+    if (debeExigirVariedadEnNutrienteGerm() && !getPremiumGermVariedadId()) {
       if (typeof showToast === 'function') {
         showToast('Vuelve al paso Germinación y elige la variedad (EC depende de la cepa)', true);
       }
@@ -899,4 +928,4 @@
   global.onPremiumNutrienteGermVolChange = onPremiumNutrienteGermVolChange;
   global.onPremiumNutrienteGermSelectChange = onPremiumNutrienteGermSelectChange;
   global.renderPremiumNutrienteGermDosis = renderPremiumNutrienteGermDosis;
-})();
+})(typeof window !== 'undefined' ? window : globalThis);

@@ -165,6 +165,12 @@
     if (!esNueva && !enAsistente) {
       var fromInst = leerCaminoDeObj(cfg);
       if (fromInst) return fromInst;
+      if (
+        typeof hcTieneInstalacionesUsuario === 'function' &&
+        !hcTieneInstalacionesUsuario()
+      ) {
+        return '';
+      }
     }
     if (cfgOpt) {
       var fromCfgOpt = leerCaminoDeObj(cfg);
@@ -678,10 +684,48 @@
   function hcCultivoMatrizDisponible(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) {
+      if (
+        getCaminoCultivo(cfg) === 'semilla_hidro' &&
+        typeof hidroInstalacionCerrada === 'function' &&
+        hidroInstalacionCerrada(cfg)
+      ) {
+        return true;
+      }
       return false;
     }
     if (!hcMontajeEsSoloEquipamientoSala(cfg)) return true;
     return cfg.checklistInstalacionConfirmada === true;
+  }
+
+  /** Copia genética del asistente/germinación a cestas vacías tras cerrar hidro (semilla). */
+  function hcSyncTorreDesdeGerminacionSiAplica(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var torreId = cfg.id || cfg.torreId || (typeof state !== 'undefined' && state && state.torreActiva);
+    var syncKey = String(torreId || '0') + ':' + String(cfg.hidroCerradoAt || cfg.germinacionFlow && cfg.germinacionFlow.cerradoAt || '');
+    if (global._hcGermTorreSyncKey === syncKey) return false;
+    if (typeof hcCaminoEsSemilla === 'function' && !hcCaminoEsSemilla(getCaminoCultivo(cfg))) {
+      return false;
+    }
+    if (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg)) {
+      return false;
+    }
+    if (typeof hcAplicarGerminacionATorreTrasHidro !== 'function') return false;
+    var torreArr = typeof state !== 'undefined' && state && state.torre ? state.torre : null;
+    if (!torreArr || !torreArr.length) return false;
+    var antes = JSON.stringify(torreArr);
+    hcAplicarGerminacionATorreTrasHidro(cfg, torreArr);
+    try {
+      if (typeof aplicarFechaDefectoTrasplanteEnCestasConVariedadSinFecha === 'function') {
+        aplicarFechaDefectoTrasplanteEnCestasConVariedadSinFecha(torreArr);
+      }
+    } catch (_) {}
+    if (JSON.stringify(torreArr) === antes) return false;
+    global._hcGermTorreSyncKey = syncKey;
+    try {
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
+    return true;
   }
 
   function hcSugerirGeometriaDesdeGerminacion(cfg) {
@@ -1484,8 +1528,8 @@
     if (cam === 'semilla_propagador') return false;
     if (
       cam === 'semilla_hidro' &&
-      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-      hcSemillaHidroPostAsistenteUi(cfg)
+      ((typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)) ||
+        (typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg)))
     ) {
       return false;
     }
@@ -1678,6 +1722,7 @@
   global.hcDimsTorreDesdeConfig = hcDimsTorreDesdeConfig;
   global.hcNumSemillasGermConfig = hcNumSemillasGermConfig;
   global.hcAplicarGerminacionATorreTrasHidro = hcAplicarGerminacionATorreTrasHidro;
+  global.hcSyncTorreDesdeGerminacionSiAplica = hcSyncTorreDesdeGerminacionSiAplica;
   global.getCaminoResumenPasos = getCaminoResumenPasos;
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;
   global.refreshDashCaminoResumen = refreshDashCaminoResumen;

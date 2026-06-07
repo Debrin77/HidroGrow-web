@@ -638,6 +638,14 @@ html.hc-theme-dark .hc-pm-card--germ {
   background: linear-gradient(90deg, #22c55e, #14b8a6);
   transition: width 0.35s ease;
 }
+.hc-prop-inline--ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 12px;
+}
+
 .hc-prop-inline-pct--ok {
   color: #047857;
   background: rgba(34, 197, 94, 0.15);
@@ -759,4 +767,81 @@ html.hc-theme-dark .hc-montaje-inicio-card {
 }
 html.hc-theme-dark .hc-montaje-inicio-card--prop {
   background: linear-gradient(145deg, rgba(6, 78, 59, 0.35), rgba(15, 23, 42, 0.6));
+}
+
+/* Iconos SVG en checklist (sin emojis) */
+.hc-pm-card-ico-svg,
+.hc-pm-card-icon .hc-ico {
+  width: 20px;
+  height: 20px;
+  color: var(--green-dim, #166534);
+  flex-shrink: 0;
+}
+.hc-prop-hero-ico-svg {
+  width: 36px;
+  height: 36px;
+  color: var(--green-dim, #166534);
+}
+.hc-prop-inline-ico-svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  vertical-align: -0.2em;
+  color: var(--green-dim, #166534);
+}
+.hc-prop-hero-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(22, 101, 52, 0.08);
+  font-size: inherit;
+  filter: none;
+}
+html.hc-theme-dark .hc-prop-hero-ico {
+  background: rgba(52, 211, 153, 0.12);
+}
+html.hc-theme-dark .hc-pm-card-ico-svg,
+html.hc-theme-dark .hc-prop-hero-ico-svg {
+  color: var(--green, #4ade80);
+}
+
+/* Guía prep hidro (modal / sistema) */
+.hc-prep-hidro-guia {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hc-germ-cupula-banner,
+.hc-germ-llenado-banner,
+.hc-germ-sem-banner {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.05);
+  border: 1px solid var(--border);
+  border-left: 3px solid #64748b;
+  line-height: 1.45;
+  font-size: 0.85rem;
+}
+.hc-germ-llenado-banner {
+  border-left-color: #0d9488;
+}
+.hc-germ-sem-banner {
+  border-left-color: #16a34a;
+}
+.hc-germ-cupula-title,
+.hc-germ-llenado-title,
+.hc-germ-sem-title {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+}
+.hc-germ-cupula-body,
+.hc-germ-llenado-body,
+.hc-germ-sem-body,
+.hc-germ-llenado-value {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted, #64748b);
 }

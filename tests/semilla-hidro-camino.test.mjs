@@ -306,6 +306,96 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
 });
 
+test('semilla_hidro operativa: esquema DWC no bloqueado por fase germ_cubo', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const torre = read('js/torre-render-main.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  const nav = read('js/hc-bootstrap-init-nav.js');
+  assert.match(fase, /function hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.match(fase, /semilla_hidro.*hidroCerrado/);
+  assert.match(torre, /hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.match(torre, /hcSyncTorreDesdeGerminacionSiAplica/);
+  assert.match(cultivo, /function hcSyncTorreDesdeGerminacionSiAplica/);
+  assert.match(cultivo, /semilla_hidro[\s\S]*hidroInstalacionCerrada/);
+  assert.match(sis, /renderTorre\(\)/);
+  assert.match(nav, /hcRenderTorreBloqueadoPorFaseCamino/);
+  assert.doesNotMatch(sis, /redibujarTorre/);
+});
+
+test('semilla_hidro operativa: Sistema sin EC/pH y depósito colapsable', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const setup = read('js/hc-setup-wizard-core.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  const dwc = read('js/hc-setup-wizard-dwc.js');
+  assert.match(fase, /function hcSistemaOcultarEcPhStrategy/);
+  assert.match(fase, /function hcSistemaDwcPanelColapsado/);
+  assert.match(fase, /function hcSistemaDwcSoloConsulta/);
+  assert.match(setup, /function applySistemaDwcSoloConsultaUi/);
+  assert.match(setup, /hcBloquearEdicionSistemaDwcSiConsulta/);
+  assert.match(dwc, /hcBloquearEdicionSistemaDwcSiConsulta/);
+  assert.match(sis, /function applySistemaSemillaHidroOperativaChrome/);
+  const chromeIds = sis.match(/var TORRE_HIDRO_CHROME_IDS = \[([\s\S]*?)\];/);
+  assert.ok(chromeIds, 'TORRE_HIDRO_CHROME_IDS definido');
+  assert.doesNotMatch(chromeIds[1], /sistemaEcPhStrategyCard/);
+});
+
+test('checklist prep hidro: iconos SVG y vista net pot', () => {
+  const montaje = read('js/hc-propagador-montaje.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(montaje, /PROP_ICON_SVG/);
+  assert.match(montaje, /hc-pm-card-ico-svg/);
+  assert.match(germ, /function renderGermHidroNetPotViz/);
+  assert.match(germ, /htmlNetPotSchematicSvg/);
+});
+
+test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna activa', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const layout = read('js/hc-medir-sala-layout.js');
+  const dash = read('js/meteo-forecast-dashboard.js');
+  assert.match(fase, /function hcRecargaUiVisibleUsuario/);
+  assert.match(fase, /hcMedirEsSemillaHidro\(cfg\)/);
+  assert.match(layout, /function ocultarRecargaUiSemillaHidro/);
+  assert.match(layout, /hcRecargaUiVisibleUsuario/);
+  assert.match(layout, /medirRecargaVolAvisoSlim/);
+  assert.match(dash, /function refreshMedirRecargaVolAvisoSlim/);
+  assert.match(dash, /hcMedirEsSemillaHidro\(cfgConfirm\)/);
+});
+
+test('semilla_hidro: hub visible durante germ y postAsistente solo tras matriz', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(fase, /function hcSemillaHidroHubEsPrincipal/);
+  assert.match(fase, /if \(typeof hcGerminacionActiva === 'function' && hcGerminacionActiva\(cfg\)\) return false/);
+  assert.doesNotMatch(germ, /hcSemillaHidroPostAsistenteUi/);
+});
+
+test('propagador: sala reco tras germinacionConcluida', () => {
+  const luz = read('js/hc-luz-equip-sync.js');
+  assert.match(luz, /germinacionConcluida\(cfg\)/);
+});
+
+test('arranque: IIFE exportan a window (PIN y germinación)', () => {
+  const germ = read('js/hc-germinacion-flow.js');
+  const nut = read('js/hc-premium-nutriente-germ.js');
+  assert.match(germ, /\(function \(global\)/);
+  assert.match(germ, /\}\)\(typeof window !== 'undefined' \? window : globalThis\);/);
+  assert.match(nut, /\(function \(global\)/);
+  assert.match(nut, /\}\)\(typeof window !== 'undefined' \? window : globalThis\);/);
+});
+
+test('nutriente germ: variedad no obligatoria en clima antes del paso genética', () => {
+  const nut = read('js/hc-premium-nutriente-germ.js');
+  const wiz = read('js/hc-premium-wizard.js');
+  assert.match(nut, /function debeExigirVariedadEnNutrienteGerm/);
+  assert.match(nut, /hcCaminoSemillaPropagadorSetupGerm/);
+  assert.match(nut, /SETUP_PAGE_PREMIUM_6/);
+  assert.match(nut, /debeExigirVariedadEnNutrienteGerm\(\) && !getPremiumGermVariedadId\(\)/);
+  assert.match(nut, /persistVariedadGermFromUI/);
+  assert.match(nut, /setupPremiumVariedadGermSelect/);
+  assert.match(wiz, /persistVariedadGermFromUI/);
+});
+
 test('catálogo: CULTIVOS_DB antes de DIAS_COSECHA en index y helper por id', () => {
   const html = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');

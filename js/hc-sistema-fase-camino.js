@@ -303,7 +303,11 @@
 
     if (fase === 'germ_cubo') {
       var tray2 =
-        typeof renderGermTrayViz === 'function' ? renderGermTrayViz(g) : '';
+        typeof renderGermHidroNetPotViz === 'function'
+          ? renderGermHidroNetPotViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true })
+          : typeof renderGermTrayViz === 'function'
+            ? renderGermTrayViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true, sinDomo: true })
+            : '';
       var fasesN =
         typeof contarFasesGermHechas === 'function' ? contarFasesGermHechas(cfg) : 0;
       return (
@@ -374,7 +378,6 @@
     'torreSistemaResumenWrap',
     'torreQuickTip',
     'sistemaDwcAyudaCard',
-    'sistemaEcPhStrategyCard',
   ];
 
   function setTorreHidroChromeVisible(visible) {
@@ -455,7 +458,37 @@
           sincronizarSistemaNftMontajeUI();
         }
       } catch (_) {}
+      try {
+        applySistemaSemillaHidroOperativaChrome(cfg || cfgActiva());
+      } catch (_) {}
     }
+  }
+
+  function applySistemaSemillaHidroOperativaChrome(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof hcMedirEsSemillaHidro !== 'function' || !hcMedirEsSemillaHidro(cfg)) return;
+    var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
+    if (ecphCard) {
+      ecphCard.style.display = 'none';
+      ecphCard.hidden = true;
+      ecphCard.classList.add('setup-hidden');
+      ecphCard.setAttribute('aria-hidden', 'true');
+    }
+    try {
+      if (typeof applySistemaTipoPanelesColapsablesUI === 'function') {
+        applySistemaTipoPanelesColapsablesUI();
+      }
+    } catch (_) {}
+    try {
+      if (typeof applySistemaDwcSoloConsultaUi === 'function') {
+        applySistemaDwcSoloConsultaUi(cfg);
+      }
+    } catch (_) {}
+    try {
+      if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
+        applySistemaEsquemaChromeSemillaHidro(cfg);
+      }
+    } catch (_) {}
   }
 
   function refreshTorreExtrasCaminoUi(cfg) {
@@ -511,19 +544,33 @@
     );
 
     var ocultarPanelUsuario =
-      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-      hcSemillaHidroPostAsistenteUi(cfg) &&
-      (fase === 'prep_hidro' || fase === 'germ_cubo');
+      typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
 
     if (!fase || ocultarPanelUsuario) {
       panel.classList.add('setup-hidden');
       panel.innerHTML = '';
       toggleTorreChrome(false, cfg, null);
-      if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
-      refreshTorreExtrasCaminoUi(cfg);
       try {
-        if (typeof redibujarTorre === 'function') redibujarTorre();
+        if (typeof applySistemaSemillaHidroOperativaChrome === 'function') {
+          applySistemaSemillaHidroOperativaChrome(cfg);
+        }
       } catch (_) {}
+      if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
+      try {
+        if (typeof hcSyncTorreDesdeGerminacionSiAplica === 'function') {
+          hcSyncTorreDesdeGerminacionSiAplica(cfg);
+        }
+      } catch (_) {}
+      try {
+        if (
+          typeof renderTorre === 'function' &&
+          typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
+          !hcRenderTorreBloqueadoPorFaseCamino(cfg)
+        ) {
+          renderTorre();
+        }
+      } catch (_) {}
+      refreshTorreExtrasCaminoUi(cfg);
       return;
     }
 
@@ -549,6 +596,7 @@
   }
 
   global.hcRefreshSistemaFasePanel = hcRefreshSistemaFasePanel;
+  global.applySistemaSemillaHidroOperativaChrome = applySistemaSemillaHidroOperativaChrome;
   global.refreshTorreExtrasCaminoUi = refreshTorreExtrasCaminoUi;
   global.hcRefreshSistemaPropagadorPanel = hcRefreshSistemaFasePanel;
 })(typeof window !== 'undefined' ? window : globalThis);

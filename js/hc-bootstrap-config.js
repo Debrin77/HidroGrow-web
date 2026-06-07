@@ -47,7 +47,7 @@ const AUTH_TS_KEY = 'hc_auth';
 const STORAGE_KEY = 'hidrogrow_v2';
 /** Debe coincidir con app-hc-pwa-fotodb.js */
 const FOTO_DB_NAME = 'cultivaFotos';
-const APP_BUILD_VERSION = '2026-05-31-pin-fast';
+const APP_BUILD_VERSION = '2026-05-31-boot-ios';
 const APP_BUILD_VERSION_KEY = 'hg_app_build_version';
 const AUTO_RESTORE_POINT_KEY = 'hg_auto_restore_point_v1';
 const AUTO_RESTORE_POINT_TRANSITION_KEY = 'hg_auto_restore_transition_v1';
@@ -146,16 +146,25 @@ function grupoEmojiHtml(grupoKey) {
   return '<span class="setup-grupo-icon" aria-hidden="true">' + em + '</span>';
 }
 
+function hcCultivosDbSafe() {
+  return typeof CULTIVOS_DB !== 'undefined' && Array.isArray(CULTIVOS_DB) ? CULTIVOS_DB : [];
+}
+
 function refEcPhRowEmojiHtml(row) {
+  const db = hcCultivosDbSafe();
   const s = String(row.cultivo || '');
   const byId = function(id) {
-    const c = id ? CULTIVOS_DB.find(x => x.id === id) : null;
+    const c = id ? db.find(x => x.id === id) : null;
     if (!c) return '<span class="cultivo-emoji-mark cultivo-emoji-mark--135" aria-hidden="true">🌱</span>';
     return cultivoEmojiHtml(c, 1.35);
   };
   const hit = CULTIVOS_DB.find(c => c.nombre === s || (c.abrev && s.indexOf(c.abrev) >= 0));
   if (hit) return cultivoEmojiHtml(hit, 1.35);
   return byId(null);
+}
+
+function hcPlantasPorGrupoCultivo(grupo) {
+  return hcCultivosDbSafe().filter(function (c) { return c.grupo === grupo; }).map(function (c) { return c.nombre; });
 }
 
 // Grupos de genética (HidroGrow)
@@ -165,7 +174,7 @@ const GRUPOS_CULTIVO = {
     color: '#7c3aed',
     ec: '1200-2000',
     ph: '5.8-6.2',
-    plantas: CULTIVOS_DB.filter(c => c.grupo === 'indica').map(c => c.nombre),
+    plantas: hcPlantasPorGrupoCultivo('indica'),
     nota: 'Ciclo más corto, perfil compacto. Ideal DWC/RDWC en salas pequeñas.',
   },
   sativa: {
@@ -173,7 +182,7 @@ const GRUPOS_CULTIVO = {
     color: '#eab308',
     ec: '1300-2300',
     ph: '5.8-6.3',
-    plantas: CULTIVOS_DB.filter(c => c.grupo === 'sativa').map(c => c.nombre),
+    plantas: hcPlantasPorGrupoCultivo('sativa'),
     nota: 'Mayor estiramiento en floración. Planifica altura de lámpara y extractor.',
   },
   hibrida: {
@@ -181,7 +190,7 @@ const GRUPOS_CULTIVO = {
     color: '#22c55e',
     ec: '1300-2400',
     ph: '5.8-6.2',
-    plantas: CULTIVOS_DB.filter(c => c.grupo === 'hibrida').map(c => c.nombre),
+    plantas: hcPlantasPorGrupoCultivo('hibrida'),
     nota: 'Equilibrio vigor/altura. La mayoría de genéticas comerciales actuales.',
   },
   auto: {
@@ -189,7 +198,7 @@ const GRUPOS_CULTIVO = {
     color: '#06b6d4',
     ec: '1200-2100',
     ph: '5.8-6.2',
-    plantas: CULTIVOS_DB.filter(c => c.grupo === 'auto').map(c => c.nombre),
+    plantas: hcPlantasPorGrupoCultivo('auto'),
     nota: 'Fotoperiodo fijo (~18/6). No mezclar con fotodependientes en la misma sala.',
   },
   cbd: {
@@ -197,7 +206,7 @@ const GRUPOS_CULTIVO = {
     color: '#34d399',
     ec: '1000-1600',
     ph: '5.9-6.3',
-    plantas: CULTIVOS_DB.filter(c => c.grupo === 'cbd').map(c => c.nombre),
+    plantas: hcPlantasPorGrupoCultivo('cbd'),
     nota: 'EC más baja que genéticas THC altas. Vigilar pH estable.',
   },
 };

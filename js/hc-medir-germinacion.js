@@ -50,7 +50,7 @@
     ph: {
       card: 'cardPH',
       input: 'inputPH',
-      label: 'pH cubo',
+      label: 'pH bandeja',
       icon: 'hc-i-flask',
       rangeId: 'paramRangePH',
       statusId: 'statusPH',
