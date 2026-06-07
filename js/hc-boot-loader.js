@@ -139,12 +139,33 @@
     });
   }
 
-  async function loadQueue(queue) {
+  function hcBootScheduleChunk(cb) {
+    return new Promise(function (resolve) {
+      var done = function () {
+        try {
+          cb();
+        } catch (_) {}
+        resolve();
+      };
+      if (hcBootIsMobile() && typeof global.requestIdleCallback === 'function') {
+        global.requestIdleCallback(done, { timeout: 120 });
+      } else {
+        setTimeout(done, hcBootIsMobile() ? 12 : 0);
+      }
+    });
+  }
+
+  async function loadQueue(queue, opts) {
+    opts = opts || {};
     var mobile = hcBootIsMobile();
-    var batchSize = mobile ? 1 : 4;
-    var yieldMs = mobile ? 40 : 8;
+    var idle = !!opts.idle;
+    var batchSize = idle ? 1 : mobile ? 2 : 4;
+    var yieldMs = idle ? 0 : mobile ? 16 : 8;
 
     for (var i = 0; i < queue.length; i += batchSize) {
+      if (idle) {
+        await hcBootScheduleChunk(function () {});
+      }
       var slice = queue.slice(i, i + batchSize);
       var results = await Promise.all(
         slice.map(function (url) {
@@ -157,7 +178,11 @@
       }
       hcBootUpdatePinProgress();
       if (i + batchSize < queue.length) {
-        await hcBootYield(yieldMs);
+        if (idle) {
+          await hcBootScheduleChunk(function () {});
+        } else if (yieldMs) {
+          await hcBootYield(yieldMs);
+        }
       }
     }
   }
@@ -208,7 +233,7 @@
     }
     deferredStarted = true;
     (async function () {
-      await loadQueue(q.deferred);
+      await loadQueue(q.deferred, { idle: true });
       global._hcBootLoadDone = true;
       hcBootUpdatePinProgress();
       try {

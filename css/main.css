@@ -4219,16 +4219,19 @@ button.aviso-cestas-ir:active {
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+/* Cambio de pestaña: instantáneo (fadeUp escalonado re-animaba todo el panel en cada goTab) */
 .tab-panel.active > * {
-  animation: fadeUp 0.16s cubic-bezier(0.16,1,0.3,1) forwards;
-  opacity: 0;
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
 }
-.tab-panel.active > *:nth-child(1) { animation-delay: 0s; }
-.tab-panel.active > *:nth-child(2) { animation-delay: 0.05s; }
-.tab-panel.active > *:nth-child(3) { animation-delay: 0.10s; }
-.tab-panel.active > *:nth-child(4) { animation-delay: 0.15s; }
-.tab-panel.active > *:nth-child(5) { animation-delay: 0.18s; }
-.tab-panel.active > *:nth-child(6) { animation-delay: 0.21s; }
+.tab-panel:not(.active) {
+  content-visibility: hidden;
+  contain-intrinsic-size: auto 480px;
+}
+.tab-panel.active {
+  content-visibility: visible;
+}
 
 /* Guía primer día: sin fadeUp (transform/opacity) para evitar capas superpuestas con el resto del panel */
 .tab-panel.active > .hc-guia-primeros {
@@ -14942,9 +14945,9 @@ html.hc-theme-dark .sala-montaje-prereq-warn {
 #app.hc-app-booting {
   cursor: wait;
 }
-#app.hc-app-booting .tab-content.active {
-  opacity: 0.72;
-  pointer-events: none;
+#app.hc-app-booting .tab-panel.active {
+  opacity: 1;
+  pointer-events: auto;
 }
 #app.hc-app-booting::after {
   content: '';

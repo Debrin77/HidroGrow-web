@@ -654,10 +654,8 @@ function scrollTabBarToActive(btn) {
   const bar = btn.closest('.tab-bar');
   if (!bar || bar.scrollWidth <= bar.clientWidth + 2) return;
   requestAnimationFrame(() => {
-    const instant = typeof matchMedia === 'function' &&
-      matchMedia('(prefers-reduced-motion: reduce)').matches;
     btn.scrollIntoView({
-      behavior: instant ? 'auto' : 'smooth',
+      behavior: 'auto',
       inline: 'center',
       block: 'nearest',
     });
@@ -669,7 +667,8 @@ var _hcTabBtnsCache = null;
 var _hcGoTabWorkGen = 0;
 var _hcTabPersistTimer = null;
 var _hcTabHeavyLast = {};
-var HC_TAB_HEAVY_COOLDOWN_MS = 2800;
+var _hcTabEverVisited = {};
+var HC_TAB_HEAVY_COOLDOWN_MS = 45000;
 
 function hcInvalidateTabDomCache() {
   _hcTabPanelsCache = null;
@@ -679,9 +678,17 @@ function hcInvalidateTabDomCache() {
 function hcInvalidateTabHeavyCache(tab) {
   if (tab) {
     delete _hcTabHeavyLast[tab];
+    delete _hcTabEverVisited[tab];
     return;
   }
   _hcTabHeavyLast = {};
+  _hcTabEverVisited = {};
+}
+
+function hcTabNeedsHeavyRefresh(tab) {
+  if (!_hcTabEverVisited[tab]) return true;
+  var last = _hcTabHeavyLast[tab] || 0;
+  return Date.now() - last > HC_TAB_HEAVY_COOLDOWN_MS;
 }
 
 function hcTabLeavingNeedsPersist(tab) {
@@ -765,16 +772,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
   if (skipHeavy) {
     if (tab === 'calendario' && typeof renderCalendario !== 'function') {
       hcRefreshCalendarioTab(gen);
-      return;
     }
-    if (tab === 'inicio' && typeof updateDashboard === 'function') {
-      try {
-        updateDashboard({ lite: true });
-      } catch (_) {}
-    }
-    try {
-      if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
-    } catch (_) {}
     return;
   }
   if (
@@ -915,16 +913,18 @@ function goTabDeferredWorkHeavy(tab, gen) {
   _hcTabHeavyLast[tab] = Date.now();
 }
 
-function goTabDeferredWork(tab) {
+function goTabDeferredWork(tab, opts) {
+  opts = opts || {};
   var gen = _hcGoTabWorkGen;
   goTabDeferredWorkLite(tab);
+  if (opts.liteOnly) return;
   var runHeavy = function () {
     goTabDeferredWorkHeavy(tab, gen);
   };
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: 160 });
+    requestIdleCallback(runHeavy, { timeout: 1200 });
   } else {
-    requestAnimationFrame(runHeavy);
+    setTimeout(runHeavy, 16);
   }
 }
 
@@ -987,10 +987,12 @@ function goTab(tab) {
 
   var tabWork = tab;
   var gen = ++_hcGoTabWorkGen;
+  var needsHeavy = hcTabNeedsHeavyRefresh(tabWork);
+  if (needsHeavy) _hcTabEverVisited[tabWork] = true;
   requestAnimationFrame(function () {
     if (gen !== _hcGoTabWorkGen) return;
     hcScheduleTabPersist(prevTab);
-    goTabDeferredWork(tabWork);
+    goTabDeferredWork(tabWork, { liteOnly: !needsHeavy });
   });
 }
 
