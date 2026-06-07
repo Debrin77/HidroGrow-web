@@ -84,7 +84,8 @@
     );
   }
 
-  function refreshTabsOperativaUi() {
+  function refreshTabsOperativaUi(opts) {
+    opts = opts && typeof opts === 'object' ? opts : {};
     var operativa = medicionesOperativasPermitidas();
     TABS_POST_OPERATIVA.forEach(function (t) {
       var btn = document.getElementById('btn-' + t);

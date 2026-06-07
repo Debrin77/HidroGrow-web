@@ -4219,18 +4219,15 @@ button.aviso-cestas-ir:active {
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
-/* Cambio de pestaña: instantáneo (fadeUp escalonado re-animaba todo el panel en cada goTab) */
+/* Cambio de pestaña: instantáneo (sin fadeUp escalonado al activar panel) */
 .tab-panel.active > * {
   animation: none !important;
+  animation-delay: 0s !important;
   opacity: 1 !important;
   transform: none !important;
 }
-.tab-panel:not(.active) {
-  content-visibility: hidden;
-  contain-intrinsic-size: auto 480px;
-}
 .tab-panel.active {
-  content-visibility: visible;
+  contain: layout style;
 }
 
 /* Guía primer día: sin fadeUp (transform/opacity) para evitar capas superpuestas con el resto del panel */
@@ -22979,10 +22976,6 @@ button,
 [role="tab"],
 .tab-btn {
   touch-action: manipulation;
-}
-.tab-panel:not(.active) {
-  content-visibility: hidden;
-  contain-intrinsic-size: auto 400px;
 }
 @media (hover: none) and (pointer: coarse) {
   .tab-btn {

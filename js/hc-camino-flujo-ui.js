@@ -536,6 +536,61 @@
     } catch (_) {}
   }
 
+  function refreshTabsOperativaCaminoForTab(tab) {
+    var cfg = cfgActiva();
+    aplicarVisibilidadTabsCamino(cfg);
+    if (tab === 'inicio') {
+      ensureOperativaBanner(
+        'propagadorSalaOcultaBanner',
+        propagadorSalaOcultaBannerHtml(cfg),
+        'tab-inicio',
+        'dashGerminacionHub'
+      );
+      var hub = el('dashGerminacionHub');
+      var hubVisible = hub && !hub.classList.contains('setup-hidden');
+      if (!hubVisible) mountTrasladoBanner('hcTrasladoSalaBannerHost');
+      else {
+        var hostTr = el('hcTrasladoSalaBannerHost');
+        if (hostTr) {
+          var prevTr = hostTr.querySelector('.hc-traslado-sala-banner');
+          if (prevTr) prevTr.remove();
+        }
+      }
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      return;
+    }
+    if (tab === 'mediciones') {
+      ensureOperativaBanner(
+        'medirPropagadorFaseBanner',
+        medirBannerHtml(cfg),
+        'tab-mediciones',
+        'medirTorreBanner'
+      );
+      if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
+      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
+      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+      try {
+        if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
+        if (typeof refreshAvisoUbicacionExteriorPendiente === 'function') {
+          refreshAvisoUbicacionExteriorPendiente();
+        }
+      } catch (_) {}
+      return;
+    }
+    if (tab === 'sala') {
+      if (typeof refreshSalaSubTabsCaminoUi === 'function') refreshSalaSubTabsCaminoUi(cfg);
+      if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
+      if (typeof refreshLuzOrigenUI === 'function') refreshLuzOrigenUI(cfg);
+      return;
+    }
+    if (tab === 'sistema') {
+      if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
+      else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
+        hcRefreshSistemaPropagadorPanel();
+      }
+    }
+  }
+
   function refreshTabsOperativaCamino(opts) {
     opts = opts || {};
     var cfg = cfgActiva();
@@ -590,9 +645,18 @@
     if (_tabsHooked) return;
     _tabsHooked = true;
     var prev = global.refreshTabsOperativaUi;
-    global.refreshTabsOperativaUi = function () {
-      if (typeof prev === 'function') prev();
-      refreshTabsOperativaCamino();
+    global.refreshTabsOperativaUi = function (opts) {
+      opts = opts && typeof opts === 'object' ? opts : {};
+      if (typeof prev === 'function') prev(opts);
+      if (opts.visibilidadOnly) {
+        refreshTabsOperativaCamino({ visibilidadOnly: true });
+        return;
+      }
+      if (opts.tab) {
+        refreshTabsOperativaCaminoForTab(opts.tab);
+        return;
+      }
+      refreshTabsOperativaCamino(opts);
     };
   }
 
@@ -603,6 +667,7 @@
   global.applySalaPreGermEquipMinimalChrome = applySalaPreGermEquipMinimalChrome;
   global.applyPremiumPropagadorPaso4Chrome = applyPremiumPropagadorPaso4Chrome;
   global.refreshTabsOperativaCamino = refreshTabsOperativaCamino;
+  global.refreshTabsOperativaCaminoForTab = refreshTabsOperativaCaminoForTab;
   global.renderTrasladoSalaBannerHtml = renderTrasladoSalaBannerHtml;
   global.hcNecesitaBannerTrasladoSala = hcNecesitaBannerTrasladoSala;
   global.hcIrHubGerminacionOperativa = hcIrHubGerminacionOperativa;

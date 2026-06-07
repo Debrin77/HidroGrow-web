@@ -668,7 +668,7 @@ var _hcGoTabWorkGen = 0;
 var _hcTabPersistTimer = null;
 var _hcTabHeavyLast = {};
 var _hcTabEverVisited = {};
-var HC_TAB_HEAVY_COOLDOWN_MS = 45000;
+var HC_TAB_HEAVY_COOLDOWN_MS = 180000;
 
 function hcInvalidateTabDomCache() {
   _hcTabPanelsCache = null;
@@ -760,6 +760,11 @@ function hcRefreshCalendarioTab(gen) {
 }
 
 function goTabDeferredWorkLite(tab) {
+  try {
+    if (typeof refreshTabsOperativaUi === 'function') {
+      refreshTabsOperativaUi({ visibilidadOnly: true });
+    }
+  } catch (_) {}
   if (typeof aplicarEstadoStandbyUI === 'function') aplicarEstadoStandbyUI();
   if (typeof window._hcSyncMainTabTabIndex === 'function') window._hcSyncMainTabTabIndex();
 }
@@ -787,12 +792,20 @@ function goTabDeferredWorkHeavy(tab, gen) {
   }
   if (tab === 'mediciones') {
     if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
-    if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
-    if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
-    if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-    if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
-    if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+    var runMedirHeavy = function () {
+      if (gen !== _hcGoTabWorkGen) return;
+      if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
+      if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
+      if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
+      if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
+      if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
+    };
+    if (typeof requestIdleCallback === 'function') {
+      requestIdleCallback(runMedirHeavy, { timeout: 2200 });
+    } else {
+      setTimeout(runMedirHeavy, 32);
+    }
   }
   if (tab === 'sala') {
     if (typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
@@ -908,7 +921,9 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   } catch (_) {}
   try {
-    if (typeof refreshTabsOperativaUi === 'function') refreshTabsOperativaUi();
+    if (typeof refreshTabsOperativaUi === 'function') {
+      refreshTabsOperativaUi({ tab: tab });
+    }
   } catch (_) {}
   _hcTabHeavyLast[tab] = Date.now();
 }
@@ -922,9 +937,9 @@ function goTabDeferredWork(tab, opts) {
     goTabDeferredWorkHeavy(tab, gen);
   };
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runHeavy, { timeout: 1200 });
+    requestIdleCallback(runHeavy, { timeout: 2400 });
   } else {
-    setTimeout(runHeavy, 16);
+    setTimeout(runHeavy, 32);
   }
 }
 
@@ -991,8 +1006,11 @@ function goTab(tab) {
   if (needsHeavy) _hcTabEverVisited[tabWork] = true;
   requestAnimationFrame(function () {
     if (gen !== _hcGoTabWorkGen) return;
-    hcScheduleTabPersist(prevTab);
-    goTabDeferredWork(tabWork, { liteOnly: !needsHeavy });
+    requestAnimationFrame(function () {
+      if (gen !== _hcGoTabWorkGen) return;
+      hcScheduleTabPersist(prevTab);
+      goTabDeferredWork(tabWork, { liteOnly: !needsHeavy });
+    });
   });
 }
 
