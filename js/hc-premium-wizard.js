@@ -790,19 +790,23 @@
           : typeof setupPagina !== 'undefined'
             ? setupPagina
             : null;
-      if (el('setupPremiumNumSemillasGerm') && typeof persistPremiumGermPlanFromUI === 'function') {
+      var p3 = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+      var p4 = typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5;
+      var p6 = typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      if (
+        (pagLite === p3 || pagLite === p4) &&
+        el('setupPremiumNumSemillasGerm') &&
+        typeof persistPremiumGermPlanFromUI === 'function'
+      ) {
         persistPremiumGermPlanFromUI(true);
       }
       if (
-        pagLite !== SETUP_PAGE_ORIGEN &&
+        (pagLite === p3 || pagLite === p6) &&
         typeof persistVariedadGermFromUI === 'function'
       ) {
         persistVariedadGermFromUI();
       }
-      if (
-        pagLite !== SETUP_PAGE_ORIGEN &&
-        typeof persistPremiumNutrienteGermFromUI === 'function'
-      ) {
+      if (pagLite === p4 && typeof persistPremiumNutrienteGermFromUI === 'function') {
         persistPremiumNutrienteGermFromUI();
       }
       return;

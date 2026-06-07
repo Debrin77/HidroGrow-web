@@ -357,7 +357,8 @@ function buildHtmlTablaEcPh(opts) {
 }
 
 /** Consejos EC/pH: referencia por fabricante (ml/L → totales al volumen). CalMag en blanda escala desde dosis 18 L de la app. */
-const REF_DOSIS_LITROS_TABLA = VOL_OBJETIVO;
+const REF_DOSIS_LITROS_TABLA =
+  typeof VOL_OBJETIVO === 'number' && Number.isFinite(VOL_OBJETIVO) ? VOL_OBJETIVO : 18;
 
 /**
  * REF dosis: cada valor es ml/L (o g/L en polvo) de **esa botella/parte**.

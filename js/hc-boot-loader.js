@@ -35,7 +35,9 @@
       typeof validarPremiumSetupPaso === 'function' &&
       typeof hcMostrarSistemaPropagador === 'function' &&
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      typeof caminoUsaNutrienteBandejaPropagador === 'function'
+      typeof caminoUsaNutrienteBandejaPropagador === 'function' &&
+      typeof guardarSetupYContinuar === 'function' &&
+      typeof setupNext === 'function'
     );
   }
 

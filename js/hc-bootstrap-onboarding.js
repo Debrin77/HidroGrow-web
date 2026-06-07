@@ -456,6 +456,10 @@ function hcDebeMostrarBienvenida(opts) {
 }
 
 function abrirOverlayBienvenida() {
+  try {
+    const so = document.getElementById('setupOverlay');
+    if (so && so.classList.contains('open')) return false;
+  } catch (_) {}
   const ov = document.getElementById('welcomeOverlay');
   if (!ov) return false;
   ov.classList.remove('setup-hidden');

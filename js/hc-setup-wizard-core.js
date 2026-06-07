@@ -2225,6 +2225,9 @@ function abrirSetup() {
     }
   } catch (_) {}
 
+  try {
+    if (typeof hcOcultarOverlaysOnboardingUi === 'function') hcOcultarOverlaysOnboardingUi();
+  } catch (_) {}
   const o = document.getElementById('setupOverlay');
   o.classList.add('open');
   renderNutrientesGrid();

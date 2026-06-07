@@ -246,7 +246,63 @@ function hcScrollSetupWizardAlFalloGuardado() {
   } catch (_) {}
 }
 
+function hcWhenSetupWizardCoreReady(cb) {
+  if (typeof cb !== 'function') return;
+  if (typeof guardarSetupYContinuar === 'function' && typeof setupFlowAdvancePage === 'function') {
+    try {
+      cb();
+    } catch (_) {}
+    return;
+  }
+  var n = 0;
+  var t = setInterval(function () {
+    if (
+      (typeof guardarSetupYContinuar === 'function' &&
+        typeof setupFlowAdvancePage === 'function') ||
+      ++n > 150
+    ) {
+      clearInterval(t);
+      try {
+        cb();
+      } catch (_) {}
+    }
+  }, 40);
+}
+
 function setupNext() {
+  try {
+    return setupNextCore();
+  } catch (eNext) {
+    try {
+      console.error('setupNext', eNext);
+    } catch (_) {}
+    if (typeof showToast === 'function') {
+      var det =
+        eNext && (eNext.message || String(eNext))
+          ? String(eNext.message).replace(/\s+/g, ' ').trim().slice(0, 100)
+          : '';
+      showToast(
+        det ? 'No se pudo avanzar: ' + det : 'No se pudo avanzar. Recarga (Ctrl+F5) e inténtalo de nuevo.',
+        true,
+        { durationMs: 6500 }
+      );
+    }
+    return false;
+  }
+}
+
+function setupNextCore() {
+  if (typeof guardarSetupYContinuar !== 'function' || typeof setupFlowAdvancePage !== 'function') {
+    if (typeof showToast === 'function') {
+      showToast('Preparando asistente… espera un momento y pulsa otra vez', true, { durationMs: 4200 });
+    }
+    hcWhenSetupWizardCoreReady(function () {
+      try {
+        setupNextCore();
+      } catch (_) {}
+    });
+    return false;
+  }
   if (setupPagina === SETUP_PAGE_WELCOME) {
     setupPagina =
       typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
@@ -327,9 +383,17 @@ function setupNext() {
     }
   }
   if (setupPagina < ultimoPaso) {
+    var prevPag = setupPagina;
     setupPagina =
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : setupPagina + 1;
+    if (setupPagina === prevPag) {
+      if (typeof showToast === 'function') {
+        showToast('No hay siguiente paso en este camino. Recarga la app e inténtalo de nuevo.', true);
+      }
+      return false;
+    }
     renderSetupPage();
+    return true;
   } else {
     try {
       if (typeof syncSetupDataFromPremium === 'function') syncSetupDataFromPremium();
@@ -353,6 +417,7 @@ function setupNext() {
       } catch (_) {}
     }
   }
+  return true;
 }
 
 function setupBack() {

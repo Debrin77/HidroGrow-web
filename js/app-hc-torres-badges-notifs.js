@@ -1476,6 +1476,9 @@ function renderListaTorres() {
 }
 
 function abrirSetupNuevaTorre() {
+  try {
+    if (typeof hcOcultarOverlaysOnboardingUi === 'function') hcOcultarOverlaysOnboardingUi();
+  } catch (_) {}
   setupEsNuevaTorre = true;
   try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession({ keepNuevaFlag: true });

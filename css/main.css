@@ -17825,7 +17825,17 @@ button.toggle-switch:focus-visible {
   flex-direction: column;
   overflow: hidden;
 }
-.setup-overlay.open { display: flex; }
+.setup-overlay.open {
+  display: flex;
+  z-index: 12150;
+}
+body:has(#setupOverlay.open) #welcomeOverlay {
+  display: none !important;
+  pointer-events: none !important;
+}
+body:has(#setupOverlay.open) .welcome-overlay {
+  visibility: hidden;
+}
 
 .setup-header {
   padding: env(safe-area-inset-top, 47px) 20px 10px;
