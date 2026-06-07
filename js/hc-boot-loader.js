@@ -21,13 +21,21 @@
     return false;
   }
 
+  /** No desbloquear PIN ni initApp hasta críticos + asistente + propagador. */
   function hcAppScriptsListos() {
-    if (loading && !criticalDone) return false;
+    if (!criticalDone) return false;
     return (
       typeof initApp === 'function' &&
       typeof goTab === 'function' &&
       typeof mostrarBienvenidaOContinuarArranque === 'function' &&
-      (typeof abrirSetupNuevaTorre === 'function' || typeof abrirSetup === 'function')
+      (typeof abrirSetupNuevaTorre === 'function' || typeof abrirSetup === 'function') &&
+      typeof renderSetupPage === 'function' &&
+      typeof seleccionarCaminoCultivo === 'function' &&
+      typeof getCaminoElegidoEnAsistente === 'function' &&
+      typeof validarPremiumSetupPaso === 'function' &&
+      typeof hcMostrarSistemaPropagador === 'function' &&
+      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+      typeof caminoUsaNutrienteBandejaPropagador === 'function'
     );
   }
 

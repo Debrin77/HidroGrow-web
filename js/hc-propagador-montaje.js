@@ -965,12 +965,7 @@
       (typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg)) ||
       (cam === 'semilla_hidro' &&
         typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-<<<<<<< HEAD
-        hcSemillaHidroPostAsistenteUi(cfg)) ||
-      cam === 'semilla_hidro';
-=======
         hcSemillaHidroPostAsistenteUi(cfg));
->>>>>>> d4954b609af6dd6b222d50fc4328bab9f73ad996
     det.classList.toggle('setup-hidden', ocultar);
     if (ocultar) det.open = false;
   }

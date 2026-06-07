@@ -317,7 +317,11 @@
   }
 
   function refreshCaminoCultivoUI() {
-    var cam = getCaminoCultivo();
+    var cam =
+      typeof getCaminoElegidoEnAsistente === 'function'
+        ? getCaminoElegidoEnAsistente()
+        : getCaminoCultivo();
+    if (!cam) cam = getCaminoCultivo();
     var def = getCaminoDef(cam);
     ['setupCamino_semilla_propagador', 'setupCamino_semilla_hidro', 'setupCamino_esqueje_hidro', 'setupCamino_madre_hidro'].forEach(
       function (bid) {

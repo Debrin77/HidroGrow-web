@@ -251,6 +251,13 @@ function updatePinDots() {
 }
 
 function checkPin() {
+  if (typeof hcAppScriptsListos === 'function' && !hcAppScriptsListos()) {
+    const errPrep = document.getElementById('pinErr');
+    if (errPrep) errPrep.textContent = 'Aún preparando la app… espera un momento';
+    pinEntry = '';
+    updatePinDots();
+    return;
+  }
   if (pinEntry === PIN) {
     pinEntry = '';
     updatePinDots();
