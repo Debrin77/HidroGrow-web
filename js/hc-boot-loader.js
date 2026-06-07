@@ -221,7 +221,7 @@
     var deferredPromise = null;
     if (q.deferred.length) {
       deferredStarted = true;
-      deferredPromise = loadQueue(q.deferred, { idle: hcBootIsMobile() });
+      deferredPromise = loadQueue(q.deferred, { idle: false });
     }
 
     if (q.essential.length) {
@@ -261,7 +261,7 @@
     }
     deferredStarted = true;
     (async function () {
-      await loadQueue(q.deferred, { idle: hcBootIsMobile() });
+      await loadQueue(q.deferred, { idle: false });
       global._hcBootLoadDone = true;
       hcBootUpdatePinProgress();
       try {

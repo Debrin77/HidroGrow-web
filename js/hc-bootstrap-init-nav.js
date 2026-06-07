@@ -675,10 +675,20 @@ function hcInvalidateTabHeavyCache(tab) {
   if (tab) {
     delete _hcTabHeavyLast[tab];
     delete _hcTabEverVisited[tab];
+    if (tab === 'sistema') {
+      try {
+        var wSis = document.getElementById('torreSVGWrap');
+        if (wSis) delete wSis.dataset.hcTorreFp;
+      } catch (_) {}
+    }
     return;
   }
   _hcTabHeavyLast = {};
   _hcTabEverVisited = {};
+  try {
+    var wAll = document.getElementById('torreSVGWrap');
+    if (wAll) delete wAll.dataset.hcTorreFp;
+  } catch (_) {}
 }
 
 function hcTabNeedsHeavyRefresh(tab) {
@@ -705,23 +715,36 @@ function hcScheduleTabPersist(prevTab) {
   }, 1200);
 }
 
+function hcDiagramScriptsReady() {
+  return typeof generarSVGDwc === 'function' || typeof renderTorre === 'function';
+}
+
 function hcWhenDiagramScriptsReady(cb) {
   if (typeof cb !== 'function') return;
-  if (typeof generarSVGDwc === 'function' || typeof renderTorre === 'function') {
+  if (hcDiagramScriptsReady()) {
     try {
       cb();
     } catch (_) {}
     return;
   }
+  var done = false;
+  var run = function () {
+    if (done || !hcDiagramScriptsReady()) return;
+    done = true;
+    try {
+      cb();
+    } catch (_) {}
+  };
+  try {
+    window.addEventListener('hcBootScriptsLoaded', run, { once: true });
+  } catch (_) {}
   var n = 0;
   var t = setInterval(function () {
-    if (typeof generarSVGDwc === 'function' || typeof renderTorre === 'function' || ++n > 100) {
+    if (hcDiagramScriptsReady() || ++n > 60) {
       clearInterval(t);
-      try {
-        cb();
-      } catch (_) {}
+      run();
     }
-  }, 40);
+  }, 32);
 }
 
 function hcWhenCalendarioReady(cb) {
@@ -789,19 +812,14 @@ function goTabDeferredWorkHeavy(tab, gen) {
   if (tab === 'mediciones') {
     if (typeof cargarUltimaMedicion === 'function') cargarUltimaMedicion();
     if (typeof refreshMedirOperativaUi === 'function') refreshMedirOperativaUi();
-    var runMedirHeavy = function () {
+    setTimeout(function () {
       if (gen !== _hcGoTabWorkGen) return;
       if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
       if (typeof refreshMedirTareasHoyBadge === 'function') refreshMedirTareasHoyBadge();
       if (typeof renderMonitorSistemaPanel === 'function') renderMonitorSistemaPanel();
       if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
       if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
-    };
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(runMedirHeavy, { timeout: 2200 });
-    } else {
-      setTimeout(runMedirHeavy, 32);
-    }
+    }, 16);
   }
   if (tab === 'sala') {
     if (typeof ensureSalaCultivoEquipMountEnTabRoot === 'function') {
@@ -818,18 +836,15 @@ function goTabDeferredWorkHeavy(tab, gen) {
     if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
   }
   if (tab === 'inicio' && typeof updateDashboard === 'function') {
-    updateDashboard({ lite: true });
-    var runDashTab = function () {
+    try {
+      updateDashboard({ lite: true });
+    } catch (_) {}
+    setTimeout(function () {
       if (gen !== _hcGoTabWorkGen) return;
       try {
         updateDashboard();
       } catch (_) {}
-    };
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(runDashTab, { timeout: 700 });
-    } else {
-      setTimeout(runDashTab, 48);
-    }
+    }, 16);
   }
   if (tab === 'meteo') {
     try {
@@ -848,8 +863,29 @@ function goTabDeferredWorkHeavy(tab, gen) {
     const bloquearEsquemaPorFase =
       typeof hcRenderTorreBloqueadoPorFaseCamino === 'function' &&
       hcRenderTorreBloqueadoPorFaseCamino(cfgSistema);
+    const finishSistemaTab = function () {
+      try {
+        if (typeof refreshTabsOperativaUi === 'function') {
+          refreshTabsOperativaUi({ visibilidadOnly: true });
+        }
+      } catch (_) {}
+      _hcTabHeavyLast[tab] = Date.now();
+    };
     const runSistema = function () {
       if (gen !== _hcGoTabWorkGen) return;
+      var torreCached = false;
+      try {
+        var wrapS = document.getElementById('torreSVGWrap');
+        var fpS =
+          typeof hcTorreRenderFingerprint === 'function' ? hcTorreRenderFingerprint(cfgSistema) : '';
+        torreCached = !!(
+          wrapS &&
+          wrapS.dataset.hcTorreFp === fpS &&
+          wrapS.innerHTML &&
+          String(wrapS.innerHTML).length > 800 &&
+          !wrapS.querySelector('.torre-loading-placeholder')
+        );
+      } catch (_) {}
       if (modoFase) {
         if (typeof hcRefreshSistemaFasePanel === 'function') hcRefreshSistemaFasePanel();
         else if (typeof hcRefreshSistemaPropagadorPanel === 'function') {
@@ -857,22 +893,24 @@ function goTabDeferredWorkHeavy(tab, gen) {
         } else if (!bloquearEsquemaPorFase && typeof renderTorre === 'function') {
           renderTorre();
         }
+        finishSistemaTab();
         return;
       }
-      if (typeof renderTorre !== 'function') return;
-      renderTorre();
-      if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
-      requestAnimationFrame(function () {
-        if (gen !== _hcGoTabWorkGen) return;
-        try {
-          const w = document.getElementById('torreSVGWrap');
-          if (w && w.querySelector('.torre-loading-placeholder') && typeof renderTorre === 'function') {
-            renderTorre();
-          }
-        } catch (_) {}
-      });
-      if (typeof renderCompatGrid === 'function') renderCompatGrid();
-      if (typeof calcularRotacion === 'function') calcularRotacion();
+      if (typeof renderTorre === 'function' && !torreCached) {
+        renderTorre();
+        if (typeof hcRefreshSistemaCultivoExtras === 'function') hcRefreshSistemaCultivoExtras();
+        requestAnimationFrame(function () {
+          if (gen !== _hcGoTabWorkGen) return;
+          try {
+            const w = document.getElementById('torreSVGWrap');
+            if (w && w.querySelector('.torre-loading-placeholder') && typeof renderTorre === 'function') {
+              renderTorre();
+            }
+          } catch (_) {}
+        });
+        if (typeof renderCompatGrid === 'function') renderCompatGrid();
+        if (typeof calcularRotacion === 'function') calcularRotacion();
+      }
       const postSetupCultivos =
         typeof state !== 'undefined' && state && state.hcPostSetupChecklistPendiente;
       if (!postSetupCultivos && typeof abrirTutorialTorrePestanaSiPrimeraVez === 'function') {
@@ -880,6 +918,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
           if (gen === _hcGoTabWorkGen) abrirTutorialTorrePestanaSiPrimeraVez();
         }, 520);
       }
+      finishSistemaTab();
     };
     hcWhenDiagramScriptsReady(runSistema);
     return;
@@ -918,7 +957,7 @@ function goTabDeferredWorkHeavy(tab, gen) {
   } catch (_) {}
   try {
     if (typeof refreshTabsOperativaUi === 'function') {
-      refreshTabsOperativaUi({ tab: tab });
+      refreshTabsOperativaUi({ visibilidadOnly: true });
     }
   } catch (_) {}
   _hcTabHeavyLast[tab] = Date.now();

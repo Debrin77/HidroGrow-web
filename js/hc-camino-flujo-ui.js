@@ -729,7 +729,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     try {
       hookGoTabCamino();
-      refreshTabsOperativaCamino();
+      refreshTabsOperativaCamino({ visibilidadOnly: true });
     } catch (_) {}
   });
 

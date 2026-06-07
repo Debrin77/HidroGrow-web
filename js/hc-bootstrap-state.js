@@ -377,11 +377,7 @@ function hidrogrowPersistStateIdle(s) {
       console.warn('No se pudo persistir saneamiento de estado', e);
     }
   };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(persist, { timeout: 3500 });
-  } else {
-    setTimeout(persist, 0);
-  }
+  setTimeout(persist, 80);
 }
 
 /** Reparación pesada de torre/slots — no bloquea el PIN (se agenda en idle). */
@@ -544,11 +540,7 @@ function loadState() {
       const runRepair = function () {
         hidrogrowFinishLoadStateRepair(s, repairCtx);
       };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runRepair, { timeout: 2800 });
-      } else {
-        setTimeout(runRepair, 32);
-      }
+      setTimeout(runRepair, 16);
       return s;
     }
   } catch(e) { console.error('Error loading state:', e); }
@@ -903,11 +895,7 @@ function gestionarCambioVersionEnArranque() {
           crearPuntoRestauracionLocal(backupOpts);
         } catch (_) {}
       };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runBackup, { timeout: 4000 });
-      } else {
-        setTimeout(runBackup, 50);
-      }
+      setTimeout(runBackup, 100);
     }
     showToast(
       'Nueva versión (' +

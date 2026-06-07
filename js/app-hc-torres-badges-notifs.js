@@ -672,11 +672,7 @@ function cambiarTorreActiva(idx) {
       if (typeof saveState === 'function') saveState({ skipSlotGuard: true });
     } catch (_) {}
   };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(persistSwitch, { timeout: 500 });
-  } else {
-    setTimeout(persistSwitch, 40);
-  }
+  setTimeout(persistSwitch, 40);
 
   cerrarModalTorres();
   actualizarHeaderTorre();
@@ -719,11 +715,7 @@ function cambiarTorreActiva(idx) {
   };
   requestAnimationFrame(function () {
     if (gen !== _hcCambiarTorreGen) return;
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(runDeferred, { timeout: 280 });
-    } else {
-      setTimeout(runDeferred, 0);
-    }
+    setTimeout(runDeferred, 16);
   });
 }
 
@@ -1007,11 +999,7 @@ function cargarEstadoTorre(idx, opts) {
       }
     };
     if (deferUi) {
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(runGermTorreSync, { timeout: 2800 });
-      } else {
-        setTimeout(runGermTorreSync, 120);
-      }
+      setTimeout(runGermTorreSync, 32);
     } else {
       runGermTorreSync();
     }
@@ -1538,11 +1526,7 @@ function abrirSetupNuevaTorre() {
       updateTorreBuilder();
     } catch (_) {}
   };
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(runSetupHeavy, { timeout: 1500 });
-  } else {
-    setTimeout(runSetupHeavy, 0);
-  }
+  setTimeout(runSetupHeavy, 16);
 
   // Actualizar el título para indicar que es una torre nueva
   setTimeout(() => {

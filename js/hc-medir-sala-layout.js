@@ -88,11 +88,7 @@
         }
       } catch (_) {}
     };
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(refreshGuiaPanels, { timeout: 2200 });
-    } else {
-      setTimeout(refreshGuiaPanels, 120);
-    }
+    setTimeout(refreshGuiaPanels, 32);
   }
 
   function ensureAmbienteSaveFooter(card) {
@@ -931,11 +927,7 @@
           if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi();
         } catch (_) {}
       };
-      if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(deferHeavy, { timeout: 600 });
-      } else {
-        setTimeout(deferHeavy, 40);
-      }
+      setTimeout(deferHeavy, 24);
     } catch (e) {
       try {
         console.warn('initMedirSalaLayout', e);
@@ -990,10 +982,6 @@
       if (typeof window !== 'undefined') window._hcMedirSalaLayoutDone = true;
       initMedirSalaLayout();
     };
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(run, { timeout: 1200 });
-    } else {
-      setTimeout(run, 80);
-    }
+    setTimeout(run, 32);
   };
 })();
