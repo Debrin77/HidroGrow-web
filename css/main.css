@@ -10260,29 +10260,59 @@ html.hc-theme-dark .hc-germ-fases-cal {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 .hc-germ-fases-cal-item {
-  display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr);
-  gap: 0.25rem 0.5rem;
-  align-items: baseline;
-  font-size: 0.8rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.14);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.hc-germ-fases-cal-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 .hc-germ-fases-cal-paso {
+  flex: 0 0 1.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.14);
   font-weight: 800;
+  font-size: 0.72rem;
   color: #15803d;
+  margin-top: 0.05rem;
+}
+.hc-germ-fases-cal-body {
+  flex: 1;
+  min-width: 0;
+}
+.hc-germ-fases-cal-nom {
+  font-weight: 600;
+  color: var(--text);
+  word-wrap: break-word;
+}
+.hc-germ-fases-cal-meta {
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--muted);
 }
 .hc-germ-fases-cal-dias {
   font-weight: 700;
   color: var(--text);
-  white-space: normal;
-  word-break: break-word;
+  white-space: nowrap;
 }
 .hc-germ-fases-cal-rango {
-  grid-column: 2 / -1;
-  font-size: 0.72rem;
+  font-size: inherit;
   color: var(--muted);
 }
 .hc-germ-fases-cal-default {
@@ -10295,15 +10325,20 @@ html.hc-theme-dark .hc-germ-fases-cal {
   font-size: 0.8rem;
   line-height: 1.45;
 }
+.hc-germ-fases-cal-item--current .hc-germ-fases-cal-paso {
+  background: #22c55e;
+  color: #fff;
+}
 .hc-germ-fases-cal-item--current .hc-germ-fases-cal-nom {
   font-weight: 700;
 }
 .hc-germ-fases-cal-item--late {
-  padding: 0.25rem 0.35rem;
-  margin: -0.15rem 0;
+  padding: 0.35rem 0.45rem;
+  margin: 0 -0.45rem;
   border-radius: 8px;
   background: rgba(234, 179, 8, 0.12);
   border: 1px solid rgba(234, 179, 8, 0.35);
+  border-bottom-color: rgba(234, 179, 8, 0.35);
 }
 .hc-germ-fases-cal-ahora {
   font-size: 0.72rem;
@@ -10887,6 +10922,24 @@ html.hc-theme-dark .hc-germ-kpi--pend .hc-germ-kpi-val { color: #fbbf24; }
 }
 .hc-germ-advanced-section .hc-germ-equip-lead {
   margin-top: 0;
+}
+.hc-germ-advanced .hc-germ-rail {
+  margin: 0 0 10px;
+  padding: 6px 2px 10px;
+}
+.hc-germ-advanced .hc-germ-rail-lbl {
+  display: none;
+}
+.hc-germ-advanced-section .hc-germ-fases-cal {
+  margin: 0;
+  padding: 10px 12px;
+}
+.hc-germ-advanced-section .hc-germ-fases-cal > .hc-germ-block-lbl {
+  display: none;
+}
+.hc-germ-advanced-section .hc-germ-fases-cal-lead {
+  margin-top: 0;
+  font-size: 12px;
 }
 #tab-inicio.dash-inicio--germ-foco .quick-actions--core {
   display: grid;

@@ -471,21 +471,23 @@ function renderGerminacionFasesCalendarioHtml(ref, opts) {
         (isCur ? ' hc-germ-fases-cal-item--current' : '') +
         (isLate ? ' hc-germ-fases-cal-item--late' : '') +
         '">' +
-        '<span class="hc-germ-fases-cal-paso">' +
+        '<span class="hc-germ-fases-cal-paso" aria-hidden="true">' +
         f.paso +
         '</span>' +
-        '<span class="hc-germ-fases-cal-nom">' +
+        '<div class="hc-germ-fases-cal-body">' +
+        '<div class="hc-germ-fases-cal-nom">' +
         esc(f.tituloCorto) +
         (isCur ? ' <span class="hc-germ-fases-cal-ahora">(ahora)</span>' : '') +
-        '</span>' +
+        '</div>' +
+        '<div class="hc-germ-fases-cal-meta">' +
         '<span class="hc-germ-fases-cal-dias">' +
         esc(f.diasLabel) +
         '</span>' +
-        '<span class="hc-germ-fases-cal-rango">días ' +
+        '<span class="hc-germ-fases-cal-rango"> · días ' +
         f.diaDesde +
         '–' +
         f.diaHasta +
-        ' del camino</span></li>'
+        ' del camino</span></div></div></li>'
       );
     })
     .join('');
