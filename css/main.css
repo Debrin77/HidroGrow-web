@@ -10126,6 +10126,28 @@ html.hc-theme-dark .hc-germ-oscuridad-banner {
   background: rgba(148, 163, 184, 0.08);
   border-left-color: #94a3b8;
 }
+.hc-germ-luz-banner {
+  margin: 10px 0 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(234, 179, 8, 0.08);
+  border: 1px solid rgba(234, 179, 8, 0.28);
+  border-left: 4px solid #ca8a04;
+  line-height: 1.45;
+}
+.hc-germ-luz-title {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+.hc-germ-luz-body {
+  margin: 0;
+  font-size: 0.88rem;
+}
+html.hc-theme-dark .hc-germ-luz-banner {
+  background: rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.22);
+  border-left-color: #facc15;
+}
 .hc-germ-prop-hint {
   margin: 10px 0 0;
   padding: 10px 12px;

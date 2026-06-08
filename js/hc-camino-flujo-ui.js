@@ -403,9 +403,9 @@
     if (!f) return '';
     if (f === 'propagador') {
       return (
-        '<strong>Propagador:</strong> mide T° y HR del domo en Medir. ' +
-        'Mantén la bandeja con <strong>~2–3 mm</strong> de agua con nutrientes (checklist); ' +
-        '<strong>no la dejes seca</strong>. El riego del depósito DWC llega tras configurar el hidro.'
+        '<strong>Propagador:</strong> T°, HR y notas en <strong>Historial</strong> y <strong>Calendario</strong>. ' +
+        'Aquí solo EC/pH del domo si aplica. Bandeja con <strong>~2–3 mm</strong> de agua; ' +
+        '<strong>no la dejes seca</strong>. Riego del depósito DWC tras configurar el hidro.'
       );
     }
     if (f === 'germ_cubo') {

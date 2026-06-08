@@ -162,9 +162,6 @@
     var plan = getPlanMedirGerm(cfg);
     var activos = keysActivos(plan);
     if (hcMedirModoGerminacionPropagador(cfg)) {
-      activos.temp = true;
-      activos.hr = true;
-      activos.vpd = true;
       activos.ec = true;
       return { plan: plan, activos: activos };
     }
@@ -320,14 +317,10 @@
         var salaCfg = hcMedirSalaConfigurada(cfg);
         lead.innerHTML = activo
           ? salaLista
-            ? '<strong>Domo:</strong> T° y HR (VPD automático)' +
-              (activos.ec || activos.ph ? ' · EC/pH del propagador si aplica' : '') +
-              '. <strong>Sala montada:</strong> registra también los parámetros del equipamiento que aparecen abajo.'
+            ? '<strong>Propagador:</strong> EC/pH del agua del domo si aplica. T°, HR y notas van en <strong>Historial</strong> y <strong>Calendario</strong>. Con sala montada: parámetros del equipamiento abajo.'
             : salaCfg
-              ? '<strong>Domo:</strong> T°, HR y VPD. Completa el <strong>checklist de montaje en Sala</strong> para activar mediciones del resto del equipamiento.'
-              : 'Introduce <strong>T° y HR del domo</strong>; el <strong>VPD se calcula solo</strong>' +
-                (activos.ec || activos.ph ? '. También puedes registrar EC/pH del propagador' : '') +
-                '. Configura la sala para más parámetros después.'
+              ? '<strong>Propagador:</strong> EC/pH del domo. T°, HR y apuntes en <strong>Historial</strong>. Completa el <strong>checklist de montaje en Sala</strong> para medir LED, CO₂, etc.'
+              : '<strong>Propagador:</strong> EC/pH del agua del domo. Anota T°, HR y observaciones en <strong>Historial</strong> (no aquí).'
           : lead.dataset.hcMedirLeadDefault;
       }
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
@@ -423,6 +416,14 @@
     if (flow && activo) {
       flow.classList.remove('medir-flow--pre-operativa');
       flow.setAttribute('aria-hidden', 'false');
+      var ambHead = flow.querySelector('.medir-step-head--inline-amb');
+      var salaListaFlow = hcMedirSalaListaParaMedir(cfg);
+      if (ambHead) ambHead.classList.toggle('setup-hidden', !salaListaFlow);
+      var ambMount = document.getElementById('medirFlowAmbienteMount');
+      if (ambMount) ambMount.classList.toggle('setup-hidden', !salaListaFlow);
+      flow.querySelectorAll('.medir-flow-actions [onclick*="abrirWizardMedicion"]').forEach(function (btn) {
+        btn.classList.toggle('setup-hidden', !!activo);
+      });
     }
 
     var preGate = document.getElementById('medirPreOperativaGate');
@@ -615,10 +616,10 @@
         if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
         if (germ) {
           ambLead.textContent = salaLista
-            ? 'T°, HR y VPD del domo. Abajo: mediciones del equipamiento de la sala que tengas instalado (LED, CO₂, extractor…).'
+            ? 'Parámetros del equipamiento de sala (LED, CO₂, extractor…). T°/HR del domo: Historial.'
             : salaCfg
-              ? 'T°, HR y VPD del domo. Tras el checklist de montaje en Sala aparecerán el resto de parámetros medibles.'
-              : 'T°, HR y VPD del domo del propagador. El VPD se calcula al escribir T° y HR.';
+              ? 'Tras el checklist de montaje en Sala aparecerán parámetros del equipamiento. T°/HR del domo: Historial.'
+              : 'T° y HR del domo se registran en Historial, no en Medir.';
         } else if (!salaLista) {
           ambLead.textContent =
             'Temp. aire y HR para VPD. PPFD, CO₂ y temp. exterior cuando el montaje de sala esté verificado.';

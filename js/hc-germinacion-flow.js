@@ -68,7 +68,7 @@
   var EQUIP_AVISO_FASE = {
     semilla: {
       need: ['domo'],
-      msg: 'Días 1–2 a oscuras: domo cerrado, 22–26 °C y bandeja húmeda (~2–3 mm de solución). Sin luz directa.',
+      msg: 'Domo cerrado, 22–26 °C y bandeja húmeda (~2–3 mm de solución).',
     },
     taproot: { need: ['domo', 'rockwool'], msg: 'Antes del cubo: ten listos domo y cubos de lana 4×4.' },
     rockwool: { need: ['rockwool', 'ph'], msg: 'Fase cubo: remoja lana a pH ~5,5 (marca pH y cubos si los tienes).' },
@@ -382,23 +382,45 @@
   /** Días 1–N del seguimiento con fecha de siembra: recomendar oscuridad (consenso cultivadores). */
   var GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2;
 
-  function hubMuestraAvisoOscuridadGerm(cfg, g) {
+  /** Oscuridad en Inicio: solo propagador, días 1–N y fase «semilla» sin marcar. */
+  function hubMuestraAvisoOscuridadPropagador(cfg, g) {
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
+    if (cam !== 'semilla_propagador') return false;
     if (!getFechaInicioGerminacion(g, cfg)) return false;
+    if (indiceFaseActual(g) > 0) return false;
     var diaN = diasDesdeInicio(g, cfg) + 1;
     return diaN >= 1 && diaN <= GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS;
   }
 
+  function hubMuestraAvisoOscuridadGerm(cfg, g) {
+    return hubMuestraAvisoOscuridadPropagador(cfg, g);
+  }
+
+  /** Tras el periodo de oscuridad: aviso luz tenue (día N+1) si aún no llegaste a fase domo. */
+  function hubMuestraAvisoLuzTenuePropagador(cfg, g) {
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador') return false;
+    if (!getFechaInicioGerminacion(g, cfg)) return false;
+    var diaN = diasDesdeInicio(g, cfg) + 1;
+    if (diaN !== GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS + 1) return false;
+    var idxDomo = -1;
+    for (var i = 0; i < PASOS.length; i++) {
+      if (PASOS[i].id === 'domo') {
+        idxDomo = i;
+        break;
+      }
+    }
+    if (idxDomo < 0) return false;
+    return indiceFaseActual(g) < idxDomo;
+  }
+
   function renderHubOscuridadGerminacionHtml(cfg, g) {
-    if (!hubMuestraAvisoOscuridadGerm(cfg, g)) return '';
-    var modo = getModoGerminacion(cfg, g);
+    if (!hubMuestraAvisoOscuridadPropagador(cfg, g)) return '';
     var diaN = diasDesdeInicio(g, cfg) + 1;
     var lugar =
-      modo === 'hidro_directo'
-        ? 'Cúpula cerrada en cada cesta; sin LED directo sobre la semilla en el cubo.'
-        : 'Domo del propagador cerrado y a la sombra; sin abrir a la luz de la sala.';
+      'Domo del propagador cerrado y a la sombra; sin abrir a la luz de la sala.';
     return (
       '<div class="hc-germ-oscuridad-banner" role="note" aria-live="polite">' +
       '<p class="hc-germ-oscuridad-title"><strong>Oscuridad · días ' +
@@ -410,6 +432,15 @@
       '<p class="hc-germ-oscuridad-lugar setup-field-hint">' +
       esc(lugar) +
       '</p></div>'
+    );
+  }
+
+  function renderHubLuzTenuePropagadorHtml(cfg, g) {
+    if (!hubMuestraAvisoLuzTenuePropagador(cfg, g)) return '';
+    return (
+      '<div class="hc-germ-luz-banner" role="note" aria-live="polite">' +
+      '<p class="hc-germ-luz-title"><strong>Iniciar luz tenue 18/6</strong></p>' +
+      '<p class="hc-germ-luz-body">Al brote verde o tras el periodo a oscuras: luz suave sobre el domo; ventila 2×/día.</p></div>'
     );
   }
 
@@ -1487,16 +1518,21 @@
   function buildGermHubMedirHistorialCtaHtml(variant) {
     var lead =
       variant === 'hidro'
-        ? 'Registra EC, pH, T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.'
-        : 'Registra T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.';
+        ? 'Registra EC, pH y ambiente en <strong>Medir</strong>. Evolución en <strong>Historial</strong>.'
+        : 'Anota T°, HR y observaciones en <strong>Historial</strong>. Rutina diaria en <strong>Calendario</strong>.';
+    var actions =
+      variant === 'hidro'
+        ? '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">Ir a Medir</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'historial\')">Historial</button>'
+        : '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'historial\')">Historial</button>' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'calendario\')">Calendario</button>';
     return (
-      '<div class="hc-germ-medir-cta" role="region" aria-label="Registro en Medir e Historial">' +
+      '<div class="hc-germ-medir-cta" role="region" aria-label="Registro e historial">' +
       '<p class="hc-germ-medir-cta-lead">' +
       lead +
       '</p>' +
       '<div class="hc-germ-medir-cta-actions">' +
-      '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">Ir a Medir</button>' +
-      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'historial\')">Historial</button>' +
+      actions +
       '</div></div>'
     );
   }
@@ -1619,6 +1655,7 @@
       '</div></div>' +
       buildGermKpiStripHtml(o.domo) +
       renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
+      renderHubLuzTenuePropagadorHtml(o.cfg, o.g) +
       '<div class="hc-germ-focus hc-germ-focus--compact' +
       (o.allDone ? ' hc-germ-focus--done' : '') +
       '">' +
@@ -1733,7 +1770,6 @@
       '</p>' +
       '</div></div>' +
       buildGermKpiStripHtml(o.domo, { lblTemp: 'T° cubo', lblHr: 'HR' }) +
-      renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
       renderHubCupulaGermHidroHtml(o.cfg, o.g) +
       (hubMuestraGuiaLlenadoGermHidro(o.cfg) ? renderHubLlenadoGermHidroHtml(o.cfg) : '') +
       '<div class="hc-germ-focus hc-germ-focus--compact' +
@@ -2066,6 +2102,7 @@
       '</strong> del seguimiento</p>' +
       renderHubFechaSiembraEditor(cfg, g) +
       renderHubOscuridadGerminacionHtml(cfg, g) +
+      renderHubLuzTenuePropagadorHtml(cfg, g) +
       renderHubCupulaGermHidroHtml(cfg, g) +
       (hubMuestraGuiaLlenadoGermHidro(cfg) ? renderHubLlenadoGermHidroHtml(cfg) : '') +
       (camGerm === 'semilla_hidro'
@@ -2773,11 +2810,11 @@
             ? 'Medición domo · registrada hoy'
             : 'Medición diaria · domo propagador',
           desc: registroHoyHecho(g)
-            ? 'Tienes registro de hoy en germinación. Puedes volver a medir en Medir si cambia el clima.'
-            : 'Registra en <strong>Medir</strong>: ' +
-              (medTxt || 'T°, HR, VPD del domo') +
-              '. También puedes anotar observaciones en Inicio → Germinación.',
-          action: 'medicion',
+            ? 'Tienes registro de hoy en germinación. Puedes añadir otro apunte en Historial si cambia el clima.'
+            : 'Anota en <strong>Historial</strong>: ' +
+              (medTxt || 'T°, HR y observaciones del domo') +
+              '. La rutina también aparece en Calendario.',
+          action: 'historial',
         });
       }
       ev.push({
@@ -2795,12 +2832,12 @@
           (registroHoyHecho(g)
             ? ''
             : camCal === 'semilla_propagador'
-              ? ' · Anota el día en Inicio → Germinación.'
+              ? ' · Apunta el día en Historial.'
               : ' · Registra el día en Inicio → Germinación.'),
         action: 'inicio',
       });
       if (camCal === 'semilla_propagador' && diff === 0) {
-        if (diaN >= 1 && diaN <= GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS) {
+        if (hubMuestraAvisoOscuridadPropagador(cfg, g)) {
           ev.push({
             tipo: 'germinacion',
             icono: '🌑',
@@ -2813,12 +2850,12 @@
               ': sin luz de sala sobre la bandeja; humedad y calor.',
             action: 'inicio',
           });
-        } else if (diaN === GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS + 1) {
+        } else if (hubMuestraAvisoLuzTenuePropagador(cfg, g)) {
           ev.push({
             tipo: 'germinacion',
             icono: '💡',
             titulo: 'Iniciar luz tenue 18/6',
-            desc: 'Al brote verde o tras día 2: luz suave sobre el domo; ventila 2×/día.',
+            desc: 'Al brote verde o tras el periodo a oscuras: luz suave sobre el domo; ventila 2×/día.',
             action: 'inicio',
           });
         }
@@ -3035,6 +3072,8 @@
   global.toggleGermEquip = toggleGermEquip;
   global.guardarMedicionDomo = guardarMedicionDomo;
   global.guardarRegistroGerminacionDiario = guardarRegistroGerminacionDiario;
+  global.hubMuestraAvisoOscuridadPropagador = hubMuestraAvisoOscuridadPropagador;
+  global.hubMuestraAvisoLuzTenuePropagador = hubMuestraAvisoLuzTenuePropagador;
   global.persistFechaSiembraGermDesdeInicio = persistFechaSiembraGermDesdeInicio;
   global.hcGermActualizarNumSemillas = hcGermActualizarNumSemillas;
   global.hcGermActualizarSemillasActivas = hcGermActualizarSemillasActivas;

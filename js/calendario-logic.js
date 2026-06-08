@@ -265,11 +265,11 @@ function getRecordatorioMedicionDiariaCalendario() {
       typeof registroHechoEnFecha === 'function' && registroHechoEnFecha(g, hoy);
     const fechaObjetivo = new Date(hoy.getTime() + (medidoHoy ? 86400000 : 0));
     const titulo = medidoHoy
-      ? 'Medición domo · registrada hoy'
-      : 'Medición domo · pendiente hoy';
+      ? 'Registro domo · anotado hoy'
+      : 'Registro domo · pendiente hoy';
     const desc = medidoHoy
-      ? 'Tienes registro de germinación de hoy. Mañana vuelve a medir el clima del domo en Medir.'
-      : 'Durante la germinación, registra cada día T°, HR y VPD del domo en Medir (observaciones opcionales en Inicio → Germinación).';
+      ? 'Tienes apunte de hoy. Mañana vuelve a anotar T°, HR u observaciones en Historial.'
+      : 'Durante la germinación, registra cada día T°, HR y observaciones del domo en Historial.';
     return {
       fecha: fechaObjetivo,
       evento: {
@@ -279,7 +279,7 @@ function getRecordatorioMedicionDiariaCalendario() {
         label: '📊 ' + titulo,
         titulo,
         desc,
-        action: 'medicion',
+        action: 'historial',
       },
     };
   }
