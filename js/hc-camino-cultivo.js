@@ -1803,6 +1803,23 @@
     }
     host.classList.remove('setup-hidden');
     host.innerHTML = renderDashPropagadorRutaRailHtml(cfg);
+    var cur = host.querySelector('.hc-prop-ruta-step--current');
+    if (cur && !host._hcPropRutaBound) {
+      host._hcPropRutaBound = true;
+      host.style.cursor = 'pointer';
+      host.title = 'Toca el paso actual para continuar';
+      host.addEventListener('click', function () {
+        var cfgClick =
+          typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+        var paso =
+          typeof hcSiguientePasoInstalacion === 'function'
+            ? hcSiguientePasoInstalacion(cfgClick)
+            : null;
+        if (paso && paso.action && typeof hcEjecutarAccionInstalacion === 'function') {
+          hcEjecutarAccionInstalacion(paso.action);
+        }
+      });
+    }
   }
 
   function caminoResumenDebeMostrarse(cfg) {

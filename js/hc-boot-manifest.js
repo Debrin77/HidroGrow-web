@@ -14,6 +14,7 @@ window.HC_BOOT_CRITICAL_SCRIPTS = [
   "js/hc-setup-wizard-core.js",
   "js/hc-premium-nutriente-germ.js",
   "js/hc-camino-cultivo.js",
+  "js/hc-ui-spanish-copy.js",
   "js/hc-camino-fase.js",
   "js/hc-camino-flujo-ui.js",
   "js/hc-germinacion-flow.js",

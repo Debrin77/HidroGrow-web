@@ -70,6 +70,11 @@ function renderSetupPage() {
     : ('spage' + setupPagina);
   const curr = document.getElementById(pageId);
   if (curr) curr.classList.add('active');
+  if (typeof hcApplySetupPageSpanishCopy === 'function') {
+    try {
+      hcApplySetupPageSpanishCopy(pageId);
+    } catch (_) {}
+  }
 
   const nomWrap = document.getElementById('setupNombreInstalacionWrap');
   const nomInp = document.getElementById('setupNombreInstalacionInput');

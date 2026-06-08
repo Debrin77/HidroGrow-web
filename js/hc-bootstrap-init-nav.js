@@ -322,6 +322,9 @@ function initApp() {
         }
       } catch (_) {}
     }
+    try {
+      if (typeof hcApplySpanishUiCopy === 'function') hcApplySpanishUiCopy();
+    } catch (_) {}
     updateClock();
     setInterval(updateClock, 30000);
     const modoSel = document.getElementById('modoSelector');
