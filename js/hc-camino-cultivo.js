@@ -14,6 +14,11 @@
       germModo: 'propagador',
       faseInicial: 'germinacion',
       icon: '🫧',
+      visualKey: 'propagador',
+      onboardingBadge: 'recomendado',
+      onboardingBadgeLabel: 'Recomendado',
+      onboardingDesc: 'Domo → 6 fases → DWC/RDWC. Máximo control en cada transición.',
+      onboardingHonest: '',
       orden: [
         'Fase 1: <strong>propagador</strong> (marca, semillas, sustrato, accesorios) — sala opcional.',
         'Checklist montaje → app en modo propagador (Inicio, Medir, Sala, Sistema con gráfico del domo).',
@@ -23,12 +28,18 @@
     },
     semilla_hidro: {
       id: 'semilla_hidro',
-      label: 'Semilla en el hidro (6 fases)',
+      label: 'Semilla directa en hidro',
       short: 'Semilla → hidro',
       origenPlanta: 'semilla',
       germModo: 'hidro_directo',
       faseInicial: 'germinacion',
       icon: '💧',
+      visualKey: 'semilla',
+      onboardingBadge: 'exigente',
+      onboardingBadgeLabel: 'Más exigente',
+      onboardingDesc: 'Germinas en el cubo del depósito. Un solo asistente con sala + DWC/RDWC.',
+      onboardingHonest:
+        'Tasa de éxito menor: agua sin tampón, EC inestable y riesgo de Pythium desde el día 1.',
       orden: [
         'Asistente único: <strong>sala + DWC/RDWC</strong> (sin repetir después).',
         'Checklist prep → montaje → <strong>primer llenado</strong> → 6 fases en el cubo (Inicio).',
@@ -38,12 +49,17 @@
     },
     esqueje_hidro: {
       id: 'esqueje_hidro',
-      label: 'Esqueje / clon al hidro',
+      label: 'Esqueje al hidro',
       short: 'Esqueje',
       origenPlanta: 'clon',
       germModo: null,
       faseInicial: 'hidro',
       icon: '🌿',
+      visualKey: 'esqueje',
+      onboardingBadge: 'pro',
+      onboardingBadgeLabel: 'Producción',
+      onboardingDesc: 'Genética probada, ciclo más corto. El crítico: cúpula, HR y enraizamiento.',
+      onboardingHonest: '',
       orden: [
         'Asistente: sala + DWC/RDWC en un solo paso (sin germinación de semilla).',
         'Sistema = <strong>enraizado</strong> hasta checklist y clones en el esquema.',
@@ -52,12 +68,17 @@
     },
     madre_hidro: {
       id: 'madre_hidro',
-      label: 'Madre en DWC/RDWC',
+      label: 'Planta madre',
       short: 'Madre',
       origenPlanta: 'madre',
       germModo: null,
       faseInicial: 'hidro',
       icon: '👑',
+      visualKey: 'madre',
+      onboardingBadge: 'avanzado',
+      onboardingBadgeLabel: 'Avanzado',
+      onboardingDesc: '18/6 permanente, cortes escalonados y esquejes al hidro.',
+      onboardingHonest: '',
       orden: [
         'Asistente: cubo madre + sala + depósito.',
         'Sistema = <strong>cubo madre</strong> hasta asignar planta y primer llenado.',
@@ -65,6 +86,20 @@
       ],
     },
   };
+
+  var CAMINO_CARD_ORDER = [
+    'semilla_propagador',
+    'semilla_hidro',
+    'esqueje_hidro',
+    'madre_hidro',
+  ];
+
+  function escCaminoHtml(t) {
+    return String(t || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
 
   function ensurePremiumCamino() {
     if (typeof ensurePremiumSetup !== 'function') return null;
@@ -288,6 +323,7 @@
       if (def.germModo) state.configTorre.premiumSetup.germinacionModoPreferido = def.germModo;
     }
     refreshCaminoCultivoUI();
+    refreshSetupCaminoRecoUI();
     if (
       typeof setupPagina !== 'undefined' &&
       typeof SETUP_PAGE_ORIGEN !== 'undefined' &&
@@ -316,19 +352,99 @@
     }
   }
 
-  function refreshCaminoCultivoUI() {
+  function renderSetupCaminoCards() {
+    var grid = document.getElementById('setupCaminoCardsGrid');
+    var page = document.getElementById('spagePremiumOrigen');
+    if (page) {
+      var title = page.querySelector('.setup-title');
+      var sub = page.querySelector('.setup-subtitle');
+      if (title) title.textContent = '¿Cómo empiezas el cultivo?';
+      if (sub) {
+        sub.innerHTML =
+          'Elige <strong>una de las cuatro rutas</strong>. El asistente adapta pasos, alertas y equipamiento; el sistema hidropónico (DWC, RDWC…) lo configuras cuando toque en tu ruta.';
+      }
+    }
+    if (!grid) return;
     var cam =
       typeof getCaminoElegidoEnAsistente === 'function'
         ? getCaminoElegidoEnAsistente()
         : getCaminoCultivo();
-    if (!cam) cam = getCaminoCultivo();
-    var def = getCaminoDef(cam);
-    ['setupCamino_semilla_propagador', 'setupCamino_semilla_hidro', 'setupCamino_esqueje_hidro', 'setupCamino_madre_hidro'].forEach(
-      function (bid) {
-        var el = document.getElementById(bid);
-        if (el) el.classList.toggle('selected', bid === 'setupCamino_' + cam);
+    grid.innerHTML = CAMINO_CARD_ORDER.map(function (id) {
+      var def = CAMINOS[id];
+      if (!def) return '';
+      var selected = cam === id ? ' selected' : '';
+      var badge = def.onboardingBadge
+        ? '<span class="hc-camino-card-badge hc-camino-card-badge--' +
+          escCaminoHtml(def.onboardingBadge) +
+          '">' +
+          escCaminoHtml(def.onboardingBadgeLabel || '') +
+          '</span>'
+        : '';
+      return (
+        '<button type="button" class="equip-card equip-card-pad-12 hc-camino-card hc-visual-origin' +
+        selected +
+        '" id="setupCamino_' +
+        id +
+        '" onclick="seleccionarCaminoCultivo(\'' +
+        id +
+        '\')">' +
+        badge +
+        '<span class="hc-visual-origin-icon" data-visual="' +
+        escCaminoHtml(def.visualKey || 'semilla') +
+        '" aria-hidden="true"></span>' +
+        '<div class="setup-option-title-md">' +
+        escCaminoHtml(def.label) +
+        '</div>' +
+        '<div class="setup-option-desc-sm">' +
+        escCaminoHtml(def.onboardingDesc || '') +
+        '</div></button>'
+      );
+    }).join('');
+  }
+
+  function refreshSetupCaminoRecoUI() {
+    var box = document.getElementById('setupPremiumOrigenReco');
+    var foot = document.getElementById('setupPremiumOrigenFootHint');
+    var cam =
+      typeof getCaminoElegidoEnAsistente === 'function'
+        ? getCaminoElegidoEnAsistente()
+        : getCaminoCultivo();
+    if (!box) return;
+    if (!cam || !CAMINOS[cam]) {
+      box.classList.add('setup-hidden');
+      box.setAttribute('aria-hidden', 'true');
+      box.innerHTML = '';
+      if (foot) {
+        foot.classList.add('setup-hidden');
+        foot.setAttribute('aria-hidden', 'true');
       }
-    );
+      return;
+    }
+    var def = CAMINOS[cam];
+    var html = '<strong>' + escCaminoHtml(def.label) + '</strong>';
+    if (def.onboardingHonest) {
+      html +=
+        '<p class="hc-camino-reco-warn setup-mt-8">' + escCaminoHtml(def.onboardingHonest) + '</p>';
+    } else if (def.onboardingDesc) {
+      html += '<p class="setup-field-hint setup-mt-8">' + escCaminoHtml(def.onboardingDesc) + '</p>';
+    }
+    if (def.orden && def.orden[0]) {
+      html += '<p class="setup-field-hint setup-mt-4">' + def.orden[0] + '</p>';
+    }
+    box.classList.remove('setup-hidden');
+    box.removeAttribute('aria-hidden');
+    box.innerHTML = html;
+    if (foot) {
+      foot.classList.remove('setup-hidden');
+      foot.removeAttribute('aria-hidden');
+      foot.textContent =
+        'Siguiente: objetivo, equipamiento y plan según tu ruta (sin repetir pasos que no aplican).';
+    }
+  }
+
+  function refreshCaminoCultivoUI() {
+    renderSetupCaminoCards();
+    refreshSetupCaminoRecoUI();
     var flow = document.getElementById('setupPremiumOrigenFlow');
     if (flow) {
       flow.classList.add('setup-hidden');
@@ -337,8 +453,6 @@
     if (typeof refreshPremiumOrigenRecoUI === 'function') {
       refreshPremiumOrigenRecoUI();
     }
-    var foot = document.getElementById('setupPremiumOrigenFootHint');
-    if (foot) foot.classList.add('setup-hidden');
     var fase = document.getElementById('setupCaminoFaseBanner');
     if (fase) {
       fase.classList.add('setup-hidden');
@@ -1411,53 +1525,52 @@
       var fasesN = contarFasesGermHechas(cfg);
       var g = cfg.germinacionFlow || {};
       if (cam === 'semilla_propagador') {
+        var germConcl =
+          typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
         pasos = [
           {
             id: 'prep',
-            label: 'Checklist propagador',
+            label: 'Montaje propagador',
             done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
             action: 'irPropagadorMontaje',
           },
           {
-            id: 'sala_cfg',
-            label: 'Sala configurada',
-            done: salaPreGermConfigurada(cfg),
-            action: 'abrirSetupFaseSala',
-          },
-          {
-            id: 'sala_mont',
-            label: 'Montaje de sala',
-            done: montajeSalaPreGermOk(cfg),
-            action: 'irMontaje',
-          },
-          {
             id: 'fases6',
-            label: '6 fases (' + fasesN + '/6)',
-            done: fasesN >= 6,
+            label: 'Germinación (' + fasesN + '/6 fases)',
+            done: germConcl,
             action: 'irGerminacion',
-            hint: fasesN > 0 && fasesN < 6 ? 'En curso' : '',
+            hint: !germConcl && fasesN > 0 ? 'En curso' : '',
           },
         ];
-        if (
-          typeof germinacionConcluida === 'function' &&
-          germinacionConcluida(cfg)
-        ) {
+        if (germConcl) {
           pasos = pasos.concat([
             {
-              id: 'traslado',
-              label: 'Checklist traslado',
-              done: checklistCierreGermOk(g),
-              action: 'irGerminacion',
-            },
-            {
               id: 'hidro',
-              label: 'DWC/RDWC cerrado',
+              label: 'Sistema DWC/RDWC',
               done: hidroInstalacionCerrada(cfg),
               action: 'abrirSetupFaseHidro',
             },
             {
+              id: 'sala_cfg',
+              label: 'Sala configurada',
+              done: salaPreGermConfigurada(cfg),
+              action: 'abrirSetupFaseSala',
+            },
+            {
+              id: 'sala_mont',
+              label: 'Montaje de sala',
+              done: montajeSalaPreGermOk(cfg),
+              action: 'irMontaje',
+            },
+            {
+              id: 'traslado',
+              label: 'Traslado al hidro',
+              done: checklistCierreGermOk(g),
+              action: 'irGerminacion',
+            },
+            {
               id: 'cultivo',
-              label: 'Cultivo en matriz',
+              label: 'Plantas en matriz',
               done: cultivoMatrizListo(),
               action: 'irCultivo',
             },
@@ -1590,10 +1703,115 @@
     return pasos;
   }
 
+  function getPropagadorRutaMacroPasos(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    return [
+      {
+        id: 'prep',
+        label: 'Propagador',
+        done:
+          typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
+      },
+      {
+        id: 'germ',
+        label: 'Germinación',
+        done: typeof germinacionConcluida === 'function' && germinacionConcluida(cfg),
+      },
+      {
+        id: 'hidro',
+        label: 'DWC/RDWC',
+        done: hidroInstalacionCerrada(cfg),
+      },
+      {
+        id: 'sala',
+        label: 'Sala',
+        done: montajeSalaPreGermOk(cfg),
+      },
+      {
+        id: 'op',
+        label: 'Operativa',
+        done: depositoListo(cfg),
+      },
+    ];
+  }
+
+  function renderDashPropagadorRutaRailHtml(cfg) {
+    var pasos = getPropagadorRutaMacroPasos(cfg);
+    var doneN = pasos.filter(function (p) {
+      return p.done;
+    }).length;
+    var currentIdx = -1;
+    for (var i = 0; i < pasos.length; i++) {
+      if (!pasos[i].done) {
+        currentIdx = i;
+        break;
+      }
+    }
+    var items = pasos
+      .map(function (p, i) {
+        var cls = 'hc-prop-ruta-step';
+        if (p.done) cls += ' hc-prop-ruta-step--done';
+        else if (i === currentIdx) cls += ' hc-prop-ruta-step--current';
+        var dot = p.done ? '✓' : i === currentIdx ? '●' : '○';
+        return (
+          '<li class="' +
+          cls +
+          '"><span class="hc-prop-ruta-dot" aria-hidden="true">' +
+          dot +
+          '</span><span class="hc-prop-ruta-lbl">' +
+          escCaminoHtml(p.label) +
+          '</span></li>'
+        );
+      })
+      .join('');
+    return (
+      '<div class="hc-prop-ruta-inner">' +
+      '<span class="hc-prop-ruta-kicker">Tu ruta</span>' +
+      '<span class="hc-prop-ruta-pct">' +
+      doneN +
+      '/' +
+      pasos.length +
+      '</span>' +
+      '<ol class="hc-prop-ruta-steps" role="list">' +
+      items +
+      '</ol></div>'
+    );
+  }
+
+  function refreshDashPropagadorRutaRail(cfg) {
+    var host = document.getElementById('dashPropagadorRutaHost');
+    if (!host) return;
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var hay =
+      typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+    if (!hay || getCaminoCultivo(cfg) !== 'semilla_propagador') {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
+    if (depositoListo(cfg)) {
+      try {
+        if (typeof getInstalacionLifecycle === 'function') {
+          var lc = getInstalacionLifecycle(cfg);
+          if (lc && lc.operativaDiaria) {
+            host.classList.add('setup-hidden');
+            host.innerHTML = '';
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+    host.classList.remove('setup-hidden');
+    host.innerHTML = renderDashPropagadorRutaRailHtml(cfg);
+  }
+
   function caminoResumenDebeMostrarse(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var cam = getCaminoCultivo(cfg);
-    if (cam === 'semilla_propagador') return false;
+    if (cam === 'semilla_propagador') {
+      if (depositoListo(cfg)) return false;
+      return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+    }
     if (
       cam === 'semilla_hidro' &&
       ((typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)) ||
@@ -1663,6 +1881,10 @@
           '</button>'
         : '';
 
+    var lead =
+      cam === 'semilla_propagador'
+        ? 'Tras cerrar la germinación: sistema hidropónico, sala, traslado y primer llenado.'
+        : 'Orden recomendado hasta el primer llenado del depósito y la rutina en Medir.';
     return (
       '<div class="hc-camino-resumen-card">' +
       '<div class="hc-camino-resumen-head">' +
@@ -1674,7 +1896,9 @@
       '/' +
       pasos.length +
       ' listos</span></div>' +
-      '<p class="hc-camino-resumen-lead">Orden recomendado hasta el primer llenado del depósito y la rutina en Medir.</p>' +
+      '<p class="hc-camino-resumen-lead">' +
+      lead +
+      '</p>' +
       '<ul class="hc-camino-resumen-list" role="list">' +
       items +
       '</ul>' +
@@ -1687,12 +1911,16 @@
     var host = document.getElementById('dashCaminoResumen');
     if (!host) return;
     var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    refreshDashPropagadorRutaRail(cfg);
+    var cam = getCaminoCultivo(cfg);
+    var germConcl =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     var germHub = document.getElementById('dashGerminacionHub');
     var germHubVisible =
       germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
     var lcBox = document.getElementById('dashInstalacionLifecycle');
     var lcVisible = lcBox && !lcBox.classList.contains('setup-hidden');
-    if (germHubVisible || lcVisible) {
+    if ((germHubVisible && !(cam === 'semilla_propagador' && germConcl)) || lcVisible) {
       host.classList.add('setup-hidden');
       host.innerHTML = '';
       return;
@@ -1804,6 +2032,10 @@
   global.hcSyncTorreDesdeGerminacionSiAplica = hcSyncTorreDesdeGerminacionSiAplica;
   global.getCaminoResumenPasos = getCaminoResumenPasos;
   global.renderCaminoResumenHtml = renderCaminoResumenHtml;
+  global.renderSetupCaminoCards = renderSetupCaminoCards;
+  global.refreshSetupCaminoRecoUI = refreshSetupCaminoRecoUI;
+  global.refreshDashPropagadorRutaRail = refreshDashPropagadorRutaRail;
+  global.getPropagadorRutaMacroPasos = getPropagadorRutaMacroPasos;
   global.refreshDashCaminoResumen = refreshDashCaminoResumen;
   global.inferCaminoFromOrigen = inferCaminoFromOrigen;
   global.hcResolverCaminoSetup = hcResolverCaminoSetup;

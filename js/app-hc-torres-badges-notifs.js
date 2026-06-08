@@ -513,6 +513,9 @@ function hcRefreshDashSinInstalacionUi() {
   try {
     if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
   } catch (_) {}
+  try {
+    if (typeof refreshDashPropagadorRutaRail === 'function') refreshDashPropagadorRutaRail(cfgDashUi);
+  } catch (_) {}
   hcRefreshDashInstalacionVariedad(cfgDashUi);
 }
 
@@ -1880,6 +1883,14 @@ function actualizarBadgesNutriente() {
       dashAviso.classList.add('setup-hidden');
     }
   }
+  try {
+    if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+  } catch (_) {}
+  try {
+    if (typeof refreshDashPropagadorRutaRail === 'function') {
+      refreshDashPropagadorRutaRail(cfg);
+    }
+  } catch (_) {}
   // Dashboard inicio — banner torre
   const dashTorreEmoji  = document.getElementById('dashTorreEmoji');
   const dashTorreNombre = document.getElementById('dashTorreNombre');

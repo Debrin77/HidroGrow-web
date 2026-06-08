@@ -10884,6 +10884,128 @@ html.hc-theme-dark .hc-camino-resumen-item {
 .hc-camino-resumen-cta {
   min-width: 200px;
 }
+
+/* Asistente — tarjetas de ruta de cultivo (paso 1) */
+.hc-camino-cards-grid .hc-camino-card {
+  position: relative;
+  text-align: left;
+}
+.hc-camino-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  line-height: 1.3;
+}
+.hc-camino-card-badge--recomendado {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+.hc-camino-card-badge--exigente {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+.hc-camino-card-badge--pro {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+.hc-camino-card-badge--avanzado {
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+}
+.hc-camino-reco-warn {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #92400e;
+  font-weight: 600;
+}
+html.hc-theme-dark .hc-camino-reco-warn {
+  color: #fcd34d;
+}
+
+/* Inicio — barra macro ruta propagador */
+.dash-propagador-ruta {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #86efac;
+  background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+}
+.hc-prop-ruta-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.hc-prop-ruta-kicker {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #15803d;
+}
+.hc-prop-ruta-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.hc-prop-ruta-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1 1 100%;
+}
+.hc-prop-ruta-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 600;
+}
+.hc-prop-ruta-step--done {
+  color: #15803d;
+}
+.hc-prop-ruta-step--current {
+  color: #0f766e;
+  font-weight: 800;
+}
+.hc-prop-ruta-dot {
+  font-size: 10px;
+  line-height: 1;
+}
+html.hc-theme-dark .dash-propagador-ruta {
+  border-color: rgba(74, 222, 128, 0.35);
+  background: linear-gradient(135deg, rgba(22, 101, 52, 0.2), rgba(15, 23, 42, 0.5));
+}
+html.hc-theme-dark .hc-prop-ruta-kicker,
+html.hc-theme-dark .hc-prop-ruta-step--done {
+  color: #86efac;
+}
+html.hc-theme-dark .hc-prop-ruta-pct {
+  background: rgba(34, 197, 94, 0.15);
+  color: #bbf7d0;
+}
+html.hc-theme-dark .hc-prop-ruta-step--current {
+  color: #5eead4;
+}
+
 html.hc-theme-dark .hc-prop-inline {
   background: rgba(34, 197, 94, 0.08);
   border-color: rgba(34, 197, 94, 0.25);
