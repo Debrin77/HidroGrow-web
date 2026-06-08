@@ -62,6 +62,8 @@ test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
   const germ = read('js/hc-germinacion-flow.js');
   assert.match(germ, /camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro'/);
   assert.match(germ, /6 fases obligatorias/);
+  assert.match(germ, /function renderGermHubSemillaHidroCompactHtml/);
+  assert.match(germ, /compactHidro/);
   assert.match(germ, /id: 'higiene'/);
   assert.match(germ, /Semilla a oscuras/);
   assert.match(
