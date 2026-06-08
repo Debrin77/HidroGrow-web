@@ -254,16 +254,19 @@ function updatePinDots() {
 }
 
 function checkPin() {
-  if (typeof hcAppScriptsListos === 'function' && !hcAppScriptsListos()) {
-    const errPrep = document.getElementById('pinErr');
-    if (errPrep) errPrep.textContent = 'Aún preparando la app… espera un momento';
-    pinEntry = '';
-    updatePinDots();
-    return;
-  }
   if (pinEntry === PIN) {
     pinEntry = '';
     updatePinDots();
+    const errPrep = document.getElementById('pinErr');
+    if (errPrep) errPrep.textContent = '';
+    const statusEl = document.getElementById('pinAuthStatus');
+    if (typeof hcAppScriptsListos === 'function' && !hcAppScriptsListos()) {
+      if (statusEl) statusEl.textContent = 'PIN correcto — preparando la app…';
+      if (typeof hcWhenAppScriptsReady === 'function') {
+        hcWhenAppScriptsReady(unlockAndInitApp, { timeoutMs: 120000 });
+        return;
+      }
+    }
     unlockAndInitApp();
   } else {
     for (let i = 0; i < 4; i++) {

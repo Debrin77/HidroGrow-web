@@ -24,12 +24,9 @@ window.HC_BOOT_CRITICAL_SCRIPTS = [
   "js/hc-mobile-ui.js",
   "js/hc-medir-operativa.js",
   "js/hc-instalacion-lifecycle.js",
-  "js/calendario-logic.js",
-  "js/meteo-alarm-app.js",
-  "js/app-hc-medicion-toast.js",
-  "js/backup-capacitor.js"
+  "js/app-hc-medicion-toast.js"
 ];
-/** Antes del PIN: Inicio/Medir/asistente guardado (sin diagramas SVG) */
+/** Tras críticos: Inicio/Medir/asistente guardado (en paralelo con diferidos) */
 window.HC_BOOT_ESSENTIAL_SCRIPTS = [
   "js/hc-dash-recarga.js",
   "js/hc-medir-sala-layout.js",
@@ -39,11 +36,14 @@ window.HC_BOOT_ESSENTIAL_SCRIPTS = [
   "js/hc-dash-operativa.js",
   "js/hc-setup-mediciones-logic.js",
   "js/hc-setup-calc-core.js",
-  "js/hc-setup-consejos.js",
-  "js/hc-medir-germinacion.js",
-  "js/hc-monitor-sistema.js"
+  "js/hc-medir-germinacion.js"
 ];
 window.HC_BOOT_DEFERRED_SCRIPTS = [
+  "js/calendario-logic.js",
+  "js/meteo-alarm-app.js",
+  "js/backup-capacitor.js",
+  "js/hc-setup-consejos.js",
+  "js/hc-monitor-sistema.js",
   "js/hc-diagram-palette.js",
   "js/diagrams/hc-diagram-labels.js",
   "js/diagrams/dwc/dwc-scada-tokens.js",

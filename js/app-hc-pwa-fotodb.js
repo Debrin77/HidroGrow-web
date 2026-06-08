@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-06-01-perf17')
+      .register('service-worker.js?v=2026-06-01-perf18')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -97,7 +97,7 @@ async function waitSplashMinimumVisible() {
 }
 
 // Failsafe para WebView: evita splash infinito si window.onload no llega.
-setTimeout(hideSplash, 3500);
+setTimeout(hideSplash, 1200);
 
 function hcBindPinScreenListeners() {
   document.querySelectorAll('.pin-key[data-digit]').forEach(function (key) {

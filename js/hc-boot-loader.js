@@ -31,9 +31,9 @@
     );
   }
 
-  /** No desbloquear PIN ni initApp hasta críticos + esenciales + asistente + propagador. */
+  /** PIN e initApp: críticos + APIs del asistente (esenciales siguen en paralelo). */
   function hcAppScriptsListos() {
-    if (!criticalDone || !essentialDone || !hcBootEssentialListos()) return false;
+    if (!criticalDone) return false;
     return (
       typeof initApp === 'function' &&
       typeof goTab === 'function' &&
@@ -47,6 +47,10 @@
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       typeof caminoUsaNutrienteBandejaPropagador === 'function'
     );
+  }
+
+  function hcBootEssentialReady() {
+    return essentialDone && hcBootEssentialListos();
   }
 
   function hcBootQueues() {
@@ -78,7 +82,9 @@
     var mobile = hcBootIsMobile();
     if (statusEl && !global.appBootstrapped) {
       if (hcAppScriptsListos()) {
-        statusEl.textContent = 'Listo — introduce tu PIN';
+        statusEl.textContent = hcBootEssentialReady()
+          ? 'Listo — introduce tu PIN'
+          : 'Introduce tu PIN (cargando módulos en segundo plano)';
       } else if (total > 0) {
         statusEl.textContent = 'Preparando… ' + pct + '%';
       }
@@ -170,8 +176,8 @@
     opts = opts || {};
     var mobile = hcBootIsMobile();
     var idle = !!opts.idle;
-    var batchSize = idle ? (mobile ? 2 : 4) : mobile ? 4 : 6;
-    var yieldMs = idle ? (mobile ? 6 : 4) : mobile ? 8 : 2;
+    var batchSize = idle ? (mobile ? 3 : 5) : mobile ? 10 : 12;
+    var yieldMs = idle ? (mobile ? 4 : 2) : mobile ? 2 : 0;
 
     for (var i = 0; i < queue.length; i += batchSize) {
       if (idle) {
@@ -221,39 +227,37 @@
       } catch (_) {}
     }, 0);
 
+    var essentialPromise = null;
+    if (q.essential.length) {
+      essentialPromise = loadQueue(q.essential).then(function () {
+        essentialDone = true;
+        hcBootUpdatePinProgress();
+        try {
+          global.dispatchEvent(new Event('hcBootEssentialReady'));
+        } catch (_) {}
+      });
+    } else {
+      essentialDone = true;
+    }
+
     var deferredPromise = null;
     if (q.deferred.length) {
       deferredStarted = true;
       deferredPromise = loadQueue(q.deferred, { idle: false });
     }
 
-    if (q.essential.length) {
-      await loadQueue(q.essential);
-    }
-    essentialDone = true;
-    hcBootUpdatePinProgress();
-    try {
-      global.dispatchEvent(new Event('hcBootEssentialReady'));
-    } catch (_) {}
-
-    if (deferredPromise) {
-      deferredPromise
-        .then(function () {
-          global._hcBootLoadDone = true;
-          hcBootUpdatePinProgress();
-          try {
-            global.dispatchEvent(new Event('hcBootScriptsLoaded'));
-          } catch (_) {}
-        })
-        .catch(function () {
-          global._hcBootLoadDone = true;
-        });
-    } else {
-      global._hcBootLoadDone = true;
-      try {
-        global.dispatchEvent(new Event('hcBootScriptsLoaded'));
-      } catch (_) {}
-    }
+    var allDone = Promise.all([essentialPromise, deferredPromise].filter(Boolean));
+    allDone
+      .then(function () {
+        global._hcBootLoadDone = true;
+        hcBootUpdatePinProgress();
+        try {
+          global.dispatchEvent(new Event('hcBootScriptsLoaded'));
+        } catch (_) {}
+      })
+      .catch(function () {
+        global._hcBootLoadDone = true;
+      });
 
     loading = false;
   }
@@ -284,6 +288,5 @@
   global.hcBootUpdatePinProgress = hcBootUpdatePinProgress;
   global.hcBootIsMobile = hcBootIsMobile;
 
-  var bootDelay = hcBootIsMobile() ? 80 : 16;
-  setTimeout(hcBootStartLoading, bootDelay);
+  setTimeout(hcBootStartLoading, 0);
 })(typeof window !== 'undefined' ? window : globalThis);

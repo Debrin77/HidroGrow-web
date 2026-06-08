@@ -192,13 +192,21 @@ function hcFinishInitAppHeavyWork() {
       var so = document.getElementById('setupOverlay');
       setupAbierto = !!(so && so.classList.contains('open'));
     } catch (_) {}
-    if (!setupAbierto && tab === 'inicio' && typeof updateDashboard === 'function') {
-      try {
-        updateDashboard();
-      } catch (eFull) {
+    if (!setupAbierto && tab === 'inicio') {
+      var runDash = function () {
+        if (typeof updateDashboard !== 'function') return;
         try {
-          console.error('dashboard en initApp', eFull);
-        } catch (_) {}
+          updateDashboard();
+        } catch (eFull) {
+          try {
+            console.error('dashboard en initApp', eFull);
+          } catch (_) {}
+        }
+      };
+      if (typeof updateDashboard === 'function') {
+        runDash();
+      } else if (typeof window !== 'undefined') {
+        window.addEventListener('hcBootEssentialReady', runDash, { once: true });
       }
     } else if (!setupAbierto && typeof goTabDeferredWork === 'function') {
       goTabDeferredWork(tab);
