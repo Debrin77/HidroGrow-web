@@ -663,7 +663,12 @@ function hcRefrescarUiTrasCambioTorre(tab) {
     } catch (_) {}
   } else if (tab === 'inicio') {
     try {
-      if (typeof updateDashboard === 'function') updateDashboard({ lite: true });
+      if (typeof updateDashboard === 'function') {
+        updateDashboard({ lite: true, forceTorreSwitch: true });
+      }
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+      if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+      if (typeof hcRefreshDashTorreBanner === 'function') hcRefreshDashTorreBanner();
     } catch (_) {}
   } else if (tab === 'sala') {
     try {
@@ -708,6 +713,7 @@ function hcRefrescarUiTrasCambioTorre(tab) {
 function cambiarTorreActiva(idx) {
   idx = Number(idx);
   if (!Number.isFinite(idx) || idx < 0) return;
+  if (!state.torres || !state.torres[idx]) return;
   if (idx === (state.torreActiva || 0)) {
     cerrarModalTorres();
     return;
@@ -718,19 +724,19 @@ function cambiarTorreActiva(idx) {
   torreInteraccionModo = 'editar';
 
   state.torreActiva = idx;
-  cargarEstadoTorre(idx, { deferUi: true });
+  cargarEstadoTorre(idx);
 
-  const persistSwitch = function () {
-    try {
-      if (typeof saveState === 'function') saveState({ skipSlotGuard: true });
-    } catch (_) {}
-  };
-  setTimeout(persistSwitch, 40);
+  try {
+    if (typeof saveState === 'function') saveState({ skipSlotGuard: true });
+  } catch (_) {}
 
   cerrarModalTorres();
   actualizarHeaderTorre();
   try {
     if (typeof renderTorreInstalacionPicker === 'function') renderTorreInstalacionPicker();
+  } catch (_) {}
+  try {
+    renderListaTorres();
   } catch (_) {}
 
   const _bE = document.getElementById('torreModoEditar');
@@ -761,6 +767,17 @@ function cambiarTorreActiva(idx) {
   } catch (_) {}
 
   const activeTab = typeof currentTab !== 'undefined' ? currentTab : 'inicio';
+  try {
+    if (typeof hcSincronizarUiInstalacionActiva === 'function') {
+      hcSincronizarUiInstalacionActiva({});
+    }
+  } catch (_) {}
+  try {
+    if (typeof refreshTabsOperativaCamino === 'function') {
+      refreshTabsOperativaCamino({ full: true, inmediato: true, tab: activeTab });
+    }
+  } catch (_) {}
+
   const gen = ++_hcCambiarTorreGen;
   const runDeferred = function () {
     if (gen !== _hcCambiarTorreGen) return;
@@ -1637,6 +1654,84 @@ function borrarTorre(idx) {
 // BADGE NUTRIENTE — visible en dashboard y medir
 // ══════════════════════════════════════════════════
 
+/** Banner Inicio/Medir/Sistema de la instalación activa (tras cambiar de sistema). */
+function hcRefreshDashTorreBanner(opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const cfg = opts.cfg || state.configTorre || {};
+  const hayInst =
+    typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+  const nut =
+    opts.nut != null
+      ? opts.nut
+      : hayInst && typeof getNutrienteTorre === 'function'
+        ? getNutrienteTorre()
+        : null;
+  const dashTorreEmoji = document.getElementById('dashTorreEmoji');
+  const dashTorreNombre = document.getElementById('dashTorreNombre');
+  const dashTorreInfo = document.getElementById('dashTorreInfo');
+  const torre = typeof getTorreActiva === 'function' ? getTorreActiva() : null;
+  const medirTorreEmoji = document.getElementById('medirTorreEmoji');
+  const medirTorreNombre = document.getElementById('medirTorreNombre');
+  try {
+    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
+  } catch (_) {}
+  if (!torre) {
+    if (dashTorreNombre) dashTorreNombre.textContent = '';
+    if (dashTorreInfo) dashTorreInfo.textContent = '';
+    if (medirTorreNombre) medirTorreNombre.textContent = 'Sin instalación';
+    return;
+  }
+  if (dashTorreEmoji) {
+    if (typeof hcPintarSistemaIconoEnElemento === 'function') {
+      hcPintarSistemaIconoEnElemento(dashTorreEmoji, torre, 'hc-ico--dash-torre');
+    } else {
+      dashTorreEmoji.textContent = emojiSistemaUiPorTorre(torre);
+    }
+  }
+  if (dashTorreNombre) dashTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
+  hcRefreshDashInstalacionVariedad(cfg);
+  if (dashTorreInfo) {
+    const infoPropag =
+      typeof hcDashTorreInfoPropagador === 'function' ? hcDashTorreInfoPropagador(cfg) : null;
+    if (infoPropag) {
+      dashTorreInfo.textContent = infoPropag;
+    } else {
+      let geomTxt;
+      if (typeof hcGeomTorreFilasCestas === 'function') {
+        geomTxt = hcGeomTorreFilasCestas(cfg).label;
+      } else {
+        const niv = cfg.numNiveles || 5;
+        const ces = cfg.numCestas || 5;
+        geomTxt = niv + ' filas · ' + ces + ' macetas';
+      }
+      const vMax = getVolumenDepositoMaxLitros(cfg);
+      const vMez = getVolumenMezclaLitros(cfg);
+      const volTxt =
+        vMax != null && Number.isFinite(vMax) && vMax > 0
+          ? vMez != null && Number.isFinite(vMez) && vMez < vMax - 0.05
+            ? vMax + 'L máx · ' + vMez + 'L mezcla'
+            : vMax + 'L'
+          : 'L depósito por indicar';
+      const nutTxt = nut ? nut.nombre : 'nutriente por elegir';
+      const estadoTxt = sistemaEstaOperativa(cfg) ? 'operativa' : 'stand-by';
+      dashTorreInfo.textContent = geomTxt + ' · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
+    }
+  }
+  if (medirTorreEmoji) {
+    if (typeof hcPintarSistemaIconoEnElemento === 'function') {
+      hcPintarSistemaIconoEnElemento(medirTorreEmoji, torre, 'hc-ico--dash-torre');
+    } else {
+      medirTorreEmoji.textContent = emojiSistemaUiPorTorre(torre);
+    }
+  }
+  if (medirTorreNombre) medirTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
+  try {
+    if (typeof refreshSalaTorreBanner === 'function') refreshSalaTorreBanner();
+    if (typeof ensureSistemaTorreBanner === 'function') ensureSistemaTorreBanner();
+    else if (typeof refreshSistemaTorreBanner === 'function') refreshSistemaTorreBanner();
+  } catch (_) {}
+}
+
 function actualizarBadgesNutriente() {
   const hayInst =
     typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
@@ -1891,73 +1986,7 @@ function actualizarBadgesNutriente() {
       refreshDashPropagadorRutaRail(cfg);
     }
   } catch (_) {}
-  // Dashboard inicio — banner torre
-  const dashTorreEmoji  = document.getElementById('dashTorreEmoji');
-  const dashTorreNombre = document.getElementById('dashTorreNombre');
-  const dashTorreInfo   = document.getElementById('dashTorreInfo');
-  const torre = getTorreActiva();
-  const medirTorreEmoji  = document.getElementById('medirTorreEmoji');
-  const medirTorreNombre = document.getElementById('medirTorreNombre');
-  try {
-    if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
-  } catch (_) {}
-  if (!torre) {
-    if (dashTorreNombre) dashTorreNombre.textContent = '';
-    if (dashTorreInfo) dashTorreInfo.textContent = '';
-    if (medirTorreNombre) medirTorreNombre.textContent = 'Sin instalación';
-    return;
-  }
-  if (dashTorreEmoji) {
-    if (typeof hcPintarSistemaIconoEnElemento === 'function') {
-      hcPintarSistemaIconoEnElemento(dashTorreEmoji, torre, 'hc-ico--dash-torre');
-    } else {
-      dashTorreEmoji.textContent = emojiSistemaUiPorTorre(torre);
-    }
-  }
-  if (dashTorreNombre) dashTorreNombre.textContent  = (torre.nombre || '').trim() || 'Instalación';
-  hcRefreshDashInstalacionVariedad(cfg);
-  if (dashTorreInfo) {
-    const infoPropag =
-      typeof hcDashTorreInfoPropagador === 'function' ? hcDashTorreInfoPropagador(cfg) : null;
-    if (infoPropag) {
-      dashTorreInfo.textContent = infoPropag;
-    } else {
-      let geomTxt;
-      if (typeof hcGeomTorreFilasCestas === 'function') {
-        geomTxt = hcGeomTorreFilasCestas(cfg).label;
-      } else {
-        const niv = cfg.numNiveles || 5;
-        const ces = cfg.numCestas || 5;
-        geomTxt = niv + ' filas · ' + ces + ' macetas';
-      }
-      const vMax = getVolumenDepositoMaxLitros(cfg);
-      const vMez = getVolumenMezclaLitros(cfg);
-      const volTxt =
-        vMax != null && Number.isFinite(vMax) && vMax > 0
-          ? vMez != null && Number.isFinite(vMez) && vMez < vMax - 0.05
-            ? vMax + 'L máx · ' + vMez + 'L mezcla'
-            : vMax + 'L'
-          : 'L depósito por indicar';
-      const nutTxt = nut ? nut.nombre : 'nutriente por elegir';
-      const estadoTxt = sistemaEstaOperativa(cfg) ? 'operativa' : 'stand-by';
-      dashTorreInfo.textContent = geomTxt + ' · ' + volTxt + ' · ' + nutTxt + ' · ' + estadoTxt;
-    }
-  }
-
-  // Pestaña Medir — banner torre
-  if (medirTorreEmoji) {
-    if (typeof hcPintarSistemaIconoEnElemento === 'function') {
-      hcPintarSistemaIconoEnElemento(medirTorreEmoji, torre, 'hc-ico--dash-torre');
-    } else {
-      medirTorreEmoji.textContent = emojiSistemaUiPorTorre(torre);
-    }
-  }
-  if (medirTorreNombre) medirTorreNombre.textContent = (torre.nombre || '').trim() || 'Instalación';
-  try {
-    if (typeof refreshSalaTorreBanner === 'function') refreshSalaTorreBanner();
-    if (typeof ensureSistemaTorreBanner === 'function') ensureSistemaTorreBanner();
-    else if (typeof refreshSistemaTorreBanner === 'function') refreshSistemaTorreBanner();
-  } catch (_) {}
+  hcRefreshDashTorreBanner({ cfg: cfg, nut: nut });
   actualizarEstadoOperativaUI();
 
   try { refreshUbicacionInstalacionUI(); } catch (_) {}

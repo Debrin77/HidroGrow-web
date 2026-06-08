@@ -107,6 +107,12 @@ async function resetApp() {
     if (typeof hcPrepararEstadoSinInstalacionEnMemoria === 'function') {
       hcPrepararEstadoSinInstalacionEnMemoria();
     }
+    if (typeof hidrogrowLimpiarBorradorSinInstalacion === 'function') {
+      hidrogrowLimpiarBorradorSinInstalacion(state);
+    }
+    state.torres = [];
+    state.torreActiva = 0;
+    delete state.configTorre;
     if (typeof initTorres === 'function') initTorres();
     if (typeof window !== 'undefined') window._hcPreinitTorreDone = true;
     if (typeof saveState === 'function') saveState();

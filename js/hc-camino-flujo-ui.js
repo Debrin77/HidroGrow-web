@@ -502,14 +502,12 @@
     if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_propagador') {
       return '';
     }
-    if (
-      typeof hcOcultarTabSalaDuranteCamino !== 'function' ||
-      !hcOcultarTabSalaDuranteCamino(cfg)
-    ) {
+    if (typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg)) {
       return '';
     }
     return (
-      '<strong>Sala más adelante.</strong> Aparece en la barra cuando concluyas la germinación (días o botón abajo).'
+      '<strong>Configura la sala cuando quieras</strong> (pestaña Sala o botón abajo): carpa, LED, extractor… ' +
+      'Puedes hacerlo <strong>durante la germinación</strong>. El DWC/RDWC vendrá después, con la sala lista.'
     );
   }
 

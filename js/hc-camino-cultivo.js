@@ -1331,6 +1331,38 @@
   }
 
   function abrirSetupFaseHidro() {
+    var cfgH =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (getCaminoCultivo(cfgH) === 'semilla_propagador') {
+      if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfgH)) {
+        if (typeof showToast === 'function') {
+          showToast(
+            'Primero configura la sala (carpa, LED, extractor). Puedes hacerlo durante la germinación.',
+            true,
+            { durationMs: 6200 }
+          );
+        }
+        if (typeof abrirSetupFaseSala === 'function') {
+          setTimeout(function () {
+            abrirSetupFaseSala({ duranteGerminacion: true });
+          }, 400);
+        }
+        return;
+      }
+      if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfgH)) {
+        if (typeof showToast === 'function') {
+          showToast('Completa el checklist de montaje de sala antes del DWC/RDWC.', true, {
+            durationMs: 5600,
+          });
+        }
+        if (typeof hcAbrirMontajeSalaChecklist === 'function') {
+          setTimeout(hcAbrirMontajeSalaChecklist, 400);
+        } else if (typeof hcIrMontajeSala === 'function') {
+          setTimeout(hcIrMontajeSala, 400);
+        }
+        return;
+      }
+    }
     try {
       if (typeof hcResetSetupWizardSession === 'function') {
         hcResetSetupWizardSession({ keepNuevaFlag: true, keepPagina: true });

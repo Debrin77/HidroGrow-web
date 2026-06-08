@@ -54,7 +54,7 @@ function actualizarSaludoInicio(now) {
 function updateDashboard(opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
   const nowMs = Date.now();
-  if (opts.lite && nowMs - _hcDashRefreshAt < 600) return;
+  if (opts.lite && !opts.forceTorreSwitch && nowMs - _hcDashRefreshAt < 600) return;
   _hcDashRefreshAt = nowMs;
 
   try {
@@ -95,6 +95,17 @@ function updateDashboard(opts) {
     try {
       if (typeof hcRefreshDashSinInstalacionUi === 'function') hcRefreshDashSinInstalacionUi();
     } catch (_) {}
+    if (opts.forceTorreSwitch) {
+      try {
+        if (typeof hcRefreshDashTorreBanner === 'function') hcRefreshDashTorreBanner();
+      } catch (_) {}
+      try {
+        if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
+      } catch (_) {}
+      try {
+        if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfgDash);
+      } catch (_) {}
+    }
     return;
   }
 

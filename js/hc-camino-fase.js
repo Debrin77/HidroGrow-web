@@ -613,13 +613,9 @@
     return parts.join(' · ');
   }
 
-  /** Solo propagador: ocultar Sala hasta concluir germinación. */
+  /** Propagador: sala accesible durante la germinación (DWC/RDWC solo tras tener sala). */
   function hcOcultarTabSalaDuranteCamino(cfg) {
-    cfg = cfg || cfgActiva();
-    if (cam(cfg) !== 'semilla_propagador') return false;
-    if (typeof hcGerminacionActiva !== 'function' || !hcGerminacionActiva(cfg)) return false;
-    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
-    return true;
+    return false;
   }
 
   /**
@@ -718,6 +714,9 @@
    */
   function refreshDashInicioVistaCamino(cfg) {
     cfg = cfg || cfgActiva();
+    try {
+      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+    } catch (_) {}
     var soloPropag =
       typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
     var germHub = document.getElementById('dashGerminacionHub');
