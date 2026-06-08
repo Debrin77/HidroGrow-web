@@ -30,8 +30,6 @@
       accent: 'hydro',
     },
     { id: 'prop_termo', label: 'Termo-higrómetro en zona de germinación', hint: 'HR 70–80 % bajo domo; anota en el registro diario.', accent: 'iot' },
-    { id: 'prop_luz', label: 'Luz suave 18/6 (tenue)', hint: 'No LED de floración encima del domo; fluorescente o LED muy bajo.', accent: 'light' },
-    { id: 'prop_higiene', label: 'Higiene: tijeras y superficie limpias', hint: 'Alcohol 70 % en herramientas; evita tocar radículas.', accent: 'tool' },
     { id: 'prop_vent', label: 'Ventilación del domo probada', hint: 'Abre 2× al día 3–5 min; sin corrientes frías directas.', accent: 'air' },
   ];
 
@@ -74,30 +72,7 @@
       id: 'ph_domo_mini',
       label: 'Cúpula individual en cada cesta (opcional)',
       hint:
-        'Una mini cúpula por net pot (no bandeja propagador). Cierra los primeros días; mantiene HR local sobre la semilla.',
-      accent: 'germ',
-    },
-    {
-      id: 'ph_oscuridad',
-      label: 'Oscuridad · días 1 y ' + PREP_HIDRO_DIAS_OSCURIDAD + ' tras siembra',
-      hint:
-        'La semilla abre con humedad y calor, no con luz. Cúpula cerrada; sin LED directo sobre la semilla en el cubo.',
-      accent: 'germ',
-    },
-    {
-      id: 'ph_luz',
-      label: 'Luz tenue 18/6 (desde día ' + (PREP_HIDRO_DIAS_OSCURIDAD + 1) + ' o brote verde)',
-      hint:
-        'En cuanto asoma el cotiledón, luz suave ~18 h/día. Si aún llevas cúpula, ábrela a ventilar antes de quitarla.',
-      accent: 'light',
-    },
-    {
-      id: 'ph_quitar_cupula',
-      label: 'Quitar cúpulas al brote verde (por cesta)',
-      hint:
-        'Al ver cotiledón: ventila la cúpula ' +
-        PREP_HIDRO_HORAS_VENTILAR_CUPULA +
-        ' h → retírala por maceta. Si HR sala ≥70 %, antes; si es muy seco, un poco más. Burbujeo suave sin encharcar.',
+        'Una mini cúpula por net pot (no bandeja propagador). Montada y cerrada; oscuridad y luz las marcas en Inicio → Germinación.',
       accent: 'germ',
     },
     { id: 'ph_medidor', label: 'Medidor EC/pH a mano listo', hint: 'Calibración reciente; anota en Medir cuando subas EC.', accent: 'iot' },
@@ -110,9 +85,7 @@
     prop_dosis_sol: 'hc-i-flask',
     prop_agua_sustrato: 'hc-i-droplet',
     prop_termo: 'hc-i-therm',
-    prop_luz: 'hc-i-bulb',
     prop_rockwool: 'hc-i-package',
-    prop_higiene: 'hc-i-wrench',
     prop_vent: 'hc-i-wind',
     enr_domo: 'hc-i-sys-propagador',
     enr_rockwool: 'hc-i-package',
@@ -124,11 +97,8 @@
     ph_netpot: 'hc-i-sys-dwc',
     ph_nivel: 'hc-i-droplet',
     ph_domo_mini: 'hc-i-layers',
-    ph_oscuridad: 'hc-i-moon',
-    ph_quitar_cupula: 'hc-i-wind',
     ph_medidor: 'hc-i-trend',
     ph_aire: 'hc-i-bubbles',
-    ph_luz: 'hc-i-bulb',
   };
 
   function prepHidroSustratoKey(cfg) {
@@ -590,12 +560,11 @@
         ? 'Checklist de enraizado'
         : 'Montaje del propagador / domo';
     var lead = esRutaGermHidro(cfg)
-      ? 'Antes de las <strong>6 fases</strong>: <strong>1 semilla por cubo</strong>, cúpula opcional por cesta, oscuridad días 1–' +
-        PREP_HIDRO_DIAS_OSCURIDAD +
-        ' y llenado con distancia nutriente → sustrato (ver guía). Al brote: quita cúpulas. Luego sala, montaje y primer llenado.'
+      ? 'Montaje físico del cubo en el sistema: <strong>1 semilla/cubo</strong>, cúpula opcional, llenado (cm nutriente → sustrato) y aireación. ' +
+        'La <strong>oscuridad inicial</strong> y la <strong>luz tenue</strong> las sigues en <strong>Inicio → Germinación</strong> (no aquí).'
       : esRutaEsqueje(cfg)
         ? 'Domo, higiene y microclima antes de pasar esquejes a la matriz.'
-        : 'Marca cada punto del montaje. Arriba debes tener <strong>genética, semillas y sustrato</strong> antes de confirmar.';
+        : 'Solo montaje físico del domo: solución, sustrato y microclima. La <strong>oscuridad días 1–2</strong>, la <strong>luz 18/6</strong> y las <strong>tijeras</strong> van en las <strong>6 fases</strong> y al <strong>traslado al hidro</strong>, no en este checklist.';
     var inst = cfg.equipamientoInstalado || {};
     var equipRef = '';
     if (inst.propagador && inst.propagador.marca) {
@@ -669,10 +638,8 @@
     var esHidro = esRutaGermHidro(cfg);
     var titulo = esHidro ? 'Paso 1 · Preparar germinación en hidro' : 'Paso 1 · Montaje del propagador';
     var lead = esHidro
-      ? 'Checklist <strong>prep en cubo</strong>: 1 semilla/cubo, cúpula por cesta, llenado (cm bajo sustrato), oscuridad días 1–' +
-        PREP_HIDRO_DIAS_OSCURIDAD +
-        ', quitar cúpulas al brote y aire suave. Luego <strong>sala, montaje y primer llenado</strong> antes de las 6 fases.'
-      : 'Checklist del propagador: primero <strong>dosifica en 2 L de agua destilada</strong> (guarda el sobrante en botella); luego vierte solo <strong>~2–3 mm</strong> en la bandeja con el sustrato. Revisa a diario que no se quede seca. El <strong>riego del depósito DWC</strong> llega después de germinar.';
+      ? 'Prep física en cubo: semillas, cúpulas, llenado y aireación. Oscuridad, luz y retirada de cúpulas → <strong>Inicio → Germinación</strong>.'
+      : 'Montaje del domo: dosifica en <strong>2 L</strong>, vierte <strong>~2–3 mm</strong> en bandeja con sustrato. Oscuridad, luz y tijeras → fases de germinación y traslado al hidro.';
     var pct = prog.total ? Math.round((prog.done / prog.total) * 100) : 0;
     if (verificada) {
       return (

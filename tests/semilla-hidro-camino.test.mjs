@@ -47,8 +47,11 @@ test('checklist 3: sistema prep hidro e ITEMS_PREP_HIDRO', () => {
   const montaje = read('js/hc-propagador-montaje.js');
   assert.match(montaje, /var ITEMS_PREP_HIDRO/);
   assert.match(montaje, /esRutaGermHidro/);
-  assert.match(montaje, /ph_oscuridad/);
-  assert.match(montaje, /ph_quitar_cupula/);
+  assert.doesNotMatch(montaje, /id: 'ph_oscuridad'/);
+  assert.doesNotMatch(montaje, /id: 'ph_luz'/);
+  assert.match(montaje, /renderPrepHidroOscuridadBannerHtml/);
+  assert.doesNotMatch(montaje, /id: 'prop_luz'/);
+  assert.doesNotMatch(montaje, /id: 'prop_higiene'/);
   assert.match(montaje, /ph_sem_una/);
   assert.match(montaje, /prepHidroRangoLlenadoGermCm/);
   assert.match(montaje, /renderPrepHidroGuiaGermHtml/);
@@ -59,6 +62,8 @@ test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
   const germ = read('js/hc-germinacion-flow.js');
   assert.match(germ, /camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro'/);
   assert.match(germ, /6 fases obligatorias/);
+  assert.match(germ, /id: 'higiene'/);
+  assert.match(germ, /Semilla a oscuras/);
   assert.match(
     germ,
     /camGermHub === 'semilla_propagador' \? pctProgresoPropagadorDias\(cfg, g\) : pctProgreso\(g\)/

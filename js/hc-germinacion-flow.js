@@ -9,8 +9,8 @@
     {
       id: 'semilla',
       paso: 1,
-      titulo: 'Germinador (papel o domo)',
-      desc: 'Semilla húmeda a 22–26 °C, a oscuras o en domo. Todavía no va al cubo hidro.',
+      titulo: 'Semilla a oscuras (días 1–2)',
+      desc: 'Domo cerrado o bandeja húmeda a 22–26 °C. Sin luz de sala: la semilla abre con humedad y calor.',
       icon: '🌱',
     },
     {
@@ -45,7 +45,7 @@
       id: 'dwc',
       paso: 6,
       titulo: 'Traslado al cubo DWC/RDWC',
-      desc: 'Solo plántula enraizada en net pot. Nunca siembra directa en el depósito · EC 400–600 µS.',
+      desc: 'Solo plántula enraizada en net pot. Tijeras limpias (70 % alcohol) si manipulas la raíz · EC 400–600 µS.',
       icon: '💧',
     },
   ];
@@ -66,7 +66,10 @@
 
   /** Avisos suaves por fase si falta equipamiento marcado (no bloquea). */
   var EQUIP_AVISO_FASE = {
-    semilla: { need: ['domo'], msg: 'Sin domo/propagador marcado: germina a 22–26 °C en bandeja húmeda o domo.' },
+    semilla: {
+      need: ['domo'],
+      msg: 'Días 1–2 a oscuras: domo cerrado, 22–26 °C y bandeja húmeda (~2–3 mm de solución). Sin luz directa.',
+    },
     taproot: { need: ['domo', 'rockwool'], msg: 'Antes del cubo: ten listos domo y cubos de lana 4×4.' },
     rockwool: { need: ['rockwool', 'ph'], msg: 'Fase cubo: remoja lana a pH ~5,5 (marca pH y cubos si los tienes).' },
     domo: { need: ['domo', 'luz'], msg: 'Bajo domo: luz suave 18/6 y HR 70–80 %; ventila 2×/día.' },
@@ -99,7 +102,7 @@
   var TAREAS_DIA_FASE = {
     propagador: {
       semilla:
-        'Mantén ~2–3 mm de agua con nutrientes en la bandeja (no seca); humedad en papel/jiffy; T° 22–26 °C.',
+        'Oscuridad: domo cerrado, ~2–3 mm de solución en bandeja, T° 22–26 °C. Sin encender luz de sala sobre la bandeja.',
       taproot:
         'Misma capa fina en bandeja; no toques la radícula; prepara cubos remojados pH ~5,5.',
       rockwool: 'Bandeja húmeda sin charco; inserta cubos con cuidado.',
@@ -122,6 +125,7 @@
     { id: 'ph', label: 'pH del agua 5,5–5,8 comprobado' },
     { id: 'aire', label: 'Aireación / difusor activo sin burbujas que golpeen la raíz tierna' },
     { id: 'luz', label: 'Programa de luz vegetativo (18/6 o el de tu sala)' },
+    { id: 'higiene', label: 'Tijeras y superficie limpias (alcohol 70 %) antes de manipular la plántula' },
     { id: 'cesta', label: 'Cesta vacía elegida en la matriz (Cultivo e instalación)' },
     { id: 'temp', label: 'T° agua 20–24 °C estable antes de sumergir más la raíz' },
   ];
@@ -2440,13 +2444,39 @@
               : ' · Registra el día en Inicio → Germinación.'),
         action: 'inicio',
       });
+      if (camCal === 'semilla_propagador' && diff === 0) {
+        if (diaN >= 1 && diaN <= GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '🌑',
+            titulo: 'Oscuridad · domo cerrado',
+            desc:
+              'Día ' +
+              diaN +
+              ' de ' +
+              GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS +
+              ': sin luz de sala sobre la bandeja; humedad y calor.',
+            action: 'inicio',
+          });
+        } else if (diaN === GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS + 1) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '💡',
+            titulo: 'Iniciar luz tenue 18/6',
+            desc: 'Al brote verde o tras día 2: luz suave sobre el domo; ventila 2×/día.',
+            action: 'inicio',
+          });
+        }
+      }
       if (paso.id === 'domo' || paso.id === 'semilla' || paso.id === 'taproot') {
-        ev.push({
-          tipo: 'germinacion',
-          icono: '🫧',
-          titulo: modo === 'hidro_directo' ? 'Ventilar microdomo / HR' : 'Ventilar domo 2×',
-          desc: 'Abre 5 min por la mañana y al atardecer; evita condensación y moho.',
-        });
+        if (camCal !== 'semilla_propagador' || diaN > GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS) {
+          ev.push({
+            tipo: 'germinacion',
+            icono: '🫧',
+            titulo: modo === 'hidro_directo' ? 'Ventilar microdomo / HR' : 'Ventilar domo 2×',
+            desc: 'Abre 5 min por la mañana y al atardecer; evita condensación y moho.',
+          });
+        }
       }
       if (camCal === 'semilla_hidro' && diff === 0) {
         if (diaN >= 1 && diaN <= 2) {

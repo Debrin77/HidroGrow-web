@@ -17,8 +17,6 @@ const PROP_CHECK_IDS = [
   'prop_agua_sustrato',
   'prop_rockwool',
   'prop_termo',
-  'prop_luz',
-  'prop_higiene',
   'prop_vent',
 ];
 
