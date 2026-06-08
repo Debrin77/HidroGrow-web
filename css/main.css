@@ -10737,6 +10737,50 @@ body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .
 .hc-germ-kpi--pend .hc-germ-kpi-val { color: #d97706; }
 html.hc-theme-dark .hc-germ-kpi--ok .hc-germ-kpi-val { color: #34d399; }
 html.hc-theme-dark .hc-germ-kpi--pend .hc-germ-kpi-val { color: #fbbf24; }
+.hc-germ-kpi--action {
+  cursor: pointer;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.08);
+  font: inherit;
+  width: 100%;
+  text-align: center;
+}
+.hc-germ-kpi--action:hover,
+.hc-germ-kpi--action:focus-visible {
+  border-color: rgba(34, 197, 94, 0.55);
+  background: rgba(34, 197, 94, 0.14);
+  outline: none;
+}
+.hc-germ-kpi-val--sm {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.hc-germ-kpi-sub {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.hc-germ-medir-cta {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.06);
+}
+.hc-germ-medir-cta-lead {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.hc-germ-medir-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .hc-germ-focus--compact {
   margin: 0 0 12px;
   padding: 12px;
@@ -10771,11 +10815,58 @@ html.hc-theme-dark .hc-germ-kpi--pend .hc-germ-kpi-val { color: #fbbf24; }
   font-weight: 700;
   cursor: pointer;
   list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 .hc-germ-advanced-sum::-webkit-details-marker { display: none; }
+.hc-germ-advanced-sum .config-section-collapse-title-wrap {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+.hc-germ-advanced-sum .config-section-collapse-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.hc-germ-advanced:not([open]) .config-section-collapse-chevron {
+  transform: rotate(-90deg);
+}
+.hc-germ-advanced[open] .config-section-collapse-chevron {
+  transform: rotate(0deg);
+}
 .hc-germ-advanced-body {
-  padding: 0 14px 14px;
+  padding: 12px 14px 14px;
   border-top: 1px solid var(--border);
+}
+.hc-germ-advanced-section {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.hc-germ-advanced-section:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.hc-germ-advanced-lbl {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.hc-germ-advanced-section .hc-germ-equip-block,
+.hc-germ-advanced-section .hc-germ-tray-link {
+  margin-top: 0;
+}
+.hc-germ-advanced-section .hc-germ-equip-lead {
+  margin-top: 0;
 }
 #tab-inicio.dash-inicio--germ-foco .quick-actions--core {
   display: grid;

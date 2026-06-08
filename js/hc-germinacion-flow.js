@@ -1471,13 +1471,57 @@
     );
   }
 
-  function buildGermKpiStripHtml(domo, regHoy) {
+  function buildGermAdvancedSummaryHtml(title) {
+    return (
+      '<summary class="hc-germ-advanced-sum config-section-collapse-head">' +
+      '<span class="config-section-collapse-title-wrap">' +
+      '<span class="config-section-collapse-title">' +
+      esc(title) +
+      '</span>' +
+      '</span>' +
+      '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span>' +
+      '</summary>'
+    );
+  }
+
+  function buildGermHubMedirHistorialCtaHtml() {
+    return (
+      '<div class="hc-germ-medir-cta" role="region" aria-label="Registro en Medir e Historial">' +
+      '<p class="hc-germ-medir-cta-lead">Registra T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.</p>' +
+      '<div class="hc-germ-medir-cta-actions">' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">Ir a Medir</button>' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'historial\')">Historial</button>' +
+      '</div></div>'
+    );
+  }
+
+  function buildGermConcluirPropagHtml(cfg, g) {
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
+      return (
+        '<p class="hc-germ-concluir-ok">✓ Germinación concluida' +
+        (g.concluidaAt ? ' (marcada manualmente)' : ' (días según genética)') +
+        '. Siguiente: <button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></p>'
+      );
+    }
+    return (
+      '<p class="setup-field-hint">Objetivo orientativo: día <strong>' +
+      diasObjetivoConclusionGerm(cfg, g) +
+      '</strong>. Puedes darla por concluida antes si las plántulas están listas.</p>' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionMarcarConcluida()">Dar germinación por concluida</button>'
+    );
+  }
+
+  function buildGermKpiStripHtml(domo) {
     var t =
       domo.temp != null && Number.isFinite(Number(domo.temp))
         ? Number(domo.temp).toFixed(1) + ' °C'
         : '—';
     var h =
       domo.hr != null && Number.isFinite(Number(domo.hr)) ? Math.round(Number(domo.hr)) + ' %' : '—';
+    var ultima =
+      domo.fecha != null
+        ? esc(domo.fecha) + (domo.hora ? '<span class="hc-germ-kpi-sub">' + esc(domo.hora) + '</span>' : '')
+        : '—';
     return (
       '<div class="hc-germ-kpi-strip" role="group" aria-label="Resumen en tiempo real">' +
       '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">T° domo</span><span class="hc-germ-kpi-val">' +
@@ -1486,11 +1530,10 @@
       '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">HR</span><span class="hc-germ-kpi-val">' +
       esc(h) +
       '</span></div>' +
-      '<div class="hc-germ-kpi' +
-      (regHoy ? ' hc-germ-kpi--ok' : ' hc-germ-kpi--pend') +
-      '"><span class="hc-germ-kpi-lbl">Registro</span><span class="hc-germ-kpi-val">' +
-      (regHoy ? '✓ Hoy' : 'Pendiente') +
-      '</span></div></div>'
+      '<button type="button" class="hc-germ-kpi hc-germ-kpi--action" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">' +
+      '<span class="hc-germ-kpi-lbl">Última</span><span class="hc-germ-kpi-val hc-germ-kpi-val--sm">' +
+      ultima +
+      '</span></button></div>'
     );
   }
 
@@ -1524,38 +1567,7 @@
       '<div class="hc-germ-equip-row">' +
       renderEquipChips(EQUIP_RECOMENDADO, o.g, o.modo) +
       '</div></div>';
-    var nutGrid =
-      '<div class="hc-germ-nut-grid">' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">Nutriente / producto</span>' +
-      '<input type="text" class="param-input dash-quick-input" id="hcGermNutProducto" placeholder="Ej. CalMag, enraizador…" maxlength="80"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">EC µS/cm</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutEc" inputmode="decimal" step="10" placeholder="400"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">pH</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
-      '<p class="setup-field-hint hc-germ-nut-hint">Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).</p>';
-    var concluirBlock =
-      typeof germinacionConcluida === 'function' && germinacionConcluida(o.cfg)
-        ? '<p class="hc-germ-concluir-ok">✓ Germinación concluida' +
-          (o.g.concluidaAt ? ' (marcada manualmente)' : ' (días según genética)') +
-          '. Siguiente: <button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></p>'
-        : '<p class="setup-field-hint">Objetivo orientativo: día <strong>' +
-          diasObjetivoConclusionGerm(o.cfg, o.g) +
-          '</strong>. Puedes darla por concluida antes si las plántulas están listas.</p>' +
-          '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionMarcarConcluida()">Dar germinación por concluida</button>';
-    var domoHintShort =
-      o.rangosGermHub
-        ? 'Objetivo: ' +
-          o.rangosGermHub.temp.min +
-          '–' +
-          o.rangosGermHub.temp.max +
-          ' °C · HR ' +
-          o.rangosGermHub.hr.min +
-          '–' +
-          o.rangosGermHub.hr.max +
-          ' %'
-        : 'Ideal 22–26 °C · HR 70–80 %';
+    var concluirBlock = buildGermConcluirPropagHtml(o.cfg, o.g);
     var trasladoTail =
       typeof germinacionConcluida === 'function' &&
       germinacionConcluida(o.cfg) &&
@@ -1592,7 +1604,7 @@
       meta +
       '</p>' +
       '</div></div>' +
-      buildGermKpiStripHtml(o.domo, o.regHoy) +
+      buildGermKpiStripHtml(o.domo) +
       renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
       '<div class="hc-germ-focus hc-germ-focus--compact' +
       (o.allDone ? ' hc-germ-focus--done' : '') +
@@ -1614,56 +1626,31 @@
         ? ''
         : '<button type="button" class="btn btn-secondary btn-sm hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase</button>') +
       '</div></div>' +
-      '<div class="hc-germ-domo-block hc-germ-domo-block--compact">' +
-      '<h4 class="hc-germ-block-lbl">Monitor del domo</h4>' +
-      '<p class="hc-germ-domo-hint hc-germ-domo-hint--short">' +
-      domoHintShort +
-      '</p>' +
-      '<div class="hc-germ-domo-grid">' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">T° domo °C</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoTemp" inputmode="decimal" step="0.1" value="' +
-      (o.domo.temp != null ? o.domo.temp : '') +
-      '"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">HR %</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoHr" inputmode="numeric" value="' +
-      (o.domo.hr != null ? o.domo.hr : '') +
-      '"></label></div>' +
-      (o.domo.fecha
-        ? '<p class="hc-germ-domo-last">Último: ' +
-          esc(o.domo.fecha) +
-          ' ' +
-          esc(o.domo.hora || '') +
-          (o.domo.vpd != null ? ' · VPD ' + o.domo.vpd + ' kPa' : '') +
-          '</p>'
-        : '') +
-      '<button type="button" class="btn btn-primary btn-sm" onclick="guardarMedicionDomo()">Guardar lectura del domo</button>' +
-      '</div>' +
-      '<div class="hc-germ-registro-block hc-germ-registro-block--compact">' +
-      '<h4 class="hc-germ-block-lbl">Registro · día ' +
-      o.diaN +
-      '</h4>' +
-      (o.regHoy
-        ? '<p class="hc-germ-reg-ok">✓ Registrado hoy</p>'
-        : '<p class="hc-germ-reg-pend">Anota observaciones del día</p>') +
-      '<textarea id="hcGermRegistroNota" class="param-input hc-germ-reg-textarea" rows="2" placeholder="Ej. ventilé el domo 5 min…"></textarea>' +
-      '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
-      '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro</button>' +
-      '</div>' +
-      '<details class="hc-germ-advanced">' +
-      '<summary class="hc-germ-advanced-sum">Guía de fases, equipamiento y más</summary>' +
-      '<div class="hc-germ-advanced-body">' +
+      buildGermHubMedirHistorialCtaHtml() +
+      '<details class="hc-germ-advanced config-section-collapsible">' +
+      buildGermAdvancedSummaryHtml('Guía de fases, equipamiento y más') +
+      '<div class="hc-germ-advanced-body config-section-collapse-body">' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Fases del proceso</h4>' +
       renderTimeline(o.g, o.idx, o.modo) +
       renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
-      '<p class="hc-germ-tray-link setup-field-hint">Bandeja detallada en <button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Sistema</button>.</p>' +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Bandeja y montaje</h4>' +
+      '<p class="hc-germ-tray-link setup-field-hint">Vista detallada en <button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Sistema</button>.</p>' +
       equipBlock +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Rangos y siembra</h4>' +
       (o.rangosPanelHtml || '') +
       renderHubFechaSiembraEditor(o.cfg, o.g) +
       (o.semMarca || '') +
-      nutGrid +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Cierre de germinación</h4>' +
       '<div class="hc-germ-concluir-block">' +
       concluirBlock +
-      '</div>' +
-      renderRegistroReciente(o.g) +
+      '</div></div>' +
       '</div></details>' +
       trasladoTail +
       '</div>'
@@ -2024,76 +2011,69 @@
       '<div class="hc-germ-equip-row">' +
       renderEquipChips(EQUIP_RECOMENDADO, g, modo) +
       '</div></div>' +
-      '<div class="hc-germ-registro-block">' +
-      '<h4 class="hc-germ-block-lbl">Registro diario · día ' +
-      diaN +
-      '</h4>' +
-      (regHoy
-        ? '<p class="hc-germ-reg-ok">✓ Ya registraste hoy. Puedes añadir otra nota si hubo cambio.</p>'
-        : '<p class="hc-germ-reg-pend">Pendiente: anota lecturas y observaciones (calendario también lo recuerda).</p>') +
-      '<label class="hc-germ-reg-lbl">Notas del día (humedad, luz, cambios)</label>' +
-      '<textarea id="hcGermRegistroNota" class="param-input hc-germ-reg-textarea" rows="2" placeholder="Ej. ventilé el domo 5 min, cotiledón abierto…"></textarea>' +
-      '<div class="hc-germ-nut-grid">' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">Nutriente / producto</span>' +
-      '<input type="text" class="param-input dash-quick-input" id="hcGermNutProducto" placeholder="Ej. CalMag, enraizador…" maxlength="80"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">EC µS/cm</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutEc" inputmode="decimal" step="10" placeholder="400"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">pH</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
-      '<p class="setup-field-hint hc-germ-nut-hint">' +
-      (modo === 'hidro_directo'
-        ? 'Opcional: lo que añadiste al agua del cubo de germinación.'
-        : 'Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).') +
-      '</p>' +
-      '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
-      '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
       (camGerm === 'semilla_propagador'
-        ? '<div class="hc-germ-concluir-block">' +
-          (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
-            ? '<p class="hc-germ-concluir-ok">✓ Germinación concluida' +
-              (g.concluidaAt ? ' (marcada manualmente)' : ' (días según genética)') +
-              '. Siguiente: <button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></p>'
-            : '<p class="setup-field-hint">Objetivo orientativo: día <strong>' +
-              diasObjetivoConclusionGerm(cfg, g) +
-              '</strong>. Puedes darla por concluida antes si las plántulas están listas.</p>' +
-              '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionMarcarConcluida()">Dar germinación por concluida</button>') +
+        ? buildGermHubMedirHistorialCtaHtml() +
+          '<div class="hc-germ-concluir-block">' +
+          buildGermConcluirPropagHtml(cfg, g) +
           '</div>'
-        : '') +
-      renderRegistroReciente(g) +
-      '</div>' +
-      '<div class="hc-germ-domo-block">' +
-      '<h4 class="hc-germ-block-lbl">' +
-      (modo === 'hidro_directo' ? 'Monitor microclima / agua' : 'Monitor del domo') +
-      '</h4>' +
-      rangosPanelHtml +
-      '<p class="hc-germ-domo-hint">' +
-      domoHintTxt +
-      '</p>' +
-      '<div class="hc-germ-domo-grid">' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">' +
-      (modo === 'hidro_directo' ? 'T° cubo/sala °C' : 'T° domo °C') +
-      '</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoTemp" inputmode="decimal" step="0.1" value="' +
-      (domo.temp != null ? domo.temp : '') +
-      '"></label>' +
-      '<label class="dash-quick-field"><span class="dash-quick-label">HR %</span>' +
-      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoHr" inputmode="numeric" value="' +
-      (domo.hr != null ? domo.hr : '') +
-      '"></label></div>' +
-      (domo.fecha
-        ? '<p class="hc-germ-domo-last">Último: ' +
-          esc(domo.fecha) +
-          ' ' +
-          esc(domo.hora || '') +
-          (domo.vpd != null ? ' · VPD ' + domo.vpd + ' kPa' : '') +
-          '</p>'
-        : '') +
-      '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">' +
-      (modo === 'hidro_directo' ? 'Guardar microclima' : 'Guardar lectura del domo') +
-      '</button>' +
-      '</div>' +
+        : '<div class="hc-germ-registro-block">' +
+          '<h4 class="hc-germ-block-lbl">Registro diario · día ' +
+          diaN +
+          '</h4>' +
+          (regHoy
+            ? '<p class="hc-germ-reg-ok">✓ Ya registraste hoy. Puedes añadir otra nota si hubo cambio.</p>'
+            : '<p class="hc-germ-reg-pend">Pendiente: anota lecturas y observaciones (calendario también lo recuerda).</p>') +
+          '<label class="hc-germ-reg-lbl">Notas del día (humedad, luz, cambios)</label>' +
+          '<textarea id="hcGermRegistroNota" class="param-input hc-germ-reg-textarea" rows="2" placeholder="Ej. ventilé el domo 5 min, cotiledón abierto…"></textarea>' +
+          '<div class="hc-germ-nut-grid">' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">Nutriente / producto</span>' +
+          '<input type="text" class="param-input dash-quick-input" id="hcGermNutProducto" placeholder="Ej. CalMag, enraizador…" maxlength="80"></label>' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">EC µS/cm</span>' +
+          '<input type="number" class="param-input dash-quick-input" id="hcGermNutEc" inputmode="decimal" step="10" placeholder="400"></label>' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">pH</span>' +
+          '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
+          '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
+          '<p class="setup-field-hint hc-germ-nut-hint">' +
+          (modo === 'hidro_directo'
+            ? 'Opcional: lo que añadiste al agua del cubo de germinación.'
+            : 'Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).') +
+          '</p>' +
+          '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
+          '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
+          renderRegistroReciente(g) +
+          '</div>' +
+          '<div class="hc-germ-domo-block">' +
+          '<h4 class="hc-germ-block-lbl">' +
+          (modo === 'hidro_directo' ? 'Monitor microclima / agua' : 'Monitor del domo') +
+          '</h4>' +
+          rangosPanelHtml +
+          '<p class="hc-germ-domo-hint">' +
+          domoHintTxt +
+          '</p>' +
+          '<div class="hc-germ-domo-grid">' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">' +
+          (modo === 'hidro_directo' ? 'T° cubo/sala °C' : 'T° domo °C') +
+          '</span>' +
+          '<input type="number" class="param-input dash-quick-input" id="hcGermDomoTemp" inputmode="decimal" step="0.1" value="' +
+          (domo.temp != null ? domo.temp : '') +
+          '"></label>' +
+          '<label class="dash-quick-field"><span class="dash-quick-label">HR %</span>' +
+          '<input type="number" class="param-input dash-quick-input" id="hcGermDomoHr" inputmode="numeric" value="' +
+          (domo.hr != null ? domo.hr : '') +
+          '"></label></div>' +
+          (domo.fecha
+            ? '<p class="hc-germ-domo-last">Último: ' +
+              esc(domo.fecha) +
+              ' ' +
+              esc(domo.hora || '') +
+              (domo.vpd != null ? ' · VPD ' + domo.vpd + ' kPa' : '') +
+              '</p>'
+            : '') +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">' +
+          (modo === 'hidro_directo' ? 'Guardar microclima' : 'Guardar lectura del domo') +
+          '</button>' +
+          '</div>') +
       (camGerm === 'semilla_propagador' &&
       typeof germinacionConcluida === 'function' &&
       germinacionConcluida(cfg) &&
