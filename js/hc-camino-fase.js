@@ -672,12 +672,17 @@
     );
   }
 
-  /** Inicio en modo resumido: propagador con hub germinación como pantalla principal. */
+  /** Inicio en modo resumido: hub germinación como pantalla principal (propagador o semilla_hidro). */
   function hcDashInicioGermFoco(cfg) {
     cfg = cfg || cfgActiva();
-    var soloPropag =
-      typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
-    return !!(soloPropag && hcDashGermHubVisibleEnInicio());
+    if (!hcDashGermHubVisibleEnInicio()) return false;
+    if (typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg)) {
+      return true;
+    }
+    if (typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)) {
+      return true;
+    }
+    return false;
   }
 
   function hcQuickBtnLabel(btn, germFoco, focoLbl) {
@@ -726,6 +731,12 @@
       typeof hcSemillaHidroPostAsistenteUi === 'function' && hcSemillaHidroPostAsistenteUi(cfg);
     var ocultarLcHidroHub =
       typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg);
+    var inicioGermFoco =
+      germHubVisible &&
+      (soloPropag ||
+        (typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)));
+    var esPropagFoco = soloPropag && germHubVisible;
+    var esHidroFoco = ocultarLcHidroHub && germHubVisible;
     var idsOcultarHidro = [
       'dashOperativaHub',
       'dashInstalacionLifecycle',
@@ -739,6 +750,8 @@
         el.classList.toggle('setup-hidden', ocultarLcHidro);
       } else if (id === 'dashInstalacionLifecycle') {
         el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro || ocultarLcHidroHub);
+      } else if (id === 'dashOperativaHub') {
+        el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro || inicioGermFoco);
       } else {
         el.classList.toggle('setup-hidden', soloPropag || ocultarLcHidro);
       }
@@ -755,13 +768,13 @@
     ];
     idsOcultarPropag.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.classList.toggle('setup-hidden', soloPropag);
+      if (el) el.classList.toggle('setup-hidden', inicioGermFoco);
     });
-    if (soloPropag) {
+    if (inicioGermFoco) {
       var salaReco = document.getElementById('dashSalaEquipReco');
       if (salaReco) salaReco.innerHTML = '';
     }
-    if (soloPropag && germHubVisible) {
+    if (esPropagFoco) {
       var trasladoHost = document.getElementById('hcTrasladoSalaBannerHost');
       if (trasladoHost) {
         var trBan = trasladoHost.querySelector('.hc-traslado-sala-banner');
@@ -770,18 +783,18 @@
     }
     var medYcult = document.querySelector('.dash-medicion-y-cultivo');
     if (medYcult) {
-      if (soloPropag && germHubVisible) {
+      if (inicioGermFoco) {
         medYcult.classList.add('setup-hidden');
       } else {
         medYcult.classList.remove('setup-hidden');
         var grid = medYcult.querySelector('.params-grid');
-        if (grid) grid.classList.toggle('setup-hidden', soloPropag && germHubVisible);
+        if (grid) grid.classList.remove('setup-hidden');
         var summary = medYcult.querySelector('.torre-summary');
-        if (summary) summary.classList.toggle('setup-hidden', soloPropag && germHubVisible);
+        if (summary) summary.classList.remove('setup-hidden');
       }
     }
     var opRow = document.querySelector('#tab-inicio .dash-operativa-row');
-    if (opRow) opRow.classList.toggle('setup-hidden', soloPropag);
+    if (opRow) opRow.classList.toggle('setup-hidden', inicioGermFoco);
     var avisoCestas = document.getElementById('avisoCestasSinFechaInicio');
     if (avisoCestas && soloPropag) {
       avisoCestas.style.display = 'none';
@@ -792,33 +805,42 @@
     var quickSala = document.querySelector('.quick-btn[data-quick-icon="sala"]');
     if (quickSala) quickSala.classList.toggle('setup-hidden', !!ocultarSalaTab);
     var quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
-    if (quickRec) quickRec.classList.toggle('setup-hidden', !!soloPropag);
-    var germFoco = soloPropag && germHubVisible;
+    if (quickRec) {
+      quickRec.classList.toggle(
+        'setup-hidden',
+        inicioGermFoco ||
+          (typeof hcRecargaCompletaAplicaEnCamino === 'function' &&
+            !hcRecargaCompletaAplicaEnCamino(cfg))
+      );
+    }
     var tabInicio = document.getElementById('tab-inicio');
-    if (tabInicio) tabInicio.classList.toggle('dash-inicio--germ-foco', !!germFoco);
+    if (tabInicio) {
+      tabInicio.classList.toggle('dash-inicio--germ-foco', !!inicioGermFoco);
+      tabInicio.classList.toggle('dash-inicio--germ-foco-hidro', !!esHidroFoco);
+    }
     var propRuta = document.getElementById('dashPropagadorRutaHost');
-    if (propRuta) propRuta.classList.toggle('setup-hidden', !!germFoco);
+    if (propRuta) propRuta.classList.toggle('setup-hidden', !!inicioGermFoco);
     var notifPrefs = document.getElementById('dashNotifPrefsCard');
-    if (notifPrefs) notifPrefs.classList.toggle('setup-hidden', !!germFoco);
+    if (notifPrefs) notifPrefs.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashVar = document.getElementById('dashInstalacionVariedad');
-    if (dashVar) dashVar.classList.toggle('setup-hidden', !!germFoco);
+    if (dashVar) dashVar.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashInstLbl = document.getElementById('dashInstalacionLabel');
-    if (dashInstLbl) dashInstLbl.classList.toggle('setup-hidden', !!germFoco);
+    if (dashInstLbl) dashInstLbl.classList.toggle('setup-hidden', !!inicioGermFoco);
     var quickCal = document.querySelector('.quick-btn[data-quick-icon="calendario"]');
-    if (quickCal) quickCal.classList.toggle('setup-hidden', !germFoco);
+    if (quickCal) quickCal.classList.toggle('setup-hidden', !inicioGermFoco);
     var quickCons = document.querySelector('.quick-btn[data-quick-icon="consejos"]');
-    if (quickCons) quickCons.classList.toggle('setup-hidden', !germFoco);
+    if (quickCons) quickCons.classList.toggle('setup-hidden', !inicioGermFoco);
     var quickCult = document.querySelector('.quick-btn[data-quick-icon="sistema"]');
-    if (quickCult) quickCult.classList.toggle('setup-hidden', !!germFoco);
+    if (quickCult) quickCult.classList.toggle('setup-hidden', !!esPropagFoco);
     var quickBandeja = document.querySelector('.quick-btn[data-quick-icon="bandeja"]');
-    if (quickBandeja) quickBandeja.classList.toggle('setup-hidden', !germFoco);
+    if (quickBandeja) quickBandeja.classList.toggle('setup-hidden', !esPropagFoco);
     hcQuickBtnLabel(
       document.querySelector('.quick-btn[data-quick-icon="mediciones"]'),
-      germFoco,
+      esPropagFoco,
       'Medir domo'
     );
     var quickMore = document.getElementById('quickActionsMore');
-    if (quickMore && germFoco) quickMore.open = false;
+    if (quickMore && inicioGermFoco) quickMore.open = false;
     try {
       if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
     } catch (_) {}

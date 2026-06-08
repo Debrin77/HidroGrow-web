@@ -1484,10 +1484,16 @@
     );
   }
 
-  function buildGermHubMedirHistorialCtaHtml() {
+  function buildGermHubMedirHistorialCtaHtml(variant) {
+    var lead =
+      variant === 'hidro'
+        ? 'Registra EC, pH, T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.'
+        : 'Registra T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.';
     return (
       '<div class="hc-germ-medir-cta" role="region" aria-label="Registro en Medir e Historial">' +
-      '<p class="hc-germ-medir-cta-lead">Registra T°, HR y notas en <strong>Medir</strong>. Consulta la evolución en <strong>Historial</strong>.</p>' +
+      '<p class="hc-germ-medir-cta-lead">' +
+      lead +
+      '</p>' +
       '<div class="hc-germ-medir-cta-actions">' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">Ir a Medir</button>' +
       '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'historial\')">Historial</button>' +
@@ -1511,7 +1517,10 @@
     );
   }
 
-  function buildGermKpiStripHtml(domo) {
+  function buildGermKpiStripHtml(domo, opts) {
+    opts = opts || {};
+    var lblT = opts.lblTemp || 'T° domo';
+    var lblH = opts.lblHr || 'HR';
     var t =
       domo.temp != null && Number.isFinite(Number(domo.temp))
         ? Number(domo.temp).toFixed(1) + ' °C'
@@ -1524,10 +1533,14 @@
         : '—';
     return (
       '<div class="hc-germ-kpi-strip" role="group" aria-label="Resumen en tiempo real">' +
-      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">T° domo</span><span class="hc-germ-kpi-val">' +
+      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">' +
+      esc(lblT) +
+      '</span><span class="hc-germ-kpi-val">' +
       esc(t) +
       '</span></div>' +
-      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">HR</span><span class="hc-germ-kpi-val">' +
+      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">' +
+      esc(lblH) +
+      '</span><span class="hc-germ-kpi-val">' +
       esc(h) +
       '</span></div>' +
       '<button type="button" class="hc-germ-kpi hc-germ-kpi--action" onclick="typeof goTab===\'function\'&&goTab(\'mediciones\')">' +
@@ -1651,6 +1664,125 @@
       '<div class="hc-germ-concluir-block">' +
       concluirBlock +
       '</div></div>' +
+      '</div></details>' +
+      trasladoTail +
+      '</div>'
+    );
+  }
+
+  function renderGermHubSemillaHidroCompactHtml(o) {
+    var fechaTxt = '';
+    var fIni = getFechaInicioGerminacion(o.g, o.cfg);
+    if (fIni && typeof formatearFechaSiembraGermDisplay === 'function') {
+      fechaTxt = formatearFechaSiembraGermDisplay(fIni);
+    }
+    var titulo = o.cultNombre ? esc(o.cultNombre) : 'Germinación en cubo';
+    var meta =
+      (o.nSemHub >= 1
+        ? '<strong>' + o.nSemHub + ' cubo' + (o.nSemHub === 1 ? '' : 's') + '</strong>'
+        : '') +
+      (fechaTxt ? (o.nSemHub >= 1 ? ' · ' : '') + 'siembra ' + esc(fechaTxt) : '') +
+      ' · día <strong>' +
+      o.diaN +
+      '</strong> · <strong>' +
+      o.pct +
+      '%</strong> fases';
+    var focusDesc = o.allDone
+      ? 'Abre el checklist operativa y registra la plántula en la cesta del esquema.'
+      : o.tareaHoy || o.pasoDesc;
+    var equipBlock =
+      '<div class="hc-germ-equip-block">' +
+      '<h4 class="hc-germ-block-lbl">Equipamiento del cubo</h4>' +
+      '<p class="hc-germ-equip-lead">Marca lo que tienes montado en cada net pot.</p>' +
+      '<div class="hc-germ-equip-tier">Esencial</div>' +
+      '<div class="hc-germ-equip-row">' +
+      renderEquipChips(EQUIP_ESENCIAL, o.g, o.modo) +
+      '</div>' +
+      '<div class="hc-germ-equip-tier hc-germ-equip-tier--rec">Recomendado</div>' +
+      '<div class="hc-germ-equip-row">' +
+      renderEquipChips(EQUIP_RECOMENDADO, o.g, o.modo) +
+      '</div></div>';
+    var netPotViz =
+      typeof renderGermHidroNetPotViz === 'function' ? renderGermHidroNetPotViz(o.g, o.cfg) : '';
+    var trasladoTail = o.allDone
+      ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist operativa</button>' +
+        '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Registrar en la matriz →</button>' +
+        '<p class="hc-germ-traslado-foot">Siguiente: asigna la cesta en Cultivo e instalación.</p></div>'
+      : '';
+
+    return (
+      '<div class="hc-germ-hub-card hc-germ-hub-card--compact hc-germ-hub-card--hidro">' +
+      (o.salaCtaHtml || '') +
+      '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+      '<div class="hc-germ-hub-badge hc-germ-hub-badge--hidro">Germinación en cubo</div>' +
+      '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
+      o.pct +
+      '%" aria-hidden="true"><span>' +
+      esc(o.pctRingLbl) +
+      '</span></div>' +
+      '<div class="hc-germ-hub-titles">' +
+      '<h2 class="hc-germ-hub-title">' +
+      titulo +
+      '</h2>' +
+      '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">' +
+      meta +
+      '</p>' +
+      '<p class="hc-germ-hub-hidro-hint setup-field-hint">1 semilla por cubo · ' +
+      esc(o.tipo || 'DWC/RDWC') +
+      '</p>' +
+      '</div></div>' +
+      buildGermKpiStripHtml(o.domo, { lblTemp: 'T° cubo', lblHr: 'HR' }) +
+      renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
+      renderHubCupulaGermHidroHtml(o.cfg, o.g) +
+      (hubMuestraGuiaLlenadoGermHidro(o.cfg) ? renderHubLlenadoGermHidroHtml(o.cfg) : '') +
+      '<div class="hc-germ-focus hc-germ-focus--compact' +
+      (o.allDone ? ' hc-germ-focus--done' : '') +
+      '">' +
+      '<span class="hc-germ-focus-ico" aria-hidden="true">' +
+      (o.allDone ? '🎉' : o.paso.icon) +
+      '</span>' +
+      '<div class="hc-germ-focus-body">' +
+      '<div class="hc-germ-focus-kicker">' +
+      (o.allDone ? 'Lista para matriz' : 'Fase ' + o.paso.paso + ' de ' + PASOS.length) +
+      '</div>' +
+      '<h3 class="hc-germ-focus-title">' +
+      esc(o.allDone ? '6 fases completadas' : o.paso.titulo) +
+      '</h3>' +
+      '<p class="hc-germ-focus-desc">' +
+      esc(focusDesc) +
+      '</p>' +
+      (o.equipAviso && !o.allDone
+        ? '<p class="hc-germ-equip-aviso" role="note">' + esc(o.equipAviso) + '</p>'
+        : '') +
+      (o.allDone
+        ? ''
+        : '<button type="button" class="btn btn-primary btn-sm hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase completada</button>') +
+      '</div></div>' +
+      buildGermHubMedirHistorialCtaHtml('hidro') +
+      '<details class="hc-germ-advanced config-section-collapsible">' +
+      buildGermAdvancedSummaryHtml('Fases, cubos y equipamiento') +
+      '<div class="hc-germ-advanced-body config-section-collapse-body">' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Fases del proceso</h4>' +
+      renderTimeline(o.g, o.idx, o.modo) +
+      renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Cubos en la matriz</h4>' +
+      (netPotViz || '') +
+      '<p class="hc-germ-tray-link setup-field-hint">Esquema completo en <button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Cultivo e instalación</button>.</p>' +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Equipamiento</h4>' +
+      equipBlock +
+      '</div>' +
+      '<div class="hc-germ-advanced-section">' +
+      '<h4 class="hc-germ-advanced-lbl">Rangos y siembra</h4>' +
+      (o.rangosPanelHtml || '') +
+      renderHubFechaSiembraEditor(o.cfg, o.g) +
+      (o.semMarca || '') +
+      '</div>' +
       '</div></details>' +
       trasladoTail +
       '</div>'
@@ -1785,6 +1917,10 @@
       typeof propagadorMontajeCompleto === 'function' &&
       propagadorMontajeCompleto(cfg);
     var compactPropag = camGerm === 'semilla_propagador' && montajeOk;
+    var compactHidro =
+      camGerm === 'semilla_hidro' &&
+      typeof hcSemillaHidroHubEsPrincipal === 'function' &&
+      hcSemillaHidroHubEsPrincipal(cfg);
     var propInline =
       compactPropag || typeof renderPropagadorMontajeInlineHtml !== 'function'
         ? ''
@@ -1851,33 +1987,37 @@
       (propInline || '').length,
       (salaCtaHtml || '').length,
       compactPropag ? 1 : 0,
+      compactHidro ? 1 : 0,
       regHoy ? 1 : 0,
     ].join('|');
+    var hubCompactOpts = {
+      cfg: cfg,
+      g: g,
+      salaCtaHtml: salaCtaHtml,
+      pct: pct,
+      pctRingLbl: pctRingLbl,
+      cultNombre: cultNombre,
+      nSemHub: nSemHub,
+      diaN: diaN,
+      domo: domo,
+      regHoy: regHoy,
+      idx: idx,
+      paso: paso,
+      allDone: allDone,
+      modo: modo,
+      pasoDesc: pasoDesc,
+      equipAviso: equipAviso,
+      tareaHoy: tareaHoy,
+      tipo: tipo,
+      rangosPanelHtml: rangosPanelHtml,
+      rangosGermHub: rangosGermHub,
+      semMarca: semMarca,
+    };
     var germHubHtml = compactPropag
-      ? renderGermHubPropagadorCompactHtml({
-          cfg: cfg,
-          g: g,
-          salaCtaHtml: salaCtaHtml,
-          pct: pct,
-          pctRingLbl: pctRingLbl,
-          cultNombre: cultNombre,
-          nSemHub: nSemHub,
-          diaN: diaN,
-          domo: domo,
-          regHoy: regHoy,
-          idx: idx,
-          paso: paso,
-          allDone: allDone,
-          modo: modo,
-          pasoDesc: pasoDesc,
-          equipAviso: equipAviso,
-          tareaHoy: tareaHoy,
-          tipo: tipo,
-          rangosPanelHtml: rangosPanelHtml,
-          rangosGermHub: rangosGermHub,
-          semMarca: semMarca,
-        })
-      :
+      ? renderGermHubPropagadorCompactHtml(hubCompactOpts)
+      : compactHidro
+        ? renderGermHubSemillaHidroCompactHtml(hubCompactOpts)
+        :
       '<div class="hc-germ-hub-card">' +
       (propInline || '') +
       salaCtaHtml +
@@ -2011,11 +2151,11 @@
       '<div class="hc-germ-equip-row">' +
       renderEquipChips(EQUIP_RECOMENDADO, g, modo) +
       '</div></div>' +
-      (camGerm === 'semilla_propagador'
-        ? buildGermHubMedirHistorialCtaHtml() +
-          '<div class="hc-germ-concluir-block">' +
-          buildGermConcluirPropagHtml(cfg, g) +
-          '</div>'
+      camGerm === 'semilla_propagador' || camGerm === 'semilla_hidro'
+        ? buildGermHubMedirHistorialCtaHtml(camGerm === 'semilla_hidro' ? 'hidro' : '') +
+          (camGerm === 'semilla_propagador'
+            ? '<div class="hc-germ-concluir-block">' + buildGermConcluirPropagHtml(cfg, g) + '</div>'
+            : '')
         : '<div class="hc-germ-registro-block">' +
           '<h4 class="hc-germ-block-lbl">Registro diario · día ' +
           diaN +
@@ -2073,7 +2213,7 @@
           '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">' +
           (modo === 'hidro_directo' ? 'Guardar microclima' : 'Guardar lectura del domo') +
           '</button>' +
-          '</div>') +
+          '</div>' +
       (camGerm === 'semilla_propagador' &&
       typeof germinacionConcluida === 'function' &&
       germinacionConcluida(cfg) &&

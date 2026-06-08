@@ -10696,6 +10696,26 @@ body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .
 .hc-germ-hub-card--compact {
   padding: 12px;
 }
+.hc-germ-hub-card--hidro {
+  background: linear-gradient(145deg, #eff6ff 0%, #f0f9ff 42%, #ecfdf5 100%);
+  border-color: rgba(59, 130, 246, 0.32);
+}
+html.hc-theme-dark .hc-germ-hub-card--hidro {
+  background: linear-gradient(145deg, #0f1729 0%, #0f1f2e 50%, #0f1f17 100%);
+  border-color: rgba(96, 165, 250, 0.28);
+}
+.hc-germ-hub-badge--hidro {
+  color: #1e40af;
+  background: rgba(59, 130, 246, 0.2);
+}
+html.hc-theme-dark .hc-germ-hub-badge--hidro {
+  color: #bfdbfe;
+  background: rgba(96, 165, 250, 0.22);
+}
+.hc-germ-hub-hidro-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+}
 .hc-germ-hub-head--compact {
   margin-bottom: 10px;
 }
