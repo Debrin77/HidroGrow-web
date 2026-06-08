@@ -34,8 +34,8 @@
       3: '<strong>Entorno:</strong> define interior/exterior para dimensionar sala y meteo.',
       4: '<strong>Espacio:</strong> sala (carpa, LED, extractor) y prep del cubo de germinación.',
       5: '<strong>Clima y luz:</strong> fotoperiodo de la sala antes de germinar en el hidro.',
-      6: '<strong>Genética y método:</strong> SOG/SCROG y cepa concreta para Inicio → Germinación.',
-      7: '<strong>Detalle:</strong> semillero opcional. Tras guardar: checklist prep hidro, no propagador solo.',
+      7: '<strong>Detalle:</strong> método SOG/SCROG, variedad, plan de semillas y fecha de siembra. Semillero opcional.',
+      8: '<strong>DWC/RDWC:</strong> tipo de sistema; siguiente pantalla = medidas del cubo o circuito.',
     },
     esqueje_hidro: {
       1: '<strong>Esqueje:</strong> enraizado en domo → matriz → mismo DWC/RDWC que semilla.',

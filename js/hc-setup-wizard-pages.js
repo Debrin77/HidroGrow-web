@@ -225,11 +225,13 @@ function renderSetupPage() {
         next.textContent =
           typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()
             ? '✅ Guardar sala → checklist montaje'
-            : germBtn && camBtn === 'semilla_hidro'
+            : germBtn && camBtn === 'semilla_hidro' && setupPagina === ultimoPaso
               ? '✅ Guardar → prep hidro y germinación'
-              : germBtn
-                ? '✅ Guardar → checklist propagador'
-                : '✅ Guardar y empezar';
+              : germBtn && camBtn === 'semilla_hidro'
+                ? 'Siguiente →'
+                : germBtn
+                  ? '✅ Guardar → checklist propagador'
+                  : '✅ Guardar y empezar';
         next.setAttribute('aria-label', 'Guardar configuración y empezar');
       } else {
         next.textContent = 'Siguiente →';

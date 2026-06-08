@@ -1838,7 +1838,7 @@ function guardarSetupYContinuarCore() {
     const fromInp = inpNom ? (inpNom.value || '').trim().slice(0, 40) : '';
     if (fromInp) setupNombreNuevaTorre = fromInp;
     if (!setupNombreNuevaTorre) {
-      if (faseGermSetup) {
+      if (faseGermSetup || wizardHidroGermCompleto) {
         const cam =
           typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
         const def = typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;

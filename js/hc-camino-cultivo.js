@@ -635,6 +635,13 @@
     return hcCaminoSemillaGermEnSetup();
   }
 
+  /** Semilla en hidro: asistente inicial (prep cubo + sala + DWC en un solo flujo). */
+  function hcCaminoSemillaHidroSetupGerm() {
+    if (getCaminoCultivo() !== 'semilla_hidro') return false;
+    if (hcSetupEnFaseSalaPreGerm()) return false;
+    return hcCaminoSemillaGermEnSetup();
+  }
+
   /** Durante el wizard o con instalación en fase germinación (sin hidro cerrado). */
   function hcSetupEnFaseGerminacion() {
     if (hcSetupEnFaseSalaPreGerm()) return false;
@@ -1400,7 +1407,7 @@
         return typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5;
       }
       if (getCaminoCultivo() === 'semilla_hidro') {
-        return typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+        return typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
       }
       return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
     }
@@ -1429,7 +1436,10 @@
       typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
     if (cam === 'semilla_hidro') {
       [
+        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
+        typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
+        typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
         typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
         typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
       ].forEach(function (p) {
@@ -1997,6 +2007,7 @@
   global.hcSetupEnFaseSalaPreGerm = hcSetupEnFaseSalaPreGerm;
   global.hcCaminoSemillaGermEnSetup = hcCaminoSemillaGermEnSetup;
   global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
+  global.hcCaminoSemillaHidroSetupGerm = hcCaminoSemillaHidroSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
   global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;
