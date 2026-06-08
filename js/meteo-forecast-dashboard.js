@@ -9,6 +9,48 @@
 
 var _hcDashRefreshAt = 0;
 
+/** Saludo según hora local: madrugada y noche → «Buenas noches», no «Buenos días». */
+function hcSaludoInicioPorHora(h) {
+  h = Number(h);
+  if (!Number.isFinite(h)) h = new Date().getHours();
+  if (h >= 6 && h < 12) return 'Buenos días';
+  if (h >= 12 && h < 20) return 'Buenas tardes';
+  return 'Buenas noches';
+}
+
+function hcIconoSaludoInicioPorHora(h) {
+  h = Number(h);
+  if (!Number.isFinite(h)) h = new Date().getHours();
+  if (h >= 6 && h < 12) return 'hc-i-sun';
+  if (h >= 12 && h < 20) return 'hc-i-sprout';
+  return 'hc-i-moon';
+}
+
+function actualizarSaludoInicio(now) {
+  now = now && now.getHours != null ? now : new Date();
+  var hora = now.getHours();
+  var saludo = hcSaludoInicioPorHora(hora);
+  var greetEl = document.getElementById('dashGreeting');
+  var fechaEl = document.getElementById('dashFecha');
+  var icoEl = document.getElementById('dashGreetingIco');
+  if (greetEl) greetEl.textContent = saludo;
+  if (fechaEl) {
+    fechaEl.textContent = now.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    });
+  }
+  if (icoEl) {
+    var sym = hcIconoSaludoInicioPorHora(hora);
+    if (typeof hcIcon === 'function') {
+      icoEl.innerHTML = hcIcon(sym, 'hc-ico hc-greeting-ico-svg');
+    } else {
+      icoEl.textContent = '';
+    }
+  }
+}
+
 function updateDashboard(opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
   const nowMs = Date.now();
@@ -21,17 +63,7 @@ function updateDashboard(opts) {
     }
   } catch (eSync) {}
 
-  // Fecha y saludo
-  const now = new Date();
-  const hora = now.getHours();
-  const saludo = hora < 12 ? 'Buenos días' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
-  const greetEl = document.getElementById('dashGreeting');
-  const fechaEl = document.getElementById('dashFecha');
-  if (greetEl) greetEl.textContent = saludo;
-  if (fechaEl) {
-    fechaEl.textContent =
-      now.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-  }
+  actualizarSaludoInicio(new Date());
 
   const cfgDash = state.configTorre || {};
 

@@ -597,7 +597,6 @@
       if (st.numSemillas >= 1) {
         parts.push(st.numSemillas + (st.numSemillas === 1 ? ' semilla' : ' semillas'));
       }
-      if (st.nombreVar) parts.push(st.nombreVar);
       if (st.sustrato) {
         var subLbl =
           typeof etiquetaSustratoGerm === 'function'

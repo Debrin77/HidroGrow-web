@@ -470,10 +470,14 @@ function applyBootCollapsedUI() {
   cfg.uiSistemaDwcLlenadoColapsado = true;
 }
 function updateClock() {
-  const el = document.getElementById('headerTime');
-  if (!el) return;
   const now = new Date();
-  el.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const el = document.getElementById('headerTime');
+  if (el) {
+    el.textContent = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+  if (typeof actualizarSaludoInicio === 'function') {
+    actualizarSaludoInicio(now);
+  }
 }
 
 // ══════════════════════════════════════════════════

@@ -275,23 +275,7 @@
   }
 
   function refreshHeaderInstActiva() {
-    var host = document.getElementById('headerInstActiva');
-    var nom = document.getElementById('headerInstActivaNombre');
-    if (!host || !nom) return;
-    var t =
-      typeof getTorreActiva === 'function'
-        ? getTorreActiva()
-        : typeof state !== 'undefined' && state && state.torres
-          ? state.torres[state.torreActiva || 0]
-          : null;
-    var name = t && t.nombre ? String(t.nombre).trim() : '';
-    if (!name && !((state && state.torres && state.torres.length) || 0)) {
-      host.classList.add('setup-hidden');
-      return;
-    }
-    host.classList.remove('setup-hidden');
-    nom.textContent = name || 'Instalación';
-    host.setAttribute('aria-label', 'Instalación activa: ' + (name || 'Instalación') + '. Pulsa para cambiar.');
+    /* Chip «Activa · nombre» retirado del header; cambio de instalación en Inicio (dashTorreBanner). */
   }
 
   wrapAbrirSetup();

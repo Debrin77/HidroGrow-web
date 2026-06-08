@@ -433,6 +433,55 @@ function hcAbrirPrimeraInstalacion() {
   if (typeof abrirSetup === 'function') abrirSetup();
 }
 
+/** Nombre de genética en uso (solo texto, sin rótulos). */
+function hcResolverNombreVariedadInstalacion(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (typeof getPlanGermEstado === 'function') {
+    const st = getPlanGermEstado(cfg);
+    const nomPlan = String(st.nombreVar || '').trim();
+    if (nomPlan) return nomPlan;
+    const vidPlan = String(st.variedad || '').trim();
+    if (vidPlan) {
+      const cuPlan = typeof getCultivoDB === 'function' ? getCultivoDB(vidPlan) : null;
+      if (typeof cultivoNombreLista === 'function') return cultivoNombreLista(cuPlan, vidPlan);
+      return vidPlan;
+    }
+  }
+  if (typeof torreVariedadesIdsAsignadas === 'function') {
+    const ids = torreVariedadesIdsAsignadas();
+    if (ids.length) {
+      return ids
+        .map(function (id) {
+          const cult = typeof getCultivoDB === 'function' ? getCultivoDB(id) : null;
+          return typeof cultivoNombreLista === 'function'
+            ? cultivoNombreLista(cult, id)
+            : String(id);
+        })
+        .join(' · ');
+    }
+  }
+  const prem = cfg.premiumSetup || {};
+  const g = cfg.germinacionFlow || {};
+  const vidFallback = String(g.variedadId || prem.variedadGerminacion || '').trim();
+  if (vidFallback) {
+    const cuFb = typeof getCultivoDB === 'function' ? getCultivoDB(vidFallback) : null;
+    if (typeof cultivoNombreLista === 'function') return cultivoNombreLista(cuFb, vidFallback);
+    return vidFallback;
+  }
+  return '';
+}
+
+function hcRefreshDashInstalacionVariedad(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  const el = document.getElementById('dashInstalacionVariedad');
+  if (!el) return;
+  const hay =
+    typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
+  const nombre = hay ? hcResolverNombreVariedadInstalacion(cfg) : '';
+  el.textContent = nombre;
+  el.classList.toggle('setup-hidden', !hay || !nombre);
+}
+
 function hcRefreshDashSinInstalacionUi() {
   const hay = hcTieneInstalacionesUsuario();
   const banner = document.getElementById('dashTorreBanner');
@@ -464,6 +513,7 @@ function hcRefreshDashSinInstalacionUi() {
   try {
     if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
   } catch (_) {}
+  hcRefreshDashInstalacionVariedad(cfgDashUi);
 }
 
 // Inicializar sistema de torres (sin crear «Mi instalación» por defecto)
@@ -1854,6 +1904,7 @@ function actualizarBadgesNutriente() {
     }
   }
   if (dashTorreNombre) dashTorreNombre.textContent  = (torre.nombre || '').trim() || 'Instalación';
+  hcRefreshDashInstalacionVariedad(cfg);
   if (dashTorreInfo) {
     const infoPropag =
       typeof hcDashTorreInfoPropagador === 'function' ? hcDashTorreInfoPropagador(cfg) : null;
