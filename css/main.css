@@ -10693,6 +10693,98 @@ body.hc-modo-propagador-sistema #tab-sistema .torre-container--solo-propagador .
   font-size: 12px;
   color: var(--muted);
 }
+.hc-germ-hub-card--compact {
+  padding: 12px;
+}
+.hc-germ-hub-head--compact {
+  margin-bottom: 10px;
+}
+.hc-germ-hub-sub--compact {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.hc-germ-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 12px;
+}
+.hc-germ-kpi {
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.hc-germ-kpi-lbl {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.hc-germ-kpi-val {
+  display: block;
+  font-family: var(--font-hero);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--white);
+}
+.hc-germ-kpi--ok .hc-germ-kpi-val { color: #059669; }
+.hc-germ-kpi--pend .hc-germ-kpi-val { color: #d97706; }
+html.hc-theme-dark .hc-germ-kpi--ok .hc-germ-kpi-val { color: #34d399; }
+html.hc-theme-dark .hc-germ-kpi--pend .hc-germ-kpi-val { color: #fbbf24; }
+.hc-germ-focus--compact {
+  margin: 0 0 12px;
+  padding: 12px;
+}
+.hc-germ-focus--compact .hc-germ-focus-desc {
+  font-size: 13px;
+  margin: 4px 0 8px;
+}
+.hc-germ-domo-block--compact,
+.hc-germ-registro-block--compact {
+  margin: 0 0 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.hc-germ-domo-hint--short {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.hc-germ-advanced {
+  margin: 4px 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  overflow: hidden;
+}
+.hc-germ-advanced-sum {
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+.hc-germ-advanced-sum::-webkit-details-marker { display: none; }
+.hc-germ-advanced-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+}
+#tab-inicio.dash-inicio--germ-foco .quick-actions--core {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+#tab-inicio.dash-inicio--germ-foco .quick-actions-more {
+  margin-top: 8px;
+}
 .hc-prop-inline {
   margin: 12px 0 0;
   padding: 12px 14px;

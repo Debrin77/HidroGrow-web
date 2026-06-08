@@ -1792,6 +1792,14 @@
     var host = document.getElementById('dashPropagadorRutaHost');
     if (!host) return;
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (
+      typeof hcDashGermHubVisibleEnInicio === 'function' &&
+      hcDashGermHubVisibleEnInicio()
+    ) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
     var hay =
       typeof hcTieneInstalacionesUsuario === 'function' && hcTieneInstalacionesUsuario();
     if (!hay || getCaminoCultivo(cfg) !== 'semilla_propagador') {

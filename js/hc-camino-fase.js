@@ -672,6 +672,22 @@
     );
   }
 
+  /** Inicio en modo resumido: propagador con hub germinación como pantalla principal. */
+  function hcDashInicioGermFoco(cfg) {
+    cfg = cfg || cfgActiva();
+    var soloPropag =
+      typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    return !!(soloPropag && hcDashGermHubVisibleEnInicio());
+  }
+
+  function hcQuickBtnLabel(btn, germFoco, focoLbl) {
+    if (!btn) return;
+    var span = btn.querySelector('span:last-child');
+    if (!span) return;
+    if (!btn.dataset.hcLblOrig) btn.dataset.hcLblOrig = span.textContent;
+    span.textContent = germFoco ? focoLbl : btn.dataset.hcLblOrig;
+  }
+
   /** Reaplica vistas por camino tras refrescos que pueden volver a mostrar bloques DWC. */
   function hcReaplicarVistasCaminoUi(cfg) {
     cfg = cfg || cfgActiva();
@@ -777,6 +793,32 @@
     if (quickSala) quickSala.classList.toggle('setup-hidden', !!ocultarSalaTab);
     var quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
     if (quickRec) quickRec.classList.toggle('setup-hidden', !!soloPropag);
+    var germFoco = soloPropag && germHubVisible;
+    var tabInicio = document.getElementById('tab-inicio');
+    if (tabInicio) tabInicio.classList.toggle('dash-inicio--germ-foco', !!germFoco);
+    var propRuta = document.getElementById('dashPropagadorRutaHost');
+    if (propRuta) propRuta.classList.toggle('setup-hidden', !!germFoco);
+    var notifPrefs = document.getElementById('dashNotifPrefsCard');
+    if (notifPrefs) notifPrefs.classList.toggle('setup-hidden', !!germFoco);
+    var dashVar = document.getElementById('dashInstalacionVariedad');
+    if (dashVar) dashVar.classList.toggle('setup-hidden', !!germFoco);
+    var dashInstLbl = document.getElementById('dashInstalacionLabel');
+    if (dashInstLbl) dashInstLbl.classList.toggle('setup-hidden', !!germFoco);
+    var quickCal = document.querySelector('.quick-btn[data-quick-icon="calendario"]');
+    if (quickCal) quickCal.classList.toggle('setup-hidden', !germFoco);
+    var quickCons = document.querySelector('.quick-btn[data-quick-icon="consejos"]');
+    if (quickCons) quickCons.classList.toggle('setup-hidden', !germFoco);
+    var quickCult = document.querySelector('.quick-btn[data-quick-icon="sistema"]');
+    if (quickCult) quickCult.classList.toggle('setup-hidden', !!germFoco);
+    var quickBandeja = document.querySelector('.quick-btn[data-quick-icon="bandeja"]');
+    if (quickBandeja) quickBandeja.classList.toggle('setup-hidden', !germFoco);
+    hcQuickBtnLabel(
+      document.querySelector('.quick-btn[data-quick-icon="mediciones"]'),
+      germFoco,
+      'Medir domo'
+    );
+    var quickMore = document.getElementById('quickActionsMore');
+    if (quickMore && germFoco) quickMore.open = false;
     try {
       if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
     } catch (_) {}
@@ -961,6 +1003,7 @@
   }
 
   global.hcDashGermHubVisibleEnInicio = hcDashGermHubVisibleEnInicio;
+  global.hcDashInicioGermFoco = hcDashInicioGermFoco;
   global.hcReaplicarVistasCaminoUi = hcReaplicarVistasCaminoUi;
   global.refreshDashInicioVistaCamino = refreshDashInicioVistaCamino;
   global.refreshSalaVistaCamino = refreshSalaVistaCamino;

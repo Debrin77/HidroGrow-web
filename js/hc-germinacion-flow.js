@@ -1471,6 +1471,205 @@
     );
   }
 
+  function buildGermKpiStripHtml(domo, regHoy) {
+    var t =
+      domo.temp != null && Number.isFinite(Number(domo.temp))
+        ? Number(domo.temp).toFixed(1) + ' °C'
+        : '—';
+    var h =
+      domo.hr != null && Number.isFinite(Number(domo.hr)) ? Math.round(Number(domo.hr)) + ' %' : '—';
+    return (
+      '<div class="hc-germ-kpi-strip" role="group" aria-label="Resumen en tiempo real">' +
+      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">T° domo</span><span class="hc-germ-kpi-val">' +
+      esc(t) +
+      '</span></div>' +
+      '<div class="hc-germ-kpi"><span class="hc-germ-kpi-lbl">HR</span><span class="hc-germ-kpi-val">' +
+      esc(h) +
+      '</span></div>' +
+      '<div class="hc-germ-kpi' +
+      (regHoy ? ' hc-germ-kpi--ok' : ' hc-germ-kpi--pend') +
+      '"><span class="hc-germ-kpi-lbl">Registro</span><span class="hc-germ-kpi-val">' +
+      (regHoy ? '✓ Hoy' : 'Pendiente') +
+      '</span></div></div>'
+    );
+  }
+
+  function renderGermHubPropagadorCompactHtml(o) {
+    var fechaTxt = '';
+    var fIni = getFechaInicioGerminacion(o.g, o.cfg);
+    if (fIni && typeof formatearFechaSiembraGermDisplay === 'function') {
+      fechaTxt = formatearFechaSiembraGermDisplay(fIni);
+    }
+    var titulo = o.cultNombre ? esc(o.cultNombre) : 'Propagador';
+    var meta =
+      (o.nSemHub >= 1
+        ? '<strong>' + o.nSemHub + ' semilla' + (o.nSemHub === 1 ? '' : 's') + '</strong>'
+        : '') +
+      (fechaTxt ? (o.nSemHub >= 1 ? ' · ' : '') + 'siembra ' + esc(fechaTxt) : '') +
+      ' · día <strong>' +
+      o.diaN +
+      '</strong>';
+    var focusDesc = o.allDone
+      ? 'Asigna la plántula en la matriz cuando cierres el hidro.'
+      : o.tareaHoy || o.pasoDesc;
+    var equipBlock =
+      '<div class="hc-germ-equip-block">' +
+      '<h4 class="hc-germ-block-lbl">Equipamiento del propagador</h4>' +
+      '<p class="hc-germ-equip-lead">Marca lo que tienes montado.</p>' +
+      '<div class="hc-germ-equip-tier">Esencial</div>' +
+      '<div class="hc-germ-equip-row">' +
+      renderEquipChips(EQUIP_ESENCIAL, o.g, o.modo) +
+      '</div>' +
+      '<div class="hc-germ-equip-tier hc-germ-equip-tier--rec">Recomendado</div>' +
+      '<div class="hc-germ-equip-row">' +
+      renderEquipChips(EQUIP_RECOMENDADO, o.g, o.modo) +
+      '</div></div>';
+    var nutGrid =
+      '<div class="hc-germ-nut-grid">' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">Nutriente / producto</span>' +
+      '<input type="text" class="param-input dash-quick-input" id="hcGermNutProducto" placeholder="Ej. CalMag, enraizador…" maxlength="80"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">EC µS/cm</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutEc" inputmode="decimal" step="10" placeholder="400"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">pH</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutPh" inputmode="decimal" step="0.1" placeholder="5.8"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">ml / L</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermNutMl" inputmode="decimal" step="0.1" placeholder="1"></label></div>' +
+      '<p class="setup-field-hint hc-germ-nut-hint">Opcional: lo que añadiste al agua del propagador (no es el depósito DWC).</p>';
+    var concluirBlock =
+      typeof germinacionConcluida === 'function' && germinacionConcluida(o.cfg)
+        ? '<p class="hc-germ-concluir-ok">✓ Germinación concluida' +
+          (o.g.concluidaAt ? ' (marcada manualmente)' : ' (días según genética)') +
+          '. Siguiente: <button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></p>'
+        : '<p class="setup-field-hint">Objetivo orientativo: día <strong>' +
+          diasObjetivoConclusionGerm(o.cfg, o.g) +
+          '</strong>. Puedes darla por concluida antes si las plántulas están listas.</p>' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionMarcarConcluida()">Dar germinación por concluida</button>';
+    var domoHintShort =
+      o.rangosGermHub
+        ? 'Objetivo: ' +
+          o.rangosGermHub.temp.min +
+          '–' +
+          o.rangosGermHub.temp.max +
+          ' °C · HR ' +
+          o.rangosGermHub.hr.min +
+          '–' +
+          o.rangosGermHub.hr.max +
+          ' %'
+        : 'Ideal 22–26 °C · HR 70–80 %';
+    var trasladoTail =
+      typeof germinacionConcluida === 'function' &&
+      germinacionConcluida(o.cfg) &&
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(o.cfg)
+        ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
+          '<p class="hc-germ-traslado-lead"><strong>Paso siguiente:</strong> configura el sistema hidropónico (cestas según semillas).</p>' +
+          '<button type="button" class="btn btn-primary btn-lg" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar DWC/RDWC</button></div>'
+        : o.allDone
+          ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist mejora al ' +
+            esc(o.tipo) +
+            '</button>' +
+            '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Trasladar al ' +
+            esc(o.tipo) +
+            ' →</button></div>'
+          : '';
+
+    return (
+      '<div class="hc-germ-hub-card hc-germ-hub-card--compact">' +
+      (o.salaCtaHtml || '') +
+      '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+      '<div class="hc-germ-hub-badge">Propagador</div>' +
+      '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
+      o.pct +
+      '%" aria-hidden="true"><span>' +
+      esc(o.pctRingLbl) +
+      '</span></div>' +
+      '<div class="hc-germ-hub-titles">' +
+      '<h2 class="hc-germ-hub-title">' +
+      titulo +
+      '</h2>' +
+      '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">' +
+      meta +
+      '</p>' +
+      '</div></div>' +
+      buildGermKpiStripHtml(o.domo, o.regHoy) +
+      renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
+      '<div class="hc-germ-focus hc-germ-focus--compact' +
+      (o.allDone ? ' hc-germ-focus--done' : '') +
+      '">' +
+      '<span class="hc-germ-focus-ico" aria-hidden="true">' +
+      (o.allDone ? '🎉' : o.paso.icon) +
+      '</span>' +
+      '<div class="hc-germ-focus-body">' +
+      '<div class="hc-germ-focus-kicker">' +
+      (o.allDone ? 'Lista para el hidro' : 'Hoy · ' + esc(o.paso.titulo)) +
+      '</div>' +
+      '<p class="hc-germ-focus-desc">' +
+      esc(focusDesc) +
+      '</p>' +
+      (o.equipAviso && !o.allDone
+        ? '<p class="hc-germ-equip-aviso" role="note">' + esc(o.equipAviso) + '</p>'
+        : '') +
+      (o.allDone
+        ? ''
+        : '<button type="button" class="btn btn-secondary btn-sm hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase</button>') +
+      '</div></div>' +
+      '<div class="hc-germ-domo-block hc-germ-domo-block--compact">' +
+      '<h4 class="hc-germ-block-lbl">Monitor del domo</h4>' +
+      '<p class="hc-germ-domo-hint hc-germ-domo-hint--short">' +
+      domoHintShort +
+      '</p>' +
+      '<div class="hc-germ-domo-grid">' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">T° domo °C</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoTemp" inputmode="decimal" step="0.1" value="' +
+      (o.domo.temp != null ? o.domo.temp : '') +
+      '"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">HR %</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoHr" inputmode="numeric" value="' +
+      (o.domo.hr != null ? o.domo.hr : '') +
+      '"></label></div>' +
+      (o.domo.fecha
+        ? '<p class="hc-germ-domo-last">Último: ' +
+          esc(o.domo.fecha) +
+          ' ' +
+          esc(o.domo.hora || '') +
+          (o.domo.vpd != null ? ' · VPD ' + o.domo.vpd + ' kPa' : '') +
+          '</p>'
+        : '') +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="guardarMedicionDomo()">Guardar lectura del domo</button>' +
+      '</div>' +
+      '<div class="hc-germ-registro-block hc-germ-registro-block--compact">' +
+      '<h4 class="hc-germ-block-lbl">Registro · día ' +
+      o.diaN +
+      '</h4>' +
+      (o.regHoy
+        ? '<p class="hc-germ-reg-ok">✓ Registrado hoy</p>'
+        : '<p class="hc-germ-reg-pend">Anota observaciones del día</p>') +
+      '<textarea id="hcGermRegistroNota" class="param-input hc-germ-reg-textarea" rows="2" placeholder="Ej. ventilé el domo 5 min…"></textarea>' +
+      '<div id="hcGermMedEvalHost" class="hc-germ-med-eval-host" aria-live="polite"></div>' +
+      '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro</button>' +
+      '</div>' +
+      '<details class="hc-germ-advanced">' +
+      '<summary class="hc-germ-advanced-sum">Guía de fases, equipamiento y más</summary>' +
+      '<div class="hc-germ-advanced-body">' +
+      renderTimeline(o.g, o.idx, o.modo) +
+      renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
+      '<p class="hc-germ-tray-link setup-field-hint">Bandeja detallada en <button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Sistema</button>.</p>' +
+      equipBlock +
+      (o.rangosPanelHtml || '') +
+      renderHubFechaSiembraEditor(o.cfg, o.g) +
+      (o.semMarca || '') +
+      nutGrid +
+      '<div class="hc-germ-concluir-block">' +
+      concluirBlock +
+      '</div>' +
+      renderRegistroReciente(o.g) +
+      '</div></details>' +
+      trasladoTail +
+      '</div>'
+    );
+  }
+
   function renderDashGerminacionHub() {
     if (typeof refreshMontajeInicioHubVisibility === 'function') {
       refreshMontajeInicioHubVisibility(cfgActiva());
@@ -1592,10 +1791,17 @@
       }
     } catch (_) {}
 
-    var propInline =
-      typeof renderPropagadorMontajeInlineHtml === 'function' ? renderPropagadorMontajeInlineHtml() : '';
     var camGerm =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var montajeOk =
+      camGerm === 'semilla_propagador' &&
+      typeof propagadorMontajeCompleto === 'function' &&
+      propagadorMontajeCompleto(cfg);
+    var compactPropag = camGerm === 'semilla_propagador' && montajeOk;
+    var propInline =
+      compactPropag || typeof renderPropagadorMontajeInlineHtml !== 'function'
+        ? ''
+        : renderPropagadorMontajeInlineHtml();
     var bloqueoSala = typeof hcGerminacionBloqueada === 'function' ? hcGerminacionBloqueada(cfg) : '';
     var salaCtaHtml = '';
     if (bloqueoSala === 'hidro_config') {
@@ -1657,8 +1863,34 @@
       domo.hr,
       (propInline || '').length,
       (salaCtaHtml || '').length,
+      compactPropag ? 1 : 0,
+      regHoy ? 1 : 0,
     ].join('|');
-    var germHubHtml =
+    var germHubHtml = compactPropag
+      ? renderGermHubPropagadorCompactHtml({
+          cfg: cfg,
+          g: g,
+          salaCtaHtml: salaCtaHtml,
+          pct: pct,
+          pctRingLbl: pctRingLbl,
+          cultNombre: cultNombre,
+          nSemHub: nSemHub,
+          diaN: diaN,
+          domo: domo,
+          regHoy: regHoy,
+          idx: idx,
+          paso: paso,
+          allDone: allDone,
+          modo: modo,
+          pasoDesc: pasoDesc,
+          equipAviso: equipAviso,
+          tareaHoy: tareaHoy,
+          tipo: tipo,
+          rangosPanelHtml: rangosPanelHtml,
+          rangosGermHub: rangosGermHub,
+          semMarca: semMarca,
+        })
+      :
       '<div class="hc-germ-hub-card">' +
       (propInline || '') +
       salaCtaHtml +
@@ -1904,6 +2136,9 @@
     } catch (_) {}
     if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);
     if (typeof hcRefreshGerminacionMedEvaluacion === 'function') hcRefreshGerminacionMedEvaluacion(cfg);
+    try {
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+    } catch (_) {}
   }
 
   function renderRegistroReciente(g) {

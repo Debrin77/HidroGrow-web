@@ -1,5 +1,5 @@
 /**
- * Service Worker / PWA, arranque PIN/biometría, IndexedDB fotos.
+ * Service Worker / PWA, arranque PIN/biometrï¿½a, IndexedDB fotos.
  * Tras app-hc-torres-badges-notifs.js.
  */
 // --------------------------------------------------
@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-06-01-perf13')
+      .register('service-worker.js?v=2026-06-01-perf14')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -27,7 +27,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-/** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalación es manual. */
+/** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalaciï¿½n es manual. */
 function esPlataformaIOSWeb() {
   const ua = navigator.userAgent || '';
   const iOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -40,7 +40,7 @@ function instalarPWA() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then(result => {
       if (result.outcome === 'accepted') {
-        showToast('? Instalando HidroGrow…');
+        showToast('? Instalando HidroGrowï¿½');
       }
       deferredPrompt = null;
     });
@@ -48,23 +48,23 @@ function instalarPWA() {
   }
   if (esPlataformaIOSWeb()) {
     showToast(
-      'En iPhone/iPad: Safari ? icono compartir ? ? «Añadir a la pantalla de inicio». Así tendrás icono propio como una app.',
+      'En iPhone/iPad: Safari ? icono compartir ? ? ï¿½Aï¿½adir a la pantalla de inicioï¿½. Asï¿½ tendrï¿½s icono propio como una app.',
       false
     );
     return;
   }
   showToast(
-    'Si no aparece el instalador, usa el menú del navegador («Instalar app» o «Crear acceso directo»). En escritorio suele salir tras usar la página un rato.',
+    'Si no aparece el instalador, usa el menï¿½ del navegador (ï¿½Instalar appï¿½ o ï¿½Crear acceso directoï¿½). En escritorio suele salir tras usar la pï¿½gina un rato.',
     false
   );
 }
 
-// Detectar instalación PWA
+// Detectar instalaciï¿½n PWA
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
   deferredPrompt = e;
-  // Mostrar botón de instalación si está disponible
+  // Mostrar botï¿½n de instalaciï¿½n si estï¿½ disponible
   const installBtn = document.getElementById('installPWABtn');
   if (installBtn) installBtn.style.display = 'flex';
 });
@@ -170,7 +170,7 @@ function hcRunAppBootSequence() {
         var pinErr = document.getElementById('pinErr');
         if (pinErr) pinErr.textContent = '';
         if (statusEl) {
-          statusEl.textContent = 'Biometría no disponible. Introduce tu PIN.';
+          statusEl.textContent = 'Biometrï¿½a no disponible. Introduce tu PIN.';
         }
       }
     }, 150);
@@ -233,9 +233,9 @@ window.addEventListener('load', function () {
 function scheduleHcPreinitWhilePin() {}
 
 // --------------------------------------------------
-// FOTODB — IndexedDB para fotos (sin límite de tamaño)
+// FOTODB ï¿½ IndexedDB para fotos (sin lï¿½mite de tamaï¿½o)
 // --------------------------------------------------
-// FOTO_DB_NAME — hc-bootstrap-config.js
+// FOTO_DB_NAME ï¿½ hc-bootstrap-config.js
 const FOTO_DB_VERSION = 1;
 const FOTO_STORE      = 'fotos';
 let fotoDB = null;

@@ -7,18 +7,18 @@
 // --------------------------------------------------
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyzhqlYED_glpvCQQC-ZhCHKiwrzcuyvKUYbvfd_F6X8IpVD9x6dmudRcfKWfPs4pPC/exec';
 
-/** Aviso si falla el envío opcional a Google Sheets (datos locales ya guardados). */
+/** Aviso si falla el envï¿½o opcional a Google Sheets (datos locales ya guardados). */
 function hcSheetsNotifyFailure() {
   try {
     if (typeof showToast === 'function') {
-      showToast('Sin conexión o error al enviar a la hoja. Los datos siguen en este dispositivo.', true);
+      showToast('Sin conexiï¿½n o error al enviar a la hoja. Los datos siguen en este dispositivo.', true);
     }
   } catch (_) {}
 }
 
 /**
  * POST a Apps Script (no-cors: no se lee respuesta). Offline o fallo de red ? toast.
- * @returns {Promise<boolean>} true si se lanzó fetch sin throw
+ * @returns {Promise<boolean>} true si se lanzï¿½ fetch sin throw
  */
 async function hcPostSheets(payload) {
   const body = typeof payload === 'string' ? payload : JSON.stringify(payload);
@@ -47,27 +47,27 @@ const AUTH_TS_KEY = 'hc_auth';
 const STORAGE_KEY = 'hidrogrow_v2';
 /** Debe coincidir con app-hc-pwa-fotodb.js */
 const FOTO_DB_NAME = 'cultivaFotos';
-const APP_BUILD_VERSION = '2026-06-01-perf13';
+const APP_BUILD_VERSION = '2026-06-01-perf14';
 const APP_BUILD_VERSION_KEY = 'hg_app_build_version';
 const AUTO_RESTORE_POINT_KEY = 'hg_auto_restore_point_v1';
 const AUTO_RESTORE_POINT_TRANSITION_KEY = 'hg_auto_restore_transition_v1';
-/** Tutorial contextual “Asignar cultivo” (1 = usuario pidió no volver a mostrar) */
+/** Tutorial contextual ï¿½Asignar cultivoï¿½ (1 = usuario pidiï¿½ no volver a mostrar) */
 const TUTORIAL_ASIGNAR_LS = 'hidrogrow_tutorial_asignar_v1';
 const TUTORIAL_EDITAR_LS = 'hidrogrow_tutorial_editar_v1';
-/** Bienvenida pestaña Torre (1 = ya no auto-mostrar al entrar en Torre) */
+/** Bienvenida pestaï¿½a Torre (1 = ya no auto-mostrar al entrar en Torre) */
 const TUTORIAL_TORRE_TAB_LS = 'hidrogrow_tutorial_torre_pestana_v1';
-/** Ocultar texto “desliza para girar” tras primera interacción con el esquema */
+/** Ocultar texto ï¿½desliza para girarï¿½ tras primera interacciï¿½n con el esquema */
 const TORRE_SWIPE_HINT_LS = 'hidrogrow_torre_swipe_hint_v1';
 
 // Torre: 5 niveles, 5 cestas cada uno
-// Niveles activos: 1, 3 y 5 (índice 0, 2, 4)
+// Niveles activos: 1, 3 y 5 (ï¿½ndice 0, 2, 4)
 const NIVELES_ACTIVOS = [0, 2, 4];
 const NUM_NIVELES = 5;
 const NUM_CESTAS = 5;
 
-// CULTIVOS_DB — ver js/cultivos-db.js
+// CULTIVOS_DB ï¿½ ver js/cultivos-db.js
 /**
- * Icono en UI = emoji de CULTIVOS_DB. Texto en listas = cultivoNombreLista (abrev · nombre si hay abrev).
+ * Icono en UI = emoji de CULTIVOS_DB. Texto en listas = cultivoNombreLista (abrev ï¿½ nombre si hay abrev).
  */
 function escOptionHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -78,14 +78,14 @@ function escHtmlUi(s) {
 }
 
 /**
- * Desplegable técnico unificado (&lt;details&gt;): NFT, guías de origen, tablas largas.
+ * Desplegable tï¿½cnico unificado (&lt;details&gt;): NFT, guï¿½as de origen, tablas largas.
  * @param {string} innerHtml
  * @param {string} [summaryLabel]
  * @param {boolean} [openDefault]
  * @param {string} [variant] '' neutro (pizarra) | 'origen' acento cultivo/agua
  */
 function hcWrapDetailsTech(innerHtml, summaryLabel, openDefault, variant) {
-  const defLab = variant === 'origen' ? 'Ver guía' : 'Ver detalle técnico y cifras';
+  const defLab = variant === 'origen' ? 'Ver guï¿½a' : 'Ver detalle tï¿½cnico y cifras';
   const lab =
     summaryLabel != null && String(summaryLabel).trim() !== ''
       ? String(summaryLabel).trim()
@@ -112,12 +112,12 @@ function hcWrapOrigenDetails(innerHtml, summaryLabel, openDefault) {
   return hcWrapDetailsTech(innerHtml, summaryLabel, openDefault, 'origen');
 }
 
-/** Etiqueta en listas/selects/torre; state.variedad sigue siendo el nombre canónico (sin prefijo). */
+/** Etiqueta en listas/selects/torre; state.variedad sigue siendo el nombre canï¿½nico (sin prefijo). */
 function cultivoNombreLista(cultivo, variedadGuardada) {
-  if (cultivo && cultivo.abrev) return cultivo.abrev + ' · ' + cultivo.nombre;
+  if (cultivo && cultivo.abrev) return cultivo.abrev + ' ï¿½ ' + cultivo.nombre;
   if (cultivo) return cultivo.nombre;
   const v = variedadGuardada != null ? String(variedadGuardada).trim() : '';
-  return v || '—';
+  return v || 'ï¿½';
 }
 
 function cultivoEmoji(cultivo) {
@@ -125,7 +125,7 @@ function cultivoEmoji(cultivo) {
   return cultivo.emoji || '??';
 }
 
-/** @param {object|null} cultivo fila CULTIVOS_DB; @param {number} [fontRem] tamaño relativo en rem */
+/** @param {object|null} cultivo fila CULTIVOS_DB; @param {number} [fontRem] tamaï¿½o relativo en rem */
 function cultivoEmojiHtml(cultivo, fontRem) {
   const em = cultivoEmoji(cultivo);
   if (!fontRem) return '<span class="cultivo-emoji-mark" aria-hidden="true">' + em + '</span>';
@@ -167,15 +167,15 @@ function hcPlantasPorGrupoCultivo(grupo) {
   return hcCultivosDbSafe().filter(function (c) { return c.grupo === grupo; }).map(function (c) { return c.nombre; });
 }
 
-// Grupos de genética (HidroGrow)
+// Grupos de genï¿½tica (HidroGrow)
 const GRUPOS_CULTIVO = {
   indica: {
-    nombre: 'Índica',
+    nombre: 'ï¿½ndica',
     color: '#7c3aed',
     ec: '1200-2000',
     ph: '5.8-6.2',
     plantas: hcPlantasPorGrupoCultivo('indica'),
-    nota: 'Ciclo más corto, perfil compacto. Ideal DWC/RDWC en salas pequeñas.',
+    nota: 'Ciclo mï¿½s corto, perfil compacto. Ideal DWC/RDWC en salas pequeï¿½as.',
   },
   sativa: {
     nombre: 'Sativa',
@@ -183,15 +183,15 @@ const GRUPOS_CULTIVO = {
     ec: '1300-2300',
     ph: '5.8-6.3',
     plantas: hcPlantasPorGrupoCultivo('sativa'),
-    nota: 'Mayor estiramiento en floración. Planifica altura de lámpara y extractor.',
+    nota: 'Mayor estiramiento en floraciï¿½n. Planifica altura de lï¿½mpara y extractor.',
   },
   hibrida: {
-    nombre: 'Híbrida',
+    nombre: 'Hï¿½brida',
     color: '#22c55e',
     ec: '1300-2400',
     ph: '5.8-6.2',
     plantas: hcPlantasPorGrupoCultivo('hibrida'),
-    nota: 'Equilibrio vigor/altura. La mayoría de genéticas comerciales actuales.',
+    nota: 'Equilibrio vigor/altura. La mayorï¿½a de genï¿½ticas comerciales actuales.',
   },
   auto: {
     nombre: 'Autofloreciente',
@@ -207,7 +207,7 @@ const GRUPOS_CULTIVO = {
     ec: '1000-1600',
     ph: '5.9-6.3',
     plantas: hcPlantasPorGrupoCultivo('cbd'),
-    nota: 'EC más baja que genéticas THC altas. Vigilar pH estable.',
+    nota: 'EC mï¿½s baja que genï¿½ticas THC altas. Vigilar pH estable.',
   },
 };
 
@@ -237,7 +237,7 @@ const DIAS_COSECHA = (function buildDiasCosechaIndex() {
   return out;
 })();
 
-/** Días hasta cosecha por id o nombre de genética (catálogo cannabis). */
+/** Dï¿½as hasta cosecha por id o nombre de genï¿½tica (catï¿½logo cannabis). */
 function getDiasCosechaVariedad(variedad) {
   const v = String(variedad || '').trim();
   if (!v) return 50;
@@ -252,22 +252,22 @@ function getDiasCosechaVariedad(variedad) {
 }
 
 const COMPATIBILIDAD = {
-  'A-A': { ok: true, icono: '?', texto: 'Compatibles — mismo depósito' },
+  'A-A': { ok: true, icono: '?', texto: 'Compatibles ï¿½ mismo depï¿½sito' },
   'A-B': { ok: true, icono: '?', texto: 'Compatibles con ajuste de EC' },
-  'A-C': { ok: true, warn: true, icono: '??', texto: 'Compatibles — vigilar estiramiento sativa' },
-  'A-D': { ok: false, icono: '?', texto: 'No mezclar auto con foto en misma instalación' },
+  'A-C': { ok: true, warn: true, icono: '??', texto: 'Compatibles ï¿½ vigilar estiramiento sativa' },
+  'A-D': { ok: false, icono: '?', texto: 'No mezclar auto con foto en misma instalaciï¿½n' },
   'B-B': { ok: true, icono: '?', texto: 'Compatibles' },
-  'B-C': { ok: true, warn: true, icono: '??', texto: 'Compatibles — EC intermedia' },
-  'B-D': { ok: false, icono: '?', texto: 'Autos en instalación separada' },
+  'B-C': { ok: true, warn: true, icono: '??', texto: 'Compatibles ï¿½ EC intermedia' },
+  'B-D': { ok: false, icono: '?', texto: 'Autos en instalaciï¿½n separada' },
   'C-C': { ok: true, icono: '?', texto: 'Compatibles' },
-  'C-D': { ok: false, icono: '?', texto: 'Autos en instalación separada' },
+  'C-D': { ok: false, icono: '?', texto: 'Autos en instalaciï¿½n separada' },
   'D-D': { ok: true, icono: '?', texto: 'Solo autoflorecientes juntas' },
 };
 
-/** Sistemas hidropónicos soportados (cannabis — referencia cultivadores y fabricantes). */
+/** Sistemas hidropï¿½nicos soportados (cannabis ï¿½ referencia cultivadores y fabricantes). */
 const HIDROGROW_SISTEMAS = ['dwc', 'rdwc'];
 
-/** Camino semilla + propagador: sin circuito DWC/RDWC hasta germinación concluida y asistente hidro cerrado. */
+/** Camino semilla + propagador: sin circuito DWC/RDWC hasta germinaciï¿½n concluida y asistente hidro cerrado. */
 function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
   const cam =
@@ -293,7 +293,7 @@ function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
   return true;
 }
 
-/** Normaliza tipo: DWC/RDWC; en propagador sin hidro el tipo queda vacío (no forzar DWC). */
+/** Normaliza tipo: DWC/RDWC; en propagador sin hidro el tipo queda vacï¿½o (no forzar DWC). */
 function hidrogrowTipoInstalacionRaw(cfg) {
   if (hidrogrowPropagadorEnFaseGermSinHidro(cfg)) return '';
   const t = cfg && cfg.tipoInstalacion;
@@ -305,7 +305,7 @@ function hidrogrowTipoInstalacionRaw(cfg) {
   return 'dwc';
 }
 
-/** Elimina claves de NFT, SRF y torre vertical que podrían alterar volúmenes o cálculos. */
+/** Elimina claves de NFT, SRF y torre vertical que podrï¿½an alterar volï¿½menes o cï¿½lculos. */
 function hidrogrowPurgarClavesLegacyInstalacion(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
   let purged = false;
@@ -334,7 +334,7 @@ function hidrogrowPurgarClavesLegacyInstalacion(cfg) {
 }
 
 /**
- * Migra config legacy: tipo canónico DWC/RDWC, purga campos obsoletos y marca revisión si venía de otro sistema.
+ * Migra config legacy: tipo canï¿½nico DWC/RDWC, purga campos obsoletos y marca revisiï¿½n si venï¿½a de otro sistema.
  * @returns {boolean} true si hubo cambios que conviene persistir
  */
 function hidrogrowMigrarConfigInstalacion(cfg) {
@@ -387,22 +387,22 @@ const MODOS_CULTIVO = {
   vegetativo: {
     niveles: [0, 1, 2, 3, 4],
     nombre: 'Vegetativo',
-    desc: '18/6 · EC ~1000–1600 µS/cm · piedras de aire en cada cubo',
+    desc: '18/6 ï¿½ EC ~1000ï¿½1600 ï¿½S/cm ï¿½ piedras de aire en cada cubo',
   },
   floracion: {
     niveles: [0, 1, 2, 3, 4],
-    nombre: 'Floración',
-    desc: '12/12 (foto) · subir EC gradual · RH bajo 55% en cogollos densos',
+    nombre: 'Floraciï¿½n',
+    desc: '12/12 (foto) ï¿½ subir EC gradual ï¿½ RH bajo 55% en cogollos densos',
   },
   esquejes: {
     niveles: [0, 1],
-    nombre: 'Esquejes / plántulas',
-    desc: 'Luz suave · EC baja · oxígeno disuelto alto',
+    nombre: 'Esquejes / plï¿½ntulas',
+    desc: 'Luz suave ï¿½ EC baja ï¿½ oxï¿½geno disuelto alto',
   },
   intensivo: {
     niveles: [0, 1, 2, 3, 4, 5, 6, 7],
     nombre: 'SOG / muchas macetas',
-    desc: 'Alta densidad · solo índicas/autos compactas',
+    desc: 'Alta densidad ï¿½ solo ï¿½ndicas/autos compactas',
   },
 };
 
