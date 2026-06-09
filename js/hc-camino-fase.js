@@ -827,6 +827,11 @@
         refreshDashSalaEquipRecoBanner(cfg);
       } catch (_) {}
     }
+    if (typeof refreshDashPropagadorOscuridadBanner === 'function') {
+      try {
+        refreshDashPropagadorOscuridadBanner(cfg);
+      } catch (_) {}
+    }
     if (
       soloPropag &&
       !ocultarCuadroGermPropag &&

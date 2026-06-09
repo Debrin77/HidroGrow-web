@@ -349,6 +349,13 @@
     if (!tipo) return '';
     var cam = getCam(cfg);
     if (tipo === 'sala_config' || tipo === 'sala_config_soft') {
+      if (
+        tipo === 'sala_config_soft' &&
+        typeof hcMostrarRecoEquipSalaInicio === 'function' &&
+        hcMostrarRecoEquipSalaInicio(cfg)
+      ) {
+        return '';
+      }
       var titCfg =
         tipo === 'sala_config_soft'
           ? 'Prepara la sala de cultivo'
@@ -571,6 +578,9 @@
         'dashGerminacionHub'
       );
       var hub = el('dashGerminacionHub');
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+      hub = el('dashGerminacionHub');
       var hubVisible = hub && !hub.classList.contains('setup-hidden');
       if (!hubVisible) mountTrasladoBanner('hcTrasladoSalaBannerHost');
       else {
@@ -580,8 +590,6 @@
           if (prevTr) prevTr.remove();
         }
       }
-      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
-      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
       return;
     }
     if (tab === 'mediciones') {
@@ -650,6 +658,9 @@
         'dashGerminacionHub'
       );
       var hub = el('dashGerminacionHub');
+      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+      hub = el('dashGerminacionHub');
       var hubVisible = hub && !hub.classList.contains('setup-hidden');
       if (!hubVisible) mountTrasladoBanner('hcTrasladoSalaBannerHost');
       else {
@@ -659,8 +670,6 @@
           if (prevTr) prevTr.remove();
         }
       }
-      if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
-      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
       return;
     }
 

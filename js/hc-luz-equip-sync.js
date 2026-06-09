@@ -865,7 +865,15 @@
       return null;
     }
     var paso = getSalaRecoPasoInicio(cfg);
-    if (paso === 'equip') return 'sala_config_soft';
+    if (paso === 'equip') {
+      if (
+        typeof hcMostrarRecoEquipSalaInicio === 'function' &&
+        hcMostrarRecoEquipSalaInicio(cfg)
+      ) {
+        return null;
+      }
+      return 'sala_config_soft';
+    }
     if (paso === 'montaje') return 'sala_montaje_soft';
     return null;
   }

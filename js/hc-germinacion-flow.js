@@ -382,13 +382,21 @@
   /** Días 1–N del seguimiento con fecha de siembra: recomendar oscuridad (consenso cultivadores). */
   var GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2;
 
-  /** Oscuridad en Inicio: solo propagador, días 1–N y fase «semilla» sin marcar. */
+  /** Oscuridad en Inicio: propagador montado, días 1–N desde fecha de siembra (no depende del rail de fases). */
   function hubMuestraAvisoOscuridadPropagador(cfg, g) {
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam !== 'semilla_propagador') return false;
+    if (
+      typeof propagadorMontajeCompleto === 'function' &&
+      !propagadorMontajeCompleto(cfg)
+    ) {
+      return false;
+    }
     if (!getFechaInicioGerminacion(g, cfg)) return false;
-    if (indiceFaseActual(g) > 0) return false;
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
+      return false;
+    }
     var diaN = diasDesdeInicio(g, cfg) + 1;
     return diaN >= 1 && diaN <= GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS;
   }
@@ -442,6 +450,29 @@
       '<p class="hc-germ-luz-title"><strong>Iniciar luz tenue 18/6</strong></p>' +
       '<p class="hc-germ-luz-body">Al brote verde o tras el periodo a oscuras: luz suave sobre el domo; ventila 2×/día.</p></div>'
     );
+  }
+
+  /** Inicio · propagador: aviso oscuridad/luz cuando el hub de fases está oculto (montaje completo). */
+  function refreshDashPropagadorOscuridadBanner(cfg) {
+    var host = document.getElementById('dashPropagadorOscuridadHost');
+    if (!host) return;
+    cfg = cfg || cfgActiva();
+    var hubOculto =
+      typeof hcPropagadorInicioOcultarCuadroGermFases === 'function' &&
+      hcPropagadorInicioOcultarCuadroGermFases(cfg);
+    if (!hubOculto) {
+      host.innerHTML = '';
+      host.classList.add('setup-hidden');
+      return;
+    }
+    if (typeof hcGerminacionSyncDesdePremium === 'function') {
+      hcGerminacionSyncDesdePremium(cfg);
+    }
+    var g = ensureGerminacionFlow(cfg);
+    var html =
+      renderHubOscuridadGerminacionHtml(cfg, g) + renderHubLuzTenuePropagadorHtml(cfg, g);
+    host.innerHTML = html;
+    host.classList.toggle('setup-hidden', !html.trim());
   }
 
   function hubMuestraAvisoCupulaGermHidro(cfg, g) {
@@ -1638,6 +1669,8 @@
 
     return (
       '<div class="hc-germ-hub-card hc-germ-hub-card--compact">' +
+      renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
+      renderHubLuzTenuePropagadorHtml(o.cfg, o.g) +
       (o.salaCtaHtml || '') +
       '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
       '<div class="hc-germ-hub-badge">Propagador</div>' +
@@ -1654,8 +1687,6 @@
       meta +
       '</p>' +
       '</div></div>' +
-      renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
-      renderHubLuzTenuePropagadorHtml(o.cfg, o.g) +
       '<details class="hc-germ-advanced config-section-collapsible">' +
       buildGermAdvancedSummaryHtml('Guía de fases, equipamiento y más') +
       '<div class="hc-germ-advanced-body config-section-collapse-body">' +
@@ -1783,6 +1814,9 @@
     var hub = document.getElementById('dashGerminacionHub');
     if (!hub) return;
     var cfg = cfgActiva();
+    if (typeof hcGerminacionSyncDesdePremium === 'function') {
+      hcGerminacionSyncDesdePremium(cfg);
+    }
     if (!hcGerminacionActiva(cfg)) {
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
@@ -1794,6 +1828,7 @@
     ) {
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
+      refreshDashPropagadorOscuridadBanner(cfg);
       return;
     }
     hub.classList.remove('setup-hidden');
@@ -1806,7 +1841,7 @@
       camGermHub === 'semilla_propagador'
         ? (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
             ? 'OK'
-            : 'd' + (diasDesdeInicio(g) + 1))
+            : 'd' + (diasDesdeInicio(g, cfg) + 1))
         : pct + '%';
     var modo = getModoGerminacion(cfg, g);
     var pasoRaw = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
@@ -1887,7 +1922,7 @@
     var equipAviso = allDone ? '' : avisoEquipFase(paso.id, g, modo);
     var hintVar = allDone ? '' : hintVariedadFase(g.variedadId, paso.id);
     var tareaHoy = allDone ? '' : tareaDiaFase(paso.id, modo, g.variedadId);
-    var diaN = diasDesdeInicio(g) + 1;
+    var diaN = diasDesdeInicio(g, cfg) + 1;
     var regHoy = registroHoyHecho(g);
     var pasoDesc = allDone ? '' : descPaso(paso, modo);
     var modoLbl =
@@ -1969,17 +2004,19 @@
       typeof hcPropagadorSalaRecoEnGermHub === 'function'
     ) {
       var salaSoft = hcPropagadorSalaRecoEnGermHub(cfg);
-      if (salaSoft === 'sala_config_soft') {
+      var recoSalaGrande =
+        typeof hcMostrarRecoEquipSalaInicio === 'function' && hcMostrarRecoEquipSalaInicio(cfg);
+      if (salaSoft === 'sala_montaje_soft') {
+        salaCtaHtml =
+          '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+          '<strong>Puesta en marcha de sala.</strong> Equipamiento guardado — completa el checklist de montaje físico. ' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Checklist montaje</button></div>';
+      } else if (salaSoft === 'sala_config_soft' && !recoSalaGrande) {
         salaCtaHtml =
           '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
           '<strong>Prepara la sala de cultivo</strong> (recomendado mientras germina): carpa, LED, extractor y clima en ' +
           '<button type="button" class="btn btn-link btn-sm" onclick="goTab(\'sala\')">Sala</button> o ' +
           '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar sala</button></div>';
-      } else if (salaSoft === 'sala_montaje_soft') {
-        salaCtaHtml =
-          '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
-          '<strong>Puesta en marcha de sala.</strong> Equipamiento guardado — completa el checklist de montaje físico. ' +
-          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Checklist montaje</button></div>';
       }
     }
 
@@ -2216,6 +2253,7 @@
       hub.innerHTML = germHubHtml;
       hub.dataset.hcGermHubFp = germHubFp;
     }
+    refreshDashPropagadorOscuridadBanner(cfg);
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();
     } catch (_) {}
@@ -2996,6 +3034,7 @@
   global.hcGerminacionSyncDesdePremium = hcGerminacionSyncDesdePremium;
   global.hcGerminacionSyncEquipDesdeInstalado = hcGerminacionSyncEquipDesdeInstalado;
   global.refreshDashGerminacionHub = refreshDashGerminacionHub;
+  global.refreshDashPropagadorOscuridadBanner = refreshDashPropagadorOscuridadBanner;
   global.hcGerminacionCompletarFaseActual = hcGerminacionCompletarFaseActual;
   global.hcGerminacionAbrirTraslado = hcGerminacionAbrirTraslado;
   global.hcGerminacionAbrirChecklistTraslado = hcGerminacionAbrirChecklistTraslado;
