@@ -315,6 +315,14 @@ function evalParam() {
   if (typeof evalAmbiente === 'function') evalAmbiente();
 }
 
+function medirParamStatusCompact(tipo, texto) {
+  if (tipo === 'ok') return 'OK · En rango';
+  const t = String(texto || '').trim();
+  if (!t) return '';
+  if (t.length <= 48) return t;
+  return t.slice(0, 45) + '…';
+}
+
 function setStatus(id, tipo, icono, texto) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -323,21 +331,43 @@ function setStatus(id, tipo, icono, texto) {
     statusPH: 'inputPH',
     statusTemp: 'inputTemp',
     statusVol: 'inputVol',
+    statusTempAire: 'inputTempAire',
+    statusHumSala: 'inputHumSala',
+    statusVPD: 'inputVPD',
+    statusPPFD: 'inputPPFD',
+    statusTempExt: 'inputTempExt',
+    statusCO2: 'inputCO2',
   };
   const etiquetaMap = {
     statusEC: 'EC',
     statusPH: 'pH',
     statusTemp: 'temperatura',
     statusVol: 'volumen',
+    statusTempAire: 'temp. aire',
+    statusHumSala: 'HR',
+    statusVPD: 'VPD',
+    statusPPFD: 'PPFD',
+    statusTempExt: 'temp. exterior',
+    statusCO2: 'CO₂',
   };
   const etiqueta = etiquetaMap[id] || 'parámetro';
-  el.className = `param-status ${tipo}`;
-  el.innerHTML = `<span>${icono}</span><span>${texto}</span>`;
+  const premium = !!el.closest('.medir-solucion-grid--premium, .medir-ambiente-grid--premium');
+  el.className = 'param-status ' + (tipo || 'empty');
+  if (premium && tipo && tipo !== 'empty') {
+    el.innerHTML =
+      '<span class="param-status-txt">' + medirParamStatusCompact(tipo, texto) + '</span>';
+  } else if (tipo && tipo !== 'empty') {
+    el.innerHTML = '<span class="param-status-ico" aria-hidden="true">' + icono + '</span><span class="param-status-txt">' + texto + '</span>';
+  } else {
+    el.innerHTML = '';
+  }
   el.setAttribute('role', 'status');
   el.setAttribute('aria-live', 'polite');
   el.setAttribute('aria-atomic', 'true');
   const desc = (texto && String(texto).trim()) ? String(texto).trim() : 'sin datos';
   el.setAttribute('aria-label', etiqueta + ': ' + desc);
+  if (premium && texto) el.setAttribute('title', String(texto).trim());
+  else el.removeAttribute('title');
   const input = document.getElementById(inputMap[id] || '');
   if (input) {
     if (tipo === 'bad' || tipo === 'warn') input.setAttribute('aria-invalid', 'true');
@@ -348,12 +378,27 @@ function setStatus(id, tipo, icono, texto) {
 function setCard(id, tipo) {
   const el = document.getElementById(id);
   if (!el) return;
-  el.className = `param-card ${tipo}`;
+  el.classList.remove('ok', 'warn', 'alert');
+  if (tipo) el.classList.add(tipo);
 }
 
 function showCorreccion(id, html) {
   const el = document.getElementById(id);
   if (!el) return;
+  const premium = !!el.closest('.medir-solucion-grid--premium, .medir-ambiente-grid--premium');
+  const statusId = String(id || '').replace('correccion', 'status');
+  const statusEl = document.getElementById(statusId);
+  if (premium && statusEl && html) {
+    const plain = String(html)
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (plain) statusEl.setAttribute('title', plain);
+    el.classList.remove('show');
+    el.innerHTML = '';
+    el.setAttribute('aria-hidden', 'true');
+    return;
+  }
   if (html) {
     el.classList.add('show');
     el.innerHTML = html;

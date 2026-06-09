@@ -135,7 +135,7 @@
     var lead = card.querySelector('.medir-ambiente-lead');
     if (lead) lead.classList.add('medir-ambiente-lead--in-details');
     var ambGrid = card.querySelector('.medir-ambiente-grid');
-    if (ambGrid) ambGrid.classList.add('medir-ambiente-grid--premium');
+    if (ambGrid) ambGrid.classList.add('medir-ambiente-grid--premium', 'medir-param-lab-grid');
     ensureAmbienteSaveFooter(card);
   }
 
@@ -245,7 +245,7 @@
     var solMount = document.getElementById('medirFlowSolucion');
     sync.classList.remove('setup-hidden');
     sync.removeAttribute('aria-hidden');
-    sync.classList.add('medir-solucion-grid', 'medir-solucion-grid--premium');
+    sync.classList.add('medir-solucion-grid', 'medir-solucion-grid--premium', 'medir-param-lab-grid');
     solMount.appendChild(sync);
 
     var ultima = document.getElementById('ultimaMedicionCard');
