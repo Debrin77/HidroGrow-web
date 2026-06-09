@@ -406,6 +406,16 @@ function setupNextCore() {
 }
 
 function setupBack() {
+  var salaPreGerm =
+    typeof window !== 'undefined' &&
+    window._hcSetupSalaPreGermSession &&
+    typeof hcSetupEnFaseSalaPreGerm === 'function' &&
+    hcSetupEnFaseSalaPreGerm();
+  var p3 = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+  if (salaPreGerm && setupPagina <= p3) {
+    if (typeof cerrarSetup === 'function') cerrarSetup();
+    return;
+  }
   if (setupPagina > SETUP_PAGE_GEOMETRY) {
     setupPagina =
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;

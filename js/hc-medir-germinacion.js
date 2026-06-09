@@ -583,6 +583,7 @@
 
     refreshMedirSalaAmbienteMedirUi(cfg);
     refreshMedirAsistentePropagadorBtn(preTraslado, variant);
+    refreshMedirSaveBtnLabel(cfg, preTraslado, variant, salaLista);
     refreshMedirPropagadorTabChrome(cfg, preTraslado, variant);
     if (typeof refreshSalaPanelesDuplicadosMedirUi === 'function') {
       refreshSalaPanelesDuplicadosMedirUi(cfg);
@@ -687,6 +688,25 @@
       if (labelSpan && btn.dataset.hcAsistLabelDefault) {
         labelSpan.textContent = btn.dataset.hcAsistLabelDefault;
       }
+    }
+  }
+
+  function refreshMedirSaveBtnLabel(cfg, preTraslado, variant, salaLista) {
+    var btn = document.getElementById('btnGuardarMedicion');
+    if (!btn) return;
+    if (!btn.dataset.hcMedirSaveLabelDefault) {
+      btn.dataset.hcMedirSaveLabelDefault = btn.textContent.trim() || 'Guardar medición';
+    }
+    if (preTraslado && variant === 'propagador') {
+      btn.textContent = salaLista
+        ? 'Guardar medición (propagador y sala)'
+        : 'Guardar medición del propagador';
+    } else if (preTraslado && variant === 'cubo') {
+      btn.textContent = salaLista
+        ? 'Guardar medición (cubo y sala)'
+        : 'Guardar medición del cubo';
+    } else {
+      btn.textContent = btn.dataset.hcMedirSaveLabelDefault;
     }
   }
 

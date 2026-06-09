@@ -2261,6 +2261,27 @@ function cerrarSetup() {
       hcResetSetupWizardSession({ keepPostSetupFlow: !!(state && state.hcPostSetupChecklistPendiente) });
     }
   } catch (_) {}
+  var returnTab =
+    typeof window !== 'undefined' && window._hcSetupReturnTab ? window._hcSetupReturnTab : '';
+  try {
+    if (typeof window !== 'undefined') {
+      delete window._hcSetupReturnTab;
+      if (window._hcSetupSalaPreGermSession) {
+        delete window._hcSetupSalaPreGermSession;
+        if (state && state.configTorre && state.configTorre.hcSetupFase === 'sala_pre_germ') {
+          state.configTorre.hcSetupFase = 'germinacion';
+        }
+      }
+    }
+  } catch (_) {}
+  if (returnTab && typeof goTab === 'function') {
+    try {
+      goTab(returnTab);
+      if (returnTab === 'inicio' && typeof refreshDashSalaEquipRecoBanner === 'function') {
+        refreshDashSalaEquipRecoBanner();
+      }
+    } catch (_) {}
+  }
   try {
     if (
       typeof scheduleTabBarCoach === 'function' &&

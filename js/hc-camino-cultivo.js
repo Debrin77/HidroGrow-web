@@ -1290,7 +1290,17 @@
         );
       }
     } catch (_) {}
-    if (typeof window !== 'undefined') window._hcSetupSalaPreGermSession = true;
+    if (typeof window !== 'undefined') {
+      window._hcSetupSalaPreGermSession = true;
+      window._hcSetupReturnTab = (function () {
+        var order = ['inicio', 'mediciones', 'sala', 'sistema', 'meteo', 'calendario', 'historial', 'riego', 'consejos', 'ayuda'];
+        for (var ti = 0; ti < order.length; ti++) {
+          var panel = document.getElementById('tab-' + order[ti]);
+          if (panel && panel.classList.contains('active')) return order[ti];
+        }
+        return 'inicio';
+      })();
+    }
     if (typeof state !== 'undefined' && state && state.configTorre) {
       state.configTorre.hcSetupFase = 'sala_pre_germ';
     }

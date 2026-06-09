@@ -513,7 +513,7 @@
           '<p class="sala-propagador-flujo-hint">Revisa el <strong>catálogo de equipamiento</strong> (indispensable y opcional) y confirma en el <strong>checklist</strong> que todo está montado y operativo. El circuito <strong>DWC/RDWC</strong> solo tras la germinación.</p>' +
           '<div class="sala-propagador-flujo-actions">' +
           '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Abrir checklist de montaje</button> ' +
-          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Equipamiento opcional</button> ' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Editar equipamiento</button> ' +
           '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver checklist aquí</button>' +
           '</div></div>';
       } else if (paso === 'equip') {
@@ -913,7 +913,7 @@
         : "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()";
     var title =
       paso === 'done' && opcPend.length > 0
-        ? 'Equipamiento opcional de sala'
+        ? 'Equipamiento de sala'
         : paso === 'montaje'
           ? 'Checklist de montaje de sala (con guías)'
           : 'Configura el equipamiento de la sala de cultivo';
@@ -925,13 +925,13 @@
           : 'En <strong>Sala</strong>: <strong>indispensable</strong> (carpa, LED, extractor) y <strong>opcional</strong> (filtro carbón, circulación, HR…); después el checklist de montaje.';
     var cta =
       paso === 'done' && opcPend.length > 0
-        ? 'Abrir configurador opcional ›'
+        ? 'Abrir configurador ›'
         : paso === 'montaje'
           ? 'Ir al checklist en Sala ›'
           : 'Abrir configurador ›';
     var pasoHint =
       paso === 'done' && opcPend.length > 0
-        ? '<span class="dash-sala-equip-reco-step">Opcional · recomendado</span>'
+        ? '<span class="dash-sala-equip-reco-step">Equipamiento de sala</span>'
         : paso === 'montaje'
           ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
           : '<span class="dash-sala-equip-reco-step">Paso 1 de 2 · equipamiento</span>';

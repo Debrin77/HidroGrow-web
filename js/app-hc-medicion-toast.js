@@ -175,7 +175,9 @@ async function guardarMedicion(payloadOverride) {
   if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
     showToast(
       medirGermSave
-        ? '⚠️ Introduce al menos T° del agua, HR o volumen (propagador o cubo)'
+        ? (typeof hcMedirSalaListaParaMedir === 'function' && hcMedirSalaListaParaMedir(state.configTorre || {})
+            ? 'Introduce al menos un valor del propagador o del ambiente de sala (T°, HR, EC…)'
+            : 'Introduce al menos T° del agua, HR o volumen del propagador')
         : '⚠️ Introduce al menos un valor (depósito o ambiente)',
       true
     );

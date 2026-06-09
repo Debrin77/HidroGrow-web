@@ -92,14 +92,17 @@
   }
 
   function ensureAmbienteSaveFooter(card) {
-    if (!card || card.querySelector('.medir-ambiente-save-wrap')) return;
+    if (!card) return;
+    var hintHtml =
+      '<p class="medir-ambiente-save-hint">Usa el botón <strong>Guardar medición</strong> al final del bloque para registrar propagador y sala juntos.</p>';
+    var existing = card.querySelector('.medir-ambiente-save-wrap');
+    if (existing) {
+      existing.innerHTML = hintHtml;
+      return;
+    }
     var wrap = document.createElement('div');
     wrap.className = 'medir-ambiente-save-wrap';
-    wrap.innerHTML =
-      '<p class="medir-ambiente-save-hint">' +
-      'Depósito y ambiente se guardan juntos en el registro, el historial y la comprobación de rangos.</p>' +
-      '<button type="button" class="btn btn-primary medir-save-btn medir-save-btn--inline" onclick="guardarMedicion()">' +
-      'Guardar medición</button>';
+    wrap.innerHTML = hintHtml;
     card.appendChild(wrap);
   }
 
