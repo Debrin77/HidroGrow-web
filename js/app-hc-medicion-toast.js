@@ -167,6 +167,23 @@ async function guardarMedicion(payloadOverride) {
       co2: Number.isFinite(amb.co2) ? amb.co2 : '',
       fase: amb.fase || '',
     };
+    if (
+      typeof hcMedirGermPreTrasladoActivo === 'function' &&
+      hcMedirGermPreTrasladoActivo(state.configTorre || {}) &&
+      typeof hcMedirSalaListaParaMedir === 'function' &&
+      !hcMedirSalaListaParaMedir(state.configTorre || {})
+    ) {
+      ambPayload = {
+        humSala: ambPayload.humSala,
+        tempAire: '',
+        vpd: '',
+        ppfd: '',
+        lux: '',
+        tempExt: '',
+        co2: '',
+        fase: ambPayload.fase,
+      };
+    }
   }
 
   var medirGermSave =

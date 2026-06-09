@@ -93,9 +93,17 @@
 
   function ensureAmbienteSaveFooter(card) {
     if (!card) return;
+    var cfg =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    var salaLista =
+      typeof hcMedirSalaListaParaMedir === 'function' && hcMedirSalaListaParaMedir(cfg);
+    var existing = card.querySelector('.medir-ambiente-save-wrap');
+    if (!salaLista) {
+      if (existing) existing.remove();
+      return;
+    }
     var hintHtml =
       '<p class="medir-ambiente-save-hint">Usa el botón <strong>Guardar medición</strong> al final del bloque para registrar propagador y sala juntos.</p>';
-    var existing = card.querySelector('.medir-ambiente-save-wrap');
     if (existing) {
       existing.innerHTML = hintHtml;
       return;

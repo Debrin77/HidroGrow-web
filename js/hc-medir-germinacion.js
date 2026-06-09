@@ -535,8 +535,9 @@
         return;
       }
       var showAmb = false;
-      if (key === 'hr') showAmb = true;
-      else if (key === 'temp' && salaLista) showAmb = true;
+      if (key === 'hr') {
+        showAmb = salaLista || variant !== 'propagador';
+      } else if (key === 'temp' && salaLista) showAmb = true;
       else if (key === 'vpd' && salaLista) showAmb = true;
       el.classList.toggle('setup-hidden', !showAmb);
       if (showAmb) {
@@ -582,6 +583,7 @@
     }
 
     refreshMedirSalaAmbienteMedirUi(cfg);
+    ensureMedirHrDomoEnPropagadorGrid(cfg, preTraslado, variant, salaLista);
     refreshMedirAsistentePropagadorBtn(preTraslado, variant);
     refreshMedirSaveBtnLabel(cfg, preTraslado, variant, salaLista);
     refreshMedirPropagadorTabChrome(cfg, preTraslado, variant);
@@ -630,11 +632,15 @@
       var n = document.getElementById(id);
       if (!n) return;
       if (id === 'medirAmbienteCard' && preTraslado) {
+        var salaOk =
+          typeof hcMedirSalaListaParaMedir === 'function' && hcMedirSalaListaParaMedir(cfg);
         var mountAmb = document.getElementById('medirFlowAmbienteMount');
-        if (mountAmb && mountAmb.contains(n)) {
+        if (salaOk && mountAmb && mountAmb.contains(n)) {
           n.classList.remove('setup-hidden');
           return;
         }
+        n.classList.add('setup-hidden');
+        return;
       }
       n.classList.toggle('setup-hidden', !!preTraslado);
     });
@@ -710,16 +716,74 @@
     }
   }
 
+  function ensureMedirHrDomoEnPropagadorGrid(cfg, preTraslado, variant, salaLista) {
+    var cardHr = document.getElementById('cardHumSala');
+    var solMount = document.getElementById('medirFlowSolucion');
+    var ambGrid = document.querySelector('#medirAmbienteCard .medir-ambiente-grid');
+    if (!cardHr) return;
+    if (preTraslado && variant === 'propagador' && !salaLista && solMount) {
+      if (cardHr.parentNode !== solMount) {
+        solMount.appendChild(cardHr);
+      }
+      cardHr.classList.remove('setup-hidden');
+      setLabelSpan('cardHumSala', 'HR domo');
+      setCardIcon('cardHumSala', 'hc-i-droplet');
+      return;
+    }
+    if (preTraslado && variant === 'propagador' && salaLista && ambGrid) {
+      if (cardHr.parentNode !== ambGrid) {
+        var afterTemp = document.getElementById('cardTempAire');
+        if (afterTemp && afterTemp.parentNode === ambGrid) {
+          afterTemp.insertAdjacentElement('afterend', cardHr);
+        } else {
+          ambGrid.insertBefore(cardHr, ambGrid.firstChild);
+        }
+      }
+    }
+  }
+
   function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {
     var hint = document.getElementById('hcMedirSalaPendienteHint');
     if (hint) hint.remove();
-    if (!ambCard || salaLista) return;
+    if (!germ || salaLista) return;
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
+    var host = document.getElementById('medirFlow') || document.getElementById('tab-mediciones');
+    if (!host) return;
+    hint = document.createElement('p');
+    hint.id = 'hcMedirSalaPendienteHint';
+    hint.className = 'medir-sala-pendiente-hint setup-field-hint setup-field-hint--banner';
+    hint.setAttribute('role', 'note');
+    hint.innerHTML =
+      '<strong>Mediciones de sala:</strong> aparecerán cuando configures la sala y completes el ' +
+      '<strong>checklist de montaje</strong> en la pestaña Sala. Hasta entonces registra solo el propagador (agua, HR del domo, volumen…).';
+    var actions = host.querySelector('.medir-flow-actions');
+    if (actions) {
+      host.insertBefore(hint, actions);
+    } else {
+      host.appendChild(hint);
+    }
   }
 
   function applyMedirAmbienteMountLayout(cfg, germ, salaLista, salaCfg) {
     var mount = document.getElementById('medirFlowAmbienteMount');
     var details = document.getElementById('medirAmbienteDetails');
     if (!mount) return;
+
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var ocultarSalaHastaMontaje =
+      germ &&
+      !salaLista &&
+      (cam === 'semilla_propagador' || cam === 'semilla_hidro');
+
+    if (ocultarSalaHastaMontaje) {
+      mount.classList.add('setup-hidden');
+      if (details) {
+        details.classList.add('setup-hidden');
+        details.open = false;
+      }
+      return;
+    }
 
     var montajePendiente = !!(salaCfg && !salaLista);
     var soloHrGerm = !!(germ && !salaLista && !montajePendiente);

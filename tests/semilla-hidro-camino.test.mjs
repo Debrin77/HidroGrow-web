@@ -385,6 +385,15 @@ test('semilla_hidro: hub visible durante germ y postAsistente solo tras matriz',
   assert.doesNotMatch(germ, /hcSemillaHidroPostAsistenteUi/);
 });
 
+test('propagador: Medir oculta sala hasta montaje verificado', () => {
+  const medir = read('js/hc-medir-germinacion.js');
+  assert.match(medir, /function ensureMedirHrDomoEnPropagadorGrid/);
+  assert.match(medir, /ocultarSalaHastaMontaje/);
+  assert.match(medir, /hcMedirSalaPendienteHint/);
+  const toast = read('js/app-hc-medicion-toast.js');
+  assert.match(toast, /!hcMedirSalaListaParaMedir\(state\.configTorre/);
+});
+
 test('propagador: sala configurable durante germinación (no solo tras concluir)', () => {
   const luz = read('js/hc-luz-equip-sync.js');
   const cultivo = read('js/hc-camino-cultivo.js');

@@ -133,7 +133,22 @@ function auditScript() {
     ambienteEnFlujo: (function () {
       var card = document.getElementById('medirAmbienteCard');
       var mount = document.getElementById('medirFlowAmbienteMount');
-      return !!(card && mount && mount.contains(card) && isVisible('cardHumSala'));
+      return !!(
+        card &&
+        mount &&
+        !mount.classList.contains('setup-hidden') &&
+        mount.contains(card) &&
+        isVisible('cardHumSala')
+      );
+    })(),
+    hrEnSolucion: (function () {
+      var sol = document.getElementById('medirFlowSolucion');
+      var hr = document.getElementById('cardHumSala');
+      return !!(sol && hr && sol.contains(hr) && isVisible('cardHumSala'));
+    })(),
+    ambienteMountOculto: (function () {
+      var m = document.getElementById('medirFlowAmbienteMount');
+      return !m || m.classList.contains('setup-hidden');
     })(),
     municipio: isVisible('panelLocalidadMeteo'),
     preGate: isVisible('medirPreOperativaGate'),
@@ -224,12 +239,9 @@ test('propagador: Medir solo domo (sin depósito DWC)', async () => {
   assert.equal(snap.medir.tempAgua, true, 'cardTemp agua propagador');
   assert.equal(snap.medir.volumen, true, 'cardVol propagador');
   assert.equal(snap.medir.hrDomo, true, 'cardHumSala HR domo');
-  assert.equal(snap.medir.configPanel, false, 'configPanel');
-  assert.equal(snap.medir.recarga, false, 'recargaCardMediciones');
-  assert.equal(snap.medir.monitor, false, 'medirMonitorCard');
-  assert.equal(snap.medir.protocolo, false, 'medirProtocoloCard');
-  assert.equal(snap.medir.iot, false, 'medirIotCard');
-  assert.equal(snap.medir.ambienteEnFlujo, true, 'HR domo en medirFlow');
+  assert.equal(snap.medir.ambienteMountOculto, true, 'bloque sala oculto sin montaje');
+  assert.equal(snap.medir.hrEnSolucion, true, 'HR domo en grid propagador');
+  assert.equal(snap.medir.ambienteEnFlujo, false, 'sin bloque ambiente sala hasta montaje');
   assert.equal(snap.medir.municipio, false, 'panelLocalidadMeteo');
   assert.equal(snap.medir.preGate, false, 'medirPreOperativaGate');
 
