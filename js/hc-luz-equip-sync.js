@@ -8,6 +8,7 @@
     'led',
     'armario',
     'propagador',
+    'higrometro_germ',
     'mat_termica_germ',
     'extractor',
     'ventilador_circ',

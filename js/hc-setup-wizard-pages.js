@@ -364,7 +364,7 @@ function setupNextCore() {
       !(inst.propagador && inst.propagador.id) &&
       cam === 'semilla_propagador'
     ) {
-      showToast('Recomendado: registra un propagador/domo en Espacio y equipamiento', true);
+      showToast('Recomendado: registra propagador, higrómetro y mat térmica en Espacio y equipamiento', true);
     }
   }
   if (setupPagina < ultimoPaso) {

@@ -329,7 +329,7 @@
     var inst = cfg.equipamientoInstalado || {};
     if (inst.propagador && inst.propagador.id) g.equip.domo = true;
     if (inst.mat_termica_germ && inst.mat_termica_germ.id) g.equip.mat = true;
-    if (inst.medidor && inst.medidor.id) g.equip.termohigro = true;
+    if (inst.higrometro_germ && inst.higrometro_germ.id) g.equip.termohigro = true;
     if (inst.led && inst.led.id) g.equip.luz = true;
     g.modo = getModoGerminacion(cfg, g);
   }

@@ -199,6 +199,14 @@ test('Medir propagador: ocultar bloque sala hasta montaje verificado', () => {
     medir,
     /cam === 'semilla_propagador'[\s\S]{0,120}montajeSalaPreGermOk\(cfg\)/
   );
+  assert.match(medir, /refreshMedirHrDomoCardHint/);
+  assert.match(medir, /HR bajo el domo/);
+});
+
+test('propagador: higrómetro en catálogo inicial de germinación', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /higrometro_germ/);
+  assert.match(cat, /keys:\s*\['propagador',\s*'higrometro_germ',\s*'mat_termica_germ'\]/);
 });
 
 test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () => {

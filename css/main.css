@@ -10637,6 +10637,20 @@ html.hc-theme-dark .hc-germ-sustrato-agua {
   font-size: 11px;
   line-height: 1.45;
 }
+.medir-hr-domo-hint {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 10.5px;
+  line-height: 1.4;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  color: var(--text-muted, #64748b);
+}
+html.hc-theme-dark .medir-hr-domo-hint {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(96, 165, 250, 0.28);
+}
 html.hc-theme-dark .medir-sala-pendiente-hint {
   background: rgba(234, 179, 8, 0.12);
 }

@@ -199,6 +199,20 @@ const EQUIP_CATEGORIAS = {
     campos: [{ key: 'watts', label: 'Potencia (W)', type: 'number' }],
     hint: 'Recomendada con semilla en invierno o estancia fría. También útil en esquejes bajo domo.',
   },
+  higrometro_germ: {
+    id: 'higrometro_germ',
+    label: 'Higrómetro / termohigrómetro (domo)',
+    icon: '🌡️',
+    entorno: 'both',
+    indispensable: false,
+    recommended: true,
+    campos: [
+      { key: 'tipo', label: 'Tipo', type: 'text' },
+      { key: 'precisionHr', label: 'Precisión HR (±%)', type: 'number' },
+    ],
+    hint:
+      'Mide HR 70–80 % bajo el domo del propagador. Registra el valor en Medir → HR domo (no confundir con HR de la sala).',
+  },
 };
 
 /** Marcas habituales en growshops españoles — datos orientativos del fabricante. */
@@ -488,6 +502,19 @@ const EQUIPAMIENTO_CATALOG = [
     specs: { watts: 25 }, nota: 'Muy usada bajo domo en ES.' },
   { id: 'hydropony_mat', categoria: 'mat_termica_germ', marca: 'Hydropony', modelo: 'Manta 21W', top_es: true, rank: 4,
     specs: { watts: 21 }, nota: 'Entrada de gama · germinador doméstico.' },
+
+  { id: 'thermopro_tp50', categoria: 'higrometro_germ', marca: 'ThermoPro', modelo: 'TP50', top_es: true, rank: 1,
+    specs: { precisionHr: 3 }, nota: 'Digital básico · muy usado bajo domo.' },
+  { id: 'govee_h5100', categoria: 'higrometro_germ', marca: 'Govee', modelo: 'H5100', top_es: true, rank: 2,
+    specs: { precisionHr: 3 }, nota: 'BT + pantalla · registro en app opcional.' },
+  { id: 'xiaomi_mi_temp', categoria: 'higrometro_germ', marca: 'Xiaomi', modelo: 'Mi Temperature 2', top_es: true, rank: 3,
+    specs: { precisionHr: 3 }, nota: 'Compacto · ideal dentro del propagador.' },
+  { id: 'tfa_analog', categoria: 'higrometro_germ', marca: 'TFA Dostmann', modelo: 'Analog mini', top_es: true, rank: 4,
+    specs: { precisionHr: 5 }, nota: 'Analógico sin pilas · lectura directa.' },
+  { id: 'digiten_hygro', categoria: 'higrometro_germ', marca: 'Digiten', modelo: 'Hygrometer', top_es: true, rank: 5,
+    specs: { precisionHr: 3 }, nota: 'Entrada de gama · domo y esquejes.' },
+  { id: 'brifit_hygro', categoria: 'higrometro_germ', marca: 'Brifit', modelo: '3-pack sensor', top_es: true, rank: 6,
+    specs: { precisionHr: 3 }, nota: 'Pack económico · uno en el domo.' },
 ];
 
 const EQUIP_TOP_ES_LIMIT = 10;
@@ -509,14 +536,14 @@ const EQUIP_GERMINACION_GROUP = {
   id: 'germinacion',
   label: 'Germinación (semilla)',
   icon: '🌱',
-  keys: ['propagador', 'mat_termica_germ'],
+  keys: ['propagador', 'higrometro_germ', 'mat_termica_germ'],
 };
 
 const EQUIP_ENRAIZADO_GROUP = {
   id: 'enraizado',
   label: 'Enraizado (esqueje)',
   icon: '💧',
-  keys: ['propagador', 'mat_termica_germ'],
+  keys: ['propagador', 'higrometro_germ', 'mat_termica_germ'],
 };
 
 /** Semilla en hidro: germina en el depósito/cubo (DWC/RDWC), no en bandeja propagador aparte. */
@@ -680,7 +707,7 @@ function getEquipCatalogGroups(entorno) {
   const faseSala =
     typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm();
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
-  const germKeys = ['propagador', 'mat_termica_germ'];
+  const germKeys = ['propagador', 'higrometro_germ', 'mat_termica_germ'];
 
   if (hcEquipCatalogModoSalaPropagador() && (faseSala || camino === 'semilla_propagador')) {
     try {
@@ -727,9 +754,10 @@ function getEquipCatalogGroups(entorno) {
   if (propagadorSoloAhora) {
     return [
       Object.assign({}, EQUIP_GERMINACION_GROUP, {
-        label: 'Domo y mat térmica',
+        label: 'Domo, higrómetro y mat térmica',
         required: true,
-        hint: '',
+        hint:
+          'Registra el domo y un higrómetro para anotar HR bajo la tapa (Medir → HR domo). La mat térmica es opcional.',
       }),
     ];
   }

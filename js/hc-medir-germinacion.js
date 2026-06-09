@@ -758,8 +758,10 @@
       cardHr.classList.remove('setup-hidden');
       setLabelSpan('cardHumSala', 'HR domo');
       setCardIcon('cardHumSala', 'hc-i-droplet');
+      refreshMedirHrDomoCardHint(true, salaLista);
       return;
     }
+    refreshMedirHrDomoCardHint(false, salaLista);
     if (preTraslado && variant === 'propagador' && salaLista && ambGrid) {
       if (cardHr.parentNode !== ambGrid) {
         var afterTemp = document.getElementById('cardTempAire');
@@ -770,6 +772,32 @@
         }
       }
     }
+  }
+
+  function refreshMedirHrDomoCardHint(showDomo, salaLista) {
+    var cardHr = document.getElementById('cardHumSala');
+    if (!cardHr) return;
+    var hint = document.getElementById('hcMedirHrDomoHint');
+    if (!showDomo || salaLista) {
+      if (hint) hint.remove();
+      if (salaLista) setLabelSpan('cardHumSala', 'HR sala');
+      return;
+    }
+    if (!hint) {
+      hint = document.createElement('p');
+      hint.id = 'hcMedirHrDomoHint';
+      hint.className = 'medir-hr-domo-hint setup-field-hint';
+      hint.setAttribute('role', 'note');
+      var status = document.getElementById('statusHumSala');
+      if (status && status.parentNode === cardHr) {
+        status.insertAdjacentElement('afterend', hint);
+      } else {
+        cardHr.appendChild(hint);
+      }
+    }
+    hint.innerHTML =
+      '<strong>HR bajo el domo</strong> del propagador (objetivo 70–80&nbsp;%). ' +
+      'Lectura del higrómetro dentro del domo; <strong>no</strong> es la humedad de la sala de cultivo.';
   }
 
   function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {
