@@ -1640,6 +1640,34 @@
       return;
     }
     var cfg = getCfg();
+    if (
+      typeof hcPropagadorEquipSalaSinHidro === 'function' &&
+      hcPropagadorEquipSalaSinHidro(cfg) &&
+      typeof getCamposEquipamientoFaltantes === 'function'
+    ) {
+      var faltEq = getCamposEquipamientoFaltantes(cfg);
+      if (faltEq && faltEq.length) {
+        if (typeof showToast === 'function') {
+          showToast(
+            'Completa el equipamiento indispensable de sala antes de verificar el montaje: ' +
+              faltEq
+                .map(function (f) {
+                  return f.label;
+                })
+                .join(', ') +
+              '.',
+            true,
+            { durationMs: 6200 }
+          );
+        }
+        if (typeof abrirConfiguradorEquipamientoSalaPropagador === 'function') {
+          setTimeout(function () {
+            abrirConfiguradorEquipamientoSalaPropagador();
+          }, 400);
+        }
+        return;
+      }
+    }
     var checks = getChecks(cfg);
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
@@ -1719,8 +1747,15 @@
         setTimeout(function () {
           try {
             if (typeof goTab === 'function') goTab('inicio');
-            document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+            var recoSala = document.getElementById('dashSalaEquipReco');
+            if (recoSala && !recoSala.classList.contains('setup-hidden')) {
+              recoSala.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else if (typeof goTab === 'function') {
+              goTab('medir');
+            }
+            if (typeof refreshDashSalaEquipRecoBanner === 'function') {
+              refreshDashSalaEquipRecoBanner(cfg);
+            }
           } catch (_) {}
         }, 500);
       }

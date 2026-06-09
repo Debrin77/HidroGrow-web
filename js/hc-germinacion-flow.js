@@ -1788,6 +1788,14 @@
       hub.innerHTML = '';
       return;
     }
+    if (
+      typeof hcPropagadorInicioOcultarCuadroGermFases === 'function' &&
+      hcPropagadorInicioOcultarCuadroGermFases(cfg)
+    ) {
+      hub.classList.add('setup-hidden');
+      hub.innerHTML = '';
+      return;
+    }
     hub.classList.remove('setup-hidden');
     var g = ensureGerminacionFlow(cfg);
     var idx = indiceFaseActual(g);

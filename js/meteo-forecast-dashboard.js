@@ -19,11 +19,7 @@ function hcSaludoInicioPorHora(h) {
 }
 
 function hcIconoSaludoInicioPorHora(h) {
-  h = Number(h);
-  if (!Number.isFinite(h)) h = new Date().getHours();
-  if (h >= 6 && h < 12) return 'hc-i-sun';
-  if (h >= 12 && h < 20) return 'hc-i-sprout';
-  return 'hc-i-moon';
+  return 'hc-i-cannabis-leaf';
 }
 
 function actualizarSaludoInicio(now) {

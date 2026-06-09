@@ -77,6 +77,8 @@ function auditScript() {
   if (typeof ensureGerminacionFlow === 'function') ensureGerminacionFlow(cfg);
   if (typeof hcSyncGerminacionPlanCultivo === 'function') hcSyncGerminacionPlanCultivo(cfg);
   if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+  if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+  if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
   if (typeof hcInitMedirSalaLayout === 'function') hcInitMedirSalaLayout();
   else if (typeof mountAmbienteInMedirFlow === 'function') mountAmbienteInMedirFlow();
   if (typeof refreshTabsOperativaCamino === 'function') {
@@ -181,7 +183,7 @@ function auditScript() {
   return { inicio, medir, sala, riego, sistema };
 }
 
-test('propagador: Inicio solo hub (sin bloques DWC duplicados)', async () => {
+test('propagador: Inicio banner sala (sin hub fases ni DWC duplicados)', async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   const pageErrors = [];
@@ -192,7 +194,7 @@ test('propagador: Inicio solo hub (sin bloques DWC duplicados)', async () => {
 
   assert.equal(snap.inicio.camino, 'semilla_propagador');
   assert.equal(snap.inicio.sinHidro, true);
-  assert.equal(snap.inicio.hub, true, 'hub germinación debe ser visible');
+  assert.equal(snap.inicio.hub, false, 'hub germinación oculto (fases en Medir)');
   assert.equal(snap.inicio.operativaHub, false, 'dashOperativaHub');
   assert.equal(snap.inicio.rutina, false, 'dashRutinaDia');
   assert.equal(snap.inicio.lifecycle, false, 'dashInstalacionLifecycle');
@@ -202,7 +204,7 @@ test('propagador: Inicio solo hub (sin bloques DWC duplicados)', async () => {
   assert.equal(snap.inicio.medYcult, false, 'dash-medicion-y-cultivo');
   assert.equal(snap.inicio.plantasInicio, false, 'plantas inicio');
   assert.equal(snap.inicio.montajeInicio, false, 'montaje inicio');
-  assert.equal(snap.inicio.salaReco, false, 'banner equip sala');
+  assert.equal(snap.inicio.salaReco, true, 'banner equip sala');
 
   const crit = pageErrors.filter((m) => /hcReaplicar|refreshDashInicio/.test(m));
   assert.equal(crit.length, 0, pageErrors.join('; '));

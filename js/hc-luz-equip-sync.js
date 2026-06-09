@@ -396,13 +396,12 @@
     var pasoMontaje = paso === 'montaje';
 
     if (equipDet) {
-      equipDet.classList.toggle('setup-hidden', pasoMontaje);
+      equipDet.classList.remove('setup-hidden');
       equipDet.classList.toggle('sala-equip-details--paso-activo', pasoEquip);
-      if (pasoListo) {
+      if (pasoListo || pasoMontaje || pasoEquip) {
         equipDet.open = true;
-        equipDet.classList.remove('sala-equip-details--paso-activo');
-      } else if (pasoMontaje) {
-        equipDet.open = false;
+      }
+      if (pasoListo) {
         equipDet.classList.remove('sala-equip-details--paso-activo');
       }
     }
@@ -463,10 +462,12 @@
     if (eqTitle) {
       eqTitle.textContent =
         paso === 'done'
-          ? 'Equipamiento instalado (resumen)'
+          ? 'Equipamiento de sala (indispensable y opcional)'
           : paso === 'equip'
-            ? 'Paso 1 · Configura el equipamiento de la sala'
-            : 'Equipamiento de la sala (resumen)';
+            ? 'Paso 1 · Equipamiento indispensable de la sala'
+            : paso === 'montaje'
+              ? 'Equipamiento de sala · revisa opcional'
+              : 'Equipamiento de la sala (resumen)';
     }
 
     if (host) {
@@ -477,7 +478,7 @@
         host.classList.remove('setup-hidden');
         var faltaTxt =
           falt.length > 0
-            ? ' Falta en el configurador: <strong>' +
+            ? ' Falta indispensable: <strong>' +
               falt
                 .map(function (f) {
                   return f.label;
@@ -485,17 +486,34 @@
                 .join(', ') +
               '</strong>.'
             : '';
+        var opcPend = getEquipamientoSalaOpcionalPendiente(cfg);
+        var catsOpc =
+          typeof global.EQUIP_CATEGORIAS !== 'undefined' && global.EQUIP_CATEGORIAS
+            ? global.EQUIP_CATEGORIAS
+            : typeof EQUIP_CATEGORIAS !== 'undefined'
+              ? EQUIP_CATEGORIAS
+              : {};
+        var opcTxt =
+          opcPend.length > 0
+            ? ' Opcional sin registrar: <strong>' +
+              opcPend
+                .map(function (k) {
+                  return catsOpc[k] ? catsOpc[k].label : k;
+                })
+                .join(', ') +
+              '</strong>.'
+            : '';
         host.innerHTML =
           '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
           '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-          '✓ <strong>Equipamiento de sala registrado correctamente.</strong>' +
+          '✓ <strong>Equipamiento indispensable de sala registrado.</strong>' +
           faltaTxt +
+          opcTxt +
           '</p>' +
-          '<p class="sala-propagador-flujo-hint">Confirma que todo está <strong>montado y operativo</strong> ' +
-          '(propagador dentro de la sala, LED, extractor, ventilación…). Cada punto del checklist incluye ' +
-          '<strong>mini-guías</strong> según tu equipamiento.</p>' +
+          '<p class="sala-propagador-flujo-hint">Revisa el <strong>catálogo de equipamiento</strong> (indispensable y opcional) y confirma en el <strong>checklist</strong> que todo está montado y operativo. El circuito <strong>DWC/RDWC</strong> solo tras la germinación.</p>' +
           '<div class="sala-propagador-flujo-actions">' +
           '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist()">Abrir checklist de montaje</button> ' +
+          '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Equipamiento opcional</button> ' +
           '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver checklist aquí</button>' +
           '</div></div>';
       } else if (paso === 'equip') {
@@ -677,6 +695,54 @@
     return true;
   }
 
+  var EQUIP_SALA_OPCIONAL_KEYS = [
+    'filtro_carbon',
+    'ventilador_circ',
+    'temporizador',
+    'humidificador',
+    'deshumidificador',
+    'co2',
+  ];
+
+  function getEquipamientoSalaOpcionalPendiente(cfg) {
+    cfg = cfg || getCfg();
+    var inst =
+      cfg.equipamientoInstalado && typeof cfg.equipamientoInstalado === 'object'
+        ? cfg.equipamientoInstalado
+        : {};
+    var cats =
+      typeof global.EQUIP_CATEGORIAS !== 'undefined' && global.EQUIP_CATEGORIAS
+        ? global.EQUIP_CATEGORIAS
+        : typeof EQUIP_CATEGORIAS !== 'undefined'
+          ? EQUIP_CATEGORIAS
+          : {};
+    return EQUIP_SALA_OPCIONAL_KEYS.filter(function (key) {
+      var cur = inst[key];
+      if (cur && (cur.id || cur.marca)) return false;
+      return !!cats[key];
+    });
+  }
+
+  /**
+   * Inicio · propagador: ocultar hub de fases / montaje 3 tarjetas / resumen de ruta.
+   * El aviso de sala (checklist) queda como guía principal.
+   */
+  function hcPropagadorInicioOcultarCuadroGermFases(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.getCaminoCultivo !== 'function') return false;
+    if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
+    if (typeof global.hcGerminacionActiva === 'function' && !global.hcGerminacionActiva(cfg)) {
+      return false;
+    }
+    if (
+      typeof global.propagadorMontajeCompleto === 'function' &&
+      !global.propagadorMontajeCompleto(cfg)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   /** 'equip' = falta configurador · 'montaje' = falta checklist físico */
   function getSalaRecoPasoInicio(cfg) {
     cfg = cfg || getCfg();
@@ -763,7 +829,9 @@
       return false;
     }
     var paso = getSalaRecoPasoInicio(cfg);
-    return paso === 'equip' || paso === 'montaje';
+    if (paso === 'equip' || paso === 'montaje') return true;
+    if (paso === 'done' && getEquipamientoSalaOpcionalPendiente(cfg).length > 0) return true;
+    return false;
   }
 
   /** Reco suave en hub de germinación (no bloquea fases; solo orienta). */
@@ -799,16 +867,6 @@
   function renderDashSalaEquipRecoBanner(cfg) {
     var host = el('dashSalaEquipReco');
     if (!host) return;
-    var germHub = el('dashGerminacionHub');
-    if (
-      germHub &&
-      !germHub.classList.contains('setup-hidden') &&
-      (germHub.querySelector('.hc-germ-sala-cta') || germHub.innerHTML.indexOf('hc-germ-sala-cta') >= 0)
-    ) {
-      host.classList.add('setup-hidden');
-      host.innerHTML = '';
-      return;
-    }
     var show = hcMostrarRecoEquipSalaInicio(cfg);
     host.classList.toggle('setup-hidden', !show);
     if (!show) {
@@ -820,9 +878,16 @@
       typeof global.getCamposEquipamientoFaltantes === 'function'
         ? global.getCamposEquipamientoFaltantes(cfg)
         : [];
+    var opcPend = getEquipamientoSalaOpcionalPendiente(cfg);
+    var catsOpc =
+      typeof global.EQUIP_CATEGORIAS !== 'undefined' && global.EQUIP_CATEGORIAS
+        ? global.EQUIP_CATEGORIAS
+        : typeof EQUIP_CATEGORIAS !== 'undefined'
+          ? EQUIP_CATEGORIAS
+          : {};
     var faltaTxt =
       falt.length > 0
-        ? ' Falta en catálogo: <strong>' +
+        ? ' Falta indispensable: <strong>' +
           falt
             .map(function (f) {
               return f.label;
@@ -830,23 +895,46 @@
             .join(', ') +
           '</strong>.'
         : '';
+    var opcTxt =
+      paso !== 'equip' && opcPend.length > 0
+        ? ' Opcional sin registrar: <strong>' +
+          opcPend
+            .map(function (k) {
+              return catsOpc[k] ? catsOpc[k].label : k;
+            })
+            .join(', ') +
+          '</strong>.'
+        : '';
     var onclick =
-      paso === 'montaje'
-        ? "typeof hcIrMontajeSala==='function'&&hcIrMontajeSala()"
+      paso === 'montaje' || paso === 'done'
+        ? paso === 'done' && opcPend.length > 0
+          ? "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()"
+          : "typeof hcIrMontajeSala==='function'&&hcIrMontajeSala()"
         : "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()";
     var title =
-      paso === 'montaje'
-        ? 'Checklist de montaje de sala (con guías)'
-        : 'Configura el equipamiento de la sala de cultivo';
+      paso === 'done' && opcPend.length > 0
+        ? 'Equipamiento opcional de sala'
+        : paso === 'montaje'
+          ? 'Checklist de montaje de sala (con guías)'
+          : 'Configura el equipamiento de la sala de cultivo';
     var text =
-      paso === 'montaje'
-        ? 'Equipamiento guardado. En <strong>Sala → Checklist de montaje</strong> marca cada punto en físico; en cada tarjeta abre la <strong>guía paso a paso</strong> (carpa, LED, extractor…). El circuito <strong>DWC/RDWC</strong> solo después de la germinación.'
-        : 'En <strong>Sala</strong>: primero el <strong>configurador</strong> (carpa, LED, extractor, propagador en la sala); después el <strong>checklist de montaje</strong> con sus guías.';
-    var cta = paso === 'montaje' ? 'Ir al checklist en Sala ›' : 'Abrir configurador ›';
+      paso === 'done' && opcPend.length > 0
+        ? 'Montaje verificado. Puedes registrar <strong>filtro de carbón, circulación, temporizador LED y control de HR</strong> en el configurador. Las <strong>6 fases de germinación</strong> están en <strong>Medir</strong>.'
+        : paso === 'montaje'
+          ? 'Indispensables guardados. En <strong>Sala</strong> revisa el catálogo (opcional) y marca el <strong>checklist de montaje</strong> en físico. El circuito <strong>DWC/RDWC</strong> solo después de la germinación.'
+          : 'En <strong>Sala</strong>: <strong>indispensable</strong> (carpa, LED, extractor) y <strong>opcional</strong> (filtro carbón, circulación, HR…); después el checklist de montaje.';
+    var cta =
+      paso === 'done' && opcPend.length > 0
+        ? 'Abrir configurador opcional ›'
+        : paso === 'montaje'
+          ? 'Ir al checklist en Sala ›'
+          : 'Abrir configurador ›';
     var pasoHint =
-      paso === 'montaje'
-        ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
-        : '<span class="dash-sala-equip-reco-step">Paso 1 de 2 · equipamiento</span>';
+      paso === 'done' && opcPend.length > 0
+        ? '<span class="dash-sala-equip-reco-step">Opcional · recomendado</span>'
+        : paso === 'montaje'
+          ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
+          : '<span class="dash-sala-equip-reco-step">Paso 1 de 2 · equipamiento</span>';
     host.innerHTML =
       '<button type="button" class="dash-sala-equip-reco-btn" onclick="' +
       onclick +
@@ -859,6 +947,7 @@
       '<span class="dash-sala-equip-reco-text">' +
       text +
       faltaTxt +
+      opcTxt +
       '</span>' +
       '<span class="dash-sala-equip-reco-cta">' +
       cta +
@@ -890,6 +979,8 @@
   global.hcPropagadorPendienteSalaEnInicio = hcPropagadorPendienteSalaEnInicio;
   global.hcPropagadorSalaRecoEnGermHub = hcPropagadorSalaRecoEnGermHub;
   global.hcMostrarRecoEquipSalaInicio = hcMostrarRecoEquipSalaInicio;
+  global.hcPropagadorInicioOcultarCuadroGermFases = hcPropagadorInicioOcultarCuadroGermFases;
+  global.getEquipamientoSalaOpcionalPendiente = getEquipamientoSalaOpcionalPendiente;
   global.refreshDashSalaEquipRecoBanner = refreshDashSalaEquipRecoBanner;
 })(
   typeof window !== 'undefined' ? window : this

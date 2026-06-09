@@ -2333,6 +2333,31 @@ function guardarSetupYContinuarCore() {
     Object.assign(state.configTorre, buildRdwcConfigFromForm('setup', state.configTorre));
   }
   if (faseSalaPreGerm) {
+    if (typeof getCamposEquipamientoFaltantes === 'function') {
+      var faltSalaPre = getCamposEquipamientoFaltantes(state.configTorre);
+      if (faltSalaPre && faltSalaPre.length) {
+        if (typeof showToast === 'function') {
+          showToast(
+            'Completa el equipamiento indispensable de sala: ' +
+              faltSalaPre
+                .map(function (f) {
+                  return f.label;
+                })
+                .join(', ') +
+              '.',
+            true,
+            { durationMs: 6500 }
+          );
+        }
+        setupPagina =
+          typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : setupPagina;
+        renderSetupPage();
+        if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') {
+          hcScrollSetupWizardAlFalloGuardado();
+        }
+        return false;
+      }
+    }
     state.configTorre.salaPreGermConfigAt = new Date().toISOString();
     state.configTorre.hcSetupFase = 'germinacion';
     if (typeof hcReiniciarPuestaMarchaTrasConfigSala === 'function') {

@@ -389,14 +389,19 @@ test('propagador: sala configurable durante germinación (no solo tras concluir)
   const luz = read('js/hc-luz-equip-sync.js');
   const cultivo = read('js/hc-camino-cultivo.js');
   const fase = read('js/hc-camino-fase.js');
+  const catalog = read('js/hc-equipamiento-catalog.js');
   assert.match(luz, /function hcPropagadorSalaRecoEnGermHub/);
   assert.match(luz, /function hcPropagadorPendienteSalaEnInicio/);
+  assert.match(luz, /function hcPropagadorInicioOcultarCuadroGermFases/);
+  assert.match(luz, /getEquipamientoSalaOpcionalPendiente/);
   assert.doesNotMatch(
     luz,
     /hcPropagadorPendienteSalaEnInicio[\s\S]{0,420}!global\.germinacionConcluida\(cfg\)/
   );
+  assert.match(catalog, /sala_indispensable/);
+  assert.match(catalog, /sala_opcional/);
   assert.match(cultivo, /id: 'sala_cfg'[\s\S]*id: 'fases6'/);
-  assert.match(fase, /hcMontajeInicioDetails/);
+  assert.match(fase, /hcPropagadorInicioOcultarCuadroGermFases/);
   assert.match(fase, /dashSalaEquipReco/);
 });
 

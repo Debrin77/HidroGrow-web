@@ -737,9 +737,15 @@
     try {
     var soloPropag =
       typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
+    var ocultarCuadroGermPropag =
+      soloPropag &&
+      typeof hcPropagadorInicioOcultarCuadroGermFases === 'function' &&
+      hcPropagadorInicioOcultarCuadroGermFases(cfg);
     var germHub = document.getElementById('dashGerminacionHub');
     var germHubVisible =
       germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
+    var germActivaInicio =
+      typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
     ['dashBloqueAmbienteExterior', 'meteoFlashAviso'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.classList.add('setup-hidden');
@@ -749,10 +755,11 @@
     var ocultarLcHidroHub =
       typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg);
     var inicioGermFoco =
-      germHubVisible &&
-      (soloPropag ||
-        (typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)));
-    var esPropagFoco = soloPropag && germHubVisible;
+      (soloPropag && germActivaInicio && (germHubVisible || ocultarCuadroGermPropag)) ||
+      (germHubVisible &&
+        typeof hcSemillaHidroHubEsPrincipal === 'function' &&
+        hcSemillaHidroHubEsPrincipal(cfg));
+    var esPropagFoco = soloPropag && (germHubVisible || ocultarCuadroGermPropag);
     var esHidroFoco = ocultarLcHidroHub && germHubVisible;
     var idsOcultarHidro = [
       'dashOperativaHub',
@@ -785,17 +792,33 @@
       var el = document.getElementById(id);
       if (!el) return;
       var hide = inicioGermFoco;
-      if (
+      if (soloPropag && id === 'dashSalaEquipReco') {
+        hide = false;
+      } else if (
         soloPropag &&
+        !ocultarCuadroGermPropag &&
         (id === 'hcMontajeInicioDetails' ||
-          id === 'dashSalaEquipReco' ||
           id === 'dashPropagadorRutaHost' ||
           id === 'dashCaminoResumen')
       ) {
         hide = false;
+      } else if (ocultarCuadroGermPropag && id !== 'dashSalaEquipReco') {
+        hide = true;
       }
       el.classList.toggle('setup-hidden', hide);
     });
+    if (ocultarCuadroGermPropag) {
+      var germHubOc = document.getElementById('dashGerminacionHub');
+      if (germHubOc) {
+        germHubOc.classList.add('setup-hidden');
+        germHubOc.innerHTML = '';
+      }
+      var propRutaOc = document.getElementById('dashPropagadorRutaHost');
+      if (propRutaOc) {
+        propRutaOc.classList.add('setup-hidden');
+        propRutaOc.innerHTML = '';
+      }
+    }
     if (inicioGermFoco && !soloPropag) {
       var salaReco = document.getElementById('dashSalaEquipReco');
       if (salaReco) salaReco.innerHTML = '';
@@ -804,7 +827,11 @@
         refreshDashSalaEquipRecoBanner(cfg);
       } catch (_) {}
     }
-    if (soloPropag && typeof renderMontajeInicioHubPropagador === 'function') {
+    if (
+      soloPropag &&
+      !ocultarCuadroGermPropag &&
+      typeof renderMontajeInicioHubPropagador === 'function'
+    ) {
       try {
         var montBody = document.getElementById('hcMontajeInicioBody');
         if (montBody) montBody.innerHTML = renderMontajeInicioHubPropagador(cfg) || '';
@@ -814,7 +841,7 @@
         }
       } catch (_) {}
     }
-    if (esPropagFoco && typeof refreshDashCaminoResumen === 'function') {
+    if (esPropagFoco && !ocultarCuadroGermPropag && typeof refreshDashCaminoResumen === 'function') {
       try {
         refreshDashCaminoResumen();
       } catch (_) {}
@@ -853,7 +880,12 @@
       tabInicio.classList.toggle('dash-inicio--germ-foco-hidro', !!esHidroFoco);
     }
     var propRuta = document.getElementById('dashPropagadorRutaHost');
-    if (propRuta) propRuta.classList.toggle('setup-hidden', !!(inicioGermFoco && !soloPropag));
+    if (propRuta) {
+      propRuta.classList.toggle(
+        'setup-hidden',
+        !!(inicioGermFoco && !soloPropag) || !!ocultarCuadroGermPropag
+      );
+    }
     var dashVar = document.getElementById('dashInstalacionVariedad');
     if (dashVar) dashVar.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashInstLbl = document.getElementById('dashInstalacionLabel');

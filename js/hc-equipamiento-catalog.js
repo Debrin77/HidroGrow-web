@@ -602,6 +602,59 @@ function equipApplyBombaRecircFilter(groups) {
     });
 }
 
+function hcEquipCatalogModoSalaPropagador() {
+  var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+  if (cam !== 'semilla_propagador') return false;
+  try {
+    var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (typeof hcPropagadorEquipSalaSinHidro === 'function' && !hcPropagadorEquipSalaSinHidro(cfg)) {
+      return false;
+    }
+  } catch (_) {}
+  return true;
+}
+
+function equipCatalogGroupsSalaPropagador(entorno) {
+  var salaIndisp = ['armario', 'led', 'extractor'];
+  var salaOpcional = [
+    'filtro_carbon',
+    'ventilador_circ',
+    'temporizador',
+    'humidificador',
+    'deshumidificador',
+    'co2',
+  ];
+  var tools = (EQUIP_CATALOG_GROUPS.interior || []).find(function (g) {
+    return g.id === 'tools';
+  });
+  var out = [
+    {
+      id: 'sala_indispensable',
+      label: 'Sala · indispensable',
+      icon: '🏠',
+      required: true,
+      keys: salaIndisp,
+      hint:
+        'Carpa, LED y extractor antes del checklist de montaje. El circuito DWC/RDWC lo configurarás tras la germinación.',
+    },
+    {
+      id: 'sala_opcional',
+      label: 'Sala · opcional / recomendado',
+      icon: '✨',
+      optional: true,
+      keys: salaOpcional,
+      hint:
+        'Filtro de carbón, circulación, temporizador LED y control de HR. Regístralo ahora o cuando lo instales.',
+    },
+  ];
+  if (tools && tools.keys && tools.keys.length) {
+    out.push(Object.assign({}, tools));
+  }
+  return out.filter(function (g) {
+    return g.keys && g.keys.length;
+  });
+}
+
 function getPremiumOrigenPlanta() {
   try {
     if (typeof ensurePremiumSetup === 'function') {
@@ -629,25 +682,18 @@ function getEquipCatalogGroups(entorno) {
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
   const germKeys = ['propagador', 'mat_termica_germ'];
 
-  if (faseSala && camino === 'semilla_propagador') {
-    return base
-      .filter(function (g) {
-        return g.id !== 'hidro';
-      })
-      .map(function (g) {
-        return Object.assign({}, g, {
-          keys: (g.keys || []).filter(function (k) {
-            return germKeys.indexOf(k) < 0;
-          }),
-          hint:
-            g.id === 'sala'
-              ? 'Carpa, LED, extractor y clima. El circuito DWC/RDWC lo configurarás tras la germinación.'
-              : g.hint,
-        });
-      })
-      .filter(function (g) {
-        return g.keys && g.keys.length;
-      });
+  if (hcEquipCatalogModoSalaPropagador() && (faseSala || camino === 'semilla_propagador')) {
+    try {
+      var cfgCat =
+        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+      var germActiva =
+        typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgCat);
+      if (faseSala || germActiva || (typeof window !== 'undefined' && window._hcSetupSalaPreGermSession)) {
+        return equipCatalogGroupsSalaPropagador(entorno);
+      }
+    } catch (_) {
+      if (faseSala) return equipCatalogGroupsSalaPropagador(entorno);
+    }
   }
 
   if (faseSala && camino === 'semilla_hidro') {
