@@ -1601,9 +1601,6 @@
       ' · día <strong>' +
       o.diaN +
       '</strong>';
-    var focusDesc = o.allDone
-      ? 'Asigna la plántula en la matriz cuando cierres el hidro.'
-      : o.tareaHoy || o.pasoDesc;
     var equipBlock =
       '<div class="hc-germ-equip-block">' +
       '<h4 class="hc-germ-block-lbl">Equipamiento del propagador</h4>' +
@@ -1653,30 +1650,8 @@
       meta +
       '</p>' +
       '</div></div>' +
-      buildGermKpiStripHtml(o.domo) +
       renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
       renderHubLuzTenuePropagadorHtml(o.cfg, o.g) +
-      '<div class="hc-germ-focus hc-germ-focus--compact' +
-      (o.allDone ? ' hc-germ-focus--done' : '') +
-      '">' +
-      '<span class="hc-germ-focus-ico" aria-hidden="true">' +
-      (o.allDone ? '🎉' : o.paso.icon) +
-      '</span>' +
-      '<div class="hc-germ-focus-body">' +
-      '<div class="hc-germ-focus-kicker">' +
-      (o.allDone ? 'Lista para el hidro' : 'Hoy · ' + esc(o.paso.titulo)) +
-      '</div>' +
-      '<p class="hc-germ-focus-desc">' +
-      esc(focusDesc) +
-      '</p>' +
-      (o.equipAviso && !o.allDone
-        ? '<p class="hc-germ-equip-aviso" role="note">' + esc(o.equipAviso) + '</p>'
-        : '') +
-      (o.allDone
-        ? ''
-        : '<button type="button" class="btn btn-secondary btn-sm hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase</button>') +
-      '</div></div>' +
-      buildGermHubMedirHistorialCtaHtml() +
       '<details class="hc-germ-advanced config-section-collapsible">' +
       buildGermAdvancedSummaryHtml('Guía de fases, equipamiento y más') +
       '<div class="hc-germ-advanced-body config-section-collapse-body">' +
@@ -1724,9 +1699,6 @@
       '</strong> · <strong>' +
       o.pct +
       '%</strong> fases';
-    var focusDesc = o.allDone
-      ? 'Abre el checklist operativa y registra la plántula en la cesta del esquema.'
-      : o.tareaHoy || o.pasoDesc;
     var equipBlock =
       '<div class="hc-germ-equip-block">' +
       '<h4 class="hc-germ-block-lbl">Equipamiento del cubo</h4>' +
@@ -1769,33 +1741,8 @@
       esc(o.tipo || 'DWC/RDWC') +
       '</p>' +
       '</div></div>' +
-      buildGermKpiStripHtml(o.domo, { lblTemp: 'T° cubo', lblHr: 'HR' }) +
       renderHubCupulaGermHidroHtml(o.cfg, o.g) +
       (hubMuestraGuiaLlenadoGermHidro(o.cfg) ? renderHubLlenadoGermHidroHtml(o.cfg) : '') +
-      '<div class="hc-germ-focus hc-germ-focus--compact' +
-      (o.allDone ? ' hc-germ-focus--done' : '') +
-      '">' +
-      '<span class="hc-germ-focus-ico" aria-hidden="true">' +
-      (o.allDone ? '🎉' : o.paso.icon) +
-      '</span>' +
-      '<div class="hc-germ-focus-body">' +
-      '<div class="hc-germ-focus-kicker">' +
-      (o.allDone ? 'Lista para matriz' : 'Fase ' + o.paso.paso + ' de ' + PASOS.length) +
-      '</div>' +
-      '<h3 class="hc-germ-focus-title">' +
-      esc(o.allDone ? '6 fases completadas' : o.paso.titulo) +
-      '</h3>' +
-      '<p class="hc-germ-focus-desc">' +
-      esc(focusDesc) +
-      '</p>' +
-      (o.equipAviso && !o.allDone
-        ? '<p class="hc-germ-equip-aviso" role="note">' + esc(o.equipAviso) + '</p>'
-        : '') +
-      (o.allDone
-        ? ''
-        : '<button type="button" class="btn btn-primary btn-sm hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase completada</button>') +
-      '</div></div>' +
-      buildGermHubMedirHistorialCtaHtml('hidro') +
       '<details class="hc-germ-advanced config-section-collapsible">' +
       buildGermAdvancedSummaryHtml('Fases, cubos y equipamiento') +
       '<div class="hc-germ-advanced-body config-section-collapse-body">' +
@@ -2138,43 +2085,6 @@
         : typeof renderGermHidroNetPotViz === 'function'
           ? renderGermHidroNetPotViz(g, cfg)
           : '') +
-      '<div class="hc-germ-focus' +
-      (allDone ? ' hc-germ-focus--done' : '') +
-      '">' +
-      '<span class="hc-germ-focus-ico" aria-hidden="true">' +
-      (allDone ? '🎉' : paso.icon) +
-      '</span>' +
-      '<div class="hc-germ-focus-body">' +
-      '<div class="hc-germ-focus-kicker">' +
-      (allDone
-        ? 'Camino completo'
-        : camGerm === 'semilla_propagador'
-          ? 'Guía opcional · fase ' + paso.paso + ' de ' + PASOS.length
-          : 'Fase ' + paso.paso + ' de ' + PASOS.length) +
-      '</div>' +
-      '<h3 class="hc-germ-focus-title">' +
-      esc(
-        allDone
-          ? camGerm === 'semilla_hidro'
-            ? 'Lista para matriz'
-            : 'Lista para el hidro'
-          : paso.titulo
-      ) +
-      '</h3>' +
-      '<p class="hc-germ-focus-desc">' +
-      esc(
-        allDone
-          ? camGerm === 'semilla_hidro'
-            ? 'Abre el checklist operativa y registra la plántula en la cesta del esquema.'
-            : 'Asigna la plántula en la matriz y prepara el depósito con EC baja.'
-          : pasoDesc
-      ) +
-      '</p>' +
-      (equipAviso ? '<p class="hc-germ-equip-aviso" role="note">' + esc(equipAviso) + '</p>' : '') +
-      (allDone
-        ? ''
-        : '<button type="button" class="btn btn-primary hc-germ-focus-cta" onclick="hcGerminacionCompletarFaseActual()">Marcar fase completada</button>') +
-      '</div></div>' +
       '<div class="hc-germ-equip-block">' +
       '<h4 class="hc-germ-block-lbl">' +
       (modo === 'hidro_directo' ? 'Equipamiento del cubo' : 'Equipamiento del propagador') +
@@ -2188,12 +2098,11 @@
       '<div class="hc-germ-equip-row">' +
       renderEquipChips(EQUIP_RECOMENDADO, g, modo) +
       '</div></div>' +
-      camGerm === 'semilla_propagador' || camGerm === 'semilla_hidro'
-        ? buildGermHubMedirHistorialCtaHtml(camGerm === 'semilla_hidro' ? 'hidro' : '') +
-          (camGerm === 'semilla_propagador'
-            ? '<div class="hc-germ-concluir-block">' + buildGermConcluirPropagHtml(cfg, g) + '</div>'
-            : '')
-        : '<div class="hc-germ-registro-block">' +
+      camGerm === 'semilla_propagador'
+        ? '<div class="hc-germ-concluir-block">' + buildGermConcluirPropagHtml(cfg, g) + '</div>'
+        : camGerm === 'semilla_hidro'
+          ? ''
+          : '<div class="hc-germ-registro-block">' +
           '<h4 class="hc-germ-block-lbl">Registro diario · día ' +
           diaN +
           '</h4>' +

@@ -1798,17 +1798,9 @@ function actualizarBadgesNutriente() {
   }
   const dashNutLabel = document.getElementById('dashNutrienteLabel');
   const dashSisInfo = document.getElementById('dashSistemaInfo');
-  const ocultarNutInicioPropag =
-    typeof hcSistemaPropagadorSinHidro === 'function' &&
-    hcSistemaPropagadorSinHidro(cfg) &&
-    (typeof hcDashGermHubVisibleEnInicio === 'function'
-      ? hcDashGermHubVisibleEnInicio()
-      : false);
   if (dashNutLabel) {
-    if (ocultarNutInicioPropag) {
-      dashNutLabel.classList.add('setup-hidden');
-    } else {
-      dashNutLabel.classList.remove('setup-hidden');
+    dashNutLabel.classList.toggle('setup-hidden', !hayInst);
+    if (hayInst) {
       dashNutLabel.textContent = dashSemillaHidroGerm
         ? 'Nutriente · germinación en cubo'
         : dashUsaGermNut
@@ -1816,10 +1808,7 @@ function actualizarBadgesNutriente() {
           : 'Nutriente seleccionado';
     }
   }
-  if (dashSisInfo) {
-    if (ocultarNutInicioPropag) dashSisInfo.classList.add('setup-hidden');
-    else dashSisInfo.classList.remove('setup-hidden');
-  }
+  if (dashSisInfo) dashSisInfo.classList.toggle('setup-hidden', !hayInst);
   if (dashNombre) {
     dashNombre.textContent = nut
       ? nut.nombre

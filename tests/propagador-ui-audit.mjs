@@ -189,7 +189,7 @@ test('propagador: Inicio solo hub (sin bloques DWC duplicados)', async () => {
   assert.equal(snap.inicio.rutina, false, 'dashRutinaDia');
   assert.equal(snap.inicio.lifecycle, false, 'dashInstalacionLifecycle');
   assert.equal(snap.inicio.caminoResumen, false, 'dashCaminoResumen');
-  assert.equal(snap.inicio.nutriente, false, 'dashSistemaInfo');
+  assert.equal(snap.inicio.nutriente, true, 'dashSistemaInfo debajo de instalación');
   assert.equal(snap.inicio.recarga, false, 'dashRecargaCard');
   assert.equal(snap.inicio.medYcult, false, 'dash-medicion-y-cultivo');
   assert.equal(snap.inicio.plantasInicio, false, 'plantas inicio');

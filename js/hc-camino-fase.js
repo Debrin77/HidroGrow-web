@@ -758,8 +758,6 @@
     var idsOcultarPropag = [
       'dashRutinaDia',
       'dashCaminoResumen',
-      'dashNutrienteLabel',
-      'dashSistemaInfo',
       'hcPlantasInstalacionInicioDetails',
       'hcMontajeInicioDetails',
       'dashRecargaCard',
@@ -799,10 +797,6 @@
       avisoCestas.style.display = 'none';
       avisoCestas.innerHTML = '';
     }
-    var ocultarSalaTab =
-      typeof hcOcultarTabSalaDuranteCamino === 'function' && hcOcultarTabSalaDuranteCamino(cfg);
-    var quickSala = document.querySelector('.quick-btn[data-quick-icon="sala"]');
-    if (quickSala) quickSala.classList.toggle('setup-hidden', !!ocultarSalaTab);
     var quickRec = document.querySelector('.quick-btn[data-quick-icon="recarga"]');
     if (quickRec) {
       quickRec.classList.toggle(
@@ -823,19 +817,6 @@
     if (dashVar) dashVar.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashInstLbl = document.getElementById('dashInstalacionLabel');
     if (dashInstLbl) dashInstLbl.classList.toggle('setup-hidden', !!inicioGermFoco);
-    var quickCal = document.querySelector('.quick-btn[data-quick-icon="calendario"]');
-    if (quickCal) quickCal.classList.toggle('setup-hidden', !inicioGermFoco);
-    var quickCons = document.querySelector('.quick-btn[data-quick-icon="consejos"]');
-    if (quickCons) quickCons.classList.toggle('setup-hidden', !inicioGermFoco);
-    var quickCult = document.querySelector('.quick-btn[data-quick-icon="sistema"]');
-    if (quickCult) quickCult.classList.remove('setup-hidden');
-    var quickBandeja = document.querySelector('.quick-btn[data-quick-icon="bandeja"]');
-    if (quickBandeja) quickBandeja.classList.toggle('setup-hidden', !esPropagFoco);
-    hcQuickBtnLabel(
-      document.querySelector('.quick-btn[data-quick-icon="mediciones"]'),
-      esPropagFoco,
-      'Medir domo'
-    );
     try {
       if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
     } catch (_) {}
