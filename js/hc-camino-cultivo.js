@@ -527,17 +527,32 @@
     return cam === 'semilla_propagador' || cam === 'semilla_hidro';
   }
 
+  /** Claves de equipamiento de sala (no propagador / germ / hidro). */
+  var SALA_EQUIP_INST_KEYS = [
+    'armario',
+    'led',
+    'extractor',
+    'filtro_carbon',
+    'ventilador_circ',
+    'temporizador',
+    'humidificador',
+    'deshumidificador',
+    'co2',
+  ];
+
+  function instTieneEquipamientoSalaRegistrado(inst) {
+    inst = inst && typeof inst === 'object' ? inst : {};
+    return SALA_EQUIP_INST_KEYS.some(function (k) {
+      return inst[k] && (inst[k].marca || inst[k].id);
+    });
+  }
+
   function salaPreGermConfigurada(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (cfg.salaPreGermConfigAt) return true;
     /* No llamar salaConfiguradaCamino: esa función ya delega aquí y provoca recursión infinita. */
-    var p = cfg.premiumSetup || {};
-    if (Number(p.anchoM) > 0 && Number(p.largoM) > 0) return true;
-    if (Number(cfg.growRoomAnchoM) > 0 && Number(cfg.growRoomLargoM) > 0) return true;
     var inst = cfg.equipamientoInstalado || {};
-    return Object.keys(inst).some(function (k) {
-      return inst[k] && (inst[k].marca || inst[k].id);
-    });
+    return instTieneEquipamientoSalaRegistrado(inst);
   }
 
   /** Tras guardar solo equipamiento de sala: no pisar propagador, germinación ni camino. */
@@ -661,6 +676,11 @@
   function montajeSalaPreGermOk(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     if (!salaPreGermConfigurada(cfg)) return false;
+    if (!cfg.salaPreGermConfigAt) {
+      if (typeof getCamposEquipamientoFaltantes !== 'function') return false;
+      var falt = getCamposEquipamientoFaltantes(cfg);
+      if (falt && falt.length) return false;
+    }
     var checks = cfg.puestaMarchaChecks;
     if (!checks || !checks.completedAt) return false;
     if (typeof montajeVerificacionVigente === 'function') {
@@ -2086,6 +2106,7 @@
   global.hcResetPremiumBorradorNuevaInstalacion = hcResetPremiumBorradorNuevaInstalacion;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
+  global.instTieneEquipamientoSalaRegistrado = instTieneEquipamientoSalaRegistrado;
   global.hcPropagadorEquipSalaSinHidro = hcPropagadorEquipSalaSinHidro;
   global.montajeSalaPreGermOk = montajeSalaPreGermOk;
   global.salaListaAntesDeGerminacion = salaListaAntesDeGerminacion;

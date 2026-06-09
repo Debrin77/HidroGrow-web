@@ -178,6 +178,29 @@ test('salaPreGermConfigurada no llama salaConfiguradaCamino (evita stack overflo
   );
 });
 
+test('salaPreGermConfigurada: solo equipamiento de sala, no propagador ni medidas sueltas', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /SALA_EQUIP_INST_KEYS/);
+  assert.match(cultivo, /instTieneEquipamientoSalaRegistrado\(inst\)/);
+  assert.doesNotMatch(
+    cultivo,
+    /function salaPreGermConfigurada\(cfg\)[\s\S]{0,320}Object\.keys\(inst\)\.some/
+  );
+  assert.doesNotMatch(
+    cultivo,
+    /function salaPreGermConfigurada\(cfg\)[\s\S]{0,320}growRoomAnchoM/
+  );
+});
+
+test('Medir propagador: ocultar bloque sala hasta montaje verificado', () => {
+  const medir = read('js/hc-medir-germinacion.js');
+  assert.match(medir, /hcMedirOcultarBloqueSala/);
+  assert.match(
+    medir,
+    /cam === 'semilla_propagador'[\s\S]{0,120}montajeSalaPreGermOk\(cfg\)/
+  );
+});
+
 test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () => {
   const torres = read('js/app-hc-torres-badges-notifs.js');
   const boot = read('js/hc-bootstrap-state.js');

@@ -150,13 +150,7 @@
     cfg = cfg || cfgActiva();
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_propagador') {
-      if (typeof salaPreGermConfigurada !== 'function' || !salaPreGermConfigurada(cfg)) {
-        return false;
-      }
-      if (typeof montajeSalaPreGermOk === 'function') {
-        return montajeSalaPreGermOk(cfg);
-      }
-      return !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
+      return typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg);
     }
     if (cam === 'semilla_hidro') {
       if (typeof salaPreGermConfigurada !== 'function' || !salaPreGermConfigurada(cfg)) {
@@ -165,9 +159,36 @@
       if (typeof montajeEstaVerificado === 'function') {
         return montajeEstaVerificado(cfg);
       }
-      return true;
+      return typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg);
     }
     return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
+  }
+
+  /** Semilla propagador/hidro: ocultar bloque sala en Medir hasta config + puesta en marcha. */
+  function hcMedirOcultarBloqueSala(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
+    return !hcMedirSalaListaParaMedir(cfg);
+  }
+
+  function ocultarTarjetasAmbienteSalaEnMedir(cfg, salaLista) {
+    if (salaLista) return;
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
+    ['cardTempAire', 'cardVPD', 'cardPPFD', 'cardCO2', 'cardTempExt'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('setup-hidden');
+    });
+    var ambCard = document.getElementById('medirAmbienteCard');
+    if (ambCard) ambCard.classList.add('setup-hidden');
+    var details = document.getElementById('medirAmbienteDetails');
+    if (details) {
+      details.classList.add('setup-hidden');
+      details.open = false;
+    }
+    var mount = document.getElementById('medirFlowAmbienteMount');
+    if (mount) mount.classList.add('setup-hidden');
   }
 
   function hcMedirSalaConfigurada(cfg) {
@@ -528,7 +549,13 @@
       if (!f || !f.amb) return;
       var el = document.getElementById(f.card);
       if (!el) return;
+      var ocultarSalaAmb =
+        typeof hcMedirOcultarBloqueSala === 'function' && hcMedirOcultarBloqueSala(cfg);
       if (!preTraslado) {
+        if (ocultarSalaAmb) {
+          el.classList.add('setup-hidden');
+          return;
+        }
         el.classList.remove('setup-hidden');
         restoreLabelSpan(f.card);
         restoreCardIcon(f.card);
@@ -583,6 +610,7 @@
     }
 
     refreshMedirSalaAmbienteMedirUi(cfg);
+    ocultarTarjetasAmbienteSalaEnMedir(cfg, salaLista);
     ensureMedirHrDomoEnPropagadorGrid(cfg, preTraslado, variant, salaLista);
     refreshMedirAsistentePropagadorBtn(preTraslado, variant);
     refreshMedirSaveBtnLabel(cfg, preTraslado, variant, salaLista);
@@ -605,6 +633,8 @@
     }
     variant = variant || hcMedirGermPreTrasladoVariant(cfg);
     var tab = document.getElementById('tab-mediciones');
+    var ocultarSalaMedir =
+      typeof hcMedirOcultarBloqueSala === 'function' && hcMedirOcultarBloqueSala(cfg);
     if (tab) {
       tab.classList.toggle('medir-tab--propagador', variant === 'propagador');
       tab.classList.toggle('medir-tab--germ-cubo', variant === 'cubo');
@@ -631,7 +661,7 @@
     hideWhenProp.forEach(function (id) {
       var n = document.getElementById(id);
       if (!n) return;
-      if (id === 'medirAmbienteCard' && preTraslado) {
+      if (id === 'medirAmbienteCard' && (preTraslado || ocultarSalaMedir)) {
         var salaOk =
           typeof hcMedirSalaListaParaMedir === 'function' && hcMedirSalaListaParaMedir(cfg);
         var mountAmb = document.getElementById('medirFlowAmbienteMount');
@@ -746,6 +776,7 @@
     var hint = document.getElementById('hcMedirSalaPendienteHint');
     if (hint) hint.remove();
     if (!germ || salaLista) return;
+    if (typeof hcMedirOcultarBloqueSala !== 'function' || !hcMedirOcultarBloqueSala(cfg)) return;
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
     var host = document.getElementById('medirFlow') || document.getElementById('tab-mediciones');
@@ -769,6 +800,15 @@
     var mount = document.getElementById('medirFlowAmbienteMount');
     var details = document.getElementById('medirAmbienteDetails');
     if (!mount) return;
+
+    if (typeof hcMedirOcultarBloqueSala === 'function' && hcMedirOcultarBloqueSala(cfg)) {
+      mount.classList.add('setup-hidden');
+      if (details) {
+        details.classList.add('setup-hidden');
+        details.open = false;
+      }
+      return;
+    }
 
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var ocultarSalaHastaMontaje =
@@ -804,6 +844,8 @@
 
     if (salaLista) {
       details.classList.remove('setup-hidden');
+      var ambCardEl = document.getElementById('medirAmbienteCard');
+      if (ambCardEl) ambCardEl.classList.remove('setup-hidden');
       details.classList.add('medir-ambiente-details--sala-montada', 'medir-ambiente-details--inline-flat');
       details.open = true;
       if (summary) summary.classList.add('setup-hidden');
@@ -959,6 +1001,7 @@
   global.refreshMedirSalaAmbienteMedirUi = refreshMedirSalaAmbienteMedirUi;
   global.hcMedirSalaAmbienteDisponible = hcMedirSalaAmbienteDisponible;
   global.hcMedirSalaListaParaMedir = hcMedirSalaListaParaMedir;
+  global.hcMedirOcultarBloqueSala = hcMedirOcultarBloqueSala;
   global.hcMedirSalaConfigurada = hcMedirSalaConfigurada;
   global.hcMedirCardSalaEquipoVisible = hcMedirCardSalaEquipoVisible;
   global.refreshMedirPropagadorTabChrome = refreshMedirPropagadorTabChrome;
