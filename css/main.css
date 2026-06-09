@@ -27,7 +27,7 @@
   /* Jerarquía: interfaz = sans; Syne solo en impacto (saludo, cifras hero) */
   --font-ui:   var(--font-sans);
   --font-hero: var(--font-display);
-  --hc-select-chevron-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23ffffff' stroke='%230f172a' stroke-width='1.5'/%3E%3Cpath d='M8.5 10.5 12 14l3.5-3.5' fill='none' stroke='%230f172a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --hc-select-chevron-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23ffffff' stroke='%230f172a' stroke-width='1.5'/%3E%3Cpath d='M10 8.5 14 12 10 15.5' fill='none' stroke='%230f172a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --hc-collapse-chevron-size: 24px;
   --hc-collapse-chevron-font: 11px;
   --text-2xs: 0.6875rem;
@@ -702,7 +702,8 @@ button.pin-key {
   outline-offset: 2px;
 }
 .pin-key:active { background: var(--green-dim); transform: scale(0.90); }
-.pin-key.del { font-size: 16px; color: var(--red); border-color: rgba(248,113,113,0.2); }
+.pin-key.del { color: var(--red); border-color: rgba(248,113,113,0.2); }
+.pin-key.del .pin-key-del-ico { width: 22px; height: 22px; }
 .pin-key--spacer { border: none; background: transparent; pointer-events: none; }
 
 /* ══ APP SHELL ══ */
@@ -12124,11 +12125,7 @@ html.hc-theme-dark .hc-origen-ruta-equip {
   height: 22px;
   font-size: 10px;
   opacity: 1;
-  transform: rotate(-90deg);
   transition: transform 0.2s ease;
-}
-.consejo-card.is-text-expanded .consejo-text-toggle-ico.config-section-collapse-chevron {
-  transform: rotate(0deg);
 }
 
 .diario-det-head {
@@ -14601,7 +14598,7 @@ html.hc-theme-dark .consejo-text-toggle {
   display: none;
 }
 .hc-plantas-instalacion-details[open] > summary .config-section-collapse-chevron {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 .hc-plantas-instalacion-details--dash {
   margin: 10px 0 0;
@@ -15259,6 +15256,12 @@ html.hc-theme-dark .consejo-text-toggle {
   font-size: 16px;
   line-height: 1.2;
   color: #b45309;
+  display: inline-flex;
+  align-items: center;
+}
+.medir-ambiente-importante-ico .hc-ico {
+  width: 18px;
+  height: 18px;
 }
 html.hc-theme-dark .medir-localidad-confirm {
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.18) 0%, rgba(20, 28, 23, 0.95) 70%);
@@ -15756,15 +15759,15 @@ html.hc-theme-dark #tab-mediciones .recarga-card .config-section-collapse-subtit
   outline: 2px solid var(--green);
   outline-offset: 2px;
 }
-/* Indicador compartido: píldora + ▼ (Medir, Cultivo e instalación, recargas, DWC anidado) */
+/* Indicador compartido: círculo + chevron (cerrado → derecha, abierto → abajo) */
 .config-section-collapse-chevron {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: var(--hc-collapse-chevron-size, 24px);
+  height: var(--hc-collapse-chevron-size, 24px);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: var(--hc-collapse-chevron-font, 11px);
   font-weight: 900;
   line-height: 1;
   border-radius: 999px;
@@ -15773,6 +15776,13 @@ html.hc-theme-dark #tab-mediciones .recarga-card .config-section-collapse-subtit
   color: #0f172a;
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.16s ease, color 0.16s ease;
+  transform: rotate(-90deg);
+}
+.config-section-collapse-chevron svg,
+.config-section-collapse-chevron .hc-ico--collapse-chevron {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
 }
 .config-section .config-section-collapse-head .config-section-collapse-chevron {
   background: rgba(255, 255, 255, 0.08);
@@ -15794,8 +15804,28 @@ html.hc-theme-dark #tab-mediciones .recarga-card .config-section-collapse-subtit
 }
 .config-section-collapse-head[aria-expanded="false"] .config-section-collapse-chevron,
 .config-section-collapse-head.is-collapsed .config-section-collapse-chevron,
-.torre-sistema-panel-head[aria-expanded="false"] .config-section-collapse-chevron {
+.torre-sistema-panel-head[aria-expanded="false"] .config-section-collapse-chevron,
+.compat-toggle-btn:not([aria-expanded="true"]) .config-section-collapse-chevron {
   transform: rotate(-90deg);
+}
+.config-section-collapse-head[aria-expanded="true"] .config-section-collapse-chevron,
+.torre-sistema-panel-head[aria-expanded="true"] .config-section-collapse-chevron,
+.compat-toggle-btn[aria-expanded="true"] .config-section-collapse-chevron,
+details[open] > summary .config-section-collapse-chevron,
+details[open] .config-section-collapse-chevron,
+.hc-germ-advanced[open] .config-section-collapse-chevron,
+.consejo-card.is-text-expanded .consejo-text-toggle-ico.config-section-collapse-chevron,
+#tab-sistema .torre-variedades-details[open] .config-section-collapse-chevron,
+.medir-ambiente-details[open] .medir-ambiente-summary .config-section-collapse-chevron,
+.sistema-equip-details[open] .sistema-equip-summary .config-section-collapse-chevron,
+.hc-plantas-instalacion-details[open] > summary .config-section-collapse-chevron,
+.welcome-legal-details[open] .welcome-legal-summary::after,
+.ayuda-faq details[open] summary::after,
+.quick-actions-more[open] .quick-actions-more-summary::after,
+.riego-avanzado-details[open] > summary::after,
+.hc-details-tech[open] .hc-details-tech-sum::after,
+.torre-vol-detalles[open] .torre-vol-detalles-summary::after {
+  transform: rotate(0deg);
 }
 /* Medir: mismo indicador circular en todos los desplegables (NFT o DWC) */
 #tab-mediciones .config-section-collapse-head .config-section-collapse-chevron {

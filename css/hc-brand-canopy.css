@@ -1622,7 +1622,7 @@ html.hc-theme-dark .medir-ambiente-details {
   gap: 6px;
 }
 .medir-ambiente-details[open] .medir-ambiente-summary .config-section-collapse-chevron {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 .medir-ambiente-details .medir-ambiente-card {
   border: none;
@@ -1699,7 +1699,7 @@ html.hc-theme-dark .sistema-equip-details {
   transition: transform 0.2s ease;
 }
 .sistema-equip-details[open] .sistema-equip-summary .config-section-collapse-chevron {
-  transform: rotate(180deg);
+  transform: rotate(0deg);
 }
 #setupOverlay .equip-card.selected,
 #setupOverlay .equip-card[aria-checked="true"] {

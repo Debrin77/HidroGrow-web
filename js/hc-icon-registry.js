@@ -225,11 +225,12 @@ function hcToastHtml(msg, isError) {
   return '<span class="hc-toast-inner">' + body + '</span>';
 }
 
-function hcChevronMarkup(expanded) {
-  if (typeof hcIcon === 'function') {
-    return hcIcon('hc-i-arrows-v', 'hc-ico--chevron' + (expanded ? ' hc-ico--chevron-up' : ''));
-  }
-  return '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span>';
+function hcChevronMarkup(_expanded) {
+  return (
+    '<span class="config-section-collapse-chevron" aria-hidden="true">' +
+    '<svg class="hc-ico hc-ico--collapse-chevron" focusable="false"><use href="#hc-i-chevron"/></svg>' +
+    '</span>'
+  );
 }
 
 function hcCompatEstadoMarkup(compat) {
