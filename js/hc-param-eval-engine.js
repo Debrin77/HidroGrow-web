@@ -167,9 +167,9 @@
       return {
         id: 'vol',
         valor: val,
-        estado: 'warn',
-        msg: 'Volumen ' + val + ' L (sin capacidad configurada para comparar)',
-        solucionTexto: 'Configura litros del depósito en Cultivo e instalación.',
+        estado: 'empty',
+        msg: '',
+        solucionTexto: '',
         solucionHtml: '',
       };
     }
@@ -344,7 +344,9 @@
       amb: { humSala: num(payload.humSala), tempAire: num(payload.tempAire) },
     };
     var items = [];
+    var hasPpfd = Number.isFinite(num(payload.ppfd));
     Object.keys(EVALUATORS).forEach(function (id) {
+      if (id === 'lux' && hasPpfd) return;
       var v = num(payload[id]);
       if (!Number.isFinite(v)) return;
       items.push(evaluarParametro(id, v, ctx));

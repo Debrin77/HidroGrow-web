@@ -334,7 +334,9 @@
       if (typeof evalGerminacionMedicion !== 'function') return;
       var ev = evalGerminacionMedicion(key, val, vid, faseId, cfg);
       setGermStatus(f.statusId, ev.nivel, ev.desfaseTxt);
-      if (typeof setCard === 'function') setCard(f.card, ev.nivel);
+      if (typeof setCard === 'function') {
+        setCard(f.card, ev.nivel === 'bad' ? 'alert' : ev.nivel);
+      }
       var corrHtml = ev.correccion
         ? '<div class="correccion-title">Ajuste</div><div class="correccion-muted">' + ev.correccion + '</div>'
         : '';
@@ -349,7 +351,7 @@
         var evWt = evalGerminacionMedicion('temp', valWt, vid, faseId, cfg);
         setGermStatus('statusTemp', Number.isFinite(valWt) ? evWt.nivel : 'empty', evWt.desfaseTxt || '');
         if (typeof setCard === 'function') {
-          setCard('cardTemp', Number.isFinite(valWt) ? evWt.nivel : '');
+          setCard('cardTemp', Number.isFinite(valWt) ? (evWt.nivel === 'bad' ? 'alert' : evWt.nivel) : '');
         }
         var corrWt = evWt.correccion
           ? '<div class="correccion-title">Ajuste</div><div class="correccion-muted">' + evWt.correccion + '</div>'
@@ -365,6 +367,81 @@
 
   function evalAmbienteGerminacion() {
     evalParamGerminacion();
+  }
+
+  /**
+   * Evaluación post-guardado alineada con las tarjetas de germinación (no rangos DWC).
+   */
+  function evaluarMedicionGerminacion(payload, cfg) {
+    cfg = cfg || cfgActiva();
+    payload = payload || {};
+    var items = [];
+    var alertas = [];
+    if (typeof evalGerminacionMedicion !== 'function') {
+      return { items: items, alertas: alertas, fase: '' };
+    }
+    var mg = getMedirGermActivos(cfg);
+    var plan = mg.plan;
+    var activos = mg.activos;
+    var vid = plan.variedadId;
+    var faseId = plan.faseId;
+    var pre = hcMedirGermPreTrasladoActivo(cfg);
+
+    function num(v) {
+      if (v == null || v === '') return NaN;
+      var n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function pushItem(id, ev, val) {
+      var estado =
+        ev.nivel === 'bad' ? 'bad' : ev.nivel === 'warn' ? 'warn' : ev.nivel === 'ok' ? 'ok' : 'empty';
+      var it = {
+        id: id,
+        valor: val,
+        estado: estado,
+        msg: ev.desfaseTxt || '',
+        solucionTexto: ev.correccion || '',
+        solucionHtml: ev.correccion
+          ? '<div class="correccion-muted">' + ev.correccion + '</div>'
+          : '',
+      };
+      items.push(it);
+      if (estado === 'warn' || estado === 'bad') alertas.push(it);
+    }
+
+    function evalKey(key, val, id) {
+      if (!Number.isFinite(val)) return;
+      var ev = evalGerminacionMedicion(key, val, vid, faseId, cfg);
+      pushItem(id || key, ev, val);
+    }
+
+    if (pre) {
+      evalKey('temp', num(payload.temp), 'temp');
+      evalKey('hr', num(payload.humSala), 'humSala');
+    } else {
+      if (activos.temp) evalKey('temp', num(payload.tempAire), 'tempAire');
+      if (activos.hr) evalKey('hr', num(payload.humSala), 'humSala');
+    }
+    if (activos.ec) evalKey('ec', num(payload.ec), 'ec');
+    if (activos.ph) evalKey('ph', num(payload.ph), 'ph');
+    if (activos.vpd) evalKey('vpd', num(payload.vpd), 'vpd');
+
+    if (typeof global.evaluarMedicionCompleta === 'function' && hcMedirSalaListaParaMedir(cfg)) {
+      var salaEval = global.evaluarMedicionCompleta({
+        ppfd: payload.ppfd,
+        lux: payload.lux,
+        co2: payload.co2,
+        tempExt: payload.tempExt,
+        fase: payload.fase,
+      });
+      (salaEval.items || []).forEach(function (it) {
+        items.push(it);
+        if (it.estado === 'warn' || it.estado === 'bad') alertas.push(it);
+      });
+    }
+
+    return { items: items, alertas: alertas, fase: faseId };
   }
 
   function refreshMedirGerminacionUi(cfg) {
@@ -802,6 +879,7 @@
   global.hcMedirCardSalaEquipoVisible = hcMedirCardSalaEquipoVisible;
   global.refreshMedirPropagadorTabChrome = refreshMedirPropagadorTabChrome;
   global.evalParamGerminacion = evalParamGerminacion;
+  global.evaluarMedicionGerminacion = evaluarMedicionGerminacion;
   global.actualizarRangosParametrosMedirGerm = actualizarRangosParametrosMedirGerm;
 
   hookMedirGerminacion();

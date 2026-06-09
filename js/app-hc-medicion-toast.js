@@ -290,6 +290,11 @@ async function guardarMedicion(payloadOverride) {
     return;
   }
 
+  try {
+    if (medirGermSave && typeof evalParamGerminacion === 'function') evalParamGerminacion();
+    else if (typeof evalParam === 'function') evalParam();
+  } catch (_) {}
+
   var evalPayload = {
     ec: ec,
     ph: ph,
@@ -304,8 +309,15 @@ async function guardarMedicion(payloadOverride) {
     co2: ambPayload.co2,
     fase: ambPayload.fase || (typeof getFaseCultivoActual === 'function' ? getFaseCultivoActual() : ''),
   };
-  var evalResult =
-    typeof evaluarMedicionCompleta === 'function' ? evaluarMedicionCompleta(evalPayload) : null;
+  var evalResult = null;
+  if (
+    medirGermSave &&
+    typeof evaluarMedicionGerminacion === 'function'
+  ) {
+    evalResult = evaluarMedicionGerminacion(evalPayload, state.configTorre || {});
+  } else if (typeof evaluarMedicionCompleta === 'function') {
+    evalResult = evaluarMedicionCompleta(evalPayload);
+  }
 
   var msgOk = buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave);
   if (evalResult && evalResult.alertas && evalResult.alertas.length) {
