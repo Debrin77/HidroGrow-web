@@ -385,9 +385,19 @@ test('semilla_hidro: hub visible durante germ y postAsistente solo tras matriz',
   assert.doesNotMatch(germ, /hcSemillaHidroPostAsistenteUi/);
 });
 
-test('propagador: sala reco tras germinacionConcluida', () => {
+test('propagador: sala configurable durante germinación (no solo tras concluir)', () => {
   const luz = read('js/hc-luz-equip-sync.js');
-  assert.match(luz, /germinacionConcluida\(cfg\)/);
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const fase = read('js/hc-camino-fase.js');
+  assert.match(luz, /function hcPropagadorSalaRecoEnGermHub/);
+  assert.match(luz, /function hcPropagadorPendienteSalaEnInicio/);
+  assert.doesNotMatch(
+    luz,
+    /hcPropagadorPendienteSalaEnInicio[\s\S]{0,420}!global\.germinacionConcluida\(cfg\)/
+  );
+  assert.match(cultivo, /id: 'sala_cfg'[\s\S]*id: 'fases6'/);
+  assert.match(fase, /hcMontajeInicioDetails/);
+  assert.match(fase, /dashSalaEquipReco/);
 });
 
 test('arranque: IIFE exportan a window (PIN y germinación)', () => {

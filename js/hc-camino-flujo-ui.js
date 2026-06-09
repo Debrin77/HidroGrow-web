@@ -333,9 +333,13 @@
 
   function hcNecesitaBannerTrasladoSala(cfg) {
     cfg = cfg || cfgActiva();
-    if (typeof hcGerminacionBloqueada !== 'function') return null;
-    var b = hcGerminacionBloqueada(cfg);
-    if (b === 'sala_config' || b === 'sala_montaje') return b;
+    if (typeof hcGerminacionBloqueada === 'function') {
+      var b = hcGerminacionBloqueada(cfg);
+      if (b === 'sala_config' || b === 'sala_montaje') return b;
+    }
+    if (typeof hcPropagadorSalaRecoEnGermHub === 'function') {
+      return hcPropagadorSalaRecoEnGermHub(cfg);
+    }
     return null;
   }
 
@@ -344,18 +348,29 @@
     var tipo = hcNecesitaBannerTrasladoSala(cfg);
     if (!tipo) return '';
     var cam = getCam(cfg);
-    if (tipo === 'sala_config') {
+    if (tipo === 'sala_config' || tipo === 'sala_config_soft') {
+      var titCfg =
+        tipo === 'sala_config_soft'
+          ? 'Prepara la sala de cultivo'
+          : cam === 'semilla_propagador'
+            ? 'Germinación concluida · Sala'
+            : 'Configura la sala';
       return (
         '<div class="hc-traslado-sala-banner setup-field-hint setup-field-hint--banner" role="status">' +
         '<strong>' +
-        (cam === 'semilla_propagador' ? 'Germinación concluida · Sala (opcional)' : 'Configura la sala') +
-        '</strong> Carpa, LED y extractor si quieres antes del traslado al hidro. ' +
+        titCfg +
+        '</strong> Carpa, LED, extractor y clima — puedes hacerlo <strong>durante la germinación</strong>. ' +
+        'El DWC/RDWC del depósito va al traslado. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'?abrirConfiguradorEquipamientoSalaPropagador():(typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala())">Configurar sala</button></div>'
       );
     }
+    var titMont =
+      tipo === 'sala_montaje_soft' ? 'Puesta en marcha de sala' : 'Montaje de sala';
     return (
       '<div class="hc-traslado-sala-banner setup-field-hint setup-field-hint--banner" role="status">' +
-      '<strong>Montaje de sala.</strong> Verifica el checklist en Sala. ' +
+      '<strong>' +
+      titMont +
+      '.</strong> Checklist físico en la pestaña Sala (carpa, LED, extractor…). ' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Ir a montaje</button></div>'
     );
   }

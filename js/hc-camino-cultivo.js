@@ -1577,6 +1577,20 @@
             action: 'irPropagadorMontaje',
           },
           {
+            id: 'sala_cfg',
+            label: 'Sala configurada',
+            done: salaPreGermConfigurada(cfg),
+            action: 'abrirSetupFaseSala',
+            hint: !salaPreGermConfigurada(cfg) ? 'Durante germinación' : '',
+          },
+          {
+            id: 'sala_mont',
+            label: 'Montaje de sala',
+            done: montajeSalaPreGermOk(cfg),
+            action: 'irMontaje',
+            hint: salaPreGermConfigurada(cfg) && !montajeSalaPreGermOk(cfg) ? 'Puesta en marcha' : '',
+          },
+          {
             id: 'fases6',
             label: 'Germinación (' + fasesN + '/6 fases)',
             done: germConcl,
@@ -1591,18 +1605,6 @@
               label: 'Sistema DWC/RDWC',
               done: hidroInstalacionCerrada(cfg),
               action: 'abrirSetupFaseHidro',
-            },
-            {
-              id: 'sala_cfg',
-              label: 'Sala configurada',
-              done: salaPreGermConfigurada(cfg),
-              action: 'abrirSetupFaseSala',
-            },
-            {
-              id: 'sala_mont',
-              label: 'Montaje de sala',
-              done: montajeSalaPreGermOk(cfg),
-              action: 'irMontaje',
             },
             {
               id: 'traslado',
@@ -1755,6 +1757,11 @@
           typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
       },
       {
+        id: 'sala',
+        label: 'Sala',
+        done: montajeSalaPreGermOk(cfg),
+      },
+      {
         id: 'germ',
         label: 'Germinación',
         done: typeof germinacionConcluida === 'function' && germinacionConcluida(cfg),
@@ -1763,11 +1770,6 @@
         id: 'hidro',
         label: 'DWC/RDWC',
         done: hidroInstalacionCerrada(cfg),
-      },
-      {
-        id: 'sala',
-        label: 'Sala',
-        done: montajeSalaPreGermOk(cfg),
       },
       {
         id: 'op',
@@ -1877,6 +1879,14 @@
     var cam = getCaminoCultivo(cfg);
     if (cam === 'semilla_propagador') {
       if (depositoListo(cfg)) return false;
+      if (
+        typeof hcGerminacionActiva === 'function' &&
+        hcGerminacionActiva(cfg) &&
+        typeof propagadorMontajeCompleto === 'function' &&
+        propagadorMontajeCompleto(cfg)
+      ) {
+        return true;
+      }
       return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     }
     if (
@@ -1950,7 +1960,9 @@
 
     var lead =
       cam === 'semilla_propagador'
-        ? 'Tras cerrar la germinación: sistema hidropónico, sala, traslado y primer llenado.'
+        ? typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+          ? 'Germinación concluida: configura el sistema hidropónico, traslado y primer llenado.'
+          : 'Puedes preparar la sala mientras germina. El DWC/RDWC y el traslado van al final.'
         : 'Orden recomendado hasta el primer llenado del depósito y la rutina en Medir.';
     return (
       '<div class="hc-camino-resumen-card">' +
@@ -1987,7 +1999,16 @@
       germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
     var lcBox = document.getElementById('dashInstalacionLifecycle');
     var lcVisible = lcBox && !lcBox.classList.contains('setup-hidden');
-    if ((germHubVisible && !(cam === 'semilla_propagador' && germConcl)) || lcVisible) {
+    var resumenDuranteGermPropag =
+      cam === 'semilla_propagador' &&
+      germHubVisible &&
+      !germConcl &&
+      typeof propagadorMontajeCompleto === 'function' &&
+      propagadorMontajeCompleto(cfg);
+    if (
+      (germHubVisible && !(cam === 'semilla_propagador' && (germConcl || resumenDuranteGermPropag))) ||
+      lcVisible
+    ) {
       host.classList.add('setup-hidden');
       host.innerHTML = '';
       return;

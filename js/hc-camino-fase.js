@@ -783,18 +783,41 @@
     ];
     idsOcultarPropag.forEach(function (id) {
       var el = document.getElementById(id);
-      if (el) el.classList.toggle('setup-hidden', inicioGermFoco);
+      if (!el) return;
+      var hide = inicioGermFoco;
+      if (
+        soloPropag &&
+        (id === 'hcMontajeInicioDetails' ||
+          id === 'dashSalaEquipReco' ||
+          id === 'dashPropagadorRutaHost' ||
+          id === 'dashCaminoResumen')
+      ) {
+        hide = false;
+      }
+      el.classList.toggle('setup-hidden', hide);
     });
-    if (inicioGermFoco) {
+    if (inicioGermFoco && !soloPropag) {
       var salaReco = document.getElementById('dashSalaEquipReco');
       if (salaReco) salaReco.innerHTML = '';
+    } else if (soloPropag && typeof refreshDashSalaEquipRecoBanner === 'function') {
+      try {
+        refreshDashSalaEquipRecoBanner(cfg);
+      } catch (_) {}
     }
-    if (esPropagFoco) {
-      var trasladoHost = document.getElementById('hcTrasladoSalaBannerHost');
-      if (trasladoHost) {
-        var trBan = trasladoHost.querySelector('.hc-traslado-sala-banner');
-        if (trBan) trBan.remove();
-      }
+    if (soloPropag && typeof renderMontajeInicioHubPropagador === 'function') {
+      try {
+        var montBody = document.getElementById('hcMontajeInicioBody');
+        if (montBody) montBody.innerHTML = renderMontajeInicioHubPropagador(cfg) || '';
+        if (typeof renderMontajeInicioHubSubtitulo === 'function') {
+          var montSub = document.getElementById('hcMontajeInicioSub');
+          if (montSub) montSub.textContent = renderMontajeInicioHubSubtitulo(cfg) || '';
+        }
+      } catch (_) {}
+    }
+    if (esPropagFoco && typeof refreshDashCaminoResumen === 'function') {
+      try {
+        refreshDashCaminoResumen();
+      } catch (_) {}
     }
     var medYcult = document.querySelector('.dash-medicion-y-cultivo');
     if (medYcult) {
@@ -830,7 +853,7 @@
       tabInicio.classList.toggle('dash-inicio--germ-foco-hidro', !!esHidroFoco);
     }
     var propRuta = document.getElementById('dashPropagadorRutaHost');
-    if (propRuta) propRuta.classList.toggle('setup-hidden', !!inicioGermFoco);
+    if (propRuta) propRuta.classList.toggle('setup-hidden', !!(inicioGermFoco && !soloPropag));
     var dashVar = document.getElementById('dashInstalacionVariedad');
     if (dashVar) dashVar.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashInstLbl = document.getElementById('dashInstalacionLabel');

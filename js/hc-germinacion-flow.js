@@ -1956,6 +1956,23 @@
         esc(lblBan.bloqueoBanner) +
         ' ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcGerminacionAbrirChecklistTraslado===\'function\'&&hcGerminacionAbrirChecklistTraslado()">Abrir checklist</button></div>';
+    } else if (
+      camGerm === 'semilla_propagador' &&
+      typeof hcPropagadorSalaRecoEnGermHub === 'function'
+    ) {
+      var salaSoft = hcPropagadorSalaRecoEnGermHub(cfg);
+      if (salaSoft === 'sala_config_soft') {
+        salaCtaHtml =
+          '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+          '<strong>Prepara la sala de cultivo</strong> (recomendado mientras germina): carpa, LED, extractor y clima en ' +
+          '<button type="button" class="btn btn-link btn-sm" onclick="goTab(\'sala\')">Sala</button> o ' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar sala</button></div>';
+      } else if (salaSoft === 'sala_montaje_soft') {
+        salaCtaHtml =
+          '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
+          '<strong>Puesta en marcha de sala.</strong> Equipamiento guardado — completa el checklist de montaje físico. ' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Checklist montaje</button></div>';
+      }
     }
 
     var germHubFp = [

@@ -713,9 +713,6 @@
     ) {
       return false;
     }
-    if (typeof global.germinacionConcluida === 'function' && !global.germinacionConcluida(cfg)) {
-      return false;
-    }
     if (typeof global.salaPreGermConfigurada === 'function' && global.salaPreGermConfigurada(cfg)) {
       if (typeof global.getCamposEquipamientoFaltantes === 'function') {
         var faltOk = global.getCamposEquipamientoFaltantes(cfg);
@@ -765,11 +762,34 @@
     ) {
       return false;
     }
-    if (typeof global.germinacionConcluida === 'function' && !global.germinacionConcluida(cfg)) {
-      return false;
-    }
     var paso = getSalaRecoPasoInicio(cfg);
     return paso === 'equip' || paso === 'montaje';
+  }
+
+  /** Reco suave en hub de germinación (no bloquea fases; solo orienta). */
+  function hcPropagadorSalaRecoEnGermHub(cfg) {
+    cfg = cfg || getCfg();
+    if (typeof global.getCaminoCultivo !== 'function') return null;
+    if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return null;
+    if (
+      typeof global.hcRecargaCompletaAplicaEnCamino === 'function' &&
+      global.hcRecargaCompletaAplicaEnCamino(cfg)
+    ) {
+      return null;
+    }
+    if (
+      typeof global.propagadorMontajeCompleto === 'function' &&
+      !global.propagadorMontajeCompleto(cfg)
+    ) {
+      return null;
+    }
+    if (typeof global.montajeSalaPreGermOk === 'function' && global.montajeSalaPreGermOk(cfg)) {
+      return null;
+    }
+    var paso = getSalaRecoPasoInicio(cfg);
+    if (paso === 'equip') return 'sala_config_soft';
+    if (paso === 'montaje') return 'sala_montaje_soft';
+    return null;
   }
 
   function hcMostrarRecoEquipSalaInicio(cfg) {
@@ -779,14 +799,6 @@
   function renderDashSalaEquipRecoBanner(cfg) {
     var host = el('dashSalaEquipReco');
     if (!host) return;
-    if (
-      typeof global.hcGerminacionActiva === 'function' &&
-      global.hcGerminacionActiva(cfg)
-    ) {
-      host.classList.add('setup-hidden');
-      host.innerHTML = '';
-      return;
-    }
     var germHub = el('dashGerminacionHub');
     if (
       germHub &&
@@ -876,6 +888,7 @@
   global.getSalaRecoPasoInicio = getSalaRecoPasoInicio;
   global.hcFaltaConfigurarSalaEquipPropagador = hcFaltaConfigurarSalaEquipPropagador;
   global.hcPropagadorPendienteSalaEnInicio = hcPropagadorPendienteSalaEnInicio;
+  global.hcPropagadorSalaRecoEnGermHub = hcPropagadorSalaRecoEnGermHub;
   global.hcMostrarRecoEquipSalaInicio = hcMostrarRecoEquipSalaInicio;
   global.refreshDashSalaEquipRecoBanner = refreshDashSalaEquipRecoBanner;
 })(
