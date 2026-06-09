@@ -969,10 +969,9 @@
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var ocultar =
-      (typeof montajeInicioUsaHubPropagador === 'function' && montajeInicioUsaHubPropagador(cfg)) ||
-      (cam === 'semilla_hidro' &&
-        typeof hcSemillaHidroPostAsistenteUi === 'function' &&
-        hcSemillaHidroPostAsistenteUi(cfg));
+      cam === 'semilla_hidro' &&
+      typeof hcSemillaHidroPostAsistenteUi === 'function' &&
+      hcSemillaHidroPostAsistenteUi(cfg);
     det.classList.toggle('setup-hidden', ocultar);
     if (ocultar) det.open = false;
   }
@@ -1062,7 +1061,7 @@
     }
     if (salaCfg) {
       salaActions +=
-        '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="hcOpenPuestaMarchaChecklist()">' +
+        '<button type="button" class="btn btn-primary btn-sm hc-btn-puesta-marcha" onclick="typeof hcAbrirMontajeSalaChecklist===\'function\'?hcAbrirMontajeSalaChecklist():(typeof hcOpenPuestaMarchaChecklist===\'function\'&&hcOpenPuestaMarchaChecklist())">' +
         (sala.verificada ? 'Revisar checklist sala' : 'Checklist montaje de sala') +
         '</button> ';
     }

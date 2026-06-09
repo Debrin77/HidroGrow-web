@@ -430,6 +430,8 @@ test('propagador: sala configurable durante germinación (no solo tras concluir)
   const cultivo = read('js/hc-camino-cultivo.js');
   const fase = read('js/hc-camino-fase.js');
   const catalog = read('js/hc-equipamiento-catalog.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  const propMontaje = read('js/hc-propagador-montaje.js');
   assert.match(luz, /function hcPropagadorSalaRecoEnGermHub/);
   assert.match(luz, /function hcPropagadorPendienteSalaEnInicio/);
   assert.match(luz, /function hcPropagadorInicioOcultarCuadroGermFases/);
@@ -443,6 +445,14 @@ test('propagador: sala configurable durante germinación (no solo tras concluir)
   assert.match(cultivo, /id: 'sala_cfg'[\s\S]*id: 'fases6'/);
   assert.match(fase, /hcPropagadorInicioOcultarCuadroGermFases/);
   assert.match(fase, /dashSalaEquipReco/);
+  assert.match(germ, /hcMostrarMonitorDomoSalaPropagador/);
+  assert.match(germ, /g\.trasladoAt\) return false/);
+  assert.match(luz, /hcAbrirMontajeSalaChecklist/);
+  assert.match(propMontaje, /function refreshMontajeInicioHubVisibility/);
+  assert.doesNotMatch(
+    propMontaje,
+    /montajeInicioUsaHubPropagador\(cfg\)\)\s*\|\|\s*\(cam === 'semilla_hidro'/
+  );
 });
 
 test('arranque: IIFE exportan a window (PIN y germinación)', () => {

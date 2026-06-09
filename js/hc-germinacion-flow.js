@@ -1880,13 +1880,28 @@
     );
   }
 
+  /** Sala · propagador: monitor del domo hasta el traslado al hidro dentro de la sala (no solo mientras germ activa). */
+  function hcMostrarMonitorDomoSalaPropagador(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_propagador') {
+      return false;
+    }
+    var g = ensureGerminacionFlow(cfg);
+    if (g.trasladoAt) return false;
+    if (
+      typeof propagadorMontajeCompleto === 'function' &&
+      !propagadorMontajeCompleto(cfg)
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   function refreshSalaPropagadorDomoPanel(cfg) {
     var mount = document.getElementById('salaPropagadorDomoMount');
     if (!mount) return;
     cfg = cfg || cfgActiva();
-    var camGerm =
-      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    var show = camGerm === 'semilla_propagador' && hcGerminacionActiva(cfg);
+    var show = hcMostrarMonitorDomoSalaPropagador(cfg);
     if (!show) {
       mount.classList.add('setup-hidden');
       mount.innerHTML = '';
@@ -2120,7 +2135,7 @@
         salaCtaHtml =
           '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
           '<strong>Puesta en marcha de sala.</strong> Equipamiento guardado — completa el checklist de montaje físico. ' +
-          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">Checklist montaje</button></div>';
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirMontajeSalaChecklist===\'function\'?hcAbrirMontajeSalaChecklist():(typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala())">Checklist montaje</button></div>';
       } else if (salaSoft === 'sala_config_soft' && !recoSalaGrande) {
         salaCtaHtml =
           '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
@@ -3148,6 +3163,7 @@
   global.hcGerminacionSyncDesdePremium = hcGerminacionSyncDesdePremium;
   global.hcGerminacionSyncEquipDesdeInstalado = hcGerminacionSyncEquipDesdeInstalado;
   global.refreshDashGerminacionHub = refreshDashGerminacionHub;
+  global.hcMostrarMonitorDomoSalaPropagador = hcMostrarMonitorDomoSalaPropagador;
   global.refreshSalaPropagadorDomoPanel = refreshSalaPropagadorDomoPanel;
   global.refreshDashPropagadorOscuridadBanner = refreshDashPropagadorOscuridadBanner;
   global.hcGerminacionCompletarFaseActual = hcGerminacionCompletarFaseActual;

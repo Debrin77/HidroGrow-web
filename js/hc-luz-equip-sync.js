@@ -333,13 +333,14 @@
 
   function hcSalaPropagadorVistaMinimaSoloMontaje(cfg) {
     if (!hcSalaPropagadorVistaMinima(cfg)) return false;
-    return getSalaRecoPasoInicio(cfg) === 'montaje';
+    return getSalaPropagadorFlujoPasoId(cfg) === 'montaje';
   }
 
   function applySalaPropagadorVistaMinimaChrome(cfg) {
     cfg = cfg || getCfg();
     var activa = hcSalaPropagadorVistaMinima(cfg);
-    var paso = getSalaRecoPasoInicio(cfg);
+    var pasoId = getSalaPropagadorFlujoPasoId(cfg);
+    var labels = salaPropagadorFlujoPasoLabels(pasoId);
     var mount = el('salaCultivoEquipMount');
     var equipDet = el('sistemaEquipDetails');
     var montajeDet = el('sistemaMontajeChecksDetails');
@@ -387,42 +388,41 @@
     if (recoBadge) recoBadge.classList.add('setup-hidden');
     if (lead) lead.classList.add('setup-hidden');
     if (prereq) prereq.classList.add('setup-hidden');
+    var pasoListo = pasoId === 'done';
+    var pasoPropagador = pasoId === 'propagador';
+    var pasoEquip = pasoId === 'equip';
+    var pasoMontaje = pasoId === 'montaje';
     var equipResumen = el('sistemaEquipResumen');
-    if (equipResumen) equipResumen.classList.toggle('setup-hidden', paso === 'done');
-
-    var pasoListo = paso === 'done';
-    var pasoEquip = paso === 'equip';
-    var pasoMontaje = paso === 'montaje';
+    if (equipResumen) equipResumen.classList.toggle('setup-hidden', pasoListo);
 
     if (equipDet) {
       equipDet.classList.remove('setup-hidden');
       equipDet.classList.toggle('sala-equip-details--paso-activo', pasoEquip);
       equipDet.classList.toggle('sala-equip-details--post-montaje', pasoListo);
       if (pasoListo || pasoMontaje || pasoEquip) {
-        equipDet.open = pasoListo ? false : true;
+        equipDet.open = pasoListo ? false : pasoEquip;
+      }
+      if (pasoPropagador) {
+        equipDet.open = false;
       }
       if (pasoListo) {
         equipDet.classList.remove('sala-equip-details--paso-activo');
       }
+      var eqTitle = el('salaEquipSummaryTitleText');
+      if (eqTitle) eqTitle.textContent = labels.equipTitulo;
     }
 
     if (montajeDet) {
-      montajeDet.classList.toggle('setup-hidden', pasoEquip || pasoListo);
+      montajeDet.classList.toggle('setup-hidden', pasoEquip || pasoListo || pasoPropagador);
       montajeDet.classList.toggle('sala-montaje-details--paso-activo', pasoMontaje);
-      montajeDet.classList.remove('sala-montaje-details--bloqueado');
+      montajeDet.classList.toggle('sala-montaje-details--bloqueado', pasoPropagador || pasoEquip);
       if (pasoMontaje && !montajeDet.dataset.hcMontajeUserOpened) {
         montajeDet.open = false;
       } else if (pasoListo) {
         montajeDet.open = false;
       }
       var moTitle = el('salaMontajeSummaryTitleText');
-      if (moTitle) {
-        moTitle.textContent = pasoListo
-          ? 'Montaje verificado (puedes revisar)'
-          : pasoMontaje
-            ? 'Checklist de montaje físico'
-            : 'Checklist de montaje';
-      }
+      if (moTitle) moTitle.textContent = labels.montajeTitulo;
     }
     if (pasoListo && typeof global.renderMedirEquipamientoPanel === 'function') {
       global.renderMedirEquipamientoPanel();
@@ -450,34 +450,33 @@
       if (montajeDet) montajeDet.classList.remove('sala-montaje-details--bloqueado', 'sala-montaje-details--paso-activo');
       return;
     }
-    var paso = getSalaRecoPasoInicio(cfg);
+    var pasoId = getSalaPropagadorFlujoPasoId(cfg);
+    var labels = salaPropagadorFlujoPasoLabels(pasoId);
     var falt =
       typeof global.getCamposEquipamientoFaltantes === 'function'
         ? global.getCamposEquipamientoFaltantes(cfg)
         : [];
-    var salaCfg =
-      typeof global.salaPreGermConfigurada === 'function' && global.salaPreGermConfigurada(cfg);
     var vistaMin = hcSalaPropagadorVistaMinima(cfg);
 
     applySalaPropagadorVistaMinimaChrome(cfg);
 
-    var eqTitle = el('salaEquipSummaryTitleText');
-    if (eqTitle) {
-      eqTitle.textContent =
-        paso === 'done'
-          ? 'Equipamiento de sala'
-          : paso === 'equip'
-            ? 'Paso 1 · Equipamiento indispensable de la sala'
-            : paso === 'montaje'
-              ? 'Equipamiento de sala · revisa opcional'
-              : 'Equipamiento de la sala (resumen)';
-    }
-
     if (host) {
-      if (paso === 'done') {
+      if (pasoId === 'done') {
         host.innerHTML = '';
         host.classList.add('setup-hidden');
-      } else if (vistaMin && paso === 'montaje') {
+      } else if (pasoId === 'propagador') {
+        host.classList.remove('setup-hidden');
+        host.innerHTML =
+          '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
+          '<p class="sala-propagador-status-banner sala-propagador-status-banner--pending" role="note">' +
+          '<strong>' +
+          labels.flujoLead +
+          '</strong> · Domo, bandeja, sustrato y accesorios del propagador. Verifica el checklist antes de configurar la sala.' +
+          '</p>' +
+          '<div class="sala-propagador-flujo-actions">' +
+          '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'irPropagadorMontaje\')">Checklist del propagador</button>' +
+          '</div></div>';
+      } else if (vistaMin && pasoId === 'montaje') {
         host.classList.remove('setup-hidden');
         var faltaTxt =
           falt.length > 0
@@ -509,7 +508,7 @@
         host.innerHTML =
           '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
           '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-          '✓ <strong>Equipamiento indispensable de sala registrado.</strong>' +
+          '✓ <strong>Paso 2 · Equipamiento indispensable de la sala · registrado.</strong>' +
           faltaTxt +
           opcTxt +
           '</p>' +
@@ -519,7 +518,7 @@
           '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Editar equipamiento</button> ' +
           '<button type="button" class="btn btn-secondary btn-sm" onclick="var d=document.getElementById(\'sistemaMontajeChecksDetails\');if(d){d.open=true;d.scrollIntoView({behavior:\'smooth\',block:\'start\'})}">Ver checklist aquí</button>' +
           '</div></div>';
-      } else if (paso === 'equip') {
+      } else if (pasoId === 'equip') {
         host.classList.remove('setup-hidden');
         var propOk =
           typeof global.propagadorMontajeCompleto === 'function' &&
@@ -538,11 +537,13 @@
           '<div class="sala-propagador-flujo-inner sala-propagador-flujo-inner--min">' +
           (propOk
             ? '<p class="sala-propagador-status-banner sala-propagador-status-banner--ok" role="status">' +
-              '✓ <strong>Propagador verificado.</strong> Siguiente paso: equipamiento de la sala.' +
+              '✓ <strong>Paso 1 · Propagador verificado.</strong>' +
               '</p>'
             : '') +
           '<p class="sala-propagador-status-banner sala-propagador-status-banner--pending" role="note">' +
-          'Configura carpa, LED, extractor y medidas en el <strong>configurador de sala</strong>.' +
+          '<strong>' +
+          labels.flujoLead +
+          '</strong> · Configura carpa, LED, extractor y medidas en el configurador.' +
           faltaEquip +
           '</p>' +
           '<div class="sala-propagador-flujo-actions">' +
@@ -564,12 +565,15 @@
     det.dataset.hcMontajeBloqueadoBound = '1';
     sum.addEventListener('click', function (e) {
       if (!det.classList.contains('sala-montaje-details--bloqueado')) return;
-      if (getSalaRecoPasoInicio(getCfg()) !== 'equip') return;
+      var pasoFlujo = getSalaPropagadorFlujoPasoId(getCfg());
+      if (pasoFlujo !== 'equip' && pasoFlujo !== 'propagador') return;
       e.preventDefault();
       try {
         if (typeof global.showToast === 'function') {
           global.showToast(
-            'Primero configura el equipamiento de la sala (paso 1). Luego podrás abrir el checklist de montaje.',
+            pasoFlujo === 'propagador'
+              ? 'Primero completa el equipamiento del propagador (paso 1).'
+              : 'Primero configura el equipamiento indispensable de la sala (paso 2). Luego podrás abrir el checklist de montaje.',
             false,
             { durationMs: 5200 }
           );
@@ -648,11 +652,13 @@
         var vistaMinLead = hcSalaPropagadorVistaMinima(cfg);
         lead.classList.toggle('setup-hidden', !show || vistaMinLead);
         if (show && !vistaMinLead) {
-          var paso = getSalaRecoPasoInicio(cfg);
+          var pasoLead = getSalaPropagadorFlujoPasoId(cfg);
           lead.textContent =
-            paso === 'equip'
-              ? 'Primero configura el equipamiento de la sala (paso 1). El checklist de abajo se activa cuando el catálogo esté guardado.'
-              : 'Marca cada punto del montaje físico. Si ya elegiste carpa, LED y extractor en el configurador, las mini-guías usarán tu marca y modelo.';
+            pasoLead === 'propagador'
+              ? 'Primero verifica el equipamiento del propagador (paso 1). Después configura carpa, LED y extractor (paso 2) y el checklist de montaje (paso 3).'
+              : pasoLead === 'equip'
+                ? 'Primero configura el equipamiento indispensable de la sala (paso 2). El checklist de montaje físico es el paso 3.'
+                : 'Marca cada punto del montaje físico. Si ya elegiste carpa, LED y extractor en el configurador, las mini-guías usarán tu marca y modelo.';
         }
       }
       applySalaPropagadorVistaMinimaChrome(cfg);
@@ -739,6 +745,55 @@
       return false;
     }
     return true;
+  }
+
+  /** Paso activo del flujo guiado en Sala · propagador (incluye checklist domo antes de sala). */
+  function getSalaPropagadorFlujoPasoId(cfg) {
+    cfg = cfg || getCfg();
+    if (
+      typeof global.propagadorMontajeCompleto === 'function' &&
+      !global.propagadorMontajeCompleto(cfg)
+    ) {
+      return 'propagador';
+    }
+    return getSalaRecoPasoInicio(cfg);
+  }
+
+  function salaPropagadorFlujoPasoLabels(pasoId) {
+    switch (pasoId) {
+      case 'propagador':
+        return {
+          num: 1,
+          total: 3,
+          flujoLead: 'Paso 1 · Equipamiento del propagador',
+          equipTitulo: 'Paso 2 · Equipamiento indispensable de la sala',
+          montajeTitulo: 'Paso 3 · Montaje físico de la sala',
+        };
+      case 'equip':
+        return {
+          num: 2,
+          total: 3,
+          flujoLead: 'Paso 2 · Equipamiento indispensable de la sala',
+          equipTitulo: 'Paso 2 · Equipamiento indispensable de la sala',
+          montajeTitulo: 'Paso 3 · Montaje físico de la sala',
+        };
+      case 'montaje':
+        return {
+          num: 3,
+          total: 3,
+          flujoLead: 'Paso 3 · Montaje físico de la sala',
+          equipTitulo: 'Equipamiento de sala · revisa opcional',
+          montajeTitulo: 'Paso 3 · Montaje físico de la sala',
+        };
+      default:
+        return {
+          num: 3,
+          total: 3,
+          flujoLead: '',
+          equipTitulo: 'Equipamiento de sala',
+          montajeTitulo: 'Montaje verificado (puedes revisar)',
+        };
+    }
   }
 
   /** 'equip' = falta configurador · 'montaje' = falta checklist físico */
@@ -912,7 +967,7 @@
       paso === 'montaje' || paso === 'done'
         ? paso === 'done' && opcPend.length > 0
           ? "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()"
-          : "typeof hcIrMontajeSala==='function'&&hcIrMontajeSala()"
+          : "typeof hcAbrirMontajeSalaChecklist==='function'?hcAbrirMontajeSalaChecklist():(typeof hcIrMontajeSala==='function'&&hcIrMontajeSala())"
         : "typeof abrirConfiguradorEquipamientoSalaPropagador==='function'&&abrirConfiguradorEquipamientoSalaPropagador()";
     var title =
       paso === 'done' && opcPend.length > 0
@@ -936,8 +991,10 @@
       paso === 'done' && opcPend.length > 0
         ? '<span class="dash-sala-equip-reco-step">Equipamiento de sala</span>'
         : paso === 'montaje'
-          ? '<span class="dash-sala-equip-reco-step">Paso 2 de 2 · montaje físico</span>'
-          : '<span class="dash-sala-equip-reco-step">Paso 1 de 2 · equipamiento</span>';
+          ? '<span class="dash-sala-equip-reco-step">Paso 3 de 3 · montaje físico</span>'
+          : paso === 'equip'
+            ? '<span class="dash-sala-equip-reco-step">Paso 2 de 3 · equipamiento sala</span>'
+            : '<span class="dash-sala-equip-reco-step">Paso 1 de 3 · propagador</span>';
     host.innerHTML =
       '<button type="button" class="dash-sala-equip-reco-btn" onclick="' +
       onclick +
@@ -977,6 +1034,8 @@
   }
 
   global.salaEquipInicioCompleto = salaEquipInicioCompleto;
+  global.getSalaPropagadorFlujoPasoId = getSalaPropagadorFlujoPasoId;
+  global.salaPropagadorFlujoPasoLabels = salaPropagadorFlujoPasoLabels;
   global.getSalaRecoPasoInicio = getSalaRecoPasoInicio;
   global.hcFaltaConfigurarSalaEquipPropagador = hcFaltaConfigurarSalaEquipPropagador;
   global.hcPropagadorPendienteSalaEnInicio = hcPropagadorPendienteSalaEnInicio;
