@@ -819,8 +819,6 @@
     }
     var propRuta = document.getElementById('dashPropagadorRutaHost');
     if (propRuta) propRuta.classList.toggle('setup-hidden', !!inicioGermFoco);
-    var notifPrefs = document.getElementById('dashNotifPrefsCard');
-    if (notifPrefs) notifPrefs.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashVar = document.getElementById('dashInstalacionVariedad');
     if (dashVar) dashVar.classList.toggle('setup-hidden', !!inicioGermFoco);
     var dashInstLbl = document.getElementById('dashInstalacionLabel');
@@ -830,7 +828,7 @@
     var quickCons = document.querySelector('.quick-btn[data-quick-icon="consejos"]');
     if (quickCons) quickCons.classList.toggle('setup-hidden', !inicioGermFoco);
     var quickCult = document.querySelector('.quick-btn[data-quick-icon="sistema"]');
-    if (quickCult) quickCult.classList.toggle('setup-hidden', !!esPropagFoco);
+    if (quickCult) quickCult.classList.remove('setup-hidden');
     var quickBandeja = document.querySelector('.quick-btn[data-quick-icon="bandeja"]');
     if (quickBandeja) quickBandeja.classList.toggle('setup-hidden', !esPropagFoco);
     hcQuickBtnLabel(
@@ -838,8 +836,6 @@
       esPropagFoco,
       'Medir domo'
     );
-    var quickMore = document.getElementById('quickActionsMore');
-    if (quickMore && inicioGermFoco) quickMore.open = false;
     try {
       if (typeof refreshDashRecargaCardCamino === 'function') refreshDashRecargaCardCamino();
     } catch (_) {}
