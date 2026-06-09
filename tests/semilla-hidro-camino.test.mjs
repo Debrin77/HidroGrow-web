@@ -219,6 +219,15 @@ test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () =>
     boot,
     /if \(cfg\.hcPlantillaAutogenerada\) return false;[\s\S]{0,80}if \(cfg\.caminoCultivo/
   );
+  assert.match(torres, /function hcDedupTorresInstalacionGemelas/);
+  assert.doesNotMatch(torres, /g\.numSemillas\) && g\.numSemillas >= 1/);
+});
+
+test('propagador: no tratar germinacionFlow por defecto como instalacion real', () => {
+  const torres = read('js/app-hc-torres-badges-notifs.js');
+  assert.match(torres, /function hcPuntajeSlotInstalacionReal/);
+  assert.match(torres, /numSemillasGermManual/);
+  assert.match(torres, /hcPropagadorGermAsistenteGuardadoAt/);
 });
 
 test('sala: checklist montaje se pinta sin esperar idle pesado', () => {

@@ -161,6 +161,32 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
   };
   const soloFantasmas =
     !state.torres.length || state.torres.every((t) => hcEsSlotInstalacionFantasma(t));
+  const camNueva = hcCaminoInstalacionSlot(state.configTorre);
+  if (
+    !soloFantasmas &&
+    (camNueva === 'semilla_propagador' || camNueva === 'semilla_hidro')
+  ) {
+    var existIdx = -1;
+    var existScore = -9999;
+    state.torres.forEach(function (t, i) {
+      if (hcEsSlotInstalacionFantasma(t)) return;
+      if (hcCaminoInstalacionSlot(t.config) !== camNueva) return;
+      var sc = hcPuntajeSlotInstalacionReal(t);
+      if (sc > existScore) {
+        existScore = sc;
+        existIdx = i;
+      }
+    });
+    if (existIdx >= 0 && hcPuntajeSlotInstalacionReal(nuevaTorre) <= existScore) {
+      state.torreActiva = existIdx;
+      if (typeof guardarEstadoTorreActual === 'function') {
+        try {
+          guardarEstadoTorreActual();
+        } catch (_) {}
+      }
+      return existIdx;
+    }
+  }
   let newIdx;
   if (soloFantasmas) {
     state.torres = [nuevaTorre];
@@ -214,24 +240,155 @@ function hcCaminoGermSemillaEnSlot(cfg) {
 function hcSlotTienePlanGerminacion(cfg, g, prem) {
   g = g || (cfg && cfg.germinacionFlow) || {};
   prem = prem || (cfg && cfg.premiumSetup) || {};
-  return !!(
-    String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim() ||
-    (Number.isFinite(g.numSemillas) && g.numSemillas >= 1) ||
-    (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) ||
-    String(prem.fechaSiembraGerm || g.fechaSiembraGerm || g.startedAt || '').trim()
-  );
+  if (String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim()) {
+    return true;
+  }
+  if (String(prem.fechaSiembraGerm || g.fechaSiembraGerm || g.startedAt || '').trim()) {
+    return true;
+  }
+  if (prem.numSemillasGermManual && Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+    return true;
+  }
+  if (prem.sustratoGermManual && String(prem.sustratoGerm || '').trim()) {
+    return true;
+  }
+  if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+    var camPlan =
+      (cfg && cfg.caminoCultivo) ||
+      prem.caminoCultivo ||
+      (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '');
+    if (camPlan === 'semilla_hidro' && prem.numSemillasGermManual) return true;
+    if (
+      camPlan === 'semilla_propagador' &&
+      (prem.numSemillasGermManual || cfg.hcPropagadorGermAsistenteGuardadoAt)
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function hcSlotTienePrepCaminoSemilla(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
-  return !!(
-    cfg.salaPreGermConfigAt ||
-    cfg.propagadorMontajeChecks ||
-    cfg.preparacionGermHidroChecks ||
-    (cfg.puestaMarchaChecks && typeof cfg.puestaMarchaChecks === 'object' && Object.keys(cfg.puestaMarchaChecks).length) ||
-    cfg.germinacionFlow ||
-    cfg.hcSetupFase === 'germinacion'
+  if (cfg.salaPreGermConfigAt) return true;
+  if (cfg.preparacionGermHidroChecks) return true;
+  if (cfg.hcSetupFase === 'germinacion' || cfg.hcSetupFase === 'sala_pre_germ') return true;
+  if (cfg.hcPropagadorGermAsistenteGuardadoAt) return true;
+  if (cfg.propagadorMontajeChecks && typeof cfg.propagadorMontajeChecks === 'object') {
+    if (cfg.propagadorMontajeChecks.completedAt) return true;
+    if (Object.keys(cfg.propagadorMontajeChecks).length > 1) return true;
+  }
+  if (cfg.puestaMarchaChecks && typeof cfg.puestaMarchaChecks === 'object') {
+    if (cfg.puestaMarchaChecks.completedAt) return true;
+    if (
+      Object.keys(cfg.puestaMarchaChecks).some(function (k) {
+        return !!cfg.puestaMarchaChecks[k];
+      })
+    ) {
+      return true;
+    }
+  }
+  if (cfg.germinacionFlow) {
+    if (hcSlotTienePlanGerminacion(cfg)) return true;
+    if (cfg.germinacionFlow.trasladoAt || cfg.germinacionFlow.concluidaAt) return true;
+    if (cfg.germinacionFlow.activo && cfg.germinacionFlow.startedAt) return true;
+    var pasos = cfg.germinacionFlow.pasos;
+    if (pasos && typeof pasos === 'object' && Object.keys(pasos).length > 0) return true;
+  }
+  return false;
+}
+
+/** Puntuación heurística: conservar la ranura con más progreso real al deduplicar. */
+function hcPuntajeSlotInstalacionReal(t) {
+  if (!t || typeof t !== 'object') return -9999;
+  var cfg = t.config || {};
+  var score = 0;
+  if (cfg.hcPlantillaAutogenerada) score -= 500;
+  if (cfg.propagadorMontajeChecks && cfg.propagadorMontajeChecks.completedAt) score += 80;
+  if (cfg.salaPreGermConfigAt) score += 60;
+  if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) score += 50;
+  if (cfg.checklistInstalacionConfirmada) score += 40;
+  if (cfg.nutriente) score += 25;
+  if (typeof hidrogrowNumSemillasGermCfg === 'function') {
+    score += hidrogrowNumSemillasGermCfg(cfg) * 3;
+  }
+  if (hcTorreTienePlantasAsignadas(t.torre)) score += 120;
+  if (Array.isArray(t.mediciones)) score += Math.min(30, t.mediciones.length);
+  if (Array.isArray(t.registro)) score += Math.min(20, t.registro.length);
+  if (hcSlotTienePrepCaminoSemilla(cfg)) score += 15;
+  return score;
+}
+
+function hcCaminoInstalacionSlot(cfg) {
+  cfg = cfg || {};
+  return (
+    (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
+    cfg.caminoCultivo ||
+    (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+    ''
   );
+}
+
+/** Elimina ranuras gemelas del mismo camino (p. ej. propagador duplicado con 1 semilla por defecto). */
+function hcDedupTorresInstalacionGemelas() {
+  if (!state || !Array.isArray(state.torres) || state.torres.length < 2) return false;
+  var grupos = {};
+  state.torres.forEach(function (t, idx) {
+    if (hcEsSlotInstalacionFantasma(t)) return;
+    var cam = hcCaminoInstalacionSlot(t.config);
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
+    if (!grupos[cam]) grupos[cam] = [];
+    grupos[cam].push({ idx: idx, score: hcPuntajeSlotInstalacionReal(t) });
+  });
+  var eliminar = {};
+  Object.keys(grupos).forEach(function (cam) {
+    var lista = grupos[cam];
+    if (lista.length < 2) return;
+    lista.sort(function (a, b) {
+      return b.score - a.score;
+    });
+    for (var di = 1; di < lista.length; di++) {
+      eliminar[lista[di].idx] = true;
+    }
+  });
+  var keys = Object.keys(eliminar);
+  if (!keys.length) return false;
+  var activaAntes = state.torreActiva || 0;
+  state.torres = state.torres.filter(function (_t, i) {
+    return !eliminar[i];
+  });
+  if (!state.torres.length) {
+    state.torreActiva = 0;
+  } else if (eliminar[activaAntes]) {
+    var camAct =
+      state.torres[0] && state.torres[0].config
+        ? hcCaminoInstalacionSlot(state.torres[0].config)
+        : '';
+    var mejor = 0;
+    var mejorScore = -9999;
+    state.torres.forEach(function (t, i) {
+      if (hcEsSlotInstalacionFantasma(t)) return;
+      var sc = hcPuntajeSlotInstalacionReal(t);
+      if (sc > mejorScore) {
+        mejorScore = sc;
+        mejor = i;
+      }
+    });
+    state.torreActiva = mejor;
+  } else {
+    var nuevaActiva = activaAntes;
+    keys.forEach(function (k) {
+      var ki = parseInt(k, 10);
+      if (ki < activaAntes) nuevaActiva--;
+    });
+    state.torreActiva = Math.max(0, Math.min(nuevaActiva, state.torres.length - 1));
+  }
+  if (typeof cargarEstadoTorre === 'function') {
+    try {
+      cargarEstadoTorre(state.torreActiva || 0);
+    } catch (_) {}
+  }
+  return true;
 }
 
 /** Ranura creada solo por migración/plantilla sin datos reales del usuario. */
@@ -309,6 +466,7 @@ function hcAsegurarSlotInstalacionDesdeConfig() {
   if (state.torres.some((t) => !hcEsSlotInstalacionFantasma(t))) return;
   const cfg = state.configTorre;
   if (!cfg || typeof cfg !== 'object') return;
+  if (cfg.hcPlantillaAutogenerada) return;
   if (typeof hidrogrowInstalacionPersistible === 'function' && !hidrogrowInstalacionPersistible(state)) {
     return;
   }
@@ -317,6 +475,14 @@ function hcAsegurarSlotInstalacionDesdeConfig() {
     cfg.caminoCultivo ||
     (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
     '';
+  if (
+    (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
+    state.torres.some(function (t) {
+      return !hcEsSlotInstalacionFantasma(t) && hcCaminoInstalacionSlot(t.config) === cam;
+    })
+  ) {
+    return;
+  }
   const nom =
     String(cfg.nombreTorre || cfg.nombreInstalacion || '').trim() ||
     (cam === 'semilla_propagador'
@@ -352,6 +518,9 @@ function hcMigrarLegacyTorresSiProcede() {
   if (state.torres.length > 0) {
     const antes = state.torres.length;
     state.torres = state.torres.filter((t) => !hcEsSlotInstalacionFantasma(t));
+    if (typeof hcDedupTorresInstalacionGemelas === 'function' && hcDedupTorresInstalacionGemelas()) {
+      if (typeof saveState === 'function') saveState();
+    }
     if (state.torres.length !== antes) {
       if (!state.torres.length) state.torreActiva = 0;
       else if ((state.torreActiva || 0) >= state.torres.length) {

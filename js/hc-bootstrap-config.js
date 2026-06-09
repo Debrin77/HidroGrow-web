@@ -47,7 +47,7 @@ const AUTH_TS_KEY = 'hc_auth';
 const STORAGE_KEY = 'hidrogrow_v2';
 /** Debe coincidir con app-hc-pwa-fotodb.js */
 const FOTO_DB_NAME = 'cultivaFotos';
-const APP_BUILD_VERSION = '2026-06-01-perf45';
+const APP_BUILD_VERSION = '2026-06-01-perf46';
 const APP_BUILD_VERSION_KEY = 'hg_app_build_version';
 const AUTO_RESTORE_POINT_KEY = 'hg_auto_restore_point_v1';
 const AUTO_RESTORE_POINT_TRANSITION_KEY = 'hg_auto_restore_transition_v1';
