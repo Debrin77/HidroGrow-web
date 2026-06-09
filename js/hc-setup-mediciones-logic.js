@@ -316,11 +316,94 @@ function evalParam() {
 }
 
 function medirParamStatusCompact(tipo, texto) {
-  if (tipo === 'ok') return 'OK · En rango';
+  if (tipo === 'ok') return 'Óptimo';
   const t = String(texto || '').trim();
   if (!t) return '';
-  if (t.length <= 48) return t;
-  return t.slice(0, 45) + '…';
+  if (/demasiado alta/i.test(t)) return 'Demasiado alta';
+  if (/demasiado baja/i.test(t)) return 'Demasiado baja';
+  if (/fuera de margen|fuera de rango/i.test(t)) return 'Fuera de rango';
+  if (/ligeramente fuera|vigilar/i.test(t)) return 'Ajustar';
+  if (t.length <= 36) return t;
+  return t.slice(0, 33) + '…';
+}
+
+function parseMedirRangeText(txt) {
+  const m = String(txt || '').match(/([\d.,]+)\s*[–\-—]\s*([\d.,]+)/);
+  if (!m) return null;
+  const min = parseFloat(m[1].replace(',', '.'));
+  const max = parseFloat(m[2].replace(',', '.'));
+  if (!Number.isFinite(min) || !Number.isFinite(max) || max <= min) return null;
+  return { min: min, max: max };
+}
+
+function medirParamRangePct(val, min, max) {
+  if (!Number.isFinite(val) || !Number.isFinite(min) || !Number.isFinite(max)) return null;
+  return Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+}
+
+var MEDIR_PARAM_TILE_BIND = {
+  cardEC: { input: 'inputEC', range: 'paramRangeEC' },
+  cardPH: { input: 'inputPH', range: 'paramRangePH' },
+  cardTemp: { input: 'inputTemp', range: 'paramRangeTemp' },
+  cardVol: { input: 'inputVol', range: 'paramRangeVol' },
+  cardTempAire: { input: 'inputTempAire', range: 'paramRangeTempAire' },
+  cardHumSala: { input: 'inputHumSala', range: 'paramRangeHum' },
+  cardVPD: { input: 'inputVPD', range: 'paramRangeVPD' },
+  cardPPFD: { input: 'inputPPFD', range: 'paramRangePPFD' },
+  cardTempExt: { input: 'inputTempExt', range: 'paramRangeTempExt' },
+  cardCO2: { input: 'inputCO2', range: 'paramRangeCO2' },
+};
+
+function ensureMedirParamTileChrome() {
+  document.querySelectorAll('.medir-param-lab-grid .param-card').forEach(function (card) {
+    if (card.dataset.medirTileReady) return;
+    card.dataset.medirTileReady = '1';
+    var inputRow = card.querySelector('.param-input-row');
+    if (!inputRow) return;
+    if (!card.querySelector('.param-range-inline')) {
+      var inline = document.createElement('div');
+      inline.className = 'param-range-inline';
+      inline.setAttribute('aria-hidden', 'true');
+      inputRow.insertAdjacentElement('afterend', inline);
+    }
+    if (!card.querySelector('.param-range-bar')) {
+      var bar = document.createElement('div');
+      bar.className = 'param-range-bar';
+      bar.setAttribute('aria-hidden', 'true');
+      bar.innerHTML = '<span class="param-range-bar-fill"></span>';
+      var anchor = card.querySelector('.param-range-inline') || inputRow;
+      anchor.insertAdjacentElement('afterend', bar);
+    }
+  });
+}
+
+function syncMedirParamCardVisual(cardId, tipo) {
+  var card = document.getElementById(cardId);
+  if (!card || !card.closest('.medir-param-lab-grid')) return;
+  var bind = MEDIR_PARAM_TILE_BIND[cardId];
+  if (!bind) return;
+  var input = document.getElementById(bind.input);
+  var rangeEl = document.getElementById(bind.range);
+  var inline = card.querySelector('.param-range-inline');
+  var bar = card.querySelector('.param-range-bar');
+  var fill = bar && bar.querySelector('.param-range-bar-fill');
+  var rangeTxt = rangeEl ? String(rangeEl.textContent || '').trim() : '';
+  if (inline) {
+    inline.textContent = rangeTxt ? 'Rango: ' + rangeTxt : '';
+    inline.classList.toggle('setup-hidden', !rangeTxt);
+  }
+  if (bar) bar.classList.toggle('setup-hidden', !rangeTxt);
+  if (fill) {
+    var val = input ? parseFloat(String(input.value || '').replace(',', '.')) : NaN;
+    var r = parseMedirRangeText(rangeTxt);
+    var pct = r && Number.isFinite(val) ? medirParamRangePct(val, r.min, r.max) : null;
+    fill.style.width = pct != null ? pct + '%' : '0%';
+    fill.className = 'param-range-bar-fill';
+    if (tipo === 'ok') fill.classList.add('is-ok');
+    else if (tipo === 'warn') fill.classList.add('is-warn');
+    else if (tipo === 'alert') fill.classList.add('is-bad');
+    else if (pct != null) fill.classList.add('is-neutral');
+  }
 }
 
 function setStatus(id, tipo, icono, texto) {
@@ -380,6 +463,7 @@ function setCard(id, tipo) {
   if (!el) return;
   el.classList.remove('ok', 'warn', 'alert');
   if (tipo) el.classList.add(tipo);
+  syncMedirParamCardVisual(id, tipo || '');
 }
 
 function showCorreccion(id, html) {
@@ -951,6 +1035,20 @@ function setMedirParamRange(id, text) {
   if (!el) return;
   el.textContent = text || '';
   el.removeAttribute('title');
+  const cardId = Object.keys(MEDIR_PARAM_TILE_BIND).find(function (k) {
+    return MEDIR_PARAM_TILE_BIND[k].range === id;
+  });
+  if (cardId) {
+    const card = document.getElementById(cardId);
+    const tipo = card && card.classList.contains('ok')
+      ? 'ok'
+      : card && card.classList.contains('warn')
+        ? 'warn'
+        : card && card.classList.contains('alert')
+          ? 'alert'
+          : '';
+    syncMedirParamCardVisual(cardId, tipo);
+  }
 }
 
 /** Sistema + cultivo listos → rangos numéricos en Medir; si no, vacío. */

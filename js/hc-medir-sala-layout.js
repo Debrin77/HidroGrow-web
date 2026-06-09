@@ -137,6 +137,7 @@
     var ambGrid = card.querySelector('.medir-ambiente-grid');
     if (ambGrid) ambGrid.classList.add('medir-ambiente-grid--premium', 'medir-param-lab-grid');
     ensureAmbienteSaveFooter(card);
+    if (typeof ensureMedirParamTileChrome === 'function') ensureMedirParamTileChrome();
   }
 
   function applyMedirGuiaProtocoloChrome(cfg) {
@@ -257,6 +258,7 @@
     tab.querySelectorAll('.medir-assistant-cta-wrap, .guardar-medicion-bar').forEach(function (n) {
       n.remove();
     });
+    if (typeof ensureMedirParamTileChrome === 'function') ensureMedirParamTileChrome();
   }
 
   /**
