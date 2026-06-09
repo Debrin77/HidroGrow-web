@@ -1357,9 +1357,13 @@
     opts = opts || {};
     var cfg =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    var germActiva =
+      typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
     if (
       getCaminoCultivo(cfg) === 'semilla_propagador' &&
-      hcPropagadorAsistenteGermPendiente(cfg)
+      hcPropagadorAsistenteGermPendiente(cfg) &&
+      !opts.duranteGerminacion &&
+      !germActiva
     ) {
       abrirSetupCaminoPropagador();
       return;

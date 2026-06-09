@@ -479,3 +479,12 @@ test('catálogo: genetics-db en boot manifest y helper por id', () => {
   assert.match(cfg, /if \(c\.id\) out\[c\.id\]/);
   assert.match(cultivo, /camAj !== 'semilla_propagador' && camAj !== 'semilla_hidro'/);
 });
+
+test('propagador: banner sala abre equipamiento, no selector de camino', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(
+    cultivo,
+    /hcPropagadorAsistenteGermPendiente\(cfg\)[\s\S]*!opts\.duranteGerminacion[\s\S]*!germActiva/
+  );
+  assert.match(cultivo, /abrirConfiguradorEquipamientoSalaPropagador[\s\S]*duranteGerminacion: true/);
+});
