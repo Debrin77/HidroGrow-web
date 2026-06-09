@@ -714,9 +714,9 @@
    */
   function refreshDashInicioVistaCamino(cfg) {
     cfg = cfg || cfgActiva();
+    if (typeof global !== 'undefined' && global._hcRefreshInicioVistaCamino) return;
+    if (typeof global !== 'undefined') global._hcRefreshInicioVistaCamino = true;
     try {
-      if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-    } catch (_) {}
     var soloPropag =
       typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfg);
     var germHub = document.getElementById('dashGerminacionHub');
@@ -854,6 +854,9 @@
     try {
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}
+    } finally {
+      if (typeof global !== 'undefined') global._hcRefreshInicioVistaCamino = false;
+    }
   }
 
   function hcOcultarTabSalaDuranteGerm(cfg) {

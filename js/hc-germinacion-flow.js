@@ -2293,9 +2293,11 @@
     } catch (_) {}
     if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);
     if (typeof hcRefreshGerminacionMedEvaluacion === 'function') hcRefreshGerminacionMedEvaluacion(cfg);
-    try {
-      if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
-    } catch (_) {}
+    if (!global._hcRefreshInicioVistaCamino) {
+      try {
+        if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+      } catch (_) {}
+    }
   }
 
   function renderRegistroReciente(g) {
