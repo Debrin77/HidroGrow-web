@@ -1039,8 +1039,13 @@ function toggleConsejoExpand(btn) {
   const ico = btn.querySelector('.consejo-text-toggle-ico');
   if (lab) lab.textContent = open ? 'Ver menos' : 'Ver más';
   if (ico) {
-    if (typeof hcChevronMarkup === 'function') ico.innerHTML = hcChevronMarkup(open);
-    else ico.textContent = open ? '▲' : '▼';
+    if (typeof hcChevronMarkup === 'function') {
+      ico.innerHTML = hcChevronMarkup(open);
+      ico.classList.add('config-section-collapse-chevron');
+    } else {
+      ico.textContent = '▼';
+      ico.classList.add('config-section-collapse-chevron');
+    }
   }
 }
 
@@ -1055,7 +1060,7 @@ function htmlConsejoCard(cat, c) {
   const toggle = expandable
     ? '<button type="button" class="consejo-text-toggle" onclick="toggleConsejoExpand(this)" aria-expanded="false">' +
       '<span class="consejo-text-toggle-label">Ver más</span>' +
-      '<span class="consejo-text-toggle-ico" aria-hidden="true">' +
+      '<span class="consejo-text-toggle-ico config-section-collapse-chevron" aria-hidden="true">' +
       (typeof hcChevronMarkup === 'function' ? hcChevronMarkup(false) : '▼') +
       '</span>' +
       '</button>'
@@ -2317,7 +2322,7 @@ function htmlInnerConsejoCard(cat, c) {
   const toggle = expandable
     ? '<button type="button" class="consejo-text-toggle" onclick="toggleConsejoExpand(this)" aria-expanded="false">' +
       '<span class="consejo-text-toggle-label">Ver más</span>' +
-      '<span class="consejo-text-toggle-ico" aria-hidden="true">' +
+      '<span class="consejo-text-toggle-ico config-section-collapse-chevron" aria-hidden="true">' +
       (typeof hcChevronMarkup === 'function' ? hcChevronMarkup(false) : '▼') +
       '</span>' +
       '</button>'

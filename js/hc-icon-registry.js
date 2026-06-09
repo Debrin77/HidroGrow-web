@@ -226,8 +226,10 @@ function hcToastHtml(msg, isError) {
 }
 
 function hcChevronMarkup(expanded) {
-  if (typeof hcIcon !== 'function') return expanded ? '▲' : '▼';
-  return hcIcon('hc-i-arrows-v', 'hc-ico--chevron' + (expanded ? ' hc-ico--chevron-up' : ''));
+  if (typeof hcIcon === 'function') {
+    return hcIcon('hc-i-arrows-v', 'hc-ico--chevron' + (expanded ? ' hc-ico--chevron-up' : ''));
+  }
+  return '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span>';
 }
 
 function hcCompatEstadoMarkup(compat) {

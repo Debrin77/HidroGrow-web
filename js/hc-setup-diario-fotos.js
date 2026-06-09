@@ -318,7 +318,7 @@ async function renderDiarioSelector() {
             : '📷 Sin fotos aún — toca para añadir') +
         '</div>' +
       '</div>' +
-      '<div class="diario-item-chevron">›</div>' +
+      '<div class="diario-item-chevron"><span class="config-section-collapse-chevron" aria-hidden="true">▼</span></div>' +
     '</div>';
   }).join('');
 

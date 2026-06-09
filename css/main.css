@@ -27,6 +27,9 @@
   /* Jerarquía: interfaz = sans; Syne solo en impacto (saludo, cifras hero) */
   --font-ui:   var(--font-sans);
   --font-hero: var(--font-display);
+  --hc-select-chevron-svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23ffffff' stroke='%230f172a' stroke-width='1.5'/%3E%3Cpath d='M8.5 10.5 12 14l3.5-3.5' fill='none' stroke='%230f172a' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --hc-collapse-chevron-size: 24px;
+  --hc-collapse-chevron-font: 11px;
   --text-2xs: 0.6875rem;
   --text-xs:  0.75rem;
   --text-sm:  0.8125rem;
@@ -4046,19 +4049,39 @@ html.hc-theme-dark .medir-wizard-modal textarea#wizNotas.medir-wizard-notes:focu
 }
 .form-input, .form-select {
   width: 100%;
-  background: var(--bg3);
+  background-color: var(--bg3);
+  background-image: var(--hc-select-chevron-svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 22px 22px;
   border: 1.5px solid var(--border);
   border-radius: 10px;
   color: var(--white);
   font-family: var(--font-mono);
   font-size: 16px;
-  padding: 12px 14px;
+  padding: 12px 42px 12px 14px;
   transition: border-color 0.2s;
   -webkit-appearance: none;
   -webkit-border-radius: 10px;
+  appearance: none;
+}
+.form-input {
+  background-image: none;
+  padding-right: 14px;
 }
 .form-input:focus-visible, .form-select:focus-visible { border-color: var(--green); }
 .form-select option { background: var(--bg2); }
+
+/* Mismo indicador ▼ circular en todos los <select> nativos */
+select:not([multiple]):not([size]) {
+  padding-right: 42px;
+  background-image: var(--hc-select-chevron-svg);
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 22px 22px;
+  appearance: none;
+  -webkit-appearance: none;
+}
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -4904,12 +4927,26 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   display: none;
 }
 .welcome-legal-summary::after {
-  content: " ▾";
-  font-weight: 400;
-  opacity: 0.7;
+  content: '▼';
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1.5px solid rgba(146, 64, 14, 0.25);
+  background: #fff;
+  color: #92400e;
+  margin-left: 8px;
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
 }
 .welcome-legal-details[open] .welcome-legal-summary::after {
-  content: " ▴";
+  transform: rotate(0deg);
 }
 .welcome-legal-body {
   padding: 0 12px 10px;
@@ -7388,13 +7425,26 @@ html.hc-theme-dark .ayuda-estado-instal {
   display: none;
 }
 .ayuda-faq summary::after {
-  content: ' ▼';
-  font-size: 10px;
+  content: '▼';
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  border-radius: 999px;
+  border: 1.5px solid rgba(15, 23, 42, 0.2);
+  background: #fff;
   color: var(--muted);
-  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s ease;
+  transform: rotate(-90deg);
 }
 .ayuda-faq details[open] summary::after {
-  content: ' ▲';
+  transform: rotate(0deg);
 }
 .ayuda-faq .ayuda-faq-a {
   padding: 0 0 12px;
@@ -8394,7 +8444,7 @@ html.hc-theme-dark .quick-btn[data-quick-icon="asistentepro"] .hc-ico--ion-quick
 }
 .riego-field input, .riego-field select {
   width: 100%;
-  background: var(--bg3);
+  background-color: var(--bg3);
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--white);
@@ -8402,7 +8452,15 @@ html.hc-theme-dark .quick-btn[data-quick-icon="asistentepro"] .hc-ico--ion-quick
   font-size: 16px;
   padding: 8px 10px;
   -webkit-appearance: none;
+  appearance: none;
   transition: border-color 0.2s;
+}
+.riego-field select {
+  padding-right: 38px;
+  background-image: var(--hc-select-chevron-svg);
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 20px 20px;
 }
 .riego-field input:focus-visible, .riego-field select:focus-visible { border-color: var(--green); }
 .riego-field select option { background: var(--bg2); }
@@ -12053,8 +12111,24 @@ html.hc-theme-dark .hc-origen-ruta-equip {
 }
 .diario-item-dia { color: #15803d; }
 .diario-item-chevron {
-  font-size: 20px;
-  color: #d1d5db;
+  flex-shrink: 0;
+}
+.diario-item-chevron .config-section-collapse-chevron {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  transform: rotate(-90deg);
+}
+.consejo-text-toggle-ico.config-section-collapse-chevron {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+  opacity: 1;
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+.consejo-card.is-text-expanded .consejo-text-toggle-ico.config-section-collapse-chevron {
+  transform: rotate(0deg);
 }
 
 .diario-det-head {
@@ -14263,6 +14337,9 @@ html.hc-theme-dark .checklist-dark-sheet--setup-flow .checklist-dark-btn--link {
 }
 .consejo-text-toggle-ico {
   font-size: 10px;
+  opacity: 0.85;
+}
+.consejo-text-toggle-ico:not(.config-section-collapse-chevron) {
   opacity: 0.85;
 }
 .consejo-card:active { transform: none; }
