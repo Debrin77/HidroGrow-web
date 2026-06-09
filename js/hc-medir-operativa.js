@@ -185,11 +185,7 @@
       flow.classList.toggle('medir-flow--pre-operativa', bloquearFlow);
       flow.setAttribute('aria-hidden', bloquearFlow ? 'true' : 'false');
       var lead = flow.querySelector('.medir-flow-lead');
-      if (lead) {
-        lead.innerHTML = operativa
-          ? 'Registra los parámetros del <strong>depósito configurado</strong> (EC, pH, T°, volumen). Evaluación al instante frente a los rangos de tu instalación.'
-          : 'Introduce los valores del <strong>depósito</strong> o pega la lectura del medidor. Evaluación al instante.';
-      }
+      if (lead) lead.classList.add('setup-hidden');
     }
 
     if (pmCard) {
@@ -222,6 +218,9 @@
     }
     if (typeof applyMedirSemillaHidroChrome === 'function') {
       applyMedirSemillaHidroChrome(cfg);
+    }
+    if (typeof refreshMedirSalaAmbienteMedirUi === 'function') {
+      refreshMedirSalaAmbienteMedirUi(cfg);
     }
     if (!opts.skipTabsUi && typeof refreshTabsOperativaUi === 'function') {
       refreshTabsOperativaUi();

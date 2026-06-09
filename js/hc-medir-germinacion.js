@@ -367,39 +367,6 @@
     evalParamGerminacion();
   }
 
-  function medirGermFlowLeadHtml(variant, salaLista, salaCfg) {
-    var ent = medirGermEtiquetaEntidad(variant);
-    var micro = medirGermEtiquetaMicro(variant);
-    var trasladoTxt =
-      variant === 'cubo'
-        ? 'Tras el registro en la matriz verás el depósito DWC aquí.'
-        : 'Tras el traslado al hidro verás el depósito DWC aquí.';
-    if (salaLista) {
-      return (
-        '<strong>' +
-        ent +
-        ':</strong> T° del agua con nutrientes, HR, volumen y EC/pH si aplica. Abajo: parámetros de la <strong>sala montada</strong> (LED, CO₂…). El depósito DWC solo tras el traslado.'
-      );
-    }
-    if (salaCfg) {
-      return (
-        '<strong>' +
-        ent +
-        ':</strong> registra <strong>T° agua</strong>, <strong>HR</strong> y <strong>volumen</strong> del ' +
-        micro +
-        ' (obligatorio). EC/pH según fase. Completa el <strong>montaje en Sala</strong> para medir el equipamiento.'
-      );
-    }
-    return (
-      '<strong>' +
-      ent +
-      ':</strong> registra cada día <strong>T° del agua con nutrientes</strong>, <strong>HR</strong> y <strong>volumen</strong> del ' +
-      micro +
-      '. EC/pH cuando aplique. ' +
-      trasladoTxt
-    );
-  }
-
   function refreshMedirGerminacionUi(cfg) {
     cfg = cfg || cfgActiva();
     var variant = hcMedirGermPreTrasladoVariant(cfg);
@@ -435,31 +402,7 @@
       }
       var quickBlock = flow.querySelector('.medir-quick-parse');
       if (quickBlock) quickBlock.classList.toggle('setup-hidden', preTraslado);
-      var lead = flow.querySelector('.medir-flow-lead');
-      if (lead) {
-        if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
-        lead.innerHTML = preTraslado
-          ? medirGermFlowLeadHtml(variant, salaLista, salaCfg)
-          : lead.dataset.hcMedirLeadDefault;
-      }
-      var solKicker = flow.querySelector('.medir-step-kicker--solucion');
-      if (solKicker) {
-        if (!solKicker.dataset.hcMedirKickDefault) solKicker.dataset.hcMedirKickDefault = solKicker.textContent;
-        solKicker.textContent = preTraslado
-          ? (variant === 'cubo' ? 'Cubo · agua con nutrientes' : 'Propagador · agua con nutrientes')
-          : solKicker.dataset.hcMedirKickDefault;
-      }
-      var solSub = flow.querySelector('.medir-step-panel--unificado .medir-step-sub');
-      if (solSub) {
-        if (!solSub.dataset.hcMedirSubDefault) solSub.dataset.hcMedirSubDefault = solSub.textContent;
-        if (preTraslado) {
-          var microLbl = medirGermEtiquetaMicro(variant);
-          solSub.textContent =
-            'T° del agua, volumen (L), HR del ' + microLbl + ' y EC/pH según la fase de germinación.';
-        } else {
-          solSub.textContent = solSub.dataset.hcMedirSubDefault;
-        }
-      }
+      flow.classList.toggle('medir-flow--germ-compact', preTraslado);
     }
 
     var ambDetails = document.getElementById('medirAmbienteDetails');
@@ -540,23 +483,7 @@
     if (hub) hub.classList.toggle('setup-hidden', preTraslado);
 
     var hostRangos = document.getElementById('hcMedirGermRangosHost');
-    if (preTraslado) {
-      if (!hostRangos && flow && typeof renderGerminacionRangosPanelHtml === 'function') {
-        hostRangos = document.createElement('div');
-        hostRangos.id = 'hcMedirGermRangosHost';
-        hostRangos.className = 'hc-medir-germ-rangos-host';
-        var anchor = flow.querySelector('.medir-flow-lead');
-        if (anchor) anchor.insertAdjacentElement('afterend', hostRangos);
-        else flow.insertBefore(hostRangos, flow.firstChild);
-      }
-      if (hostRangos) {
-        hostRangos.classList.remove('setup-hidden');
-        hostRangos.innerHTML =
-          typeof renderGerminacionRangosPanelHtml === 'function'
-            ? renderGerminacionRangosPanelHtml(cfg, { forMedir: true })
-            : '';
-      }
-    } else if (hostRangos) {
+    if (hostRangos) {
       hostRangos.classList.add('setup-hidden');
       hostRangos.innerHTML = '';
     }
@@ -564,25 +491,6 @@
     if (flow && preTraslado) {
       flow.classList.remove('medir-flow--pre-operativa');
       flow.setAttribute('aria-hidden', 'false');
-      var microAmb = medirGermEtiquetaMicro(variant);
-      var ambHead = flow.querySelector('.medir-step-head--inline-amb');
-      var ambKicker = ambHead && ambHead.querySelector('.medir-step-kicker');
-      var ambSubInline = ambHead && ambHead.querySelector('.medir-step-sub');
-      if (ambHead) ambHead.classList.remove('setup-hidden');
-      if (ambKicker) {
-        ambKicker.textContent = salaLista
-          ? 'Sala de cultivo montada'
-          : salaCfg
-            ? 'HR del ' + microAmb + ' · sala pendiente'
-            : 'HR del ' + microAmb;
-      }
-      if (ambSubInline) {
-        ambSubInline.textContent = salaLista
-          ? 'HR del ' + microAmb + ' y parámetros del equipamiento según catálogo'
-          : 'Humedad relativa del microclima del ' + microAmb;
-      }
-      var ambMount = document.getElementById('medirFlowAmbienteMount');
-      if (ambMount) ambMount.classList.remove('setup-hidden');
       flow.querySelectorAll('.medir-flow-actions [onclick*="abrirWizardMedicion"]').forEach(function (btn) {
         btn.classList.toggle('setup-hidden', !!preTraslado);
       });
@@ -705,51 +613,64 @@
     }
   }
 
-  function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista, variant) {
-    if (!ambCard) return;
+  function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {
     var hint = document.getElementById('hcMedirSalaPendienteHint');
+    if (hint) hint.remove();
+    if (!ambCard || salaLista) return;
+  }
+
+  function applyMedirAmbienteMountLayout(cfg, germ, salaLista, salaCfg) {
+    var mount = document.getElementById('medirFlowAmbienteMount');
+    var details = document.getElementById('medirAmbienteDetails');
+    if (!mount) return;
+
+    var montajePendiente = !!(salaCfg && !salaLista);
+    var soloHrGerm = !!(germ && !salaLista && !montajePendiente);
+
+    mount.classList.toggle('setup-hidden', !germ && !montajePendiente && !salaLista);
+
+    if (!details) return;
+
+    details.classList.remove(
+      'medir-ambiente-details--montaje-pendiente',
+      'medir-ambiente-details--sala-montada',
+      'medir-ambiente-details--inline-flat',
+      'medir-ambiente-details--solo-hr'
+    );
+
+    var summary = details.querySelector('.medir-ambiente-summary');
+    var ambLead = document.getElementById('medirAmbienteCard')?.querySelector('.medir-ambiente-lead');
+
     if (salaLista) {
-      if (hint) hint.remove();
+      details.classList.remove('setup-hidden');
+      details.classList.add('medir-ambiente-details--sala-montada', 'medir-ambiente-details--inline-flat');
+      details.open = true;
+      if (summary) summary.classList.add('setup-hidden');
+      if (ambLead) ambLead.classList.add('setup-hidden');
       return;
     }
-    if (!hint) {
-      hint = document.createElement('p');
-      hint.id = 'hcMedirSalaPendienteHint';
-      hint.className = 'medir-sala-pendiente-hint setup-field-hint';
-      hint.setAttribute('role', 'note');
-      var lead = ambCard.querySelector('.medir-ambiente-lead');
-      if (lead) lead.insertAdjacentElement('afterend', hint);
-      else ambCard.insertBefore(hint, ambCard.firstChild);
+
+    if (soloHrGerm) {
+      details.classList.remove('setup-hidden');
+      details.classList.add('medir-ambiente-details--inline-flat', 'medir-ambiente-details--solo-hr');
+      details.open = true;
+      if (summary) summary.classList.add('setup-hidden');
+      if (ambLead) ambLead.classList.add('setup-hidden');
+      return;
     }
-    var salaCfg = hcMedirSalaConfigurada(cfg);
-    variant = variant || hcMedirGermPreTrasladoVariant(cfg);
-    var prop =
-      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador';
-    var soloLbl = variant === 'cubo' ? 'Solo cubo de germinación' : 'Solo propagador';
-    var cfgBtn = prop
-      ? '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar sala</button>'
-      : '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button>';
-    var montajeBtn =
-      '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
-    if (germ && !salaCfg) {
-      hint.innerHTML =
-        '<strong>' +
-        soloLbl +
-        '.</strong> Arriba: <strong>T° agua</strong>, <strong>HR</strong> y <strong>volumen</strong>. ' +
-        'Los parámetros de sala (LED, CO₂, etc.) aparecen tras ' +
-        cfgBtn +
-        '.';
-    } else if (germ && salaCfg) {
-      hint.innerHTML =
-        '<strong>Sala configurada.</strong> Completa el ' +
-        montajeBtn +
-        ' para registrar PPFD, CO₂ y el resto según tu equipamiento.';
-    } else {
-      hint.innerHTML =
-        '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras el montaje verificado. ' +
-        cfgBtn +
-        '.';
+
+    if (!montajePendiente) {
+      details.classList.add('setup-hidden');
+      details.open = false;
+      if (summary) summary.classList.remove('setup-hidden');
+      return;
     }
+
+    details.classList.remove('setup-hidden');
+    details.classList.add('medir-ambiente-details--montaje-pendiente');
+    details.open = !!details.dataset.hcAmbUserOpened;
+    if (summary) summary.classList.remove('setup-hidden');
+    if (ambLead) ambLead.classList.add('setup-hidden');
   }
 
   function refreshMedirSalaAmbienteMedirUi(cfg) {
@@ -774,23 +695,19 @@
 
     var kick = document.querySelector('#medirAmbienteDetails .medir-step-kicker');
     var sub = document.querySelector('#medirAmbienteDetails .medir-step-sub');
+    var montajePendiente = salaCfg && !salaLista;
     if (kick && sub) {
       if (!kick.dataset.hcMedirKickDefault) kick.dataset.hcMedirKickDefault = kick.textContent;
       if (!sub.dataset.hcMedirSubDefault) sub.dataset.hcMedirSubDefault = sub.textContent;
-      if (germ) {
-        kick.textContent = salaLista
-          ? 'Sala montada'
-          : salaCfg
-            ? 'Sala pendiente montaje'
-            : 'Microclima del ' + micro;
-        sub.textContent = salaLista
-          ? 'HR del ' + micro + ' y parámetros del equipamiento de sala'
-          : salaCfg
-            ? 'HR del ' + micro + ' — completa el checklist de montaje en Sala'
-            : 'Humedad relativa del ' + micro;
-      } else if (!salaLista) {
-        kick.textContent = 'Paso 2 · opcional';
-        sub.textContent = 'Luz, CO₂ y temp. exterior tras montaje de sala verificado';
+      if (montajePendiente) {
+        kick.textContent = 'Sala · montaje pendiente';
+        sub.textContent = 'Completa el checklist en Sala para medir LED, CO₂ y equipamiento';
+      } else if (salaLista) {
+        kick.textContent = kick.dataset.hcMedirKickDefault;
+        sub.textContent = sub.dataset.hcMedirSubDefault;
+      } else if (!germ && !salaLista) {
+        kick.textContent = 'Ambiente de sala';
+        sub.textContent = 'Disponible tras configurar y montar la sala';
       } else {
         kick.textContent = kick.dataset.hcMedirKickDefault;
         sub.textContent = sub.dataset.hcMedirSubDefault;
@@ -798,32 +715,23 @@
     }
 
     var ambCard = document.getElementById('medirAmbienteCard');
-    ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista, variant);
-
-    if (germ && salaLista) {
-      var ambDet = document.getElementById('medirAmbienteDetails');
-      if (ambDet && !ambDet.dataset.hcAmbUserClosed) ambDet.open = true;
-    }
+    ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista);
+    applyMedirAmbienteMountLayout(cfg, germ, salaLista, salaCfg);
 
     if (ambCard) {
       var ambLead = ambCard.querySelector('.medir-ambiente-lead');
       if (ambLead) {
-        if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
-        if (germ) {
-          ambLead.textContent = salaLista
-            ? 'Parámetros del equipamiento de sala (LED, CO₂, extractor…). La HR del ' +
-              micro +
-              ' va arriba con el agua.'
-            : salaCfg
-              ? 'Tras el checklist de montaje en Sala aparecerán parámetros del equipamiento.'
-              : 'Registra la humedad relativa del ' + micro + ' junto con T° y volumen del agua.';
-        } else if (!salaLista) {
-          ambLead.textContent =
-            'Temp. aire y HR para VPD. PPFD, CO₂ y temp. exterior cuando el montaje de sala esté verificado.';
-        } else if (ambLead.dataset.hcMedirLeadDefault) {
-          ambLead.textContent = ambLead.dataset.hcMedirLeadDefault;
-        }
+        ambLead.classList.toggle('setup-hidden', germ || salaLista || montajePendiente);
       }
+    }
+
+    var ambDet = document.getElementById('medirAmbienteDetails');
+    if (ambDet && !ambDet.dataset.hcAmbToggleBound) {
+      ambDet.dataset.hcAmbToggleBound = '1';
+      ambDet.addEventListener('toggle', function () {
+        if (ambDet.open) ambDet.dataset.hcAmbUserOpened = '1';
+        else delete ambDet.dataset.hcAmbUserOpened;
+      });
     }
   }
 

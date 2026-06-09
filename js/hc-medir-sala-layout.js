@@ -216,25 +216,8 @@
     flow.className = 'medir-flow';
     flow.id = 'medirFlow';
     flow.innerHTML =
-      '<p class="medir-flow-lead">' +
-      'Depósito y sala en un solo registro. Evaluación al instante frente a los rangos de tu instalación.' +
-      '</p>' +
       '<div class="medir-step-panel medir-step-panel--unificado" id="medirFlowUnificadoPanel">' +
-      '<div class="medir-step-head medir-step-head--solucion">' +
-      '<span class="medir-step-head-icon medir-step-head-icon--solucion" aria-hidden="true">' +
-      '<svg class="hc-ico" focusable="false"><use href="#hc-i-droplet"/></svg></span>' +
-      '<span class="medir-step-head-text">' +
-      '<span class="medir-step-kicker medir-step-kicker--solucion">Depósito</span>' +
-      '<span class="medir-step-sub">EC, pH, temperatura del agua y volumen</span>' +
-      '</span></div>' +
       '<div id="medirFlowSolucion" class="medir-flow-solucion-mount"></div>' +
-      '<div class="medir-step-head medir-step-head--ambiente medir-step-head--inline-amb">' +
-      '<span class="medir-step-head-icon medir-step-head-icon--ambiente" aria-hidden="true">' +
-      '<svg class="hc-ico" focusable="false"><use href="#hc-i-home"/></svg></span>' +
-      '<span class="medir-step-head-text">' +
-      '<span class="medir-step-kicker">Sala de cultivo</span>' +
-      '<span class="medir-step-sub">Temperatura del aire, humedad relativa y VPD</span>' +
-      '</span></div>' +
       '<div id="medirFlowAmbienteMount" class="medir-flow-ambiente-mount"></div>' +
       '</div>' +
       '<div class="medir-flow-actions">' +
@@ -257,6 +240,7 @@
       '</div>';
 
     banner.insertAdjacentElement('afterend', flow);
+    flow.classList.add('medir-flow--compact');
 
     var solMount = document.getElementById('medirFlowSolucion');
     sync.classList.remove('setup-hidden');
@@ -265,7 +249,10 @@
     solMount.appendChild(sync);
 
     var ultima = document.getElementById('ultimaMedicionCard');
-    if (ultima) flow.insertAdjacentElement('afterend', ultima);
+    if (ultima) {
+      ultima.classList.add('ultima-medicion-card--en-flow');
+      flow.insertBefore(ultima, flow.firstChild);
+    }
 
     tab.querySelectorAll('.medir-assistant-cta-wrap, .guardar-medicion-bar').forEach(function (n) {
       n.remove();

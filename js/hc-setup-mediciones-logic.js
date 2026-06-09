@@ -873,17 +873,31 @@ function cargarUltimaMedicion() {
   }
   const m = state.ultimaMedicion;
   if (card) card.classList.add('ultima-medicion-card--visible');
-  const ambLine = (m.vpd || m.humSala)
-    ? '<br>🌡️ Aire: <strong>' + (m.tempAire || '—') + '°C</strong> · HR <strong>' + (m.humSala || '—') + '%</strong> · VPD <strong>' + (m.vpd || '—') + ' kPa</strong>'
-    : '';
-  const ppfdLine = m.ppfd ? '<br>💡 PPFD: <strong>' + m.ppfd + '</strong> µmol/m²/s' : '';
-  info.innerHTML =
-    '<span class="ultima-medicion-meta">📅 ' + m.fecha + ' a las ' + m.hora + '</span><br>' +
-    '⚡ EC: <strong>' + (m.ec || '—') + ' µS/cm</strong> &nbsp;' +
-    '🧪 pH: <strong>' + (m.ph || '—') + '</strong> &nbsp;' +
-    '🌡️ Agua: <strong>' + (m.temp || '—') + '°C</strong> &nbsp;' +
-    '🪣 <strong>' + (m.vol || '—') + 'L</strong>' +
-    ambLine + ppfdLine;
+  const enFlow = card && card.classList.contains('ultima-medicion-card--en-flow');
+  if (enFlow) {
+    info.innerHTML =
+      '<span class="ultima-medicion-meta">' +
+      m.fecha +
+      ' · ' +
+      m.hora +
+      ' · EC ' +
+      (m.ec || '—') +
+      ' · pH ' +
+      (m.ph || '—') +
+      '</span>';
+  } else {
+    const ambLine = (m.vpd || m.humSala)
+      ? '<br>🌡️ Aire: <strong>' + (m.tempAire || '—') + '°C</strong> · HR <strong>' + (m.humSala || '—') + '%</strong> · VPD <strong>' + (m.vpd || '—') + ' kPa</strong>'
+      : '';
+    const ppfdLine = m.ppfd ? '<br>💡 PPFD: <strong>' + m.ppfd + '</strong> µmol/m²/s' : '';
+    info.innerHTML =
+      '<span class="ultima-medicion-meta">📅 ' + m.fecha + ' a las ' + m.hora + '</span><br>' +
+      '⚡ EC: <strong>' + (m.ec || '—') + ' µS/cm</strong> &nbsp;' +
+      '🧪 pH: <strong>' + (m.ph || '—') + '</strong> &nbsp;' +
+      '🌡️ Agua: <strong>' + (m.temp || '—') + '°C</strong> &nbsp;' +
+      '🪣 <strong>' + (m.vol || '—') + 'L</strong>' +
+      ambLine + ppfdLine;
+  }
   if (typeof cargarAmbienteDesdeUltimaMedicion === 'function') cargarAmbienteDesdeUltimaMedicion();
 }
 

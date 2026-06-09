@@ -217,7 +217,7 @@ test('propagador: Medir solo domo (sin depósito DWC)', async () => {
   const snap = await page.evaluate(auditScript);
 
   assert.equal(snap.medir.fase, 'propagador', 'fase sistema');
-  assert.equal(snap.medir.banner, true, 'banner propagador (medirPropagadorFaseBanner)');
+  assert.equal(snap.medir.banner, false, 'sin banner texto duplicado en germ (UI compacta)');
   assert.equal(snap.medir.flow, true, 'medirFlow');
   assert.equal(snap.medir.tempAgua, true, 'cardTemp agua propagador');
   assert.equal(snap.medir.volumen, true, 'cardVol propagador');

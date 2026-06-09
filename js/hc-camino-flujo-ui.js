@@ -398,6 +398,12 @@
   }
 
   function medirBannerHtml(cfg) {
+    if (
+      typeof hcMedirGermPreTrasladoActivo === 'function' &&
+      hcMedirGermPreTrasladoActivo(cfg)
+    ) {
+      return '';
+    }
     var f =
       typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
     if (!f) return '';
