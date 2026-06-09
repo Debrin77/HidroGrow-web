@@ -348,8 +348,6 @@
     var subTabs = el('salaSubTabs');
     var hint = el('tabContextHintSala');
     var intro = document.querySelector('#tab-sala .medir-sala-intro');
-    var eqBadge = el('salaEquipPasoBadge');
-    var moBadge = el('salaMontajePasoBadge');
     var recoBadge = el('salaMontajeBadgeReco');
     var lead = el('salaMontajeRecoLead');
     var prereq = el('salaMontajePrereqOrden');
@@ -386,8 +384,6 @@
       panelAgua.setAttribute('aria-hidden', 'false');
     }
     if (mount) mount.classList.remove('setup-hidden');
-    if (eqBadge) eqBadge.classList.add('setup-hidden');
-    if (moBadge) moBadge.classList.add('setup-hidden');
     if (recoBadge) recoBadge.classList.add('setup-hidden');
     if (lead) lead.classList.add('setup-hidden');
     if (prereq) prereq.classList.add('setup-hidden');
@@ -608,8 +604,6 @@
       equipDet.classList.remove('sala-equip-details--paso-activo');
       var eqTitle = el('salaEquipSummaryTitleText');
       if (eqTitle) eqTitle.textContent = 'Equipamiento configurado';
-      var eqBadge = el('salaEquipPasoBadge');
-      if (eqBadge) eqBadge.classList.add('setup-hidden');
     }
     if (montajeDet) {
       montajeDet.classList.add('setup-hidden');

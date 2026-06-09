@@ -957,6 +957,18 @@
       try {
         delete window._hcSalaPreGermRecienGuardada;
       } catch (_) {}
+      if (
+        typeof montajeSalaPreGermOk === 'function' &&
+        montajeSalaPreGermOk(cfgGerm)
+      ) {
+        refreshInstalacionLifecycleUi();
+        try {
+          if (typeof actualizarPostSetupChecklistRail === 'function') {
+            actualizarPostSetupChecklistRail();
+          }
+        } catch (_) {}
+        return;
+      }
       setTimeout(function () {
         try {
           if (typeof goTab === 'function') goTab('sala');

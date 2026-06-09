@@ -688,6 +688,8 @@
     return (
       '<button type="button" class="' +
       cls +
+      '" data-pm-guia-id="' +
+      safe +
       '" onclick="event.preventDefault();event.stopPropagation();hcOpenPmGuia(\'' +
       safe +
       '\')" aria-label="Abrir guía: ' +
@@ -696,6 +698,31 @@
       label +
       '</button>'
     );
+  }
+
+  function hcEquipSalaMontajeFingerprint(cfg) {
+    cfg = cfg || getCfg();
+    var inst =
+      cfg.equipamientoInstalado && typeof cfg.equipamientoInstalado === 'object'
+        ? cfg.equipamientoInstalado
+        : {};
+    var eq = Array.isArray(cfg.equipamiento) ? cfg.equipamiento.slice().sort() : [];
+    var parts = ['eq:' + eq.join(',')];
+    Object.keys(inst)
+      .sort()
+      .forEach(function (k) {
+        var e = inst[k] || {};
+        parts.push(
+          k +
+            ':' +
+            String(e.marca || '') +
+            '|' +
+            String(e.modelo || '') +
+            '|' +
+            String(e.id || '')
+        );
+      });
+    return parts.join(';');
   }
 
   var PM_ICON_FALLBACK = {
@@ -1246,12 +1273,22 @@
     return false;
   }
 
-  /** Tras guardar equipamiento de sala en propagador: no heredar verificación ni marcas previas. */
-  function hcReiniciarPuestaMarchaTrasConfigSala(cfg) {
+  /** Tras guardar equipamiento de sala: reiniciar montaje solo si cambió el equipamiento relevante. */
+  function hcReiniciarPuestaMarchaTrasConfigSala(cfg, opts) {
+    opts = opts || {};
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || null;
     if (!cfg || typeof cfg !== 'object') return cfg;
+    var fp = hcEquipSalaMontajeFingerprint(cfg);
+    var prevFp = cfg.hcPmEquipSalaFingerprint || cfg.hcPmEquipFpAtVerify || '';
+    var checks = cfg.puestaMarchaChecks;
+    var verificado = !!(checks && checks.completedAt);
+    cfg.hcPmEquipSalaFingerprint = fp;
+    if (verificado && prevFp && prevFp === fp && !opts.force) {
+      return cfg;
+    }
     cfg.puestaMarchaChecks = {};
     cfg.checklistInstalacionConfirmada = false;
+    delete cfg.hcPmEquipFpAtVerify;
     return cfg;
   }
 
@@ -1313,13 +1350,53 @@
     refreshPuestaMarchaModalFoot(cfg, checks);
   }
 
+  function buildPmInlineVerifyActionsHtml(cfg, checks, prog, verificada, bloqueada) {
+    if (bloqueada) {
+      return (
+        '<p class="hc-pm-inline-actions">' +
+        '<button type="button" class="btn btn-ghost btn-sm" onclick="hcOpenPuestaMarchaChecklist()">Ver montaje (solo lectura)</button></p>'
+      );
+    }
+    if (verificada) {
+      return (
+        '<p class="hc-pm-inline-status hc-pm-inline-status--ok" role="status">' +
+        '✓ Montaje verificado. Puedes revisar los puntos marcados arriba.</p>' +
+        '<p class="hc-pm-inline-actions">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="hcOpenPuestaMarchaChecklist()">Revisar montaje</button></p>'
+      );
+    }
+    var listo = prog.total > 0 && prog.done >= prog.total;
+    return (
+      '<p class="hc-pm-inline-verify-hint">' +
+      (listo
+        ? 'Todos los puntos esenciales marcados. Confirma que el montaje físico funciona.'
+        : 'Marca cada tarjeta al completarla (' + prog.done + '/' + prog.total + ' esenciales).') +
+      '</p>' +
+      '<p class="hc-pm-inline-actions hc-pm-inline-actions--verify">' +
+      '<button type="button" class="btn btn-primary btn-sm" id="hcPmInlineFinishBtn" onclick="hcFinishPuestaMarcha()"' +
+      (listo ? '' : ' disabled') +
+      '>' +
+      (listo ? 'Verificar montaje de sala' : 'Verificar montaje (faltan puntos)') +
+      '</button> ' +
+      '<button type="button" class="btn btn-ghost btn-sm" onclick="hcOpenPuestaMarchaChecklist()">Abrir en ventana</button></p>'
+    );
+  }
+
+  function refreshPmInlineVerifyBtn(prog, verificada, bloqueada) {
+    var btn = document.getElementById('hcPmInlineFinishBtn');
+    if (!btn || bloqueada || verificada) return;
+    var listo = prog.total > 0 && prog.done >= prog.total;
+    btn.disabled = !listo;
+    btn.textContent = listo ? 'Verificar montaje de sala' : 'Verificar montaje (faltan puntos)';
+  }
+
   function buildPuestaMarchaInlineHtml(cfg, checks, prog, verificada, items, opts) {
     opts = opts || {};
     items = items || buildItemsForConfig(cfg);
     var bloqueada = montajeEdicionBloqueada();
     var shell = buildPmShellHtml(cfg, checks, prog, verificada, bloqueada, 'inline');
     if (opts.soloChecklist) {
-      return shell;
+      return shell + buildPmInlineVerifyActionsHtml(cfg, checks, prog, verificada, bloqueada);
     }
     var btnLabel = bloqueada
       ? 'Ver montaje (solo lectura)'
@@ -1475,6 +1552,7 @@
         modalTitle.textContent = 'Puesta en marcha';
       }
     }
+    refreshPmInlineVerifyBtn(prog, verificada, bloqueada);
     renderPuestaMarchaInlinePreview();
     try {
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
@@ -1485,10 +1563,43 @@
     } catch (_) {}
   }
 
+  function stackPmGuiaModalAboveOthers(modal) {
+    if (!modal) return;
+    var z = 12760;
+    try {
+      document
+        .querySelectorAll('.modal-overlay.open, .setup-overlay.open, #checklistOverlay.open')
+        .forEach(function (el) {
+          if (el === modal) return;
+          var zc = parseInt(window.getComputedStyle(el).zIndex, 10);
+          if (Number.isFinite(zc) && zc >= z) z = zc + 15;
+        });
+    } catch (_) {}
+    modal.style.zIndex = String(z);
+    try {
+      document.body.appendChild(modal);
+    } catch (_) {}
+  }
+
+  function pmGuiaIdFromBtn(btn) {
+    if (!btn) return '';
+    var fromBtn = btn.getAttribute('data-pm-guia-id');
+    if (fromBtn) return String(fromBtn).replace(/[^a-zA-Z0-9_]/g, '');
+    var card = btn.closest ? btn.closest('[data-pm-id]') : null;
+    return card ? String(card.getAttribute('data-pm-id') || '').replace(/[^a-zA-Z0-9_]/g, '') : '';
+  }
+
   function openPmGuia(key) {
     var safe = String(key || '').replace(/[^a-zA-Z0-9_]/g, '');
     if (!safe) return;
-    var content = buildGuiaContent(safe, getCfg());
+    var content = null;
+    try {
+      content = buildGuiaContent(safe, getCfg());
+    } catch (eGuia) {
+      try {
+        console.error('openPmGuia', eGuia);
+      } catch (_) {}
+    }
     if (!content) {
       if (typeof showToast === 'function') showToast('Guía no disponible para este paso.', true);
       return;
@@ -1510,6 +1621,7 @@
       if (typeof showToast === 'function') showToast('No se pudo abrir la guía (modal ausente).', true);
       return;
     }
+    stackPmGuiaModalAboveOthers(modal);
     modal.classList.add('open');
     try {
       if (typeof a11yDialogOpened === 'function') a11yDialogOpened(modal);
@@ -1524,6 +1636,7 @@
     var modal = document.getElementById('modalPmGuia');
     if (modal) {
       modal.classList.remove('open');
+      modal.style.zIndex = '';
       try {
         if (typeof a11yDialogClosed === 'function') a11yDialogClosed(modal);
       } catch (_) {}
@@ -1539,8 +1652,7 @@
       function (ev) {
         var btn = ev.target && ev.target.closest ? ev.target.closest('.hc-pm-guia-btn, .hc-pm-guia-chip') : null;
         if (!btn) return;
-        var card = btn.closest('[data-pm-id]');
-        var id = card ? card.getAttribute('data-pm-id') : '';
+        var id = pmGuiaIdFromBtn(btn);
         if (!id) return;
         ev.preventDefault();
         ev.stopPropagation();
@@ -1700,6 +1812,7 @@
       }
     }
     checks.completedAt = new Date().toISOString();
+    checks.hcPmEquipFpAtVerify = hcEquipSalaMontajeFingerprint(cfg);
     saveChecks(checks);
     closePuestaMarchaChecklist();
     refreshPuestaMarchaUi();
@@ -1774,6 +1887,10 @@
     cfg = cfg || getCfg();
     var checks = getChecks(cfg);
     if (!checks.completedAt) return false;
+    var fp = hcEquipSalaMontajeFingerprint(cfg);
+    if (checks.hcPmEquipFpAtVerify && checks.hcPmEquipFpAtVerify === fp) {
+      return true;
+    }
     var items = buildItemsForConfig(cfg);
     var prog = countProgress(checks, cfg, items);
     return prog.total > 0 && prog.done >= prog.total;
@@ -1839,5 +1956,6 @@
   global.montajeVerificacionVigente = montajeVerificacionVigente;
   global.limpiarVerificacionMontajeSiHidroPendiente = limpiarVerificacionMontajeSiHidroPendiente;
   global.hcReiniciarPuestaMarchaTrasConfigSala = hcReiniciarPuestaMarchaTrasConfigSala;
+  global.hcEquipSalaMontajeFingerprint = hcEquipSalaMontajeFingerprint;
   global.pmMontajeSinMarcadoAuto = pmMontajeSinMarcadoAuto;
 })(typeof window !== 'undefined' ? window : globalThis);

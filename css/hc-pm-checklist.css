@@ -447,9 +447,38 @@ html.hc-theme-dark .hc-pm-card--checked .hc-pm-card-title {
   align-self: center;
 }
 
+.hc-pm-inline-actions--verify {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+}
+
+.hc-pm-inline-verify-hint {
+  margin: 10px 0 0;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.hc-pm-inline-status--ok {
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: var(--text-xs, 0.75rem);
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--green-dim);
+}
+
+html.hc-theme-dark .hc-pm-inline-status--ok {
+  color: var(--green);
+}
+
 .hc-pm-card .hc-pm-guia-btn,
 .hc-pm-card .hc-pm-guia-chip {
   align-self: center;
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .hc-pm-optional-block {

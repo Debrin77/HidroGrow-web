@@ -1985,8 +1985,10 @@ function guardarSetupYContinuarCore() {
 
 
   initTorres();
+  let esPrimeraInstalacionGuardada = false;
   if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
     setupEsNuevaTorre = true;
+    esPrimeraInstalacionGuardada = true;
   }
   const idxSlotGuardar = state.torreActiva || 0;
   /** Reconfiguración: respaldar la ranura activa antes de sobrescribir state.configTorre. En instalación nueva no guardar (el borrador del asistente no debe pisar otra torre). */
@@ -2560,8 +2562,20 @@ function guardarSetupYContinuarCore() {
       fotosSistemaCompleto: { fotoKeys: [], fotos: [] },
     };
     if (!state.torres) state.torres = [];
-    state.torres.push(nuevaTorre);
-    const newIdx = state.torres.length - 1;
+    const soloFantasmas =
+      esPrimeraInstalacionGuardada ||
+      !state.torres.length ||
+      state.torres.every(function (t) {
+        return typeof hcEsSlotInstalacionFantasma === 'function' && hcEsSlotInstalacionFantasma(t);
+      });
+    let newIdx;
+    if (soloFantasmas) {
+      state.torres = [nuevaTorre];
+      newIdx = 0;
+    } else {
+      state.torres.push(nuevaTorre);
+      newIdx = state.torres.length - 1;
+    }
     state.torreActiva = newIdx;
     try {
       cargarEstadoTorre(newIdx);
@@ -2616,9 +2630,7 @@ function guardarSetupYContinuarCore() {
   }
   try {
     if (state.configTorre) {
-      if (faseSalaPreGerm && typeof hcReiniciarPuestaMarchaTrasConfigSala === 'function') {
-        hcReiniciarPuestaMarchaTrasConfigSala(state.configTorre);
-      } else if (!state.configTorre.puestaMarchaChecks) {
+      if (!state.configTorre.puestaMarchaChecks) {
         state.configTorre.puestaMarchaChecks = {};
       }
     }
@@ -2736,8 +2748,12 @@ function guardarSetupYContinuarCore() {
       });
     } else if (typeof showToast === 'function') {
       setTimeout(function () {
+        var montajeHecho =
+          typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(state.configTorre);
         showToast(
-          '✅ Equipamiento de sala guardado. Abre el checklist de montaje en la pestaña Sala.',
+          montajeHecho
+            ? '✅ Equipamiento de sala guardado.'
+            : '✅ Equipamiento de sala guardado. Abre el checklist de montaje en la pestaña Sala.',
           false,
           { durationMs: 6200, zIndex: 10400, prominent: true }
         );

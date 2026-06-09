@@ -159,8 +159,16 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
         ? hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] })
         : { fotoKeys: [], fotos: [] },
   };
-  state.torres.push(nuevaTorre);
-  const newIdx = state.torres.length - 1;
+  const soloFantasmas =
+    !state.torres.length || state.torres.every((t) => hcEsSlotInstalacionFantasma(t));
+  let newIdx;
+  if (soloFantasmas) {
+    state.torres = [nuevaTorre];
+    newIdx = 0;
+  } else {
+    state.torres.push(nuevaTorre);
+    newIdx = state.torres.length - 1;
+  }
   state.torreActiva = newIdx;
   cargarEstadoTorre(newIdx);
   return newIdx;
@@ -288,6 +296,15 @@ function hcLegacyMereceMigrarASlot(cfg, st) {
 /** Crea `state.torres[0]` desde config guardada si el camino propagador no tenía ranura. */
 function hcAsegurarSlotInstalacionDesdeConfig() {
   if (!state || typeof state !== 'object') return;
+  try {
+    var so = document.getElementById('setupOverlay');
+    if (
+      (so && so.classList.contains('open')) ||
+      (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)
+    ) {
+      return;
+    }
+  } catch (_) {}
   if (!Array.isArray(state.torres)) state.torres = [];
   if (state.torres.some((t) => !hcEsSlotInstalacionFantasma(t))) return;
   const cfg = state.configTorre;

@@ -3139,6 +3139,9 @@ select#editVariedad option {
 .modal-overlay.ctp-modal-overlay {
   z-index: 12650;
 }
+#modalPmGuia.modal-overlay.open {
+  z-index: 12760;
+}
 .modal {
   background: var(--bg2);
   border: 1px solid var(--border);
@@ -22995,25 +22998,6 @@ html.hc-theme-dark .sala-propagador-flujo-hint {
 }
 #tab-sala.sala-tab--propagador-focus .sala-sub-tabs {
   display: none;
-}
-.sala-equip-paso-badge,
-.sala-montaje-paso-badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 2px 8px;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  vertical-align: middle;
-  border-radius: 999px;
-  color: #14532d;
-  background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
-  border: 1px solid rgba(21, 128, 61, 0.3);
-}
-.sala-montaje-paso-badge {
-  color: #92400e;
-  background: linear-gradient(135deg, #fde68a 0%, #fbbf24 100%);
-  border-color: rgba(180, 83, 9, 0.35);
 }
 .sala-equip-details--paso-activo {
   border-color: rgba(34, 197, 94, 0.4) !important;
