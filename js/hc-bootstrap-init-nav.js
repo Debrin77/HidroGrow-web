@@ -18,6 +18,7 @@ function hcResetSessionUiFlags() {
     delete window._hcChecklistGuidedFlow;
     delete window._hcSetupWizardCompletadoTs;
     delete window._hcSalaPreGermRecienGuardada;
+    delete window._hcSetupSalaPreGermSession;
     if (typeof hcInvalidateSalaTabHeavyCache === 'function') hcInvalidateSalaTabHeavyCache();
   } catch (_) {}
 }

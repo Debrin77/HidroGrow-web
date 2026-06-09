@@ -709,18 +709,14 @@ function getEquipCatalogGroups(entorno) {
   const base = entorno === 'exterior' ? EQUIP_CATALOG_GROUPS.exterior.slice() : EQUIP_CATALOG_GROUPS.interior.slice();
   const germKeys = ['propagador', 'higrometro_germ', 'mat_termica_germ'];
 
-  if (hcEquipCatalogModoSalaPropagador() && (faseSala || camino === 'semilla_propagador')) {
-    try {
-      var cfgCat =
-        typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
-      var germActiva =
-        typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgCat);
-      if (faseSala || germActiva || (typeof window !== 'undefined' && window._hcSetupSalaPreGermSession)) {
-        return equipCatalogGroupsSalaPropagador(entorno);
-      }
-    } catch (_) {
-      if (faseSala) return equipCatalogGroupsSalaPropagador(entorno);
-    }
+  /** Sala propagador: solo en sesión explícita «Configurar sala», nunca en Germinación ahora (paso 3 inicial). */
+  if (
+    hcEquipCatalogModoSalaPropagador() &&
+    faseSala &&
+    typeof hcSetupEnFaseSalaPreGerm === 'function' &&
+    hcSetupEnFaseSalaPreGerm()
+  ) {
+    return equipCatalogGroupsSalaPropagador(entorno);
   }
 
   if (faseSala && camino === 'semilla_hidro') {

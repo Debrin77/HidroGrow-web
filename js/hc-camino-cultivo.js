@@ -591,6 +591,12 @@
     try {
       if (typeof renderSetupPage === 'function') renderSetupPage();
       if (typeof refreshCaminoCultivoUI === 'function') refreshCaminoCultivoUI();
+      if (typeof syncPremiumGermSectionPlacement === 'function') {
+        syncPremiumGermSectionPlacement();
+      }
+      if (typeof renderEquipamientoPremiumUI === 'function') {
+        renderEquipamientoPremiumUI({ lite: true });
+      }
       if (typeof a11yDialogOpened === 'function') a11yDialogOpened(so);
     } catch (_) {}
   }
