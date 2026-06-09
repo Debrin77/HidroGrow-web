@@ -391,6 +391,8 @@
     if (recoBadge) recoBadge.classList.add('setup-hidden');
     if (lead) lead.classList.add('setup-hidden');
     if (prereq) prereq.classList.add('setup-hidden');
+    var equipResumen = el('sistemaEquipResumen');
+    if (equipResumen) equipResumen.classList.toggle('setup-hidden', paso === 'done');
 
     var pasoListo = paso === 'done';
     var pasoEquip = paso === 'equip';
@@ -399,8 +401,9 @@
     if (equipDet) {
       equipDet.classList.remove('setup-hidden');
       equipDet.classList.toggle('sala-equip-details--paso-activo', pasoEquip);
+      equipDet.classList.toggle('sala-equip-details--post-montaje', pasoListo);
       if (pasoListo || pasoMontaje || pasoEquip) {
-        equipDet.open = true;
+        equipDet.open = pasoListo ? false : true;
       }
       if (pasoListo) {
         equipDet.classList.remove('sala-equip-details--paso-activo');
@@ -424,6 +427,9 @@
             ? 'Checklist de montaje físico'
             : 'Checklist de montaje';
       }
+    }
+    if (pasoListo && typeof global.renderMedirEquipamientoPanel === 'function') {
+      global.renderMedirEquipamientoPanel();
     }
   }
 
@@ -463,7 +469,7 @@
     if (eqTitle) {
       eqTitle.textContent =
         paso === 'done'
-          ? 'Equipamiento de sala (indispensable y opcional)'
+          ? 'Equipamiento de sala'
           : paso === 'equip'
             ? 'Paso 1 · Equipamiento indispensable de la sala'
             : paso === 'montaje'
@@ -827,6 +833,9 @@
       typeof global.propagadorMontajeCompleto === 'function' &&
       !global.propagadorMontajeCompleto(cfg)
     ) {
+      return false;
+    }
+    if (typeof global.montajeSalaPreGermOk === 'function' && global.montajeSalaPreGermOk(cfg)) {
       return false;
     }
     var paso = getSalaRecoPasoInicio(cfg);

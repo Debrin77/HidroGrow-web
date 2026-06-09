@@ -2257,6 +2257,11 @@ function cerrarSetup() {
     hcSetSetupSlidersBlankMode(false);
   } catch (_) {}
   try {
+    if (typeof hcRestaurarMemoriaTrasCancelarNuevaInstalacion === 'function') {
+      hcRestaurarMemoriaTrasCancelarNuevaInstalacion();
+    }
+  } catch (_) {}
+  try {
     if (typeof hcResetSetupWizardSession === 'function') {
       hcResetSetupWizardSession({ keepPostSetupFlow: !!(state && state.hcPostSetupChecklistPendiente) });
     }

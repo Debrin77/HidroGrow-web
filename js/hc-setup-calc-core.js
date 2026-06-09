@@ -1974,11 +1974,14 @@ function guardarSetupYContinuarCore() {
     }
     return null;
   })();
-  const preservedCalibracionMedidor = cfgPrevWizard.ultimaCalibracionMedidor || null;
+  const preservedCalibracionMedidor =
+    setupEsNuevaTorre ? null : cfgPrevWizard.ultimaCalibracionMedidor || null;
   const preservedSalaLayout =
-    cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'
-      ? JSON.parse(JSON.stringify(cfgPrevWizard.salaLayout))
-      : null;
+    setupEsNuevaTorre
+      ? null
+      : cfgPrevWizard.salaLayout && typeof cfgPrevWizard.salaLayout === 'object'
+        ? JSON.parse(JSON.stringify(cfgPrevWizard.salaLayout))
+        : null;
 
 
   initTorres();
@@ -2224,6 +2227,7 @@ function guardarSetupYContinuarCore() {
   }
   if (
     faseSalaPreGerm &&
+    !setupEsNuevaTorre &&
     typeof hcRestaurarCfgCaminoGerminacionTrasSetupSala === 'function'
   ) {
     hcRestaurarCfgCaminoGerminacionTrasSetupSala(state.configTorre, cfgPrevWizard);
@@ -2518,6 +2522,9 @@ function guardarSetupYContinuarCore() {
   if (usarNuevaEntrada) {
     // ── NUEVA ENTRADA EN state.torres (nueva instalación o cambio de tipología) ──
     setupEsNuevaTorre = false;
+    try {
+      if (typeof window !== 'undefined') delete window._hcNuevaInstalacionOrigenIdx;
+    } catch (_) {}
     const EMOJIS = ['🌿','🌱','🥬','🍃','🌾','🪴','🌻','🫛','🎍'];
     const nTorres = (state.torres || []).length;
     const prevSlot = state.torres && state.torres[state.torreActiva || 0];

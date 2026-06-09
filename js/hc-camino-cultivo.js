@@ -174,6 +174,89 @@
     }
   }
 
+  /** Progreso ligado a una ranura concreta (no copiar al abrir o guardar otra instalación). */
+  var HC_CFG_KEYS_PROGRESO_INSTALACION = [
+    'propagadorMontajeChecks',
+    'preparacionGermHidroChecks',
+    'enraizadoMontajeChecks',
+    'salaPreGermConfigAt',
+    'puestaMarchaChecks',
+    'germinacionFlow',
+    'hcGermPlan',
+    'hcPropagadorGermAsistenteGuardadoAt',
+    'semillero',
+    'sustratoGerm',
+    'variedadGerminacion',
+    'germinacionEnPropagador',
+    'equipamientoInstalado',
+    'salaLayout',
+    'ultimaCalibracionMedidor',
+    'premiumSetup',
+    'caminoCultivo',
+    'hcSetupFase',
+    'checklistInstalacionConfirmada',
+    'nombreTorre',
+    'nombreInstalacion',
+  ];
+
+  function hcLimpiarProgresoInstalacionEnCfg(cfg) {
+    if (!cfg || typeof cfg !== 'object') return cfg;
+    for (var pi = 0; pi < HC_CFG_KEYS_PROGRESO_INSTALACION.length; pi++) {
+      delete cfg[HC_CFG_KEYS_PROGRESO_INSTALACION[pi]];
+    }
+    return cfg;
+  }
+
+  /**
+   * Guarda la ranura activa y vacía memoria de trabajo para el borrador del asistente
+   * (cada instalación nueva empieza sin montaje propagador/sala/germ de otra ranura).
+   */
+  function hcAislarMemoriaActivaParaNuevaInstalacion() {
+    if (typeof state === 'undefined' || !state) return;
+    if (typeof initTorres === 'function') initTorres();
+    if (typeof guardarEstadoTorreActual === 'function') {
+      try {
+        guardarEstadoTorreActual();
+      } catch (_) {}
+    }
+    try {
+      if (typeof window !== 'undefined') {
+        window._hcNuevaInstalacionOrigenIdx = state.torreActiva || 0;
+      }
+    } catch (_) {}
+    state.configTorre = {
+      hcPlantillaAutogenerada: true,
+      checklistInstalacionConfirmada: false,
+      tipoInstalacion: '',
+      agua: state.configAgua || 'destilada',
+    };
+    state.torre = [];
+    state.mediciones = [];
+    state.registro = [];
+    state.ultimaMedicion = null;
+    state.ultimaRecarga = null;
+    state.recargaSnoozeHasta = null;
+    try {
+      if (typeof ensureFotosSistemaCompletoState === 'function') ensureFotosSistemaCompletoState();
+    } catch (_) {}
+    state.fotosSistemaCompleto = { fotoKeys: [], fotos: [] };
+  }
+
+  /** Tras cerrar el asistente sin guardar «Nueva instalación», restaurar la ranura anterior. */
+  function hcRestaurarMemoriaTrasCancelarNuevaInstalacion() {
+    try {
+      if (typeof window === 'undefined' || window._hcNuevaInstalacionOrigenIdx == null) return false;
+      var idx = window._hcNuevaInstalacionOrigenIdx;
+      delete window._hcNuevaInstalacionOrigenIdx;
+      if (typeof cargarEstadoTorre === 'function' && state && state.torres && state.torres[idx]) {
+        state.torreActiva = idx;
+        cargarEstadoTorre(idx);
+        return true;
+      }
+    } catch (_) {}
+    return false;
+  }
+
   /** Borrador limpio al abrir «Nueva instalación» (no heredar camino de la ranura activa). */
   function hcResetPremiumBorradorNuevaInstalacion() {
     if (typeof ensurePremiumSetup !== 'function') return;
@@ -2104,6 +2187,9 @@
   global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;
   global.hcSyncPremiumAsistenteDesdeConfig = hcSyncPremiumAsistenteDesdeConfig;
   global.hcResetPremiumBorradorNuevaInstalacion = hcResetPremiumBorradorNuevaInstalacion;
+  global.hcAislarMemoriaActivaParaNuevaInstalacion = hcAislarMemoriaActivaParaNuevaInstalacion;
+  global.hcRestaurarMemoriaTrasCancelarNuevaInstalacion = hcRestaurarMemoriaTrasCancelarNuevaInstalacion;
+  global.hcLimpiarProgresoInstalacionEnCfg = hcLimpiarProgresoInstalacionEnCfg;
   global.hcCaminoRequiereSalaPreGerm = hcCaminoRequiereSalaPreGerm;
   global.salaPreGermConfigurada = salaPreGermConfigurada;
   global.instTieneEquipamientoSalaRegistrado = instTieneEquipamientoSalaRegistrado;

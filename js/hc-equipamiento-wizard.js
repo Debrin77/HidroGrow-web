@@ -833,15 +833,42 @@
     }
   }
 
+  function hcSalaEquipPanelModoCompacto(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam !== 'semilla_propagador') return false;
+    return typeof montajeSalaPreGermOk === 'function' && montajeSalaPreGermOk(cfg);
+  }
+
   function renderMedirEquipamientoPanel() {
     const card = el('medirEquipamientoCard');
     const panel = el('medirEquipamientoPanel');
     if (!panel) return;
     if (card) card.classList.remove('setup-hidden');
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const compactoSala = hcSalaEquipPanelModoCompacto(cfg);
+    if (card) card.classList.toggle('medir-equip-card--sala-compact', compactoSala);
     const interior =
       String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
       'exterior';
+    if (compactoSala && interior) {
+      panel.innerHTML =
+        '<div id="salaEquipCatalogInline" class="sala-equip-catalog-inline"></div>';
+      renderEquipCatalogInto(el('salaEquipCatalogInline'), 'salaTabEquip_');
+      var layCompact = el('salaLayoutPanel');
+      if (layCompact) {
+        layCompact.innerHTML = '';
+        layCompact.classList.add('setup-hidden');
+      }
+      var luzMount = el('luzOrigenEquipMount');
+      if (luzMount) {
+        luzMount.innerHTML = '';
+        luzMount.classList.add('setup-hidden');
+      }
+      if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen(cfg);
+      return;
+    }
+    if (card) card.classList.remove('medir-equip-card--sala-compact');
     if (!interior) {
       panel.innerHTML =
         '<p class="medir-equip-lead">Instalación en <strong>exterior</strong>: el catálogo de sala (LED, extractor, carpa…) no aplica. Configura ubicación en <strong>Sala → Ubicación, luz y sustrato</strong> si cultivas en interior.</p>';
@@ -927,6 +954,12 @@
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const span = el('sistemaEquipResumen');
     if (!span) return;
+    if (hcSalaEquipPanelModoCompacto(cfg)) {
+      span.textContent = '';
+      span.classList.add('setup-hidden');
+      return;
+    }
+    span.classList.remove('setup-hidden');
     const interior =
       String(cfg.ubicacion || (cfg.premiumSetup && cfg.premiumSetup.entorno) || 'interior').toLowerCase() !==
       'exterior';

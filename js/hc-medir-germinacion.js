@@ -407,6 +407,7 @@
     var vid = plan.variedadId;
     var faseId = plan.faseId;
     var pre = hcMedirGermPreTrasladoActivo(cfg);
+    var salaLista = hcMedirSalaListaParaMedir(cfg);
 
     function num(v) {
       if (v == null || v === '') return NaN;
@@ -439,17 +440,22 @@
 
     if (pre) {
       evalKey('temp', num(payload.temp), 'temp');
-      evalKey('hr', num(payload.humSala), 'humSala');
+      if (!salaLista) {
+        evalKey('hr', num(payload.humSala), 'humSala');
+      }
     } else {
       if (activos.temp) evalKey('temp', num(payload.tempAire), 'tempAire');
       if (activos.hr) evalKey('hr', num(payload.humSala), 'humSala');
     }
     if (activos.ec) evalKey('ec', num(payload.ec), 'ec');
     if (activos.ph) evalKey('ph', num(payload.ph), 'ph');
-    if (activos.vpd) evalKey('vpd', num(payload.vpd), 'vpd');
+    if (activos.vpd && !(pre && salaLista)) evalKey('vpd', num(payload.vpd), 'vpd');
 
-    if (typeof global.evaluarMedicionCompleta === 'function' && hcMedirSalaListaParaMedir(cfg)) {
+    if (typeof global.evaluarMedicionCompleta === 'function' && salaLista) {
       var salaEval = global.evaluarMedicionCompleta({
+        tempAire: payload.tempAire,
+        humSala: payload.humSala,
+        vpd: payload.vpd,
         ppfd: payload.ppfd,
         lux: payload.lux,
         co2: payload.co2,

@@ -1539,6 +1539,11 @@ function abrirSetupNuevaTorre() {
   } catch (_) {}
   setupEsNuevaTorre = true;
   try {
+    if (typeof hcAislarMemoriaActivaParaNuevaInstalacion === 'function') {
+      hcAislarMemoriaActivaParaNuevaInstalacion();
+    }
+  } catch (_) {}
+  try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession({ keepNuevaFlag: true });
   } catch (_) {}
   try {

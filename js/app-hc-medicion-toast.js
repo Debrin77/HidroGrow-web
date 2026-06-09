@@ -339,20 +339,26 @@ async function guardarMedicion(payloadOverride) {
   }
 
   var msgOk = buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave);
-  if (evalResult && evalResult.alertas && evalResult.alertas.length) {
-    msgOk += ' · ' + evalResult.alertas.length + ' aviso(s) fuera de rango';
+  var alertasFuera = evalResult && evalResult.alertas ? evalResult.alertas : [];
+  if (alertasFuera.length) {
+    msgOk += ' · ' + alertasFuera.length + ' aviso(s) fuera de rango';
   }
   hcNotifyMedicionGuardada(msgOk);
 
-  if (evalResult && evalResult.alertas && evalResult.alertas.length) {
+  if (alertasFuera.length) {
     if (typeof showAlertasPostGuardado === 'function') showAlertasPostGuardado(evalResult);
-    setTimeout(function () {
-      showToast(
-        '⚠️ Revisa los valores marcados en Medir (fuera de rango)',
-        true,
-        { durationMs: 4800, prominent: true }
-      );
-    }, 700);
+    var graves = alertasFuera.filter(function (a) {
+      return a.estado === 'bad';
+    });
+    if (graves.length) {
+      setTimeout(function () {
+        showToast(
+          '⚠️ Revisa los valores marcados en Medir (fuera de rango)',
+          true,
+          { durationMs: 4800, prominent: true }
+        );
+      }, 700);
+    }
   }
 
   // ── 2. ACTUALIZAR UI (no debe impedir la confirmación) ───────────────────
