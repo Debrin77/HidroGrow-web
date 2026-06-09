@@ -820,12 +820,6 @@
     if (typeof global.hcRecargaCompletaAplicaEnCamino === 'function' && global.hcRecargaCompletaAplicaEnCamino(cfg)) {
       return false;
     }
-    if (
-      typeof global.propagadorMontajeCompleto === 'function' &&
-      !global.propagadorMontajeCompleto(cfg)
-    ) {
-      return false;
-    }
     if (typeof global.montajeSalaPreGermOk === 'function' && global.montajeSalaPreGermOk(cfg)) {
       return false;
     }

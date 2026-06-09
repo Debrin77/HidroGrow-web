@@ -382,17 +382,11 @@
   /** Días 1–N del seguimiento con fecha de siembra: recomendar oscuridad (consenso cultivadores). */
   var GERMINACION_DIAS_OSCURIDAD_RECOMENDADOS = 2;
 
-  /** Oscuridad en Inicio: propagador montado, días 1–N desde fecha de siembra (no depende del rail de fases). */
+  /** Oscuridad en Inicio: días 1–N desde fecha de siembra (no depende del rail de fases). */
   function hubMuestraAvisoOscuridadPropagador(cfg, g) {
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam !== 'semilla_propagador') return false;
-    if (
-      typeof propagadorMontajeCompleto === 'function' &&
-      !propagadorMontajeCompleto(cfg)
-    ) {
-      return false;
-    }
     if (!getFechaInicioGerminacion(g, cfg)) return false;
     if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
       return false;
@@ -452,7 +446,7 @@
     );
   }
 
-  /** Inicio · propagador: aviso oscuridad/luz cuando el hub de fases está oculto (montaje completo). */
+  /** Inicio · propagador: aviso oscuridad/luz en host dedicado cuando el hub de fases está oculto. */
   function refreshDashPropagadorOscuridadBanner(cfg) {
     var host = document.getElementById('dashPropagadorOscuridadHost');
     if (!host) return;
@@ -1957,6 +1951,7 @@
     if (!hcGerminacionActiva(cfg)) {
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
+      refreshDashPropagadorOscuridadBanner(cfg);
       refreshSalaPropagadorDomoPanel(cfg);
       return;
     }
@@ -1968,6 +1963,14 @@
       hub.innerHTML = '';
       refreshDashPropagadorOscuridadBanner(cfg);
       refreshSalaPropagadorDomoPanel(cfg);
+      try {
+        if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
+      } catch (_) {}
+      if (!global._hcRefreshInicioVistaCamino) {
+        try {
+          if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+        } catch (_) {}
+      }
       return;
     }
     hub.classList.remove('setup-hidden');
