@@ -823,6 +823,7 @@
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
     if (typeof renderSalaSeguimientoCta === 'function') renderSalaSeguimientoCta();
     if (typeof refreshSalaVistaCamino === 'function') refreshSalaVistaCamino(cfg);
+    if (typeof refreshSalaPropagadorDomoPanel === 'function') refreshSalaPropagadorDomoPanel(cfg);
   }
 
   function refreshSalaTabHeavy(cfg, opts) {

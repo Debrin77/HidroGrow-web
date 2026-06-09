@@ -658,6 +658,9 @@
       applySalaPropagadorVistaMinimaChrome(cfg);
       renderSalaPropagadorFlujoGuiado(cfg);
       renderSalaMontajePrerequisito(cfg);
+      if (typeof global.refreshSalaPropagadorDomoPanel === 'function') {
+        global.refreshSalaPropagadorDomoPanel(cfg);
+      }
 
       var paso = getSalaRecoPasoInicio(cfg);
     } catch (e) {
@@ -725,20 +728,14 @@
   }
 
   /**
-   * Inicio · propagador: ocultar hub de fases / montaje 3 tarjetas / resumen de ruta.
-   * El aviso de sala (checklist) queda como guía principal.
+   * Inicio · propagador: ocultar hub de fases, registro y monitor del domo.
+   * El banner de sala y Medir/Sala cubren el seguimiento; no volver al hub completo en Inicio.
    */
   function hcPropagadorInicioOcultarCuadroGermFases(cfg) {
     cfg = cfg || getCfg();
     if (typeof global.getCaminoCultivo !== 'function') return false;
     if (global.getCaminoCultivo(cfg) !== 'semilla_propagador') return false;
     if (typeof global.hcGerminacionActiva === 'function' && !global.hcGerminacionActiva(cfg)) {
-      return false;
-    }
-    if (
-      typeof global.propagadorMontajeCompleto === 'function' &&
-      !global.propagadorMontajeCompleto(cfg)
-    ) {
       return false;
     }
     return true;

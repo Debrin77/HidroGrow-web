@@ -10913,6 +10913,15 @@ html.hc-theme-dark .hc-germ-kpi--pend .hc-germ-kpi-val { color: #fbbf24; }
   font-size: 13px;
   margin: 4px 0 8px;
 }
+.sala-propagador-domo-mount {
+  margin: 0 0 12px;
+}
+.sala-propagador-domo-details .hc-germ-domo-block--compact {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
 .hc-germ-domo-block--compact,
 .hc-germ-registro-block--compact {
   margin: 0 0 12px;

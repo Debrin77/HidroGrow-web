@@ -1333,6 +1333,7 @@
       showToast(toastDomo.join(' · '), false);
     }
     refreshDashGerminacionHub();
+    refreshSalaPropagadorDomoPanel(cfg);
     if (typeof updateDashboard === 'function') updateDashboard();
   }
 
@@ -1672,6 +1673,7 @@
       renderHubOscuridadGerminacionHtml(o.cfg, o.g) +
       renderHubLuzTenuePropagadorHtml(o.cfg, o.g) +
       (o.salaCtaHtml || '') +
+      (o.propInline || '') +
       '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
       '<div class="hc-germ-hub-badge">Propagador</div>' +
       '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
@@ -1807,6 +1809,141 @@
     );
   }
 
+  function buildGermDomoHintTxt(modo, rangosGermHub, faseGermHub) {
+    var domoHintTxt =
+      modo === 'hidro_directo'
+        ? 'T° y HR del mini domo o sala'
+        : 'T° y HR del propagador (no del depósito)';
+    if (rangosGermHub) {
+      domoHintTxt +=
+        '. Objetivo según genética: <strong>' +
+        rangosGermHub.temp.min +
+        '–' +
+        rangosGermHub.temp.max +
+        ' °C</strong> · HR <strong>' +
+        rangosGermHub.hr.min +
+        '–' +
+        rangosGermHub.hr.max +
+        ' %</strong>';
+      if (
+        faseGermHub !== 'semilla' &&
+        faseGermHub !== 'taproot' &&
+        rangosGermHub.ecAplica &&
+        rangosGermHub.ec &&
+        Number.isFinite(rangosGermHub.ecObjetivo)
+      ) {
+        domoHintTxt +=
+          ' · EC ~<strong>' +
+          rangosGermHub.ecObjetivo +
+          ' µS</strong> · pH <strong>' +
+          rangosGermHub.phObjetivo +
+          '</strong>';
+      } else if (rangosGermHub.sustrato && rangosGermHub.sustrato.id === 'papel') {
+        domoHintTxt += ' · En papel prioriza humedad; mide pH/EC al pasar a cubo.';
+      }
+      domoHintTxt += '. Al medir verás el desfase respecto a estos rangos.';
+    } else {
+      domoHintTxt += '. Ideal 22–26 °C · HR 70–80 %.';
+    }
+    return domoHintTxt;
+  }
+
+  function renderGermDomoMonitorBlockHtml(o) {
+    var modo = o.modo || 'propagador';
+    var domo = o.domo || {};
+    var titulo =
+      o.titulo ||
+      (modo === 'hidro_directo' ? 'Monitor microclima / agua' : 'Monitor del domo');
+    return (
+      '<div class="hc-germ-domo-block hc-germ-domo-block--compact">' +
+      (o.skipTitle ? '' : '<h4 class="hc-germ-block-lbl">' + esc(titulo) + '</h4>') +
+      (o.rangosPanelHtml || '') +
+      '<p class="hc-germ-domo-hint hc-germ-domo-hint--short">' +
+      (o.domoHintTxt || '') +
+      '</p>' +
+      '<div class="hc-germ-domo-grid">' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">' +
+      (modo === 'hidro_directo' ? 'T° cubo/sala °C' : 'T° domo °C') +
+      '</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoTemp" inputmode="decimal" step="0.1" value="' +
+      (domo.temp != null ? domo.temp : '') +
+      '"></label>' +
+      '<label class="dash-quick-field"><span class="dash-quick-label">HR %</span>' +
+      '<input type="number" class="param-input dash-quick-input" id="hcGermDomoHr" inputmode="numeric" value="' +
+      (domo.hr != null ? domo.hr : '') +
+      '"></label></div>' +
+      (domo.fecha
+        ? '<p class="hc-germ-domo-last">Último: ' +
+          esc(domo.fecha) +
+          ' ' +
+          esc(domo.hora || '') +
+          (domo.vpd != null ? ' · VPD ' + domo.vpd + ' kPa' : '') +
+          '</p>'
+        : '') +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">' +
+      (modo === 'hidro_directo' ? 'Guardar microclima' : 'Guardar lectura del domo') +
+      '</button></div>'
+    );
+  }
+
+  function refreshSalaPropagadorDomoPanel(cfg) {
+    var mount = document.getElementById('salaPropagadorDomoMount');
+    if (!mount) return;
+    cfg = cfg || cfgActiva();
+    var camGerm =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var show = camGerm === 'semilla_propagador' && hcGerminacionActiva(cfg);
+    if (!show) {
+      mount.classList.add('setup-hidden');
+      mount.innerHTML = '';
+      mount.removeAttribute('data-hc-domo-fp');
+      return;
+    }
+    var g = ensureGerminacionFlow(cfg);
+    var domo = g.ultimaDomo || {};
+    var modo = getModoGerminacion(cfg, g);
+    var faseGermHub =
+      typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla';
+    var vidGermHub = String(
+      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+    ).trim();
+    var rangosGermHub =
+      typeof getGerminacionRangosMonitoreo === 'function'
+        ? getGerminacionRangosMonitoreo(vidGermHub, faseGermHub, cfg)
+        : null;
+    var domoHintTxt = buildGermDomoHintTxt(modo, rangosGermHub, faseGermHub);
+    var rangosPanelHtml =
+      typeof renderGerminacionRangosPanelHtml === 'function' ? renderGerminacionRangosPanelHtml(cfg) : '';
+    var resumen =
+      domo.temp != null || domo.hr != null
+        ? (domo.temp != null ? domo.temp + '°C' : '—') +
+          ' · HR ' +
+          (domo.hr != null ? domo.hr + '%' : '—')
+        : 'Sin lecturas';
+    var fp = [domo.temp, domo.hr, domo.fecha, domo.hora, faseGermHub, resumen].join('|');
+    mount.classList.remove('setup-hidden');
+    if (mount.dataset.hcDomoFp === fp && mount.innerHTML.trim()) return;
+    mount.innerHTML =
+      '<details class="sala-propagador-domo-details config-section-collapsible">' +
+      '<summary class="config-section-collapse-head sala-propagador-domo-summary">' +
+      '<span class="config-section-collapse-title-wrap">' +
+      '<span class="config-section-collapse-title">Monitor del domo</span>' +
+      '<span class="sistema-montaje-resumen sala-propagador-domo-resumen">' +
+      esc(resumen) +
+      '</span></span>' +
+      '<span class="config-section-collapse-chevron" aria-hidden="true">▼</span></summary>' +
+      '<div class="config-section-collapse-body">' +
+      renderGermDomoMonitorBlockHtml({
+        modo: modo,
+        domo: domo,
+        domoHintTxt: domoHintTxt,
+        rangosPanelHtml: rangosPanelHtml,
+        skipTitle: true,
+      }) +
+      '</div></details>';
+    mount.dataset.hcDomoFp = fp;
+  }
+
   function renderDashGerminacionHub() {
     if (typeof refreshMontajeInicioHubVisibility === 'function') {
       refreshMontajeInicioHubVisibility(cfgActiva());
@@ -1820,6 +1957,7 @@
     if (!hcGerminacionActiva(cfg)) {
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
+      refreshSalaPropagadorDomoPanel(cfg);
       return;
     }
     if (
@@ -1829,6 +1967,7 @@
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
       refreshDashPropagadorOscuridadBanner(cfg);
+      refreshSalaPropagadorDomoPanel(cfg);
       return;
     }
     hub.classList.remove('setup-hidden');
@@ -1882,41 +2021,7 @@
       typeof getGerminacionRangosMonitoreo === 'function'
         ? getGerminacionRangosMonitoreo(vidGermHub, faseGermHub, cfg)
         : null;
-    var domoHintTxt =
-      modo === 'hidro_directo'
-        ? 'T° y HR del mini domo o sala'
-        : 'T° y HR del propagador (no del depósito)';
-    if (rangosGermHub) {
-      domoHintTxt +=
-        '. Objetivo según genética: <strong>' +
-        rangosGermHub.temp.min +
-        '–' +
-        rangosGermHub.temp.max +
-        ' °C</strong> · HR <strong>' +
-        rangosGermHub.hr.min +
-        '–' +
-        rangosGermHub.hr.max +
-        ' %</strong>';
-      if (
-        faseGermHub !== 'semilla' &&
-        faseGermHub !== 'taproot' &&
-        rangosGermHub.ecAplica &&
-        rangosGermHub.ec &&
-        Number.isFinite(rangosGermHub.ecObjetivo)
-      ) {
-        domoHintTxt +=
-          ' · EC ~<strong>' +
-          rangosGermHub.ecObjetivo +
-          ' µS</strong> · pH <strong>' +
-          rangosGermHub.phObjetivo +
-          '</strong>';
-      } else if (rangosGermHub.sustrato && rangosGermHub.sustrato.id === 'papel') {
-        domoHintTxt += ' · En papel prioriza humedad; mide pH/EC al pasar a cubo.';
-      }
-      domoHintTxt += '. Al medir verás el desfase respecto a estos rangos.';
-    } else {
-      domoHintTxt += '. Ideal 22–26 °C · HR 70–80 %.';
-    }
+    var domoHintTxt = buildGermDomoHintTxt(modo, rangosGermHub, faseGermHub);
     var rangosPanelHtml =
       typeof renderGerminacionRangosPanelHtml === 'function' ? renderGerminacionRangosPanelHtml(cfg) : '';
     var equipAviso = allDone ? '' : avisoEquipFase(paso.id, g, modo);
@@ -1946,15 +2051,17 @@
       camGerm === 'semilla_propagador' &&
       typeof propagadorMontajeCompleto === 'function' &&
       propagadorMontajeCompleto(cfg);
-    var compactPropag = camGerm === 'semilla_propagador' && montajeOk;
+    var compactPropag = camGerm === 'semilla_propagador';
     var compactHidro =
       camGerm === 'semilla_hidro' &&
       typeof hcSemillaHidroHubEsPrincipal === 'function' &&
       hcSemillaHidroHubEsPrincipal(cfg);
     var propInline =
-      compactPropag || typeof renderPropagadorMontajeInlineHtml !== 'function'
-        ? ''
-        : renderPropagadorMontajeInlineHtml();
+      camGerm === 'semilla_propagador' &&
+      !montajeOk &&
+      typeof renderPropagadorMontajeInlineHtml === 'function'
+        ? renderPropagadorMontajeInlineHtml()
+        : '';
     var bloqueoSala = typeof hcGerminacionBloqueada === 'function' ? hcGerminacionBloqueada(cfg) : '';
     var salaCtaHtml = '';
     if (bloqueoSala === 'hidro_config') {
@@ -2043,6 +2150,7 @@
       cfg: cfg,
       g: g,
       salaCtaHtml: salaCtaHtml,
+      propInline: propInline,
       pct: pct,
       pctRingLbl: pctRingLbl,
       cultNombre: cultNombre,
@@ -2195,7 +2303,9 @@
           '<button type="button" class="btn btn-primary btn-sm hc-germ-reg-btn" onclick="guardarRegistroGerminacionDiario()">Guardar registro del día</button>' +
           renderRegistroReciente(g) +
           '</div>' +
-          '<div class="hc-germ-domo-block">' +
+          (camGerm === 'semilla_propagador'
+            ? ''
+            : '<div class="hc-germ-domo-block">' +
           '<h4 class="hc-germ-block-lbl">' +
           (modo === 'hidro_directo' ? 'Monitor microclima / agua' : 'Monitor del domo') +
           '</h4>' +
@@ -2225,7 +2335,7 @@
           '<button type="button" class="btn btn-secondary btn-sm" onclick="guardarMedicionDomo()">' +
           (modo === 'hidro_directo' ? 'Guardar microclima' : 'Guardar lectura del domo') +
           '</button>' +
-          '</div>' +
+          '</div>') +
       (camGerm === 'semilla_propagador' &&
       typeof germinacionConcluida === 'function' &&
       germinacionConcluida(cfg) &&
@@ -2269,6 +2379,7 @@
     } catch (_) {}
     if (typeof hcBindGerminacionMedInputs === 'function') hcBindGerminacionMedInputs(cfg);
     if (typeof hcRefreshGerminacionMedEvaluacion === 'function') hcRefreshGerminacionMedEvaluacion(cfg);
+    refreshSalaPropagadorDomoPanel(cfg);
     if (!global._hcRefreshInicioVistaCamino) {
       try {
         if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
@@ -3034,6 +3145,7 @@
   global.hcGerminacionSyncDesdePremium = hcGerminacionSyncDesdePremium;
   global.hcGerminacionSyncEquipDesdeInstalado = hcGerminacionSyncEquipDesdeInstalado;
   global.refreshDashGerminacionHub = refreshDashGerminacionHub;
+  global.refreshSalaPropagadorDomoPanel = refreshSalaPropagadorDomoPanel;
   global.refreshDashPropagadorOscuridadBanner = refreshDashPropagadorOscuridadBanner;
   global.hcGerminacionCompletarFaseActual = hcGerminacionCompletarFaseActual;
   global.hcGerminacionAbrirTraslado = hcGerminacionAbrirTraslado;
