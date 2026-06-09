@@ -660,6 +660,14 @@
       'variedadGerminacion',
       'numNiveles',
       'numCestas',
+      'hcSetupFase',
+      'hcPropagadorGermAsistenteGuardadoAt',
+      'numSemillasGerm',
+      'nutriente',
+      'origenPlanta',
+      'geneticaPref',
+      'sustrato',
+      'germinacionEnPropagador',
     ];
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i];
@@ -670,7 +678,33 @@
         dest[k] = src[k];
       }
     }
+    if (!dest.caminoCultivo && src.premiumSetup && src.premiumSetup.caminoCultivo) {
+      dest.caminoCultivo = src.premiumSetup.caminoCultivo;
+    }
     return dest;
+  }
+
+  /** Si la cfg activa perdió camino semilla, recuperarlo desde la ranura guardada. */
+  function hcPreservarCaminoGermEnCfgActiva(cfg) {
+    cfg =
+      cfg ||
+      (typeof state !== 'undefined' && state && state.configTorre) ||
+      null;
+    if (!cfg || typeof cfg !== 'object') return cfg;
+    var camActual =
+      cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
+    if (camActual === 'semilla_propagador' || camActual === 'semilla_hidro') return cfg;
+    if (typeof state === 'undefined' || !state || !state.torres) return cfg;
+    var idx = state.torreActiva || 0;
+    var slot = state.torres[idx];
+    if (!slot || !slot.config) return cfg;
+    var camSlot =
+      slot.config.caminoCultivo ||
+      (slot.config.premiumSetup && slot.config.premiumSetup.caminoCultivo) ||
+      '';
+    if (camSlot !== 'semilla_propagador' && camSlot !== 'semilla_hidro') return cfg;
+    hcRestaurarCfgCaminoGerminacionTrasSetupSala(cfg, slot.config);
+    return cfg;
   }
 
   /**
@@ -2230,6 +2264,7 @@
   global.getSetupSkippedPagesForSalaPreGerm = getSetupSkippedPagesForSalaPreGerm;
   global.hcSalaPreGermPermitida = hcSalaPreGermPermitida;
   global.hcRestaurarCfgCaminoGerminacionTrasSetupSala = hcRestaurarCfgCaminoGerminacionTrasSetupSala;
+  global.hcPreservarCaminoGermEnCfgActiva = hcPreservarCaminoGermEnCfgActiva;
   global.hcMontajeEsSoloEquipamientoSala = hcMontajeEsSoloEquipamientoSala;
   global.hcCultivoMatrizDisponible = hcCultivoMatrizDisponible;
   global.cultivoMatrizListo = cultivoMatrizListo;

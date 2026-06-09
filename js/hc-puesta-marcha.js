@@ -543,6 +543,9 @@
 
   function saveChecks(checks) {
     if (typeof state === 'undefined' || !state || !state.configTorre) return;
+    if (typeof hcPreservarCaminoGermEnCfgActiva === 'function') {
+      hcPreservarCaminoGermEnCfgActiva(state.configTorre);
+    }
     state.configTorre.puestaMarchaChecks = checks;
     try {
       if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();

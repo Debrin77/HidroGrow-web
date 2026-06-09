@@ -507,3 +507,16 @@ test('propagador: banner sala abre equipamiento, no selector de camino', () => {
   );
   assert.match(cultivo, /abrirConfiguradorEquipamientoSalaPropagador[\s\S]*duranteGerminacion: true/);
 });
+
+test('propagador: guardar sala no borra camino ni plan de semillas', () => {
+  const setup = read('js/hc-setup-calc-core.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const puesta = read('js/hc-puesta-marcha.js');
+  assert.match(setup, /hcClonePlainData\(state\.configTorre/);
+  assert.match(setup, /isDwc[\s\S]*!faseSalaPreGerm[\s\S]*redimensionarMatrizTorreDwcPreservando/);
+  assert.match(setup, /hcRestaurarCfgCaminoGerminacionTrasSetupSala[\s\S]*cfgSlotAntesGuardar/);
+  assert.match(cultivo, /hcPreservarCaminoGermEnCfgActiva/);
+  assert.match(cultivo, /'hcSetupFase'/);
+  assert.match(cultivo, /'germinacionEnPropagador'/);
+  assert.match(puesta, /hcPreservarCaminoGermEnCfgActiva\(state\.configTorre\)/);
+});

@@ -1952,7 +1952,10 @@ function guardarSetupYContinuarCore() {
 
   const tipoNuevoPrevio = faseGermSetup || faseSalaPreGerm ? '' : isRdwc ? 'rdwc' : 'dwc';
 
-  const cfgPrevWizard = state.configTorre || {};
+  const cfgPrevWizard =
+    typeof hcClonePlainData === 'function'
+      ? hcClonePlainData(state.configTorre || {}, {})
+      : JSON.parse(JSON.stringify(state.configTorre || {}));
   const preservedEquipInstalado = (function () {
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) {
       const draft =
@@ -2227,13 +2230,20 @@ function guardarSetupYContinuarCore() {
     renderSetupPage();
     return false;
   }
-  if (
-    faseSalaPreGerm &&
-    !setupEsNuevaTorre &&
-    typeof hcRestaurarCfgCaminoGerminacionTrasSetupSala === 'function'
-  ) {
+  if (faseSalaPreGerm && typeof hcRestaurarCfgCaminoGerminacionTrasSetupSala === 'function') {
     hcRestaurarCfgCaminoGerminacionTrasSetupSala(state.configTorre, cfgPrevWizard);
-    if (camPersist) state.configTorre.caminoCultivo = camPersist;
+    if (cfgSlotAntesGuardar) {
+      hcRestaurarCfgCaminoGerminacionTrasSetupSala(state.configTorre, cfgSlotAntesGuardar);
+    }
+    var camRestaurado =
+      state.configTorre.caminoCultivo ||
+      (state.configTorre.premiumSetup && state.configTorre.premiumSetup.caminoCultivo) ||
+      '';
+    if (camRestaurado) {
+      state.configTorre.caminoCultivo = camRestaurado;
+    } else if (camPersist) {
+      state.configTorre.caminoCultivo = camPersist;
+    }
   }
   if (faseGermSetup || wizardHidroGermCompleto) {
     try {
@@ -2372,10 +2382,33 @@ function guardarSetupYContinuarCore() {
       state.configTorre.puestaMarchaChecks = {};
       state.configTorre.checklistInstalacionConfirmada = false;
     }
-    if (typeof hcDimsTorreDesdeConfig === 'function') {
+    var camSalaPg =
+      state.configTorre.caminoCultivo ||
+      (state.configTorre.premiumSetup && state.configTorre.premiumSetup.caminoCultivo) ||
+      '';
+    if (
+      camSalaPg !== 'semilla_propagador' &&
+      camSalaPg !== 'semilla_hidro' &&
+      typeof hcDimsTorreDesdeConfig === 'function'
+    ) {
       const dimsPg = hcDimsTorreDesdeConfig(state.configTorre, state.torre);
       state.configTorre.numNiveles = dimsPg.numNiveles;
       state.configTorre.numCestas = dimsPg.numCestas;
+    }
+    if (typeof hcRestaurarCfgCaminoGerminacionTrasSetupSala === 'function') {
+      hcRestaurarCfgCaminoGerminacionTrasSetupSala(
+        state.configTorre,
+        cfgSlotAntesGuardar || cfgPrevWizard
+      );
+    }
+    if (state.torres && state.torres[idxSlotGuardar]) {
+      var torreSlotPreGerm = state.torres[idxSlotGuardar].torre;
+      if (Array.isArray(torreSlotPreGerm) && torreSlotPreGerm.length) {
+        state.torre =
+          typeof hcClonePlainData === 'function'
+            ? hcClonePlainData(torreSlotPreGerm, [])
+            : JSON.parse(JSON.stringify(torreSlotPreGerm));
+      }
     }
     try {
       if (typeof window !== 'undefined') {
@@ -2484,7 +2517,11 @@ function guardarSetupYContinuarCore() {
     initTorreMatrizVacia(niveles, cestas);
     state.configTorre.numNiveles = niveles;
     state.configTorre.numCestas = cestas;
-  } else if (isDwc && typeof redimensionarMatrizTorreDwcPreservando === 'function') {
+  } else if (
+    isDwc &&
+    !faseSalaPreGerm &&
+    typeof redimensionarMatrizTorreDwcPreservando === 'function'
+  ) {
     redimensionarMatrizTorreDwcPreservando(state.configTorre, niveles, cestas);
     delete state.configTorre.germinacionEnPropagador;
     state.configTorre.hcDwcGeomFilas = niveles;
