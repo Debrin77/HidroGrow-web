@@ -388,14 +388,21 @@ function syncMedirParamCardVisual(cardId, tipo) {
   var bar = card.querySelector('.param-range-bar');
   var fill = bar && bar.querySelector('.param-range-bar-fill');
   var rangeTxt = rangeEl ? String(rangeEl.textContent || '').trim() : '';
+  var r = parseMedirRangeText(rangeTxt);
+  var hasNumericRange = !!r;
   if (inline) {
-    inline.textContent = rangeTxt ? 'Rango: ' + rangeTxt : '';
+    if (!rangeTxt) {
+      inline.textContent = '';
+    } else if (hasNumericRange) {
+      inline.textContent = 'Rango: ' + rangeTxt;
+    } else {
+      inline.textContent = rangeTxt.length > 42 ? rangeTxt.slice(0, 39) + '…' : rangeTxt;
+    }
     inline.classList.toggle('setup-hidden', !rangeTxt);
   }
-  if (bar) bar.classList.toggle('setup-hidden', !rangeTxt);
+  if (bar) bar.classList.toggle('setup-hidden', !hasNumericRange);
   if (fill) {
     var val = input ? parseFloat(String(input.value || '').replace(',', '.')) : NaN;
-    var r = parseMedirRangeText(rangeTxt);
     var pct = r && Number.isFinite(val) ? medirParamRangePct(val, r.min, r.max) : null;
     fill.style.width = pct != null ? pct + '%' : '0%';
     fill.className = 'param-range-bar-fill';

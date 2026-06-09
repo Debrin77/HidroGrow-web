@@ -7714,6 +7714,11 @@ html.hc-theme-dark .quick-btn[data-quick-icon="reset"] .hc-ico--ion-quick { colo
     0 1px 0 rgba(255, 255, 255, 0.9) inset,
     0 4px 14px rgba(15, 23, 42, 0.06);
 }
+#tab-mediciones .medir-param-lab-grid .param-input {
+  color: var(--tile-value);
+  -webkit-text-fill-color: var(--tile-value);
+  caret-color: var(--tile-value);
+}
 
 .param-header {
   display: flex;
