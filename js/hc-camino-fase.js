@@ -116,15 +116,33 @@
     );
   }
 
-  /** Medir unificado: semilla_hidro con DWC cerrado en asistente. */
+  /** Plántula registrada en matriz (semilla_hidro): activa depósito operativo en Medir. */
+  function hcSemillaHidroTrasladoCompletado(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    var g = cfg.germinacionFlow || {};
+    return !!(g.trasladoAt);
+  }
+
+  /** Medir operativo semilla_hidro: DWC configurado y traslado a matriz hecho. */
   function hcMedirEsSemillaHidro(cfg) {
     cfg = cfg || cfgActiva();
-    return cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg);
+    return (
+      cam(cfg) === 'semilla_hidro' &&
+      hidroCerrado(cfg) &&
+      hcSemillaHidroTrasladoCompletado(cfg)
+    );
   }
 
   /** Ocultar seguimiento clásico / tareas en Medir (germinación en cubo usa flujo directo). */
   function hcSemillaHidroOcultarSeguimientoMedir(cfg) {
     cfg = cfg || cfgActiva();
+    if (
+      typeof hcMedirModoGerminacionCubo === 'function' &&
+      hcMedirModoGerminacionCubo(cfg)
+    ) {
+      return true;
+    }
     if (hcMedirEsSemillaHidro(cfg)) return true;
     if (hcSemillaHidroUiOperativaLista(cfg)) return true;
     if (!hcSemillaHidroPostAsistenteUi(cfg)) return false;
@@ -859,21 +877,25 @@
     return f === 'propagador' || f === 'germ_cubo' || f === 'prep_hidro';
   }
 
+  /** Trasladó plántulas del propagador al DWC/RDWC (depósito operativo en Medir). */
+  function hcPropagadorTrasladoCompletado(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_propagador') return false;
+    var g = cfg.germinacionFlow || {};
+    return !!(g.trasladoAt);
+  }
+
   /**
    * «Recarga completa» = vaciar + limpiar + mezcla nueva del depósito DWC/RDWC.
-   * En propagador (sin hidro cerrado) no aplica: solo domo y aporte opcional en el registro diario.
+   * En propagador no aplica hasta el traslado al hidro.
    */
   function hcRecargaCompletaAplicaEnCamino(cfg) {
     cfg = cfg || cfgActiva();
     if (cam(cfg) === 'semilla_propagador') {
-      return !!(
-        typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)
-      );
+      return hcPropagadorTrasladoCompletado(cfg);
     }
     if (cam(cfg) === 'semilla_hidro') {
-      return !!(
-        typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg)
-      );
+      return hcSemillaHidroTrasladoCompletado(cfg);
     }
     return true;
   }
@@ -953,6 +975,8 @@
   global.hcRefreshDashTorreCultivoResumen = hcRefreshDashTorreCultivoResumen;
   global.hcMetaListaInstalacionTorre = hcMetaListaInstalacionTorre;
   global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
+  global.hcPropagadorTrasladoCompletado = hcPropagadorTrasladoCompletado;
+  global.hcSemillaHidroTrasladoCompletado = hcSemillaHidroTrasladoCompletado;
   global.hcRecargaCompletaAplicaEnCamino = hcRecargaCompletaAplicaEnCamino;
   global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;
   global.hcOcultarTabSalaDuranteCamino = hcOcultarTabSalaDuranteCamino;

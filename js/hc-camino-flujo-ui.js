@@ -403,16 +403,16 @@
     if (!f) return '';
     if (f === 'propagador') {
       return (
-        '<strong>Propagador:</strong> T°, HR y notas en <strong>Historial</strong> y <strong>Calendario</strong>. ' +
-        'Aquí solo EC/pH del domo si aplica. Bandeja con <strong>~2–3 mm</strong> de agua; ' +
-        '<strong>no la dejes seca</strong>. Riego del depósito DWC tras configurar el hidro.'
+        '<strong>Propagador:</strong> registra <strong>T° del agua con nutrientes</strong>, <strong>HR</strong> y <strong>volumen</strong> del domo. ' +
+        'EC/pH del agua cuando aplique por fase. Tras <strong>configurar sala y montaje</strong>, aparecen parámetros del equipamiento. ' +
+        'El <strong>depósito DWC/RDWC</strong> se mide aquí solo <strong>después del traslado</strong> de las plántulas.'
       );
     }
     if (f === 'germ_cubo') {
       var camHint = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
       return camHint === 'semilla_hidro'
-        ? '<strong>Germinación en cubo.</strong> Marca fases y registro en ' +
-            '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>. Agua del cubo en Medir.'
+        ? '<strong>Germinación en cubo:</strong> registra <strong>T° del agua</strong>, <strong>HR</strong> y <strong>volumen</strong> del cubo. EC/pH según fase. ' +
+            'Con sala montada: equipamiento abajo. El <strong>depósito DWC/RDWC</strong> solo <strong>después del registro en matriz</strong>.'
         : '<strong>Germinación activa.</strong> Registro del domo en ' +
             '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrHubGerminacionOperativa===\'function\'&&hcIrHubGerminacionOperativa()">Inicio</button>. Medir también el cubo.';
     }

@@ -142,8 +142,10 @@
   function applyMedirGuiaProtocoloChrome(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
     var germ =
-      typeof window.hcMedirModoGerminacionPropagador === 'function' &&
-      window.hcMedirModoGerminacionPropagador(cfg);
+      (typeof window.hcMedirGermPreTrasladoActivo === 'function' &&
+        window.hcMedirGermPreTrasladoActivo(cfg)) ||
+      (typeof window.hcMedirModoGerminacionPropagador === 'function' &&
+        window.hcMedirModoGerminacionPropagador(cfg));
     var ocultarSeguimiento =
       typeof hcSemillaHidroOcultarSeguimientoMedir === 'function' &&
       hcSemillaHidroOcultarSeguimientoMedir(cfg);
@@ -969,6 +971,7 @@
   window.hcInitMedirSalaLayout = initMedirSalaLayout;
   window.repositionMedirGuiaDiaTop = repositionMedirGuiaDiaTop;
   window.repositionMedirFlowPropagadorTop = repositionMedirFlowPropagadorTop;
+  window.mountAmbienteInMedirFlow = mountAmbienteInMedirFlow;
   window.applyMedirGuiaProtocoloChrome = applyMedirGuiaProtocoloChrome;
   window.ensureSalaCultivoEquipMountEnTabRoot = ensureSalaCultivoEquipMountEnTabRoot;
 

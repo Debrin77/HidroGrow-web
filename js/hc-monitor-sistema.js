@@ -535,8 +535,8 @@
       var cfgMon =
         typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
       var ocultarAvisoInst =
-        typeof hcMedirModoGerminacionPropagador === 'function' &&
-        hcMedirModoGerminacionPropagador(cfgMon);
+        typeof hcMedirGermPreTrasladoActivo === 'function' &&
+        hcMedirGermPreTrasladoActivo(cfgMon);
       if (!ocultarAvisoInst && typeof getInstalacionLifecycle === 'function') {
         var lc = getInstalacionLifecycle();
         if (lc && !lc.operativaDiaria && lc.fase !== 'sin_config') {

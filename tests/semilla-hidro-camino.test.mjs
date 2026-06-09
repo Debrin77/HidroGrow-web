@@ -74,11 +74,15 @@ test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
   assert.match(germ, /return fasesCompletadas\(g\)/);
 });
 
-test('checklist 6: medir sin modo solo-propagador en hidro', () => {
+test('checklist 6: medir cubo pre-traslado y propagador separados', () => {
   const medir = read('js/hc-medir-germinacion.js');
-  assert.match(medir, /getCaminoCultivo\(cfg\) !== 'semilla_propagador'/);
+  const fase = read('js/hc-camino-fase.js');
+  assert.match(medir, /function hcMedirModoGerminacionCubo/);
+  assert.match(medir, /hcMedirGermPreTrasladoActivo/);
+  assert.match(fase, /function hcSemillaHidroTrasladoCompletado/);
+  assert.match(fase, /hcSemillaHidroTrasladoCompletado\(cfg\)/);
   const layout = read('js/hc-medir-sala-layout.js');
-  assert.match(layout, /hcMedirModoGerminacionPropagador/);
+  assert.match(layout, /hcMedirGermPreTrasladoActivo/);
 });
 
 test('aviso oscuridad dias 1-2 en hub propagador e hidro', () => {
@@ -304,7 +308,8 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   const nut = read('js/hc-premium-nutriente-germ.js');
   const origen = read('js/hc-premium-origen-paso.js');
   const html = read('index.html');
-  assert.match(prop, /Checklist <strong>prep en cubo<\/strong>/);
+  assert.match(prop, /Preparación · germinación en el hidro/);
+  assert.match(prop, /esRutaGermHidro\(cfg\)/);
   assert.match(fase, /pend\.push\('prep hidro'\)/);
   assert.match(fase, /checklist operativa y matriz/);
   assert.match(sis, /checklist operativa<\/strong> y registrar la plántula/);
@@ -312,7 +317,7 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(nut, /Nutriente · germinación en cubo/);
   assert.match(nut, /EC baja, ~200–400 µS/);
   assert.match(origen, /no hay segundo paso hidro/);
-  assert.match(html, /DWC\/RDWC en asistente · 6 fases en cubo/);
+  assert.match(html, /Prep cubo — sala — 6 fases en Inicio/);
 });
 
 test('semilla_hidro operativa: esquema DWC no bloqueado por fase germ_cubo', () => {
@@ -364,6 +369,7 @@ test('semilla_hidro configurado: recarga completa oculta en UI, lógica interna 
   const dash = read('js/meteo-forecast-dashboard.js');
   assert.match(fase, /function hcRecargaUiVisibleUsuario/);
   assert.match(fase, /hcMedirEsSemillaHidro\(cfg\)/);
+  assert.match(fase, /hcSemillaHidroTrasladoCompletado/);
   assert.match(layout, /function ocultarRecargaUiSemillaHidro/);
   assert.match(layout, /hcRecargaUiVisibleUsuario/);
   assert.match(layout, /medirRecargaVolAvisoSlim/);

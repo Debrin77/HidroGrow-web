@@ -1437,6 +1437,10 @@
       refreshDashGerminacionHub();
       if (typeof refreshInstalacionLifecycleUi === 'function') refreshInstalacionLifecycleUi();
       if (typeof updateDashboard === 'function') updateDashboard();
+      try {
+        if (typeof refreshMedirGerminacionUi === 'function') refreshMedirGerminacionUi(cfg);
+        if (typeof hcReaplicarVistasCaminoUi === 'function') hcReaplicarVistasCaminoUi(cfg);
+      } catch (_) {}
       var camTr =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
       if (typeof showToast === 'function') {

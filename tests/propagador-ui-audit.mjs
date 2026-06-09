@@ -78,6 +78,7 @@ function auditScript() {
   if (typeof hcSyncGerminacionPlanCultivo === 'function') hcSyncGerminacionPlanCultivo(cfg);
   if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
   if (typeof hcInitMedirSalaLayout === 'function') hcInitMedirSalaLayout();
+  else if (typeof mountAmbienteInMedirFlow === 'function') mountAmbienteInMedirFlow();
   if (typeof refreshTabsOperativaCamino === 'function') {
     refreshTabsOperativaCamino({ full: true, inmediato: true });
   }
@@ -119,12 +120,19 @@ function auditScript() {
     fase: faseMedir,
     banner: isVisible('medirPropagadorFaseBanner'),
     flow: isVisible('medirFlow'),
+    tempAgua: isVisible('cardTemp'),
+    volumen: isVisible('cardVol'),
+    hrDomo: isVisible('cardHumSala'),
     configPanel: isVisible('configPanel'),
     recarga: isVisible('recargaCardMediciones'),
     monitor: isVisible('medirMonitorCard'),
     protocolo: isVisible('medirProtocoloCard'),
     iot: isVisible('medirIotCard'),
-    ambienteSuelto: isVisible('medirAmbienteCard'),
+    ambienteEnFlujo: (function () {
+      var card = document.getElementById('medirAmbienteCard');
+      var mount = document.getElementById('medirFlowAmbienteMount');
+      return !!(card && mount && mount.contains(card) && isVisible('cardHumSala'));
+    })(),
     municipio: isVisible('panelLocalidadMeteo'),
     preGate: isVisible('medirPreOperativaGate'),
     ultima: isVisible('ultimaMedicionCard'),
@@ -211,25 +219,28 @@ test('propagador: Medir solo domo (sin depósito DWC)', async () => {
   assert.equal(snap.medir.fase, 'propagador', 'fase sistema');
   assert.equal(snap.medir.banner, true, 'banner propagador (medirPropagadorFaseBanner)');
   assert.equal(snap.medir.flow, true, 'medirFlow');
+  assert.equal(snap.medir.tempAgua, true, 'cardTemp agua propagador');
+  assert.equal(snap.medir.volumen, true, 'cardVol propagador');
+  assert.equal(snap.medir.hrDomo, true, 'cardHumSala HR domo');
   assert.equal(snap.medir.configPanel, false, 'configPanel');
   assert.equal(snap.medir.recarga, false, 'recargaCardMediciones');
   assert.equal(snap.medir.monitor, false, 'medirMonitorCard');
   assert.equal(snap.medir.protocolo, false, 'medirProtocoloCard');
   assert.equal(snap.medir.iot, false, 'medirIotCard');
-  assert.equal(snap.medir.ambienteSuelto, false, 'medirAmbienteCard suelto');
+  assert.equal(snap.medir.ambienteEnFlujo, true, 'HR domo en medirFlow');
   assert.equal(snap.medir.municipio, false, 'panelLocalidadMeteo');
   assert.equal(snap.medir.preGate, false, 'medirPreOperativaGate');
 
   await browser.close();
 });
 
-test('propagador: Sala sin seguimiento duplicado; pestaña oculta en germ', async () => {
+test('propagador: Sala sin seguimiento duplicado; pestaña accesible en germ', async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   await unlockPin(page);
   const snap = await page.evaluate(auditScript);
 
-  assert.equal(snap.sala.tabOculta, true, 'btn-sala oculto durante germ');
+  assert.equal(snap.sala.tabOculta, false, 'btn-sala visible para montaje sala durante germ');
   assert.equal(snap.sala.seguimiento, false, 'salaSeguimientoCta');
   assert.equal(snap.sala.flujoGuiado, false, 'salaPropagadorFlujoGuiado');
   assert.equal(snap.sala.layout, false, 'salaLayoutPanel grow room');

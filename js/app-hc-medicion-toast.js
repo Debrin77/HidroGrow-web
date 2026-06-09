@@ -11,11 +11,13 @@ function readMedirInputVal(id) {
 function buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave) {
   if (medirGermSave) {
     const parts = [];
-    if (ambPayload.tempAire !== '' && ambPayload.tempAire != null) {
-      parts.push('T° ' + ambPayload.tempAire + '°C');
-    }
+    if (temp) parts.push('T° agua ' + temp + '°C');
     if (ambPayload.humSala !== '' && ambPayload.humSala != null) {
       parts.push('HR ' + ambPayload.humSala + '%');
+    }
+    if (vol) parts.push(vol + ' L');
+    if (ambPayload.tempAire !== '' && ambPayload.tempAire != null) {
+      parts.push('T° aire ' + ambPayload.tempAire + '°C');
     }
     if (ambPayload.vpd !== '' && ambPayload.vpd != null) {
       parts.push('VPD ' + ambPayload.vpd);
@@ -23,7 +25,7 @@ function buildMedicionGuardadaMsg(ec, ph, temp, vol, ambPayload, medirGermSave) 
     if (ec) parts.push('EC ' + ec);
     if (ph) parts.push('pH ' + ph);
     if (parts.length) return '✅ Medición guardada · ' + parts.join(' · ');
-    return '✅ Medición guardada (domo)';
+    return '✅ Medición guardada (germinación)';
   }
   const dep = [];
   if (ec) dep.push('EC ' + ec);
@@ -173,11 +175,11 @@ async function guardarMedicion(payloadOverride) {
   if (!ec && !ph && !temp && !vol && !ambPayload.tempAire && !ambPayload.humSala && !ambPayload.vpd && !ambPayload.co2 && !ambPayload.ppfd) {
     showToast(
       medirGermSave
-        ? '⚠️ Introduce al menos T° y HR del domo (el VPD se calcula solo)'
+        ? '⚠️ Introduce al menos T° del agua, HR o volumen (propagador o cubo)'
         : '⚠️ Introduce al menos un valor (depósito o ambiente)',
       true
     );
-    const firstInput = document.getElementById(medirGermSave ? 'inputTempAire' : 'inputEC');
+    const firstInput = document.getElementById(medirGermSave ? 'inputTemp' : 'inputEC');
     if (firstInput) {
       firstInput.focus();
       firstInput.setAttribute('aria-invalid', 'true');
@@ -201,6 +203,7 @@ async function guardarMedicion(payloadOverride) {
 
   if (
     vol &&
+    !medirGermSave &&
     state.configTorre &&
     typeof getVolumenDepositoMaxLitros === 'function'
   ) {
@@ -222,6 +225,39 @@ async function guardarMedicion(payloadOverride) {
 
   // Línea única en el registro unificado (Historial → Registro)
   addRegistro('medicion', { ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload, icono: '📊' });
+
+  if (medirGermSave) {
+    try {
+      const cfgGerm = state.configTorre || {};
+      if (typeof ensureGerminacionFlow === 'function') {
+        const gGerm = ensureGerminacionFlow(cfgGerm);
+        const tAgua = temp ? parseFloat(String(temp).replace(',', '.')) : NaN;
+        const hDomo =
+          ambPayload.humSala !== '' && ambPayload.humSala != null
+            ? Number(ambPayload.humSala)
+            : NaN;
+        let vpdDomo = ambPayload.vpd;
+        if (
+          (vpdDomo === '' || vpdDomo == null || !Number.isFinite(Number(vpdDomo))) &&
+          typeof calcVPDkPa === 'function' &&
+          Number.isFinite(tAgua) &&
+          Number.isFinite(hDomo)
+        ) {
+          vpdDomo = calcVPDkPa(tAgua, hDomo);
+        }
+        gGerm.ultimaDomo = {
+          fecha,
+          hora,
+          temp: Number.isFinite(tAgua) ? tAgua : gGerm.ultimaDomo && gGerm.ultimaDomo.temp != null ? gGerm.ultimaDomo.temp : null,
+          hr: Number.isFinite(hDomo) ? hDomo : gGerm.ultimaDomo && gGerm.ultimaDomo.hr != null ? gGerm.ultimaDomo.hr : null,
+          vpd: Number.isFinite(Number(vpdDomo)) ? Number(vpdDomo) : null,
+          vol: vol ? parseFloat(String(vol).replace(',', '.')) : null,
+        };
+        if (typeof persistirGerminacion === 'function') persistirGerminacion();
+        else if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+      }
+    } catch (_) {}
+  }
 
   // Si es una recarga marcada
   if (esRecarga) {

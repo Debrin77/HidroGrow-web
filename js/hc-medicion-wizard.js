@@ -17,8 +17,8 @@
   function isWizardPropagadorMode(cfg) {
     cfg = cfg || wizardCfg();
     return (
-      typeof hcMedirModoGerminacionPropagador === 'function' &&
-      hcMedirModoGerminacionPropagador(cfg)
+      typeof hcMedirGermPreTrasladoActivo === 'function' &&
+      hcMedirGermPreTrasladoActivo(cfg)
     );
   }
 

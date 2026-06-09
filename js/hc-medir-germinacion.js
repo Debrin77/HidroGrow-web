@@ -1,5 +1,6 @@
 /**
- * Medir en camino semilla_propagador (hasta hidro operativo): domo / propagador, no depósito DWC.
+ * Medir pre-traslado: propagador (semilla_propagador) y cubo (semilla_hidro).
+ * Depósito DWC/RDWC solo tras traslado / registro en matriz.
  */
 (function (global) {
   'use strict';
@@ -66,15 +67,15 @@
     return typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
   }
 
-  /** Mismo criterio que tiles de Inicio: propagador sin depósito DWC listo. */
+  /** Propagador en germinación: domo (agua + HR + volumen), no depósito DWC hasta el traslado. */
   function hcMedirModoGerminacionPropagador(cfg) {
     cfg = cfg || cfgActiva();
     if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) !== 'semilla_propagador') {
       return false;
     }
     if (
-      typeof hcRecargaCompletaAplicaEnCamino === 'function' &&
-      hcRecargaCompletaAplicaEnCamino(cfg)
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      hcPropagadorTrasladoCompletado(cfg)
     ) {
       return false;
     }
@@ -85,6 +86,47 @@
       return true;
     }
     return false;
+  }
+
+  /** Germinación en cubo (semilla_hidro) antes del registro en matriz. */
+  function hcMedirModoGerminacionCubo(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) !== 'semilla_hidro') {
+      return false;
+    }
+    if (
+      typeof hcSemillaHidroTrasladoCompletado === 'function' &&
+      hcSemillaHidroTrasladoCompletado(cfg)
+    ) {
+      return false;
+    }
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+      return true;
+    }
+    if (typeof getSistemaFaseCamino === 'function') {
+      var f = getSistemaFaseCamino(cfg);
+      if (f === 'germ_cubo') return true;
+    }
+    return false;
+  }
+
+  function hcMedirGermPreTrasladoActivo(cfg) {
+    return hcMedirModoGerminacionPropagador(cfg) || hcMedirModoGerminacionCubo(cfg);
+  }
+
+  /** @returns {'propagador'|'cubo'|''} */
+  function hcMedirGermPreTrasladoVariant(cfg) {
+    if (hcMedirModoGerminacionPropagador(cfg)) return 'propagador';
+    if (hcMedirModoGerminacionCubo(cfg)) return 'cubo';
+    return '';
+  }
+
+  function medirGermEtiquetaEntidad(variant) {
+    return variant === 'cubo' ? 'Cubo de germinación' : 'Propagador';
+  }
+
+  function medirGermEtiquetaMicro(variant) {
+    return variant === 'cubo' ? 'cubo' : 'domo';
   }
 
   function getPlanMedirGerm(cfg) {
@@ -117,7 +159,13 @@
       return !!(cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt);
     }
     if (cam === 'semilla_hidro') {
-      return typeof salaPreGermConfigurada === 'function' && salaPreGermConfigurada(cfg);
+      if (typeof salaPreGermConfigurada !== 'function' || !salaPreGermConfigurada(cfg)) {
+        return false;
+      }
+      if (typeof montajeEstaVerificado === 'function') {
+        return montajeEstaVerificado(cfg);
+      }
+      return true;
     }
     return typeof montajeEstaVerificado === 'function' && montajeEstaVerificado(cfg);
   }
@@ -157,12 +205,15 @@
     return true;
   }
 
-  /** Medir propagador: T°/HR/VPD del domo siempre; EC según fase; pH según plan. */
+  /** Pre-traslado: HR siempre; T° agua y volumen en cards; EC/pH según fase. */
   function getMedirGermActivos(cfg) {
     var plan = getPlanMedirGerm(cfg);
     var activos = keysActivos(plan);
-    if (hcMedirModoGerminacionPropagador(cfg)) {
-      activos.ec = true;
+    if (hcMedirGermPreTrasladoActivo(cfg)) {
+      activos.hr = true;
+      activos.temp = false;
+      activos.vpd = false;
+      if (activos.ec === undefined) activos.ec = true;
       return { plan: plan, activos: activos };
     }
     activos.ec = true;
@@ -227,9 +278,25 @@
       if (activos[key]) setGermRange(f.rangeId, key, cfg);
       else if (typeof setMedirParamRange === 'function') setMedirParamRange(f.rangeId, '');
     });
-    ['paramRangeTemp', 'paramRangeVol'].forEach(function (id) {
-      if (typeof setMedirParamRange === 'function') setMedirParamRange(id, '');
-    });
+    if (hcMedirGermPreTrasladoActivo(cfg) && typeof getGerminacionRangosMonitoreo === 'function') {
+      var planR = getPlanMedirGerm(cfg);
+      var rProp = getGerminacionRangosMonitoreo(planR.variedadId, planR.faseId, cfg);
+      var volHint =
+        hcMedirGermPreTrasladoVariant(cfg) === 'cubo'
+          ? 'Litros de solución en el cubo de germinación'
+          : 'Litros de solución en el domo / bandeja';
+      if (typeof setMedirParamRange === 'function') {
+        setMedirParamRange(
+          'paramRangeTemp',
+          rProp.temp.min + ' – ' + rProp.temp.max + ' °C (agua)'
+        );
+        setMedirParamRange('paramRangeVol', volHint);
+      }
+    } else {
+      ['paramRangeTemp', 'paramRangeVol'].forEach(function (id) {
+        if (typeof setMedirParamRange === 'function') setMedirParamRange(id, '');
+      });
+    }
   }
 
   function setGermStatus(statusId, nivel, texto) {
@@ -275,6 +342,22 @@
       else if (typeof showCorreccion === 'function') showCorreccion(f.correccionId, corrHtml);
     });
 
+    if (hcMedirGermPreTrasladoActivo(cfg)) {
+      var inpWt = document.getElementById('inputTemp');
+      var valWt = inpWt ? parseFloat(String(inpWt.value || '').replace(',', '.')) : NaN;
+      if (typeof evalGerminacionMedicion === 'function') {
+        var evWt = evalGerminacionMedicion('temp', valWt, vid, faseId, cfg);
+        setGermStatus('statusTemp', Number.isFinite(valWt) ? evWt.nivel : 'empty', evWt.desfaseTxt || '');
+        if (typeof setCard === 'function') {
+          setCard('cardTemp', Number.isFinite(valWt) ? evWt.nivel : '');
+        }
+        var corrWt = evWt.correccion
+          ? '<div class="correccion-title">Ajuste</div><div class="correccion-muted">' + evWt.correccion + '</div>'
+          : '';
+        if (typeof showCorreccion === 'function') showCorreccion('correccionTemp', corrWt);
+      }
+    }
+
     if (activos.temp && activos.hr && typeof actualizarVPDEnUI === 'function') {
       actualizarVPDEnUI();
     }
@@ -284,77 +367,130 @@
     evalParamGerminacion();
   }
 
+  function medirGermFlowLeadHtml(variant, salaLista, salaCfg) {
+    var ent = medirGermEtiquetaEntidad(variant);
+    var micro = medirGermEtiquetaMicro(variant);
+    var trasladoTxt =
+      variant === 'cubo'
+        ? 'Tras el registro en la matriz verás el depósito DWC aquí.'
+        : 'Tras el traslado al hidro verás el depósito DWC aquí.';
+    if (salaLista) {
+      return (
+        '<strong>' +
+        ent +
+        ':</strong> T° del agua con nutrientes, HR, volumen y EC/pH si aplica. Abajo: parámetros de la <strong>sala montada</strong> (LED, CO₂…). El depósito DWC solo tras el traslado.'
+      );
+    }
+    if (salaCfg) {
+      return (
+        '<strong>' +
+        ent +
+        ':</strong> registra <strong>T° agua</strong>, <strong>HR</strong> y <strong>volumen</strong> del ' +
+        micro +
+        ' (obligatorio). EC/pH según fase. Completa el <strong>montaje en Sala</strong> para medir el equipamiento.'
+      );
+    }
+    return (
+      '<strong>' +
+      ent +
+      ':</strong> registra cada día <strong>T° del agua con nutrientes</strong>, <strong>HR</strong> y <strong>volumen</strong> del ' +
+      micro +
+      '. EC/pH cuando aplique. ' +
+      trasladoTxt
+    );
+  }
+
   function refreshMedirGerminacionUi(cfg) {
     cfg = cfg || cfgActiva();
-    var activo = hcMedirModoGerminacionPropagador(cfg);
+    var variant = hcMedirGermPreTrasladoVariant(cfg);
+    var preTraslado = !!variant;
     var mg = getMedirGermActivos(cfg);
     var activos = mg.activos;
-    var tieneSolucion = activos.ec || activos.ph;
+    var salaLista = hcMedirSalaListaParaMedir(cfg);
+    var salaCfg = hcMedirSalaConfigurada(cfg);
+
+    if (preTraslado && typeof mountAmbienteInMedirFlow === 'function') {
+      try {
+        mountAmbienteInMedirFlow();
+      } catch (_) {}
+    }
 
     var flow = document.getElementById('medirFlow');
     if (flow) {
-      flow.classList.toggle('medir-flow--germ-prop', activo);
-      if (activo) {
+      flow.classList.toggle('medir-flow--germ-prop', variant === 'propagador');
+      flow.classList.toggle('medir-flow--germ-cubo', variant === 'cubo');
+      if (preTraslado) {
         flow.classList.remove('medir-flow--pre-operativa');
         flow.setAttribute('aria-hidden', 'false');
       }
       var mountAmb = document.getElementById('medirFlowAmbienteMount');
       var solPanel = flow.querySelector('.medir-step-panel--solucion');
-      if (activo && mountAmb && solPanel) {
+      if (preTraslado && mountAmb && solPanel) {
         flow.insertBefore(mountAmb, solPanel);
-      } else if (!activo && mountAmb && solPanel) {
+      } else if (!preTraslado && mountAmb && solPanel) {
         var actions = flow.querySelector('.medir-flow-actions');
         if (actions && mountAmb.nextElementSibling !== actions) {
           flow.insertBefore(solPanel, mountAmb);
         }
       }
       var quickBlock = flow.querySelector('.medir-quick-parse');
-      if (quickBlock) quickBlock.classList.toggle('setup-hidden', activo);
+      if (quickBlock) quickBlock.classList.toggle('setup-hidden', preTraslado);
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) {
         if (!lead.dataset.hcMedirLeadDefault) lead.dataset.hcMedirLeadDefault = lead.innerHTML;
-        var salaLista = hcMedirSalaListaParaMedir(cfg);
-        var salaCfg = hcMedirSalaConfigurada(cfg);
-        lead.innerHTML = activo
-          ? salaLista
-            ? '<strong>Propagador:</strong> EC/pH del agua del domo si aplica. T°, HR y notas van en <strong>Historial</strong> y <strong>Calendario</strong>. Con sala montada: parámetros del equipamiento abajo.'
-            : salaCfg
-              ? '<strong>Propagador:</strong> EC/pH del domo. T°, HR y apuntes en <strong>Historial</strong>. Completa el <strong>checklist de montaje en Sala</strong> para medir LED, CO₂, etc.'
-              : '<strong>Propagador:</strong> EC/pH del agua del domo. Anota T°, HR y observaciones en <strong>Historial</strong> (no aquí).'
+        lead.innerHTML = preTraslado
+          ? medirGermFlowLeadHtml(variant, salaLista, salaCfg)
           : lead.dataset.hcMedirLeadDefault;
       }
-      var solPanel = flow.querySelector('.medir-step-panel--solucion');
-      if (solPanel) solPanel.classList.toggle('setup-hidden', !activo || !tieneSolucion);
-      var solHead = solPanel && solPanel.querySelector('.medir-step-kicker--solucion');
-      if (solHead) {
-        solHead.textContent = activo ? 'Agua del propagador (si aplica)' : 'Paso 1 · solución';
+      var solKicker = flow.querySelector('.medir-step-kicker--solucion');
+      if (solKicker) {
+        if (!solKicker.dataset.hcMedirKickDefault) solKicker.dataset.hcMedirKickDefault = solKicker.textContent;
+        solKicker.textContent = preTraslado
+          ? (variant === 'cubo' ? 'Cubo · agua con nutrientes' : 'Propagador · agua con nutrientes')
+          : solKicker.dataset.hcMedirKickDefault;
       }
-      var solSub = solPanel && solPanel.querySelector('.medir-step-sub');
-      if (solSub && activo) {
+      var solSub = flow.querySelector('.medir-step-panel--unificado .medir-step-sub');
+      if (solSub) {
         if (!solSub.dataset.hcMedirSubDefault) solSub.dataset.hcMedirSubDefault = solSub.textContent;
-        solSub.textContent =
-          'EC del agua del domo (µS/cm). En fases tempranas puede ir muy baja; pH del cubo cuando aplique.';
-      } else if (solSub && solSub.dataset.hcMedirSubDefault) {
-        solSub.textContent = solSub.dataset.hcMedirSubDefault;
+        if (preTraslado) {
+          var microLbl = medirGermEtiquetaMicro(variant);
+          solSub.textContent =
+            'T° del agua, volumen (L), HR del ' + microLbl + ' y EC/pH según la fase de germinación.';
+        } else {
+          solSub.textContent = solSub.dataset.hcMedirSubDefault;
+        }
       }
     }
 
     var ambDetails = document.getElementById('medirAmbienteDetails');
-    if (ambDetails && activo) ambDetails.open = true;
+    if (ambDetails && preTraslado) ambDetails.open = true;
+
+    var lblAguaTemp = variant === 'cubo' ? 'T° agua cubo' : 'T° agua propagador';
+    var lblEc = variant === 'cubo' ? 'EC cubo' : 'EC propagador';
+    var lblHr = variant === 'cubo' ? 'HR cubo/sala' : 'HR domo';
 
     DEPOSITO_CARDS.forEach(function (id) {
       var el = document.getElementById(id);
       if (!el) return;
-      if (!activo) {
+      if (!preTraslado) {
         el.classList.remove('setup-hidden');
         restoreLabelSpan(id);
         restoreCardIcon(id);
         return;
       }
-      var hideDep = id === 'cardTemp' || id === 'cardVol' || (id === 'cardEC' && !activos.ec) || (id === 'cardPH' && !activos.ph);
+      var hideDep =
+        (id === 'cardEC' && !activos.ec) || (id === 'cardPH' && !activos.ph);
       el.classList.toggle('setup-hidden', hideDep);
+      if (id === 'cardTemp') {
+        setLabelSpan(id, lblAguaTemp);
+        setCardIcon(id, 'hc-i-therm');
+      }
+      if (id === 'cardVol') {
+        setLabelSpan(id, 'Volumen agua');
+        setCardIcon(id, 'hc-i-bucket');
+      }
       if (id === 'cardEC' && activos.ec) {
-        setLabelSpan(id, 'EC propagador');
+        setLabelSpan(id, lblEc);
         setCardIcon(id, 'hc-i-bolt');
         var inpEc = document.getElementById('inputEC');
         if (inpEc && mg.plan && mg.plan.ecObjetivo) {
@@ -362,7 +498,7 @@
         }
       }
       if (id === 'cardPH' && activos.ph) {
-        setLabelSpan(id, 'pH cubo');
+        setLabelSpan(id, 'pH agua');
         setCardIcon(id, 'hc-i-flask');
       }
     });
@@ -372,27 +508,39 @@
       if (!f || !f.amb) return;
       var el = document.getElementById(f.card);
       if (!el) return;
-      if (!activo) {
+      if (!preTraslado) {
         el.classList.remove('setup-hidden');
         restoreLabelSpan(f.card);
         restoreCardIcon(f.card);
         return;
       }
-      el.classList.toggle('setup-hidden', !activos[key]);
-      if (activos[key]) {
-        setLabelSpan(f.card, f.label);
-        setCardIcon(f.card, f.icon);
+      var showAmb = false;
+      if (key === 'hr') showAmb = true;
+      else if (key === 'temp' && salaLista) showAmb = true;
+      else if (key === 'vpd' && salaLista) showAmb = true;
+      el.classList.toggle('setup-hidden', !showAmb);
+      if (showAmb) {
+        if (key === 'hr') {
+          setLabelSpan(f.card, lblHr);
+          setCardIcon(f.card, 'hc-i-droplet');
+        } else if (key === 'temp') {
+          setLabelSpan(f.card, 'T° aire sala');
+          setCardIcon(f.card, 'hc-i-therm');
+        } else if (key === 'vpd') {
+          setLabelSpan(f.card, 'VPD sala');
+          setCardIcon(f.card, 'hc-i-wind');
+        }
       }
     });
 
     var recarga = document.getElementById('recargaCardMediciones');
-    if (recarga) recarga.classList.toggle('setup-hidden', activo);
+    if (recarga) recarga.classList.toggle('setup-hidden', preTraslado);
 
     var hub = document.getElementById('medirOperativaHub');
-    if (hub) hub.classList.toggle('setup-hidden', activo);
+    if (hub) hub.classList.toggle('setup-hidden', preTraslado);
 
     var hostRangos = document.getElementById('hcMedirGermRangosHost');
-    if (activo) {
+    if (preTraslado) {
       if (!hostRangos && flow && typeof renderGerminacionRangosPanelHtml === 'function') {
         hostRangos = document.createElement('div');
         hostRangos.id = 'hcMedirGermRangosHost';
@@ -413,45 +561,66 @@
       hostRangos.innerHTML = '';
     }
 
-    if (flow && activo) {
+    if (flow && preTraslado) {
       flow.classList.remove('medir-flow--pre-operativa');
       flow.setAttribute('aria-hidden', 'false');
+      var microAmb = medirGermEtiquetaMicro(variant);
       var ambHead = flow.querySelector('.medir-step-head--inline-amb');
-      var salaListaFlow = hcMedirSalaListaParaMedir(cfg);
-      if (ambHead) ambHead.classList.toggle('setup-hidden', !salaListaFlow);
+      var ambKicker = ambHead && ambHead.querySelector('.medir-step-kicker');
+      var ambSubInline = ambHead && ambHead.querySelector('.medir-step-sub');
+      if (ambHead) ambHead.classList.remove('setup-hidden');
+      if (ambKicker) {
+        ambKicker.textContent = salaLista
+          ? 'Sala de cultivo montada'
+          : salaCfg
+            ? 'HR del ' + microAmb + ' · sala pendiente'
+            : 'HR del ' + microAmb;
+      }
+      if (ambSubInline) {
+        ambSubInline.textContent = salaLista
+          ? 'HR del ' + microAmb + ' y parámetros del equipamiento según catálogo'
+          : 'Humedad relativa del microclima del ' + microAmb;
+      }
       var ambMount = document.getElementById('medirFlowAmbienteMount');
-      if (ambMount) ambMount.classList.toggle('setup-hidden', !salaListaFlow);
+      if (ambMount) ambMount.classList.remove('setup-hidden');
       flow.querySelectorAll('.medir-flow-actions [onclick*="abrirWizardMedicion"]').forEach(function (btn) {
-        btn.classList.toggle('setup-hidden', !!activo);
+        btn.classList.toggle('setup-hidden', !!preTraslado);
       });
     }
 
     var preGate = document.getElementById('medirPreOperativaGate');
-    if (preGate && activo) preGate.classList.add('setup-hidden');
+    if (preGate && preTraslado) preGate.classList.add('setup-hidden');
 
-    if (activo && typeof actualizarRangosParametrosMedirGerm === 'function') {
+    if (preTraslado && typeof actualizarRangosParametrosMedirGerm === 'function') {
       actualizarRangosParametrosMedirGerm(cfg);
       evalParamGerminacion();
     }
 
     refreshMedirSalaAmbienteMedirUi(cfg);
-    refreshMedirAsistentePropagadorBtn(activo);
-    refreshMedirPropagadorTabChrome(cfg, activo);
+    refreshMedirAsistentePropagadorBtn(preTraslado, variant);
+    refreshMedirPropagadorTabChrome(cfg, preTraslado, variant);
     if (typeof refreshSalaPanelesDuplicadosMedirUi === 'function') {
       refreshSalaPanelesDuplicadosMedirUi(cfg);
     }
     if (typeof applyMedirGuiaProtocoloChrome === 'function') applyMedirGuiaProtocoloChrome(cfg);
-    if (activo && typeof repositionMedirFlowPropagadorTop === 'function') {
+    if (preTraslado && typeof repositionMedirFlowPropagadorTop === 'function') {
       repositionMedirFlowPropagadorTop();
     }
     if (typeof repositionMedirGuiaDiaTop === 'function') repositionMedirGuiaDiaTop();
   }
 
-  function refreshMedirPropagadorTabChrome(cfg, activo) {
+  function refreshMedirPropagadorTabChrome(cfg, preTraslado, variant) {
     cfg = cfg || cfgActiva();
-    activo = activo !== undefined ? activo : hcMedirModoGerminacionPropagador(cfg);
+    if (preTraslado === undefined) {
+      variant = hcMedirGermPreTrasladoVariant(cfg);
+      preTraslado = !!variant;
+    }
+    variant = variant || hcMedirGermPreTrasladoVariant(cfg);
     var tab = document.getElementById('tab-mediciones');
-    if (tab) tab.classList.toggle('medir-tab--propagador', !!activo);
+    if (tab) {
+      tab.classList.toggle('medir-tab--propagador', variant === 'propagador');
+      tab.classList.toggle('medir-tab--germ-cubo', variant === 'cubo');
+    }
 
     var hideWhenProp = [
       'medirPuestaMarchaCard',
@@ -473,20 +642,28 @@
     ];
     hideWhenProp.forEach(function (id) {
       var n = document.getElementById(id);
-      if (n) n.classList.toggle('setup-hidden', !!activo);
+      if (!n) return;
+      if (id === 'medirAmbienteCard' && preTraslado) {
+        var mountAmb = document.getElementById('medirFlowAmbienteMount');
+        if (mountAmb && mountAmb.contains(n)) {
+          n.classList.remove('setup-hidden');
+          return;
+        }
+      }
+      n.classList.toggle('setup-hidden', !!preTraslado);
     });
     if (tab) {
       var notas = tab.querySelector('.medir-notas-card');
-      if (notas) notas.classList.toggle('setup-hidden', !!activo);
+      if (notas) notas.classList.toggle('setup-hidden', !!preTraslado);
       tab.querySelectorAll('.medir-assistant-cta-wrap, .guardar-medicion-bar').forEach(function (n) {
-        n.classList.toggle('setup-hidden', !!activo);
+        n.classList.toggle('setup-hidden', !!preTraslado);
       });
     }
 
     var loc = document.getElementById('panelLocalidadMeteo');
     if (loc) {
-      loc.classList.toggle('medir-localidad--propagador', !!activo);
-      if (activo) loc.classList.add('setup-hidden');
+      loc.classList.toggle('medir-localidad--propagador', !!preTraslado);
+      if (preTraslado) loc.classList.add('setup-hidden');
     }
 
     var titleWrap = tab && tab.querySelector('.section-title > span');
@@ -494,13 +671,17 @@
       if (!titleWrap.dataset.hcMedirTitleDefault) {
         titleWrap.dataset.hcMedirTitleDefault = titleWrap.innerHTML;
       }
-      titleWrap.innerHTML = activo
-        ? '<span class="accent">Medir</span> · domo y sala'
+      var titleLbl =
+        variant === 'cubo' ? 'germinación en cubo' : variant === 'propagador' ? 'propagador' : '';
+      titleWrap.innerHTML = preTraslado
+        ? '<span class="accent">Medir</span> · ' +
+          titleLbl +
+          (hcMedirSalaListaParaMedir(cfg) ? ' y sala' : '')
         : titleWrap.dataset.hcMedirTitleDefault;
     }
   }
 
-  function refreshMedirAsistentePropagadorBtn(activo) {
+  function refreshMedirAsistentePropagadorBtn(preTraslado, variant) {
     var flow = document.getElementById('medirFlow');
     if (!flow) return;
     var btn = flow.querySelector('.medir-flow-actions [data-quick-icon="asistentepro"]');
@@ -509,9 +690,13 @@
     if (labelSpan && !btn.dataset.hcAsistLabelDefault) {
       btn.dataset.hcAsistLabelDefault = labelSpan.textContent;
     }
-    if (activo) {
-      btn.setAttribute('aria-label', 'Abrir asistente de medición del domo propagador');
-      if (labelSpan) labelSpan.textContent = 'Asistente domo';
+    if (preTraslado) {
+      var asistLbl = variant === 'cubo' ? 'Asistente cubo' : 'Asistente domo';
+      btn.setAttribute(
+        'aria-label',
+        'Abrir asistente de medición del ' + (variant === 'cubo' ? 'cubo' : 'domo propagador')
+      );
+      if (labelSpan) labelSpan.textContent = asistLbl;
     } else {
       btn.setAttribute('aria-label', 'Abrir Asistente de mediciones');
       if (labelSpan && btn.dataset.hcAsistLabelDefault) {
@@ -520,7 +705,7 @@
     }
   }
 
-  function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista) {
+  function ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista, variant) {
     if (!ambCard) return;
     var hint = document.getElementById('hcMedirSalaPendienteHint');
     if (salaLista) {
@@ -537,8 +722,10 @@
       else ambCard.insertBefore(hint, ambCard.firstChild);
     }
     var salaCfg = hcMedirSalaConfigurada(cfg);
+    variant = variant || hcMedirGermPreTrasladoVariant(cfg);
     var prop =
       typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_propagador';
+    var soloLbl = variant === 'cubo' ? 'Solo cubo de germinación' : 'Solo propagador';
     var cfgBtn = prop
       ? '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'&&abrirConfiguradorEquipamientoSalaPropagador()">Configurar sala</button>'
       : '<button type="button" class="btn btn-link btn-sm" onclick="typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala()">Configurar sala</button>';
@@ -546,15 +733,17 @@
       '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()">checklist de montaje en Sala</button>';
     if (germ && !salaCfg) {
       hint.innerHTML =
-        '<strong>Solo domo por ahora.</strong> Registra <strong>T°, HR y VPD del propagador</strong>. ' +
-        'Los parámetros del resto del equipamiento de la sala (LED, CO₂, etc.) aparecen tras ' +
+        '<strong>' +
+        soloLbl +
+        '.</strong> Arriba: <strong>T° agua</strong>, <strong>HR</strong> y <strong>volumen</strong>. ' +
+        'Los parámetros de sala (LED, CO₂, etc.) aparecen tras ' +
         cfgBtn +
         '.';
     } else if (germ && salaCfg) {
       hint.innerHTML =
         '<strong>Sala configurada.</strong> Completa el ' +
         montajeBtn +
-        ' (propagador montado y operativo) para registrar PPFD, CO₂ y el resto según tu equipamiento.';
+        ' para registrar PPFD, CO₂ y el resto según tu equipamiento.';
     } else {
       hint.innerHTML =
         '<strong>Sala / montaje pendiente.</strong> Luz (PPFD), CO₂ y temp. exterior se activan tras el montaje verificado. ' +
@@ -565,9 +754,11 @@
 
   function refreshMedirSalaAmbienteMedirUi(cfg) {
     cfg = cfg || cfgActiva();
-    var germ = hcMedirModoGerminacionPropagador(cfg);
+    var variant = hcMedirGermPreTrasladoVariant(cfg);
+    var germ = !!variant;
     var salaLista = hcMedirSalaListaParaMedir(cfg);
     var salaCfg = hcMedirSalaConfigurada(cfg);
+    var micro = medirGermEtiquetaMicro(variant);
 
     AMBIENTE_SALA_CARDS.forEach(function (id) {
       var el = document.getElementById(id);
@@ -587,12 +778,16 @@
       if (!kick.dataset.hcMedirKickDefault) kick.dataset.hcMedirKickDefault = kick.textContent;
       if (!sub.dataset.hcMedirSubDefault) sub.dataset.hcMedirSubDefault = sub.textContent;
       if (germ) {
-        kick.textContent = salaLista ? 'Domo y sala montada' : salaCfg ? 'Domo · sala pendiente montaje' : 'Domo propagador';
-        sub.textContent = salaLista
-          ? 'T°, HR y VPD del domo · parámetros del equipamiento de sala según catálogo'
+        kick.textContent = salaLista
+          ? 'Sala montada'
           : salaCfg
-            ? 'T°, HR y VPD del domo — completa el checklist de montaje en Sala'
-            : 'T°, HR y VPD del domo — obligatorio';
+            ? 'Sala pendiente montaje'
+            : 'Microclima del ' + micro;
+        sub.textContent = salaLista
+          ? 'HR del ' + micro + ' y parámetros del equipamiento de sala'
+          : salaCfg
+            ? 'HR del ' + micro + ' — completa el checklist de montaje en Sala'
+            : 'Humedad relativa del ' + micro;
       } else if (!salaLista) {
         kick.textContent = 'Paso 2 · opcional';
         sub.textContent = 'Luz, CO₂ y temp. exterior tras montaje de sala verificado';
@@ -603,7 +798,7 @@
     }
 
     var ambCard = document.getElementById('medirAmbienteCard');
-    ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista);
+    ensureMedirSalaPendienteHint(ambCard, cfg, germ, salaLista, variant);
 
     if (germ && salaLista) {
       var ambDet = document.getElementById('medirAmbienteDetails');
@@ -616,10 +811,12 @@
         if (!ambLead.dataset.hcMedirLeadDefault) ambLead.dataset.hcMedirLeadDefault = ambLead.textContent;
         if (germ) {
           ambLead.textContent = salaLista
-            ? 'Parámetros del equipamiento de sala (LED, CO₂, extractor…). T°/HR del domo: Historial.'
+            ? 'Parámetros del equipamiento de sala (LED, CO₂, extractor…). La HR del ' +
+              micro +
+              ' va arriba con el agua.'
             : salaCfg
-              ? 'Tras el checklist de montaje en Sala aparecerán parámetros del equipamiento. T°/HR del domo: Historial.'
-              : 'T° y HR del domo se registran en Historial, no en Medir.';
+              ? 'Tras el checklist de montaje en Sala aparecerán parámetros del equipamiento.'
+              : 'Registra la humedad relativa del ' + micro + ' junto con T° y volumen del agua.';
         } else if (!salaLista) {
           ambLead.textContent =
             'Temp. aire y HR para VPD. PPFD, CO₂ y temp. exterior cuando el montaje de sala esté verificado.';
@@ -638,7 +835,7 @@
     if (typeof prevRangos === 'function') {
       global.actualizarRangosParametrosMedir = function (cfg) {
         cfg = cfg || cfgActiva();
-        if (hcMedirModoGerminacionPropagador(cfg)) {
+        if (hcMedirGermPreTrasladoActivo(cfg)) {
           actualizarRangosParametrosMedirGerm(cfg);
           return;
         }
@@ -649,7 +846,7 @@
     var prevEval = global.evalParam;
     if (typeof prevEval === 'function') {
       global.evalParam = function () {
-        if (hcMedirModoGerminacionPropagador()) {
+        if (hcMedirGermPreTrasladoActivo()) {
           evalParamGerminacion();
           return;
         }
@@ -660,7 +857,7 @@
     if (typeof global.evalAmbiente === 'function') {
       var prevAmb = global.evalAmbiente;
       global.evalAmbiente = function () {
-        if (hcMedirModoGerminacionPropagador()) {
+        if (hcMedirGermPreTrasladoActivo()) {
           evalAmbienteGerminacion();
           return;
         }
@@ -685,7 +882,10 @@
   }
 
   global.hcMedirModoGerminacionPropagador = hcMedirModoGerminacionPropagador;
-  global.hcMedirPermiteRegistroGerminacion = hcMedirModoGerminacionPropagador;
+  global.hcMedirModoGerminacionCubo = hcMedirModoGerminacionCubo;
+  global.hcMedirGermPreTrasladoActivo = hcMedirGermPreTrasladoActivo;
+  global.hcMedirGermPreTrasladoVariant = hcMedirGermPreTrasladoVariant;
+  global.hcMedirPermiteRegistroGerminacion = hcMedirGermPreTrasladoActivo;
   global.refreshMedirGerminacionUi = refreshMedirGerminacionUi;
   global.refreshMedirSalaAmbienteMedirUi = refreshMedirSalaAmbienteMedirUi;
   global.hcMedirSalaAmbienteDisponible = hcMedirSalaAmbienteDisponible;
