@@ -20,10 +20,10 @@ const doc = new PDFDocument({
   size: 'A4',
   margins: { top: 48, bottom: 48, left: 48, right: 48 },
   info: {
-    Title: 'HidroGrow — Diagrama de flujo completo',
+    Title: 'HidroGrow — Diagrama de flujo completo (todos los pasos)',
     Author: 'HidroGrow',
-    Subject: 'Flujo de aplicación DWC/RDWC',
-    Keywords: 'HidroGrow, hidroponia, cannabis, DWC, RDWC, flujo',
+    Subject: 'Flujo de aplicación DWC/RDWC · 4 caminos',
+    Keywords: 'HidroGrow, hidroponia, DWC, RDWC, propagador, esqueje, madre, flujo',
   },
 });
 
@@ -39,7 +39,7 @@ function ensureSpace(h) {
 function pageHeader(first) {
   if (!first) doc.moveDown(0.3);
   doc.font('Helvetica-Bold').fontSize(9).fillColor(BRAND2);
-  doc.text('HidroGrow · Diagrama de flujo · DWC/RDWC', { align: 'right' });
+  doc.text('HidroGrow · Flujo completo · ' + (C.meta.build || ''), { align: 'right' });
   doc.moveDown(0.4);
   doc.strokeColor(LINE).lineWidth(0.5);
   doc.moveTo(doc.page.margins.left, doc.y).lineTo(doc.page.width - doc.page.margins.right, doc.y).stroke();
@@ -60,6 +60,13 @@ function h2(text) {
   doc.moveDown(0.25);
 }
 
+function h3(text) {
+  ensureSpace(22);
+  doc.font('Helvetica-Bold').fontSize(11).fillColor(BRAND2);
+  doc.text(text);
+  doc.moveDown(0.2);
+}
+
 function p(text, opts) {
   ensureSpace(20);
   doc.font('Helvetica').fontSize(10).fillColor(MUTED);
@@ -68,17 +75,28 @@ function p(text, opts) {
 }
 
 function bullet(text) {
-  ensureSpace(16);
-  doc.font('Helvetica').fontSize(9.5).fillColor(INK);
-  doc.text('• ' + text, { indent: 8, lineGap: 2 });
+  ensureSpace(14);
+  doc.font('Helvetica').fontSize(9).fillColor(INK);
+  doc.text('• ' + text, { indent: 8, lineGap: 1.5 });
 }
 
 function bullets(items) {
   items.forEach(bullet);
+  doc.moveDown(0.15);
+}
+
+/** Lista numerada compacta — todos los pasos */
+function numberedSteps(items, startAt) {
+  startAt = startAt || 1;
+  items.forEach(function (txt, i) {
+    ensureSpace(14);
+    doc.font('Helvetica').fontSize(8.5).fillColor(INK);
+    var num = String(startAt + i).padStart(2, '0');
+    doc.text(num + '.  ' + txt, { indent: 4, lineGap: 1.5 });
+  });
   doc.moveDown(0.2);
 }
 
-/** Caja de flujo con título y líneas */
 function flowBox(x, y, w, h, title, lines, fill, stroke) {
   fill = fill || FILL;
   stroke = stroke || BRAND;
@@ -120,7 +138,6 @@ function drawLifecycleDiagram() {
   var boxH = 52;
   var y0 = doc.y + 8;
   var cx = left + bw / 2;
-
   var steps = C.lifecycle;
   for (var i = 0; i < 4; i++) {
     var col = i % 2;
@@ -144,8 +161,7 @@ function drawLifecycleDiagram() {
 
 function drawGerminacionRail() {
   ensureSpace(120);
-  h2('Rama semilla — Germinación (Inicio)');
-  p('Paralelo al lifecycle hasta traslado al cubo. Equipamiento del propagador en el hub.');
+  h2('6 fases germinación (semilla)');
   var left = doc.page.margins.left;
   var bw = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   var n = C.germinacion.length;
@@ -162,9 +178,21 @@ function drawGerminacionRail() {
   doc.y = y + minH + 12;
 }
 
+function drawCaminosUiGrid() {
+  ensureSpace(140);
+  h2('Capas UI por camino (Inicio · Sistema · Medir)');
+  C.caminos.forEach(function (c) {
+    bullet(c.id + ' · fase ' + c.fase);
+    bullet('  Inicio: ' + c.inicio);
+    bullet('  Sistema: ' + c.sistema);
+    bullet('  Medir: ' + c.medir);
+    doc.moveDown(0.1);
+  });
+}
+
 function drawTabsGrid() {
   ensureSpace(180);
-  h2('Navegación — barra de pestañas');
+  h2('Barra de pestañas (10)');
   var left = doc.page.margins.left;
   var bw = doc.page.width - doc.page.margins.left - doc.page.margins.right;
   var cols = 2;
@@ -173,7 +201,6 @@ function drawTabsGrid() {
   var y = doc.y + 6;
   C.tabs.forEach(function (t, i) {
     var col = i % cols;
-    var row = Math.floor(i / cols);
     if (col === 0 && i > 0) y += boxH + 8;
     var x = left + col * (boxW + 12);
     flowBox(x, y, boxW, boxH, t.tab, [t.uso], i % 2 === 0 ? FILL : FILL2, BRAND2);
@@ -181,16 +208,31 @@ function drawTabsGrid() {
   doc.y = y + boxH + 16;
 }
 
+function sectionSteps(title, intro, steps) {
+  doc.addPage();
+  pageHeader(false);
+  h1(title);
+  if (intro) p(intro);
+  numberedSteps(steps);
+}
+
+function sectionStepsContinued(title, steps, partLabel) {
+  doc.addPage();
+  pageHeader(false);
+  h1(title + (partLabel ? ' (' + partLabel + ')' : ''));
+  numberedSteps(steps);
+}
+
 // ─── Portada ───
 doc.font('Helvetica-Bold').fontSize(26).fillColor(BRAND);
 doc.text(C.meta.app, { align: 'center' });
 doc.moveDown(0.3);
 doc.font('Helvetica').fontSize(14).fillColor(INK);
-doc.text('Diagrama de flujo completo de la aplicación', { align: 'center' });
+doc.text('Diagrama de flujo — todos los pasos', { align: 'center' });
 doc.moveDown(0.2);
 doc.fontSize(11).fillColor(MUTED);
 doc.text(C.meta.subtitulo, { align: 'center' });
-doc.moveDown(1.2);
+doc.moveDown(1);
 
 var coverW = doc.page.width - 96;
 var coverX = 48;
@@ -198,101 +240,112 @@ flowBox(
   coverX,
   doc.y,
   coverW,
-  72,
+  88,
   'Alcance de este documento',
   [
-    'Flujo desde primera apertura hasta cultivo operativo diario.',
-    'Solo sistemas DWC y RDWC (sin torre/NFT/SRF).',
-    'Datos locales: ' + C.meta.storageKey + ' · PWA / Capacitor.',
+    'Flujo completo: arranque, asistente 15 pasos, 4 caminos independientes.',
+    'Checklists itemizados · germinación 6 fases · domo 10 días · operativa.',
+    'Solo DWC/RDWC · datos locales: ' + C.meta.storageKey,
+    'Versión Mermaid editable: ' + C.meta.mdRef,
   ],
   FILL,
   BRAND
 );
-doc.y += 88;
-doc.moveDown(0.8);
+doc.y += 100;
+doc.moveDown(0.6);
 doc.font('Helvetica').fontSize(10).fillColor(MUTED);
-doc.text('Versión documento: ' + C.meta.version + ' · ' + C.meta.fecha, { align: 'center' });
-doc.text('Generar de nuevo: npm run docs:flujo-pdf', { align: 'center' });
+doc.text('Documento v' + C.meta.version + ' · ' + C.meta.fecha + ' · build ' + C.meta.build, { align: 'center' });
+doc.text('Regenerar: npm run docs:flujo-pdf', { align: 'center' });
 
-// ─── Página 2: macro ───
+// ─── 1. Arranque ───
 doc.addPage();
 pageHeader(false);
-h1('1. Vista general');
-p(
-  'El usuario entra por la bienvenida, configura la instalación en el asistente (premium + técnico), ' +
-    'completa montaje y cultivo, y pasa a la rutina en Medir. Si el origen es semilla, el hub de Germinación en Inicio corre en paralelo hasta el traslado al cubo.'
-);
-
-var mx = doc.page.margins.left;
-var mw = doc.page.width - mx - doc.page.margins.right;
-var my = doc.y + 10;
-var mh = 40;
-var seq = [
-  ['Bienvenida', 'Coach tabs'],
-  ['Asistente', 'Guardar config'],
-  ['Lifecycle', '4 pasos'],
-  ['Operativa', 'Medir diario'],
-];
-var sw = (mw - 36) / 4;
-seq.forEach(function (pair, i) {
-  var x = mx + i * (sw + 12);
-  flowBox(x, my, sw, mh, pair[0], [pair[1]], FILL, BRAND);
-  if (i < 3) arrowRight(x + sw, my + mh / 2, x + sw + 12);
-});
-doc.y = my + mh + 20;
-
-h2('Arranque (primera vez)');
+h1('1. Arranque y onboarding');
+p('Cada instalación (ranura) es independiente. Varios caminos pueden coexistir sin mezclar progreso.');
+h2('Secuencia completa');
+numberedSteps(C.arranqueDetallado);
+h2('Resumen primera vez');
 bullets(C.arranque);
 
-// ─── Página 3: asistente ───
+// ─── 2. Asistente ───
 doc.addPage();
 pageHeader(false);
-h1('2. Asistente de configuración');
+h1('2. Asistente de configuración (15 pasos)');
+p('P6 define caminoCultivo: semilla_propagador | semilla_hidro | esqueje_hidro | madre_hidro');
+h2('Bloque premium P0–P7 (detalle)');
+numberedSteps(C.premiumDetallado);
+h2('Bloque técnico S1–S7 (detalle)');
+numberedSteps(C.setupTecnicoDetallado);
+p('Propagador: omite geometría DWC en asistente inicial. Semilla hidro: sala + DWC en un solo flujo.');
 
-h2('Bloque premium (7 pasos)');
-bullets(C.premium);
-
-h2('Bloque técnico hidro (7 pasos)');
-bullets(C.setupTecnico);
-
-p('Tras guardar: checklist post-setup opcional · barra de progreso en Inicio hasta modo operativo.');
-
-// ─── Página 4: lifecycle + germinación ───
+// ─── 3. Checklists ───
 doc.addPage();
 pageHeader(false);
-h1('3. Instalación y origen de planta');
-drawLifecycleDiagram();
+h1('3. Checklists físicos — ítems uno a uno');
+h3('Propagador (propagadorMontajeChecks) — 7 ítems');
+numberedSteps(C.checklistPropagador);
+h3('Prep hidro semilla (preparacionGermHidroChecks) — 6 ítems');
+numberedSteps(C.checklistPrepHidro);
+h3('Enraizado esqueje (esquejesProtocolo.montaje) — 6 ítems');
+numberedSteps(C.checklistEnraizado);
+p('Montaje sala: puestaMarchaChecks dinámico según equipamiento. Depósito: instalacionPrimerLlenadoAt.');
 
-h2('Origen de planta — ramas');
-C.origenRamas.forEach(function (r) {
-  bullet(r.origen + ': ' + r.flujo);
+// ─── 4. Germinación + domo ───
+doc.addPage();
+pageHeader(false);
+h1('4. Germinación y domo día a día');
+drawGerminacionRail();
+h3('Detalle fases (IDs en código)');
+(C.germinacionFases || []).forEach(function (f) {
+  bullet('F' + f.n + ' · ' + f.id + ' — ' + f.titulo + ': ' + f.nota);
 });
 doc.moveDown(0.3);
-drawGerminacionRail();
+h2('Domo 10 días post-corte (esquejesProtocolo.domoDias)');
+numberedSteps(C.domoDias);
 
-// ─── Página 5: pestañas y rutina ───
+// ─── 5–8. Caminos ───
+sectionSteps(
+  '5. Camino A — semilla_propagador',
+  '28 pasos desde asistente sin sala/DWC hasta operativa hidro completa.',
+  C.caminoPropagador
+);
+
+sectionSteps(
+  '6. Camino B — semilla_hidro',
+  'Asistente único con sala + DWC. Germinación en el mismo cubo (hidro_directo).',
+  C.caminoSemillaHidro
+);
+
+sectionSteps(
+  '7. Camino C — esqueje_hidro (instalación → corte)',
+  'Montaje unificado en esquejesProtocolo.montaje (modal = Inicio = Medir).',
+  C.caminoEsqueje.slice(0, 14)
+);
+
+sectionStepsContinued('7. Camino C — esqueje_hidro', C.caminoEsqueje.slice(14), 'domo → operativa');
+
+sectionSteps(
+  '8. Camino D — madre_hidro',
+  'Cubo 18/6 permanente · sesiones esqueje cada 10–14 d · EC 1000–1400 µS en producción.',
+  C.caminoMadre
+);
+
+// ─── 9. Operativa + referencia ───
 doc.addPage();
 pageHeader(false);
-h1('4. Uso diario de la app');
+h1('9. Operativa, UI y datos');
+drawLifecycleDiagram();
+drawCaminosUiGrid();
+h2('Rutina diaria post-instalación (12 pasos)');
+numberedSteps(C.operativaDiaria);
 drawTabsGrid();
+h2('Claves persistidas por ranura');
+bullets(C.dataKeys);
 
-h2('Rutina diaria (modo operativo)');
-bullets(C.rutinaDiaria);
-
-h2('Utilidades transversales');
-bullets([
-  'Exportar / importar estado (backup JSON)',
-  'Varias instalaciones — selector en Inicio',
-  'Herramientas PRO (Medir): EC, pH, LED plántulas',
-  'Perfil tienda de semillas (opcional) — no confundir con propagador',
-  'IoT opcional: gateway WiFi autocompleta Medir',
-  'Historial: gráficos y banda teórica EC/pH por fase',
-]);
-
-// ─── Página 6: diagrama maestro texto ───
+// ─── 10. Diagrama ASCII ───
 doc.addPage();
 pageHeader(false);
-h1('5. Diagrama maestro (referencia rápida)');
+h1('10. Diagrama maestro (referencia rápida)');
 
 var diagramLines = [
   '                    ┌─────────────┐',
@@ -307,21 +360,19 @@ var diagramLines = [
   '         │     ASISTENTE (P0–P7 + S1–S7)      │',
   '         └────────────────┬───────────────────┘',
   '                          ▼',
-  '    ┌──────────┐   ┌──────────────┐   ┌─────────────┐',
-  '    │ SEMILLA  │   │ CLON/ESQUEJE │   │    MADRE    │',
-  '    │ 6 fases  │   │  checklist   │   │  18/6 · cal │',
-  '    │ Inicio   │   │  domo → cubo │   │  esquejes   │',
-  '    └────┬─────┘   └──────┬───────┘   └──────┬──────┘',
-  '         └────────────────┼──────────────────┘',
-  '                          ▼',
+  '    ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐',
+  '    │PROPAGADOR│ │SEM HIDRO │ │ ESQUEJE  │ │  MADRE   │',
+  '    │ A1–A28   │ │ B1–B25   │ │ E1–E35   │ │ M1–M28   │',
+  '    └────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘',
+  '         └────────────┼────────────┼────────────┘',
+  '                      ▼            ▼',
   '              ┌────────────────────────┐',
-  '              │ 1 Config → 2 Montaje   │',
-  '              │ → 3 Cultivo → 4 Llenado│',
+  '              │ Config→Montaje→Matriz  │',
+  '              │ →Depósito→OPERATIVA    │',
   '              └───────────┬────────────┘',
   '                          ▼',
   '              ┌────────────────────────┐',
-  '              │   OPERATIVA · MEDIR    │',
-  '              │ Historial · Calendario │',
+  '              │ MEDIR · HISTORIAL · CAL│',
   '              └────────────────────────┘',
 ];
 
@@ -333,8 +384,9 @@ diagramLines.forEach(function (ln) {
 doc.moveDown(0.5);
 doc.font('Helvetica').fontSize(9).fillColor(MUTED);
 p(
-  'Documento generado automáticamente desde el código de HidroGrow-web. ' +
-    'Para la versión editable en Mermaid: docs/diagrama-flujo-hidrogrow.md'
+  'Documento generado desde scripts/app-flow-content.js. ' +
+    'Versión completa con Mermaid: ' +
+    C.meta.mdRef
 );
 
 doc.end();
