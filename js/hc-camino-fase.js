@@ -933,6 +933,13 @@
 
   function hcMedirEnfocadoGerminacion(cfg) {
     cfg = cfg || cfgActiva();
+    if (
+      cam(cfg) === 'semilla_propagador' &&
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      hcPropagadorTrasladoCompletado(cfg)
+    ) {
+      return false;
+    }
     var f = getSistemaFaseCamino(cfg);
     return f === 'propagador' || f === 'germ_cubo' || f === 'prep_hidro';
   }

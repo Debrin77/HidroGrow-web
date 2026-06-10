@@ -77,10 +77,15 @@ test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
 test('checklist 6: medir cubo pre-traslado y propagador separados', () => {
   const medir = read('js/hc-medir-germinacion.js');
   const fase = read('js/hc-camino-fase.js');
+  const flujo = read('js/hc-camino-flujo-ui.js');
   assert.match(medir, /function hcMedirModoGerminacionCubo/);
   assert.match(medir, /hcMedirGermPreTrasladoActivo/);
+  assert.match(medir, /hcPropagadorTrasladoCompletado\(cfg\)/);
   assert.match(fase, /function hcSemillaHidroTrasladoCompletado/);
   assert.match(fase, /hcSemillaHidroTrasladoCompletado\(cfg\)/);
+  assert.match(fase, /hcPropagadorTrasladoCompletado\(cfg\)/);
+  assert.match(flujo, /hcPropagadorTrasladoCompletado\(cfg\)/);
+  assert.match(flujo, /Sistema hidropónico/);
   const layout = read('js/hc-medir-sala-layout.js');
   assert.match(layout, /hcMedirGermPreTrasladoActivo/);
 });

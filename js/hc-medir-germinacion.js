@@ -757,6 +757,20 @@
     var solMount = document.getElementById('medirFlowSolucion');
     var ambGrid = document.querySelector('#medirAmbienteCard .medir-ambiente-grid');
     if (!cardHr) return;
+    if (!preTraslado) {
+      if (ambGrid && cardHr.parentNode !== ambGrid) {
+        var anchorTemp = document.getElementById('cardTempAire');
+        if (anchorTemp && anchorTemp.parentNode === ambGrid) {
+          anchorTemp.insertAdjacentElement('afterend', cardHr);
+        } else {
+          ambGrid.appendChild(cardHr);
+        }
+      }
+      refreshMedirHrDomoCardHint(false, salaLista);
+      if (salaLista) setLabelSpan('cardHumSala', 'HR sala');
+      else restoreLabelSpan('cardHumSala');
+      return;
+    }
     if (preTraslado && variant === 'propagador' && !salaLista && solMount) {
       if (cardHr.parentNode !== solMount) {
         solMount.appendChild(cardHr);
