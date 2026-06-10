@@ -169,6 +169,38 @@ function auditMultiInstall() {
   return { trasInit, enPropagador, enHidro, postTraslado };
 }
 
+test('primera instalacion propagador: initTorres no crea ranura duplicada en asistente', async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await unlockPin(page);
+  const count = await page.evaluate(function () {
+    setupEsNuevaTorre = true;
+    state.configTorre = {
+      caminoCultivo: 'semilla_propagador',
+      tipoInstalacion: 'dwc',
+      origenPlanta: 'semilla',
+      germinacionFlow: {
+        numSemillas: 2,
+        variedadId: 'northern_lights',
+        pasos: {},
+        registroDiario: [],
+        fechaInicio: new Date().toISOString().slice(0, 10),
+        activo: true,
+      },
+      premiumSetup: {
+        caminoCultivo: 'semilla_propagador',
+        variedadGerminacion: 'northern_lights',
+        numSemillasGerm: 2,
+      },
+    };
+    state.torres = [];
+    if (typeof initTorres === 'function') initTorres();
+    return state.torres.length;
+  });
+  assert.equal(count, 0, 'sin ranura migrada durante setupEsNuevaTorre');
+  await browser.close();
+});
+
 test('multi-instalacion: hidro y propagador coexisten y cambian de ranura', async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();

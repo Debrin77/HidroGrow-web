@@ -295,6 +295,12 @@ function hidrogrowInstalacionPersistible(st) {
 function hidrogrowAsegurarTorresSlotEnSnapshot(st) {
   if (!st || typeof st !== 'object') return;
   if (Array.isArray(st.torres) && st.torres.length > 0) return;
+  if (
+    typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+    hidrogrowSesionNuevaInstalacionActiva()
+  ) {
+    return;
+  }
   if (!hidrogrowInstalacionPersistible(st)) return;
   const cfg = st.configTorre;
   if (!cfg || typeof cfg !== 'object') return;

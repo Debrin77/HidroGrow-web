@@ -228,6 +228,23 @@ test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () =>
   assert.doesNotMatch(torres, /g\.numSemillas\) && g\.numSemillas >= 1/);
 });
 
+test('setup: primera instalacion no duplica ranura (migracion bloqueada en asistente)', () => {
+  const torres = read('js/app-hc-torres-badges-notifs.js');
+  const bootstrap = read('js/hc-bootstrap-state.js');
+  const setup = read('js/hc-setup-calc-core.js');
+  assert.match(torres, /function hcBloquearMigracionTorresDuranteSetup/);
+  assert.match(
+    torres,
+    /hcBloquearMigracionTorresDuranteSetup\(\) && !state\.torres\.length\) return/
+  );
+  assert.match(
+    bootstrap,
+    /function hidrogrowAsegurarTorresSlotEnSnapshot[\s\S]{0,420}hidrogrowSesionNuevaInstalacionActiva/
+  );
+  assert.match(setup, /esPrimeraInstalacionGuardada[\s\S]{0,120}initTorres\(\)/);
+  assert.match(setup, /if \(esPrimeraInstalacionGuardada\) \{[\s\S]{0,80}state\.torres = \[nuevaTorre\]/);
+});
+
 test('multi-instalacion: hidro y propagador independientes (sin fusionar ni borrar)', () => {
   const torres = read('js/app-hc-torres-badges-notifs.js');
   const setup = read('js/hc-setup-calc-core.js');

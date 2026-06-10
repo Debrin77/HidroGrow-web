@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-06-01-perf55')
+      .register('service-worker.js?v=2026-06-01-perf56')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);

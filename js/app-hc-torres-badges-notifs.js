@@ -309,6 +309,75 @@ function hcCaminoInstalacionSlot(cfg) {
   );
 }
 
+/**
+ * Repara duplicados accidentales del asistente (mismo camino/nombre, sin checklist confirmada).
+ * No toca instalaciones confirmadas ni segundas instalaciones reales del mismo camino.
+ */
+function hcRepararRanurasDuplicadasSetupAccidental() {
+  if (!state || !Array.isArray(state.torres) || state.torres.length < 2) return false;
+  var grupos = {};
+  state.torres.forEach(function (t, idx) {
+    if (hcEsSlotInstalacionFantasma(t)) return;
+    var cfg = t.config || {};
+    if (cfg.checklistInstalacionConfirmada === true) return;
+    if (hcTorreTienePlantasAsignadas(t.torre)) return;
+    if (Array.isArray(t.mediciones) && t.mediciones.length > 0) return;
+    if (Array.isArray(t.registro) && t.registro.some(function (r) { return r && (r.tipo === 'recarga' || r.tipo === 'medicion'); })) {
+      return;
+    }
+    var cam = hcCaminoInstalacionSlot(cfg);
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return;
+    var nom = String(t.nombre || '').trim().toLowerCase();
+    if (!nom) return;
+    var key = cam + '|' + nom;
+    if (!grupos[key]) grupos[key] = [];
+    grupos[key].push({ idx: idx, score: hcPuntajeSlotInstalacionReal(t) });
+  });
+  var eliminar = {};
+  Object.keys(grupos).forEach(function (key) {
+    var lista = grupos[key];
+    if (lista.length < 2) return;
+    lista.sort(function (a, b) {
+      return b.score - a.score;
+    });
+    for (var i = 1; i < lista.length; i++) eliminar[lista[i].idx] = true;
+  });
+  var keys = Object.keys(eliminar);
+  if (!keys.length) return false;
+  var activaAntes = state.torreActiva || 0;
+  state.torres = state.torres.filter(function (_t, i) {
+    return !eliminar[i];
+  });
+  if (!state.torres.length) {
+    state.torreActiva = 0;
+  } else if (eliminar[activaAntes]) {
+    state.torreActiva = Math.min(activaAntes, state.torres.length - 1);
+    var mejor = 0;
+    var mejorScore = -9999;
+    state.torres.forEach(function (t, i) {
+      var sc = hcPuntajeSlotInstalacionReal(t);
+      if (sc > mejorScore) {
+        mejorScore = sc;
+        mejor = i;
+      }
+    });
+    state.torreActiva = mejor;
+  } else {
+    var nuevaActiva = activaAntes;
+    keys.forEach(function (k) {
+      var ki = parseInt(k, 10);
+      if (ki < activaAntes) nuevaActiva--;
+    });
+    state.torreActiva = Math.max(0, Math.min(nuevaActiva, state.torres.length - 1));
+  }
+  if (typeof cargarEstadoTorre === 'function') {
+    try {
+      cargarEstadoTorre(state.torreActiva || 0);
+    } catch (_) {}
+  }
+  return true;
+}
+
 /** Instalaciones independientes: no fusionar ni borrar ranuras del mismo camino. */
 function hcDedupTorresInstalacionGemelas() {
   return false;
@@ -506,8 +575,23 @@ function hcAsegurarSlotInstalacionDesdeConfig() {
   } catch (_) {}
 }
 
+function hcBloquearMigracionTorresDuranteSetup() {
+  if (
+    typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+    hidrogrowSesionNuevaInstalacionActiva()
+  ) {
+    return true;
+  }
+  try {
+    var so = document.getElementById('setupOverlay');
+    if (so && so.classList.contains('open')) return true;
+  } catch (_) {}
+  return false;
+}
+
 function hcMigrarLegacyTorresSiProcede() {
   if (!Array.isArray(state.torres)) state.torres = [];
+  if (hcBloquearMigracionTorresDuranteSetup() && !state.torres.length) return;
   if (state.torres.length > 0) {
     const antes = state.torres.length;
     state.torres = state.torres.filter((t) => !hcEsSlotInstalacionFantasma(t));
@@ -709,6 +793,14 @@ function initTorres() {
   }
   if (!Array.isArray(state.torres)) state.torres = [];
   hcMigrarLegacyTorresSiProcede();
+  if (
+    typeof hcRepararRanurasDuplicadasSetupAccidental === 'function' &&
+    hcRepararRanurasDuplicadasSetupAccidental()
+  ) {
+    try {
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
+  }
   if (!Array.isArray(state.torres)) state.torres = [];
   let idSeq = Date.now();
   let idsReparados = false;

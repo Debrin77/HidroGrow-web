@@ -1987,12 +1987,12 @@ function guardarSetupYContinuarCore() {
         : null;
 
 
-  initTorres();
   let esPrimeraInstalacionGuardada = false;
   if (typeof hcTieneInstalacionesUsuario === 'function' && !hcTieneInstalacionesUsuario()) {
     setupEsNuevaTorre = true;
     esPrimeraInstalacionGuardada = true;
   }
+  initTorres();
   const idxSlotGuardar = state.torreActiva || 0;
   /** Reconfiguración: respaldar la ranura activa antes de sobrescribir state.configTorre. En instalación nueva no guardar (el borrador del asistente no debe pisar otra torre). */
   if (!setupEsNuevaTorre) {
@@ -2609,7 +2609,10 @@ function guardarSetupYContinuarCore() {
         return typeof hcEsSlotInstalacionFantasma === 'function' && hcEsSlotInstalacionFantasma(t);
       });
     let newIdx;
-    if (!state.torres.length || soloFantasmas) {
+    if (esPrimeraInstalacionGuardada) {
+      state.torres = [nuevaTorre];
+      newIdx = 0;
+    } else if (!state.torres.length || soloFantasmas) {
       if (typeof hcEsSlotInstalacionFantasma === 'function') {
         state.torres = (soloFantasmas ? state.torres : []).filter(function (t) {
           return !hcEsSlotInstalacionFantasma(t);
