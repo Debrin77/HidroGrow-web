@@ -87,6 +87,16 @@
     { id: 'mrenovar', titulo: 'Renovar cada 6–12 meses', desc: 'Nueva madre desde el esqueje más vigoroso (menos “fatiga”).' },
   ];
 
+  /** IDs alineados con ITEMS_ENRAIZADO (modal checklist) — única fuente: esquejesProtocolo.montaje */
+  const MONTAJE_ENRAIZADO_IDS = [
+    'enr_domo',
+    'enr_rockwool',
+    'enr_higiene',
+    'enr_luz',
+    'enr_termo',
+    'enr_aire',
+  ];
+
   function el(id) {
     return document.getElementById(id);
   }
@@ -113,11 +123,13 @@
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     if (!cfg.esquejesProtocolo) {
       cfg.esquejesProtocolo = {
+        montaje: {},
         prepMadre: {},
         corte: {},
         enraizar: {},
         domoDias: {},
         mantener: {},
+        montajeVerificadoAt: '',
         ultimaSesionEsquejes: '',
         proximaSesionEsquejes: '',
         fechaInicioMadre: '',
@@ -126,8 +138,68 @@
       };
     }
     const ep = cfg.esquejesProtocolo;
+    if (!ep.montaje || typeof ep.montaje !== 'object') ep.montaje = {};
     if (!ep.intervaloSesionDias) ep.intervaloSesionDias = INTERVALO_SESION_DIAS;
+    hcMigrarEnraizadoMontajeLegacy(cfg, ep);
     return ep;
+  }
+
+  function hcMigrarEnraizadoMontajeLegacy(cfg, ep) {
+    if (!cfg || !ep || cfg._hcEnraizadoMontajeMigrado) return;
+    const leg = cfg.enraizadoMontajeChecks;
+    if (leg && typeof leg === 'object') {
+      MONTAJE_ENRAIZADO_IDS.forEach(function (id) {
+        if (leg[id]) ep.montaje[id] = true;
+      });
+      if (leg.completedAt && !ep.montajeVerificadoAt) {
+        ep.montajeVerificadoAt = leg.completedAt;
+      }
+      try {
+        delete cfg.enraizadoMontajeChecks;
+      } catch (_) {}
+    }
+    cfg._hcEnraizadoMontajeMigrado = true;
+  }
+
+  function countMontajeEnraizado(ep) {
+    ep = ep || ensureEsquejesState();
+    let done = 0;
+    MONTAJE_ENRAIZADO_IDS.forEach(function (id) {
+      if (ep.montaje && ep.montaje[id]) done++;
+    });
+    return {
+      done: done,
+      total: MONTAJE_ENRAIZADO_IDS.length,
+      verificado: !!ep.montajeVerificadoAt,
+    };
+  }
+
+  /** Vista compatible con modal propagador (checks + completedAt). */
+  function hcEnraizadoChecksViewFromProtocolo(cfg) {
+    cfg =
+      cfg ||
+      (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    const ep = ensureEsquejesState(cfg);
+    const ch = Object.assign({}, ep.montaje || {});
+    if (ep.montajeVerificadoAt) ch.completedAt = ep.montajeVerificadoAt;
+    return ch;
+  }
+
+  function hcGuardarEnraizadoChecksEnProtocolo(cfg, checks) {
+    cfg =
+      cfg ||
+      (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (!cfg || !checks) return;
+    const ep = ensureEsquejesState(cfg);
+    ep.montaje = {};
+    MONTAJE_ENRAIZADO_IDS.forEach(function (id) {
+      if (checks[id]) ep.montaje[id] = true;
+    });
+    if (checks.completedAt) ep.montajeVerificadoAt = checks.completedAt;
+    else delete ep.montajeVerificadoAt;
+    try {
+      delete cfg.enraizadoMontajeChecks;
+    } catch (_) {}
   }
 
   function origenEsMadreOClon() {
@@ -459,6 +531,9 @@
         (pasoDomo ? pasoDomo.titulo : 'vigila domo y EC baja') + '</p>';
     }
 
+    const montProg = countMontajeEnraizado(ep);
+    const montOk =
+      typeof enraizadoMontajeCompleto === 'function' && enraizadoMontajeCompleto(cfg);
     const domoDone = countDone(ep.domoDias);
     const diaSug = getDomoDiaSugerido(ep);
     const domoHtml =
@@ -493,7 +568,16 @@
       (genHint && !rec?.notaGenetica
         ? '<p class="medir-esquejes-gen">🧬 <strong>' + genHint.nombre + ':</strong> ' + genHint.consejo + '</p>'
         : '') +
+      (montOk
+        ? ''
+        : '<p class="medir-esquejes-alerta medir-esquejes-alerta--prep">🫧 Montaje domo: <strong>' +
+          montProg.done +
+          '/' +
+          montProg.total +
+          '</strong> · mismo checklist que el modal de Inicio/Sistema.' +
+          ' <button type="button" class="btn btn-link btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist</button></p>') +
       '<div class="medir-esquejes-stats">' +
+      '<span>Montaje: <strong>' + montProg.done + '/' + montProg.total + '</strong></span> · ' +
       '<span>Prep: <strong>' + countDone(ep.prepMadre) + '/' + PREP_MADRE_PASOS.length + '</strong></span> · ' +
       '<span>Corte: <strong>' + countDone(ep.corte) + '/' + CORTE_PASOS.length + '</strong></span> · ' +
       '<span>Enraizar: <strong>' + countDone(ep.enraizar) + '/' + ENRAIZAR_PASOS.length + '</strong></span>' +
@@ -688,6 +772,37 @@
   function renderDashEnraizadoHubHtml(cfg) {
     cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
     const ep = ensureEsquejesState(cfg);
+    const montProg = countMontajeEnraizado(ep);
+    const montOk =
+      typeof enraizadoMontajeCompleto === 'function' && enraizadoMontajeCompleto(cfg);
+    const montPct = montProg.total
+      ? Math.round((montProg.done / montProg.total) * 100)
+      : 0;
+    if (!montOk) {
+      return (
+        '<div class="hc-germ-hub-card hc-germ-hub-card--compact hc-germ-hub-card--enraizado">' +
+        '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+        '<div class="hc-germ-hub-badge hc-germ-hub-badge--enraizado">Enraizado · montaje</div>' +
+        '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
+        montPct +
+        '%" aria-hidden="true"><span>' +
+        montProg.done +
+        '/' +
+        montProg.total +
+        '</span></div>' +
+        '<div class="hc-germ-hub-titles">' +
+        '<h2 class="hc-germ-hub-title">Prepara el domo</h2>' +
+        '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">Checklist único compartido con Sistema y Medir · <strong>' +
+        montPct +
+        '%</strong></p>' +
+        '</div></div>' +
+        '<p class="setup-field-hint setup-field-hint--banner">Domo, rockwool pH 5,5, higiene, luz 18/6 y aireación antes del corte.</p>' +
+        '<p class="hc-germ-hub-sistema-cta">' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist de enraizado</button> ' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Ver pasos en Sistema</button>' +
+        '</p></div>'
+      );
+    }
     const rec = getRecomendacionEcPhEsquejes(cfg);
     const fase = getFaseEsquejesActual(cfg);
     const domoDone = Object.keys(ep.domoDias || {}).filter(function (k) {
@@ -833,6 +948,11 @@
   window.evaluarAvisosEsquejesNotif = evaluarAvisosEsquejesNotif;
   window.getDomoDiaSugerido = getDomoDiaSugerido;
   window.DOMO_DIA_PASOS = DOMO_DIA_PASOS;
+  window.MONTAJE_ENRAIZADO_IDS = MONTAJE_ENRAIZADO_IDS;
+  window.hcEnraizadoChecksViewFromProtocolo = hcEnraizadoChecksViewFromProtocolo;
+  window.hcGuardarEnraizadoChecksEnProtocolo = hcGuardarEnraizadoChecksEnProtocolo;
+  window.hcMigrarEnraizadoMontajeLegacy = hcMigrarEnraizadoMontajeLegacy;
+  window.countMontajeEnraizado = countMontajeEnraizado;
   window.refreshDashEnraizadoHub = refreshDashEnraizadoHub;
   window.refreshDashMadreHub = refreshDashMadreHub;
   window.renderDashEnraizadoHubHtml = renderDashEnraizadoHubHtml;

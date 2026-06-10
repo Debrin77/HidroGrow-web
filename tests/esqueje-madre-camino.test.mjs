@@ -61,3 +61,20 @@ test('medir: banner enraizado apunta a Inicio hub', () => {
   assert.match(flujo, /irEnraizadoHub/);
   assert.doesNotMatch(flujo, /Inicio\/checklist/);
 });
+
+test('enraizado: montaje unificado en esquejesProtocolo.montaje', () => {
+  const esq = read('js/hc-esquejes-madre.js');
+  const mont = read('js/hc-propagador-montaje.js');
+  assert.match(esq, /montaje:\s*\{\}/);
+  assert.match(esq, /montajeVerificadoAt/);
+  assert.match(esq, /function hcEnraizadoChecksViewFromProtocolo/);
+  assert.match(esq, /function hcGuardarEnraizadoChecksEnProtocolo/);
+  assert.match(esq, /function hcMigrarEnraizadoMontajeLegacy/);
+  assert.match(esq, /MONTAJE_ENRAIZADO_IDS/);
+  assert.match(mont, /key === 'enraizadoMontajeChecks'/);
+  assert.match(mont, /hcEnraizadoChecksViewFromProtocolo/);
+  assert.match(mont, /hcGuardarEnraizadoChecksEnProtocolo/);
+  assert.match(mont, /refreshDashEnraizadoHub/);
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /'esquejesProtocolo'/);
+});

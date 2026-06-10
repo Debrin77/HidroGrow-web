@@ -5,8 +5,9 @@ module.exports = {
   meta: {
     app: 'HidroGrow',
     version: '1.0',
-    fecha: '2026-05-31',
-    subtitulo: 'Cannabis hidropónico en casa · DWC y RDWC · España',
+    fecha: '2026-06-01',
+    build: 'perf60',
+    subtitulo: 'Cannabis hidropónico en casa · DWC y RDWC · 4 caminos independientes',
     storageKey: 'hidrogrow_v2',
   },
   arranque: [
@@ -50,9 +51,16 @@ module.exports = {
     'F6 · Traslado al cubo DWC/RDWC',
   ],
   origenRamas: [
-    { origen: 'Semilla', flujo: 'Hub Germinación en Inicio (6 fases) → traslado matriz → lifecycle' },
-    { origen: 'Clon / esqueje', flujo: 'Checklist prep → corte → domo 10 d → net pot → cubo' },
-    { origen: 'Madre', flujo: '18/6 permanente · sesiones de esqueje en calendario' },
+    { origen: 'Semilla propagador', flujo: 'Domo → germ Inicio/Sistema → traslado DWC → matriz → operativa' },
+    { origen: 'Semilla hidro', flujo: 'Prep → sala → montaje → DWC → 6 fases Inicio → matriz → operativa' },
+    { origen: 'Esqueje hidro', flujo: 'Sala + DWC → montaje domo (esquejesProtocolo.montaje) → domo 10d → matriz' },
+    { origen: 'Madre hidro', flujo: 'Sala + DWC 18/6 → matriz madre → depósito → sesiones esqueje en Medir' },
+  ],
+  caminos: [
+    { id: 'semilla_propagador', fase: 'propagador', inicio: 'Ruta propagador / germ oculta', sistema: 'SVG domo', medir: 'HR domo · depósito post-traslado' },
+    { id: 'semilla_hidro', fase: 'prep_hidro → germ_cubo', inicio: 'Hub 6 fases', sistema: 'Esquema DWC', medir: 'Cubo pre-matriz' },
+    { id: 'esqueje_hidro', fase: 'enraizado', inicio: 'Hub domo / montaje', sistema: 'SVG domo clones', medir: 'Protocolo corte + 10d' },
+    { id: 'madre_hidro', fase: 'madre', inicio: 'Hub cubo madre', sistema: 'Esquema DWC madre', medir: 'Sesiones EC/pH 18/6' },
   ],
   tabs: [
     { tab: 'Inicio', uso: 'Progreso instalación · germinación · resumen EC/pH · accesos rápidos' },
