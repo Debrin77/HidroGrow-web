@@ -101,8 +101,12 @@
   function getFaseCultivoActual() {
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
     const prem = cfg.premiumSetup || {};
+    const cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    const defFase =
+      cam === 'semilla_propagador' || cam === 'semilla_hidro' ? 'esqueje' : 'vegetativo';
     const f = String(
-      prem.faseSala || cfg.growRoomFase || cfg.faseCultivoAmbiental || 'vegetativo'
+      prem.faseSala || cfg.growRoomFase || cfg.faseCultivoAmbiental || defFase
     ).toLowerCase();
     if (FASES.indexOf(f) >= 0) return f;
     if (f.indexOf('flor') >= 0) return 'floracion';

@@ -34,7 +34,7 @@
     const largo = readDimFromCfg(cfg, 'growRoomLargoM', 'growRoomLargoM');
     const alto = readDimFromCfg(cfg, 'growRoomAltoM', 'growRoomAltoM');
     const ledW = readDimFromCfg(cfg, 'growRoomLedW', 'growRoomLedW');
-    const fase = String(el('growRoomFase')?.value || cfg.growRoomFase || 'vegetativo');
+    const fase = String(el('growRoomFase')?.value || cfg.growRoomFase || 'esqueje');
     const wM2 = (typeof GROW_ROOM_W_M2 !== 'undefined' && GROW_ROOM_W_M2[fase]) || GROW_ROOM_W_M2.vegetativo;
 
     if (!Number.isFinite(ancho) || !Number.isFinite(largo) || ancho <= 0 || largo <= 0) {
@@ -156,7 +156,7 @@
     cfg.growRoomAltoM = num('growRoomAltoM');
     cfg.growRoomLedW = num('growRoomLedW');
     cfg.growRoomExtractorM3h = num('growRoomExtractorM3h');
-    cfg.growRoomFase = String(el('growRoomFase')?.value || 'vegetativo');
+    cfg.growRoomFase = String(el('growRoomFase')?.value || 'esqueje');
     cfg.growRoomTentPreset = String(el('growRoomTentPreset')?.value || '');
     const r = calcularGrowRoomInterno(cfg);
     if (!r.error) {

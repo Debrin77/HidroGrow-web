@@ -373,7 +373,7 @@
     const altoEff = Number.isFinite(alto) ? alto : (Number.isFinite(p.altoM) ? p.altoM : NaN);
     const ledWEff = Number.isFinite(ledW) ? ledW : (Number.isFinite(p.ledW) ? p.ledW : NaN);
     const extM3hEff = Number.isFinite(extM3h) ? extM3h : (Number.isFinite(p.extractorM3h) ? p.extractorM3h : NaN);
-    const fase = String(el('setupPremiumFase')?.value || p.faseSala || 'vegetativo');
+    const fase = String(el('setupPremiumFase')?.value || p.faseSala || 'esqueje');
     p.anchoM = Number.isFinite(anchoEff) ? anchoEff : null;
     p.largoM = Number.isFinite(largoEff) ? largoEff : null;
     p.altoM = Number.isFinite(altoEff) ? altoEff : null;
@@ -547,7 +547,7 @@
     const out = el('setupPremiumClimaResumen');
     if (!out) return;
     const p = ensurePremiumSetup();
-    const fase = String(el('setupPremiumFase')?.value || p.faseSala || 'vegetativo');
+    const fase = String(el('setupPremiumFase')?.value || p.faseSala || 'esqueje');
     p.faseSala = fase;
     const horas = parseInt(String(el('setupPremiumHorasLuz')?.value || p.horasLuz || 18), 10) || 18;
     p.horasLuz = horas;
@@ -787,7 +787,7 @@
     persistPremiumFieldFromUI('setupPremiumAltoM', p, 'altoM');
     persistPremiumFieldFromUI('setupPremiumLedW', p, 'ledW');
     persistPremiumFieldFromUI('setupPremiumExtractorM3h', p, 'extractorM3h');
-    p.faseSala = String(el('setupPremiumFase')?.value || 'vegetativo');
+    p.faseSala = String(el('setupPremiumFase')?.value || 'esqueje');
     p.tentPreset = String(el('setupPremiumTentPreset')?.value || '');
     p.carpaReflectante = !!el('setupPremiumCarpaReflectante')?.checked;
     p.horasLuz = parseInt(String(el('setupPremiumHorasLuz')?.value || p.horasLuz || 18), 10) || 18;

@@ -605,3 +605,34 @@ test('propagador: catálogo asistente sin iconos visuales por equipamiento', () 
   assert.doesNotMatch(wiz, /renderEquipCatalogCard[\s\S]{0,900}hcVisualIconSvg/);
   assert.match(wiz, /head\.textContent = cat\.label \|\| key/);
 });
+
+test('sala: ocultar sala interior riego tras montaje verificado (no solo propagador)', () => {
+  const fase = read('js/hc-camino-fase.js');
+  assert.match(fase, /function hcSalaOcultarPanelesDuplicadosMedir[\s\S]{0,600}montajeSalaOkCamino/);
+  assert.match(fase, /function hcSalaOcultarPanelesDuplicadosMedir[\s\S]{0,600}salaConfiguradaCamino/);
+});
+
+test('semilla_hidro: primer llenado recomendado en Inicio tras sala y montaje', () => {
+  const germ = read('js/hc-germinacion-flow.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(germ, /pasoPreGerm\.etapa === 'deposito_llenado'/);
+  assert.match(germ, /function hubMuestraGuiaLlenadoGermHidro[\s\S]{0,420}montajeSalaPreGermOk/);
+  assert.match(cultivo, /function hcSiguientePasoSemillaHidro[\s\S]{0,2200}deposito_llenado/);
+});
+
+test('propagador: primer llenado solo tras traslado al DWC', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const life = read('js/hc-instalacion-lifecycle.js');
+  assert.match(cultivo, /function hcSiguientePasoSemillaPropagadorPostGerm/);
+  assert.match(cultivo, /hcPropagadorTrasladoCompletado/);
+  assert.match(life, /hcSiguientePasoSemillaPropagadorPostGerm/);
+});
+
+test('semilla: fase inicial por defecto esqueje/plántula', () => {
+  const prem = read('js/hc-premium-wizard.js');
+  const grow = read('js/hc-grow-room.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(prem, /faseSala: 'esqueje'/);
+  assert.match(grow, /growRoomFase \|\| 'esqueje'/);
+  assert.match(cultivo, /faseInicial === 'germinacion'[\s\S]{0,200}esqueje/);
+});

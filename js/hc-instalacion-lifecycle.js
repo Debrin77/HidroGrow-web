@@ -260,6 +260,13 @@
         var pasoHidro = hcSiguientePasoSemillaHidro(cfg);
         if (pasoHidro) return pasoHidro;
       }
+      if (
+        cam === 'semilla_propagador' &&
+        typeof hcSiguientePasoSemillaPropagadorPostGerm === 'function'
+      ) {
+        var pasoPropPost = hcSiguientePasoSemillaPropagadorPostGerm(cfg);
+        if (pasoPropPost) return pasoPropPost;
+      }
       if (cam === 'esqueje_hidro' && typeof hcSiguientePasoEsquejeHidro === 'function') {
         var pasoEsqueje = hcSiguientePasoEsquejeHidro(cfg);
         if (pasoEsqueje) return pasoEsqueje;
@@ -415,6 +422,13 @@
         }
         return { label: 'Asignar cultivos en el esquema', action: 'irCultivo', etapa: 'cultivo' };
       case 'deposito_pendiente':
+        if (
+          cam === 'semilla_propagador' &&
+          typeof hcSiguientePasoSemillaPropagadorPostGerm === 'function'
+        ) {
+          var pasoDepProp = hcSiguientePasoSemillaPropagadorPostGerm(cfg);
+          if (pasoDepProp) return pasoDepProp;
+        }
         return { label: 'Checklist del depósito (nutrientes)', action: 'abrirChecklist', etapa: 'deposito' };
       default:
         return { label: 'Rutina del día — Medir', action: 'irMedir', etapa: 'operativa' };

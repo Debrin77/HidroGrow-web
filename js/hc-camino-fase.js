@@ -1013,16 +1013,27 @@
   }
 
   /**
-   * Propagador sin hidro cerrado: en Sala no repetir bloques de Medir (ambiente, ubicación/luz, grow room).
+   * En Sala no repetir bloques de Medir (ubicación/luz, grow room, sala interior riego).
+   * Propagador sin traslado: ocultar siempre. Resto: ocultar con sala configurada + montaje verificado.
    * Equipamiento + checklist de montaje siguen en Sala.
    */
   function hcSalaOcultarPanelesDuplicadosMedir(cfg) {
     cfg = cfg || cfgActiva();
-    if (cam(cfg) !== 'semilla_propagador') return false;
-    if (typeof hcRecargaCompletaAplicaEnCamino === 'function' && hcRecargaCompletaAplicaEnCamino(cfg)) {
-      return false;
+    if (cam(cfg) === 'semilla_propagador') {
+      if (typeof hcRecargaCompletaAplicaEnCamino === 'function' && hcRecargaCompletaAplicaEnCamino(cfg)) {
+        return false;
+      }
+      return true;
     }
-    return true;
+    if (
+      typeof salaConfiguradaCamino === 'function' &&
+      salaConfiguradaCamino(cfg) &&
+      typeof montajeSalaOkCamino === 'function' &&
+      montajeSalaOkCamino(cfg)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   function hcMedirEnfocadoGerminacion(cfg) {

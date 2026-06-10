@@ -517,6 +517,12 @@
       return false;
     }
     if (
+      typeof montajeSalaPreGermOk === 'function' &&
+      !montajeSalaPreGermOk(cfg)
+    ) {
+      return false;
+    }
+    if (
       typeof getSistemaFaseCamino === 'function' &&
       getSistemaFaseCamino(cfg) === 'germ_cubo'
     ) {
@@ -1961,6 +1967,36 @@
       hcGerminacionSyncDesdePremium(cfg);
     }
     if (!hcGerminacionActiva(cfg)) {
+      if (
+        typeof getCaminoCultivo === 'function' &&
+        getCaminoCultivo(cfg) === 'semilla_hidro' &&
+        typeof hcSiguientePasoSemillaHidro === 'function'
+      ) {
+        var pasoPreGerm = hcSiguientePasoSemillaHidro(cfg);
+        if (pasoPreGerm && pasoPreGerm.etapa === 'deposito_llenado') {
+          hub.classList.remove('setup-hidden');
+          hub.innerHTML =
+            '<div class="hc-germ-hub-card hc-germ-hub-card--prep">' +
+            '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+            '<div class="hc-germ-hub-badge hc-germ-hub-badge--hidro">Semilla en hidro</div>' +
+            '<div class="hc-germ-hub-titles">' +
+            '<h2 class="hc-germ-hub-title">Primer llenado del depósito</h2>' +
+            '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">Sala y montaje verificados — completa el checklist para iniciar el riego de germinación en el cubo.</p>' +
+            '</div></div>' +
+            (typeof renderHubLlenadoGermHidroHtml === 'function' ? renderHubLlenadoGermHidroHtml(cfg) : '') +
+            '<p class="hc-germ-hub-sistema-cta">' +
+            '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirChecklist===\'function\'&&abrirChecklist(false)">Checklist depósito</button> ' +
+            '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Ver sistema</button></p></div>';
+          refreshDashPropagadorOscuridadBanner(cfg);
+          refreshSalaPropagadorDomoPanel(cfg);
+          if (!global._hcRefreshInicioVistaCamino) {
+            try {
+              if (typeof refreshDashInicioVistaCamino === 'function') refreshDashInicioVistaCamino(cfg);
+            } catch (_) {}
+          }
+          return;
+        }
+      }
       hub.classList.add('setup-hidden');
       hub.innerHTML = '';
       refreshDashPropagadorOscuridadBanner(cfg);

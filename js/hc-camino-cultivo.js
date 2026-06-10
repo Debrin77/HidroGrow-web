@@ -991,6 +991,11 @@
     if (def.faseInicial === 'germinacion' && !cfg.hcSetupFase) {
       cfg.hcSetupFase = 'germinacion';
     }
+    if (def.faseInicial === 'germinacion') {
+      if (!cfg.growRoomFase) cfg.growRoomFase = 'esqueje';
+      if (!cfg.premiumSetup.faseSala) cfg.premiumSetup.faseSala = 'esqueje';
+      if (!cfg.faseCultivoAmbiental) cfg.faseCultivoAmbiental = 'esqueje';
+    }
   }
 
   function hcSalaPreGermPermitida(cfg, opts) {
@@ -2195,6 +2200,57 @@
   }
 
   /**
+   * Tras germinación en propagador: hidro → traslado → matriz → primer llenado (no antes del traspaso).
+   */
+  function hcSiguientePasoSemillaPropagadorPostGerm(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_propagador') return null;
+    if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) return null;
+    if (
+      typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
+      hidrogrowPropagadorEnFaseGermSinHidro(cfg)
+    ) {
+      return null;
+    }
+    if (
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(cfg)
+    ) {
+      return {
+        label: 'Configurar DWC/RDWC (traslado)',
+        action: 'abrirSetupFaseHidro',
+        etapa: 'hidro_config',
+      };
+    }
+    var g = cfg.germinacionFlow;
+    if (typeof checklistCierreGermOk === 'function' && g && !checklistCierreGermOk(g)) {
+      return {
+        label: 'Checklist de traslado',
+        action: 'irGerminacion',
+        etapa: 'traslado',
+      };
+    }
+    if (
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      !hcPropagadorTrasladoCompletado(cfg)
+    ) {
+      return {
+        label: 'Registrar plántula en matriz',
+        action: 'irGerminacion',
+        etapa: 'traslado',
+      };
+    }
+    if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+      return {
+        label: 'Primer llenado del depósito',
+        action: 'abrirChecklist',
+        etapa: 'deposito_llenado',
+      };
+    }
+    return null;
+  }
+
+  /**
    * Cadena prep → sala → montaje → DWC/RDWC → depósito en semilla_hidro (sin exigir germinación activa).
    */
   function hcSiguientePasoSemillaHidro(cfg) {
@@ -2311,6 +2367,7 @@
   global.hcCaminoSemillaHidroSetupGerm = hcCaminoSemillaHidroSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
+  global.hcSiguientePasoSemillaPropagadorPostGerm = hcSiguientePasoSemillaPropagadorPostGerm;
   global.hcSiguientePasoEsquejeHidro = hcSiguientePasoEsquejeHidro;
   global.hcSiguientePasoMadreHidro = hcSiguientePasoMadreHidro;
   global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;
