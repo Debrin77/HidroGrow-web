@@ -1885,7 +1885,7 @@ function guardarSetupYContinuarCore() {
   let cestas  = parseInt(document.getElementById('sliderCestas')?.value  || 5, 10);
   let nftNvSlider = 4;
   let vol       = parseInt(document.getElementById('sliderVol')?.value     || 20, 10);
-  if (isDwc) {
+  if (isDwc && !faseGermSetup && !faseSalaPreGerm) {
     try {
       if (typeof hcCompletarDwcSetupDefaultsAntesGuardar === 'function') {
         hcCompletarDwcSetupDefaultsAntesGuardar();
@@ -1905,7 +1905,7 @@ function guardarSetupYContinuarCore() {
       vol = Math.min(800, Math.max(1, Math.round(dwcCapG)));
     }
   }
-  if (isRdwc) {
+  if (isRdwc && !faseGermSetup && !faseSalaPreGerm) {
     try {
       if (typeof hcCompletarRdwcSetupDefaultsAntesGuardar === 'function') {
         hcCompletarRdwcSetupDefaultsAntesGuardar();
@@ -2247,6 +2247,9 @@ function guardarSetupYContinuarCore() {
   }
   if (faseGermSetup || wizardHidroGermCompleto) {
     try {
+      if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
+        hcCompletarGermPlanPropagadorDefaults();
+      }
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);
       hcSincronizarNutrientePropagadorEnCfg(state.configTorre);
       if (typeof persistPremiumGermPlanToConfig === 'function') {
@@ -2423,7 +2426,7 @@ function guardarSetupYContinuarCore() {
   } else {
     delete state.configTorre.calentadorConsignaC;
   }
-  if (isDwc) {
+  if (isDwc && !faseGermSetup && !faseSalaPreGerm) {
     dwcMergeCamposFormularioEnCfg(state.configTorre, DWC_FORM_IDS_SETUP);
     if (
       typeof dwcValidarVolumenManualSegunForma === 'function' &&
@@ -2519,6 +2522,7 @@ function guardarSetupYContinuarCore() {
     state.configTorre.numCestas = cestas;
   } else if (
     isDwc &&
+    !faseGermSetup &&
     !faseSalaPreGerm &&
     typeof redimensionarMatrizTorreDwcPreservando === 'function'
   ) {

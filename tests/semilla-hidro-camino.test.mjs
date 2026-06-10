@@ -513,10 +513,18 @@ test('propagador: guardar sala no borra camino ni plan de semillas', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
   const puesta = read('js/hc-puesta-marcha.js');
   assert.match(setup, /hcClonePlainData\(state\.configTorre/);
-  assert.match(setup, /isDwc[\s\S]*!faseSalaPreGerm[\s\S]*redimensionarMatrizTorreDwcPreservando/);
+  assert.match(setup, /isDwc[\s\S]*!faseGermSetup[\s\S]*!faseSalaPreGerm[\s\S]*redimensionarMatrizTorreDwcPreservando/);
   assert.match(setup, /hcRestaurarCfgCaminoGerminacionTrasSetupSala[\s\S]*cfgSlotAntesGuardar/);
   assert.match(cultivo, /hcPreservarCaminoGermEnCfgActiva/);
   assert.match(cultivo, /'hcSetupFase'/);
   assert.match(cultivo, /'germinacionEnPropagador'/);
   assert.match(puesta, /hcPreservarCaminoGermEnCfgActiva\(state\.configTorre\)/);
+});
+
+test('propagador: guardar asistente germ no exige formulario DWC', () => {
+  const setup = read('js/hc-setup-calc-core.js');
+  assert.match(setup, /if \(isDwc && !faseGermSetup && !faseSalaPreGerm\)/);
+  assert.match(setup, /dwcSetupFormularioCompleto/);
+  assert.match(setup, /if \(isRdwc && !faseGermSetup && !faseSalaPreGerm\)/);
+  assert.match(setup, /hcCompletarGermPlanPropagadorDefaults/);
 });
