@@ -993,17 +993,8 @@
     cfg = cfg || cfgActiva();
     if (cam(cfg) !== 'semilla_hidro') return false;
     if (!hidroCerrado(cfg)) return false;
-    if (getSistemaFaseCamino(cfg) === 'germ_cubo') return true;
-    if (
-      typeof hcGerminacionActiva === 'function' &&
-      hcGerminacionActiva(cfg) &&
-      prepGermHidroListo(cfg) &&
-      salaLista(cfg) &&
-      depListo(cfg)
-    ) {
-      return true;
-    }
-    return false;
+    var f = getSistemaFaseCamino(cfg);
+    return f === 'prep_hidro' || f === 'germ_cubo';
   }
 
   /** Subtítulo del esquema DWC en Sistema (fase de germinación en el mismo hidro). */

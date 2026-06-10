@@ -513,9 +513,22 @@
   }
 
   function hubMuestraGuiaLlenadoGermHidro(cfg) {
-    return (
-      typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) === 'semilla_hidro'
-    );
+    if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) !== 'semilla_hidro') {
+      return false;
+    }
+    if (
+      typeof getSistemaFaseCamino === 'function' &&
+      getSistemaFaseCamino(cfg) === 'germ_cubo'
+    ) {
+      return false;
+    }
+    if (typeof depositoListo === 'function' && depositoListo(cfg)) {
+      return false;
+    }
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) {
+      return false;
+    }
+    return true;
   }
 
   function renderHubFechaSiembraEditor(cfg, g) {
@@ -1736,20 +1749,6 @@
       '</strong> · <strong>' +
       o.pct +
       '%</strong> fases';
-    var equipBlock =
-      '<div class="hc-germ-equip-block">' +
-      '<h4 class="hc-germ-block-lbl">Equipamiento del cubo</h4>' +
-      '<p class="hc-germ-equip-lead">Marca lo que tienes montado en cada net pot.</p>' +
-      '<div class="hc-germ-equip-tier">Esencial</div>' +
-      '<div class="hc-germ-equip-row">' +
-      renderEquipChips(EQUIP_ESENCIAL, o.g, o.modo) +
-      '</div>' +
-      '<div class="hc-germ-equip-tier hc-germ-equip-tier--rec">Recomendado</div>' +
-      '<div class="hc-germ-equip-row">' +
-      renderEquipChips(EQUIP_RECOMENDADO, o.g, o.modo) +
-      '</div></div>';
-    var netPotViz =
-      typeof renderGermHidroNetPotViz === 'function' ? renderGermHidroNetPotViz(o.g, o.cfg) : '';
     var trasladoTail = o.allDone
       ? '<div class="hc-germ-traslado-block" id="hcGermTrasladoCta">' +
         '<button type="button" class="btn btn-secondary btn-sm" onclick="hcGerminacionAbrirChecklistTraslado()">Checklist operativa</button>' +
@@ -1780,26 +1779,18 @@
       '</div></div>' +
       renderHubCupulaGermHidroHtml(o.cfg, o.g) +
       (hubMuestraGuiaLlenadoGermHidro(o.cfg) ? renderHubLlenadoGermHidroHtml(o.cfg) : '') +
+      '<p class="hc-germ-hub-sistema-cta">' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">' +
+      'Esquema DWC y fase de crecimiento → Sistema</button></p>' +
       '<details class="hc-germ-advanced config-section-collapsible">' +
-      buildGermAdvancedSummaryHtml('Fases, cubos y equipamiento') +
+      buildGermAdvancedSummaryHtml('Guía de las 6 fases') +
       '<div class="hc-germ-advanced-body config-section-collapse-body">' +
       '<div class="hc-germ-advanced-section">' +
-      '<h4 class="hc-germ-advanced-lbl">Fases del proceso</h4>' +
       renderTimeline(o.g, o.idx, o.modo) +
       renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
       '</div>' +
       '<div class="hc-germ-advanced-section">' +
-      '<h4 class="hc-germ-advanced-lbl">Cubos en la matriz</h4>' +
-      (netPotViz || '') +
-      '<p class="hc-germ-tray-link setup-field-hint">Esquema completo en <button type="button" class="btn btn-link btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Cultivo e instalación</button>.</p>' +
-      '</div>' +
-      '<div class="hc-germ-advanced-section">' +
-      '<h4 class="hc-germ-advanced-lbl">Equipamiento</h4>' +
-      equipBlock +
-      '</div>' +
-      '<div class="hc-germ-advanced-section">' +
-      '<h4 class="hc-germ-advanced-lbl">Rangos y siembra</h4>' +
-      (o.rangosPanelHtml || '') +
+      '<h4 class="hc-germ-advanced-lbl">Fecha de siembra</h4>' +
       renderHubFechaSiembraEditor(o.cfg, o.g) +
       (o.semMarca || '') +
       '</div>' +

@@ -297,14 +297,11 @@
     }
 
     if (fase === 'germ_cubo') {
-      var tray2 =
-        typeof renderGermHidroNetPotViz === 'function'
-          ? renderGermHidroNetPotViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true })
-          : typeof renderGermTrayViz === 'function'
-            ? renderGermTrayViz(g, cfg, { idPrefix: 'hcSisGerm', sistemaPanel: true, sinDomo: true })
-            : '';
       var fasesN =
         typeof contarFasesGermHechas === 'function' ? contarFasesGermHechas(cfg) : 0;
+      var esquemaArriba =
+        typeof hcSistemaSemillaHidroMuestraEsquemaDwc === 'function' &&
+        hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -314,9 +311,12 @@
         '</h2>' +
         '<p class="hc-sis-prop-lead">Semilla en <strong>net pot</strong> sobre ' +
         esc(tipo) +
-        ' (no suelta en el depósito). El <strong>esquema DWC/RDWC</strong> arriba muestra cubos y fase de germinación (<strong>' +
-        esc(typeof etiquetaFaseGermCorta === 'function' ? etiquetaFaseGermCorta(cfg) : 'en curso') +
-        '</strong>). Tras las 6 fases, registra la plántula en la matriz.</p>' +
+        (esquemaArriba
+          ? '. El <strong>esquema DWC/RDWC</strong> de arriba es la vista del sistema: cubos, depósito y fase <strong>' +
+            esc(typeof etiquetaFaseGermCorta === 'function' ? etiquetaFaseGermCorta(cfg) : 'en curso') +
+            '</strong>.'
+          : '. Configura el DWC/RDWC en el asistente para ver el esquema.') +
+        ' Marca las fases en <strong>Inicio</strong>; al completarlas, registra la plántula en la matriz.</p>' +
         '<div class="hc-sis-prop-grid">' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Fases</span><strong>' +
         fasesN +
@@ -327,11 +327,10 @@
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Depósito</span><strong>' +
         (typeof depositoListo === 'function' && depositoListo(cfg) ? 'Listo' : 'Pendiente') +
         '</strong></div></div>' +
-        tray2 +
         '<div class="hc-sis-prop-nut"><h3 class="hc-sis-prop-subtitle">Nutrientes (agua / cubo)</h3>' +
         htmlNutrientesGerm(g, 'cubo') +
         '</div>' +
-        '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Registro en Inicio</button></p></section>'
+        '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Marcar fases en Inicio</button></p></section>'
       );
     }
 

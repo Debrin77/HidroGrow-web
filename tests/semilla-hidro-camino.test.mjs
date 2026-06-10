@@ -387,7 +387,7 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(prop, /esRutaGermHidro\(cfg\)/);
   assert.match(fase, /pend\.push\('prep hidro'\)/);
   assert.match(fase, /checklist operativa y matriz/);
-  assert.match(sis, /esquema DWC\/RDWC<\/strong> arriba muestra cubos y fase de germinación/);
+  assert.match(sis, /esquema DWC\/RDWC<\/strong> de arriba es la vista del sistema/);
   assert.match(onboard, /checklist <strong>operativa<\/strong> y registro en matriz/);
   assert.match(nut, /Nutriente · germinación en cubo/);
   assert.match(nut, /EC baja, ~200–400 µS/);
@@ -395,10 +395,23 @@ test('semilla_hidro: copy sin propagador/traslado en superficies hidro', () => {
   assert.match(html, /Prep cubo — sala — 6 fases en Inicio/);
 });
 
+test('semilla_hidro: Inicio hub sin matriz cubos ni llenado durante germinacion', () => {
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(germ, /function hubMuestraGuiaLlenadoGermHidro[\s\S]{0,420}germ_cubo/);
+  assert.match(germ, /function hubMuestraGuiaLlenadoGermHidro[\s\S]{0,500}depositoListo/);
+  assert.doesNotMatch(
+    germ,
+    /function renderGermHubSemillaHidroCompactHtml[\s\S]{0,2800}renderGermHidroNetPotViz/
+  );
+  assert.match(germ, /Guía de las 6 fases/);
+  assert.match(germ, /Esquema DWC y fase de crecimiento/);
+});
+
 test('semilla_hidro: esquema DWC visible en Sistema durante germinacion en cubo', () => {
   const fase = read('js/hc-camino-fase.js');
   const sis = read('js/hc-sistema-fase-camino.js');
-  assert.match(fase, /function hcSistemaSemillaHidroMuestraEsquemaDwc/);
+  assert.match(fase, /function hcSistemaSemillaHidroMuestraEsquemaDwc[\s\S]{0,280}prep_hidro/);
+  assert.match(fase, /function hcSistemaSemillaHidroMuestraEsquemaDwc[\s\S]{0,320}germ_cubo/);
   assert.match(fase, /function hcSubtituloEsquemaSemillaHidro/);
   assert.match(sis, /esquemaGermHidro[\s\S]{0,1200}renderTorre/);
   assert.match(sis, /esquemaGermHidro[\s\S]{0,1200}applySistemaEsquemaChromeSemillaHidro/);
