@@ -222,7 +222,6 @@
   function renderEquipCatalogCard(host, cat, key, inst, prefix, group) {
     const cur = inst[key];
     const selId = prefix + key;
-    const visKey = key === 'deshumidificador' ? 'deshumidificador' : key;
     const card = document.createElement('div');
     card.className = 'equip-catalog-card' + (cur && cur.marca ? ' equip-catalog-card--picked' : '');
     if (key === 'cupula_maceta' || cat.perMaceta) {
@@ -230,16 +229,7 @@
     }
     const head = document.createElement('div');
     head.className = 'equip-catalog-head';
-    if (typeof window.hcVisualIconSvg === 'function') {
-      try {
-        head.insertAdjacentHTML('afterbegin', window.hcVisualIconSvg(visKey, 'hc-visual-ico--sm'));
-      } catch (_) {
-        head.appendChild(document.createTextNode(cat.icon || '•'));
-      }
-    } else {
-      head.appendChild(document.createTextNode(cat.icon || '•'));
-    }
-    head.appendChild(document.createTextNode(' ' + (cat.label || key)));
+    head.textContent = cat.label || key;
     if (key === 'cupula_maceta' || cat.perMaceta) {
       const per = document.createElement('span');
       per.className = 'equip-catalog-per-maceta';
@@ -332,7 +322,6 @@
       const head = document.createElement('div');
       head.className = 'equip-catalog-group-head';
       head.innerHTML =
-        '<span class="equip-catalog-group-icon" aria-hidden="true">' + (group.icon || '•') + '</span>' +
         '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>' +
         (group.required ? '<span class="equip-catalog-group-req">Ahora</span>' : '') +
         (group.optional ? '<span class="equip-catalog-group-opt">Opcional</span>' : '');

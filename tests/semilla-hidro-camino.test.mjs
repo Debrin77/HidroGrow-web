@@ -537,3 +537,9 @@ test('propagador: tras montaje sala verificado no reaparece paso 1 en Sala', () 
   assert.match(onboard, /currentTab === 'sala'[\s\S]*semilla_propagador[\s\S]*montajeSalaPreGermOk/);
   assert.match(life, /!propOk && !salaOk/);
 });
+
+test('propagador: catálogo asistente sin iconos visuales por equipamiento', () => {
+  const wiz = read('js/hc-equipamiento-wizard.js');
+  assert.doesNotMatch(wiz, /renderEquipCatalogCard[\s\S]{0,900}hcVisualIconSvg/);
+  assert.match(wiz, /head\.textContent = cat\.label \|\| key/);
+});
