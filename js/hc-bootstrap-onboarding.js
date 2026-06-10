@@ -642,6 +642,19 @@ function actualizarPostSetupChecklistRail() {
     if (el) el.classList.add('setup-hidden');
     return;
   }
+  const cfgEarly = state.configTorre || {};
+  const camEarly =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgEarly) : cfgEarly.caminoCultivo || '';
+  if (
+    typeof currentTab !== 'undefined' &&
+    currentTab === 'sala' &&
+    camEarly === 'semilla_propagador' &&
+    typeof montajeSalaPreGermOk === 'function' &&
+    montajeSalaPreGermOk(cfgEarly)
+  ) {
+    if (el) el.classList.add('setup-hidden');
+    return;
+  }
   const lc = typeof getInstalacionLifecycle === 'function' ? getInstalacionLifecycle() : null;
   if (lc && lc.operativaDiaria) {
     if (el) el.classList.add('setup-hidden');

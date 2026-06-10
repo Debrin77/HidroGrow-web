@@ -108,12 +108,12 @@
       montajeSalaPreGermOk(cfg);
     var germOk =
       typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
-    pasos[0].done = propOk;
+    pasos[0].done = propOk || salaOk;
     pasos[1].done = salaOk;
     pasos[2].done = germOk;
     var fase = 'germinacion';
     var pasoIdx = 2;
-    if (!propOk) {
+    if (!propOk && !salaOk) {
       pasos[0].current = true;
       fase = 'montaje_pendiente';
       pasoIdx = 0;

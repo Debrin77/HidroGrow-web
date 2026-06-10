@@ -318,7 +318,15 @@
     cfg = cfg || getCfg();
     if (!aplicaChecklistGerm(cfg)) return true;
     var ch = getChecks(cfg);
-    return !!ch.completedAt;
+    if (ch.completedAt) return true;
+    if (
+      esRutaPropagador(cfg) &&
+      typeof montajeSalaPreGermOk === 'function' &&
+      montajeSalaPreGermOk(cfg)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   function enraizadoMontajeCompleto(cfg) {

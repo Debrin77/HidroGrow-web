@@ -528,3 +528,12 @@ test('propagador: guardar asistente germ no exige formulario DWC', () => {
   assert.match(setup, /if \(isRdwc && !faseGermSetup && !faseSalaPreGerm\)/);
   assert.match(setup, /hcCompletarGermPlanPropagadorDefaults/);
 });
+
+test('propagador: tras montaje sala verificado no reaparece paso 1 en Sala', () => {
+  const prop = read('js/hc-propagador-montaje.js');
+  const onboard = read('js/hc-bootstrap-onboarding.js');
+  const life = read('js/hc-instalacion-lifecycle.js');
+  assert.match(prop, /montajeSalaPreGermOk/);
+  assert.match(onboard, /currentTab === 'sala'[\s\S]*semilla_propagador[\s\S]*montajeSalaPreGermOk/);
+  assert.match(life, /!propOk && !salaOk/);
+});
