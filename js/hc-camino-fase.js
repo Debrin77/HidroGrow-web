@@ -269,6 +269,9 @@
     }
 
     if (c === 'esqueje_hidro') {
+      if (!salaLista(cfg) || cfg.checklistInstalacionConfirmada !== true || !hidroCerrado(cfg)) {
+        return null;
+      }
       if (typeof enraizadoMontajeCompleto === 'function' && !enraizadoMontajeCompleto(cfg)) {
         return 'enraizado';
       }
@@ -277,6 +280,9 @@
     }
 
     if (c === 'madre_hidro') {
+      if (!salaLista(cfg) || cfg.checklistInstalacionConfirmada !== true || !hidroCerrado(cfg)) {
+        return null;
+      }
       if (!matrizLista()) return 'madre';
       if (!depListo(cfg)) return 'madre';
       return null;
@@ -297,7 +303,55 @@
     var fase = getSistemaFaseCamino(cfg);
     if (!fase) return false;
     if (cam(cfg) === 'semilla_hidro' && hidroCerrado(cfg)) return false;
+    if (cam(cfg) === 'madre_hidro' && fase === 'madre' && hidroCerrado(cfg)) return false;
+    if (cam(cfg) === 'esqueje_hidro' && fase === 'enraizado') return true;
     return true;
+  }
+
+  function hcEsquejeEnraizadoHubEsPrincipal(cfg) {
+    cfg = cfg || cfgActiva();
+    return cam(cfg) === 'esqueje_hidro' && getSistemaFaseCamino(cfg) === 'enraizado';
+  }
+
+  function hcMadreHubEsPrincipal(cfg) {
+    cfg = cfg || cfgActiva();
+    return cam(cfg) === 'madre_hidro' && getSistemaFaseCamino(cfg) === 'madre';
+  }
+
+  function hcSistemaEsquejeMuestraEsquemaDomo(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'esqueje_hidro') return false;
+    if (!salaLista(cfg) || cfg.checklistInstalacionConfirmada !== true || !hidroCerrado(cfg)) {
+      return false;
+    }
+    return getSistemaFaseCamino(cfg) === 'enraizado';
+  }
+
+  function hcCfgPropagadorVizDesdeEsqueje(cfg) {
+    cfg = cfg || cfgActiva();
+    var n = 12;
+    var prem = cfg.premiumSetup || {};
+    if (Number(prem.numEsquejes) > 0) n = Number(prem.numEsquejes);
+    else if (typeof hcGeomTorreFilasCestas === 'function') {
+      var geom = hcGeomTorreFilasCestas(cfg);
+      n = Math.max(1, (geom.filas || 1) * (geom.cestas || 1));
+    }
+    n = Math.min(72, Math.max(1, Math.round(n)));
+    var sg = prem.sustratoGerm || cfg.sustratoGerm || 'lana';
+    return Object.assign({}, cfg, {
+      sustratoGerm: sg,
+      germinacionFlow: Object.assign({}, cfg.germinacionFlow || {}, {
+        numSemillas: n,
+        sustratoGerm: sg,
+      }),
+    });
+  }
+
+  function hcSistemaMadreMuestraEsquemaDwc(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'madre_hidro') return false;
+    if (cfg.checklistInstalacionConfirmada !== true || !hidroCerrado(cfg)) return false;
+    return getSistemaFaseCamino(cfg) === 'madre';
   }
 
   function hcMostrarSistemaPropagador(cfg) {
@@ -916,6 +970,39 @@
     try {
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}
+    var enraizadoFoco =
+      typeof hcEsquejeEnraizadoHubEsPrincipal === 'function' && hcEsquejeEnraizadoHubEsPrincipal(cfg);
+    var madreFoco =
+      typeof hcMadreHubEsPrincipal === 'function' && hcMadreHubEsPrincipal(cfg);
+    var caminoCloneFoco = enraizadoFoco || madreFoco;
+    try {
+      if (typeof refreshDashEnraizadoHub === 'function') refreshDashEnraizadoHub(cfg);
+    } catch (_) {}
+    try {
+      if (typeof refreshDashMadreHub === 'function') refreshDashMadreHub(cfg);
+    } catch (_) {}
+    if (caminoCloneFoco) {
+      ['dashInstalacionLifecycle', 'dashCaminoResumen', 'dashGerminacionHub'].forEach(function (id) {
+        var node = document.getElementById(id);
+        if (!node) return;
+        node.classList.add('setup-hidden');
+        if (id === 'dashGerminacionHub') node.innerHTML = '';
+      });
+      var medYcultClone = document.querySelector('.dash-medicion-y-cultivo');
+      if (medYcultClone) medYcultClone.classList.add('setup-hidden');
+      var opRowClone = document.querySelector('#tab-inicio .dash-operativa-row');
+      if (opRowClone) opRowClone.classList.add('setup-hidden');
+      var tabInicioClone = document.getElementById('tab-inicio');
+      if (tabInicioClone) {
+        tabInicioClone.classList.toggle('dash-inicio--enraizado-foco', enraizadoFoco);
+        tabInicioClone.classList.toggle('dash-inicio--madre-foco', madreFoco);
+      }
+    } else {
+      var tabInicioReset = document.getElementById('tab-inicio');
+      if (tabInicioReset) {
+        tabInicioReset.classList.remove('dash-inicio--enraizado-foco', 'dash-inicio--madre-foco');
+      }
+    }
     } finally {
       if (typeof global !== 'undefined') global._hcRefreshInicioVistaCamino = false;
     }
@@ -948,6 +1035,7 @@
       return false;
     }
     var f = getSistemaFaseCamino(cfg);
+    if (cam(cfg) === 'esqueje_hidro' && f === 'enraizado') return true;
     return f === 'propagador' || f === 'germ_cubo' || f === 'prep_hidro';
   }
 
@@ -1278,6 +1366,11 @@
   global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
   global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
   global.hcSistemaSemillaHidroMuestraEsquemaDwc = hcSistemaSemillaHidroMuestraEsquemaDwc;
+  global.hcEsquejeEnraizadoHubEsPrincipal = hcEsquejeEnraizadoHubEsPrincipal;
+  global.hcMadreHubEsPrincipal = hcMadreHubEsPrincipal;
+  global.hcSistemaEsquejeMuestraEsquemaDomo = hcSistemaEsquejeMuestraEsquemaDomo;
+  global.hcCfgPropagadorVizDesdeEsqueje = hcCfgPropagadorVizDesdeEsqueje;
+  global.hcSistemaMadreMuestraEsquemaDwc = hcSistemaMadreMuestraEsquemaDwc;
   global.hcSubtituloEsquemaSemillaHidro = hcSubtituloEsquemaSemillaHidro;
   global.etiquetaFaseGermCorta = etiquetaFaseGermCorta;
   global.hcSistemaDwcPanelColapsado = hcSistemaDwcPanelColapsado;

@@ -260,6 +260,14 @@
         var pasoHidro = hcSiguientePasoSemillaHidro(cfg);
         if (pasoHidro) return pasoHidro;
       }
+      if (cam === 'esqueje_hidro' && typeof hcSiguientePasoEsquejeHidro === 'function') {
+        var pasoEsqueje = hcSiguientePasoEsquejeHidro(cfg);
+        if (pasoEsqueje) return pasoEsqueje;
+      }
+      if (cam === 'madre_hidro' && typeof hcSiguientePasoMadreHidro === 'function') {
+        var pasoMadre = hcSiguientePasoMadreHidro(cfg);
+        if (pasoMadre) return pasoMadre;
+      }
       if (
         cam !== 'semilla_hidro' &&
         typeof propagadorMontajeCompleto === 'function' &&
@@ -679,6 +687,28 @@
             document.getElementById('dashGerminacionHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           } catch (_) {}
           if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        }, 200);
+        break;
+      case 'irEnraizadoHub':
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          try {
+            if (typeof refreshDashEnraizadoHub === 'function') refreshDashEnraizadoHub();
+            document.getElementById('dashEnraizadoHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
+        }, 200);
+        break;
+      case 'irMadreHub':
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        setTimeout(function () {
+          try {
+            if (typeof refreshDashMadreHub === 'function') refreshDashMadreHub();
+            document.getElementById('dashMadreHub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (_) {}
         }, 200);
         break;
       case 'abrirSetupCaminoPropagador':

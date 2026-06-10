@@ -140,58 +140,147 @@
     );
   }
 
-  function htmlEnraizadoPasos(cfg) {
-    var ok =
-      typeof enraizadoMontajeCompleto === 'function' && enraizadoMontajeCompleto(cfg);
-    var mat =
-      typeof cultivoMatrizListo === 'function' && cultivoMatrizListo();
+  function pasoEnraizadoListo(cfg, id) {
+    if (id === 'sala') {
+      return typeof salaConfiguradaCamino === 'function' && salaConfiguradaCamino(cfg);
+    }
+    if (id === 'montaje') {
+      return typeof montajeSalaOkCamino === 'function' && montajeSalaOkCamino(cfg);
+    }
+    if (id === 'hidro') {
+      return typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg);
+    }
+    if (id === 'enraizado') {
+      return typeof enraizadoMontajeCompleto === 'function' && enraizadoMontajeCompleto(cfg);
+    }
+    if (id === 'matriz') {
+      return typeof cultivoMatrizListo === 'function' && cultivoMatrizListo();
+    }
+    return false;
+  }
+
+  function pasoMadreListo(cfg, id) {
+    if (id === 'sala') {
+      return typeof salaConfiguradaCamino === 'function' && salaConfiguradaCamino(cfg);
+    }
+    if (id === 'montaje') {
+      return typeof montajeSalaOkCamino === 'function' && montajeSalaOkCamino(cfg);
+    }
+    if (id === 'hidro') {
+      return typeof hidroInstalacionCerrada === 'function' && hidroInstalacionCerrada(cfg);
+    }
+    if (id === 'matriz') {
+      return typeof cultivoMatrizListo === 'function' && cultivoMatrizListo();
+    }
+    if (id === 'deposito') {
+      return typeof depositoListo === 'function' && depositoListo(cfg);
+    }
+    return false;
+  }
+
+  function htmlPasosLista(cfg, pasos, listoFn) {
     return (
       '<ul class="hc-sis-fase-pasos">' +
-      '<li class="hc-sis-fase-paso' +
-      (ok ? ' hc-sis-fase-paso--ok' : '') +
-      '">' +
-      (ok ? '✓ ' : '○ ') +
-      'Checklist de enraizado (domo, rockwool, higiene)' +
-      (ok
-        ? ''
-        : ' <button type="button" class="btn btn-link btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir</button>') +
-      '</li>' +
-      '<li class="hc-sis-fase-paso' +
-      (mat ? ' hc-sis-fase-paso--ok' : '') +
-      '">' +
-      (mat ? '✓ ' : '○ ') +
-      'Esquejes asignados en el esquema' +
-      (mat
-        ? ''
-        : ' <button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)">Asignar</button>') +
-      '</li></ul>'
+      pasos
+        .map(function (p) {
+          var ok = listoFn(cfg, p.id);
+          return (
+            '<li class="hc-sis-fase-paso' +
+            (ok ? ' hc-sis-fase-paso--ok' : '') +
+            '">' +
+            (ok ? '✓ ' : '○ ') +
+            esc(p.label) +
+            (ok
+              ? ''
+              : ' <button type="button" class="btn btn-link btn-sm" onclick="' +
+                p.onclick +
+                '">' +
+                esc(p.btnTxt) +
+                '</button>') +
+            '</li>'
+          );
+        })
+        .join('') +
+      '</ul>'
+    );
+  }
+
+  function htmlEnraizadoPasos(cfg) {
+    return htmlPasosLista(
+      cfg,
+      [
+        {
+          id: 'sala',
+          label: 'Sala configurada',
+          onclick: 'typeof goTab===\'function\'&&goTab(\'sala\')',
+          btnTxt: 'Sala',
+        },
+        {
+          id: 'montaje',
+          label: 'Montaje de sala',
+          onclick: 'typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()',
+          btnTxt: 'Montaje',
+        },
+        {
+          id: 'hidro',
+          label: 'DWC/RDWC cerrado',
+          onclick: 'typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()',
+          btnTxt: 'Hidro',
+        },
+        {
+          id: 'enraizado',
+          label: 'Checklist de enraizado (domo, rockwool, higiene)',
+          onclick:
+            'typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()',
+          btnTxt: 'Abrir',
+        },
+        {
+          id: 'matriz',
+          label: 'Esquejes asignados en el esquema',
+          onclick: 'typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)',
+          btnTxt: 'Asignar',
+        },
+      ],
+      pasoEnraizadoListo
     );
   }
 
   function htmlMadrePasos(cfg) {
-    var mat =
-      typeof cultivoMatrizListo === 'function' && cultivoMatrizListo();
-    var dep = typeof depositoListo === 'function' && depositoListo(cfg);
-    return (
-      '<ul class="hc-sis-fase-pasos">' +
-      '<li class="hc-sis-fase-paso' +
-      (mat ? ' hc-sis-fase-paso--ok' : '') +
-      '">' +
-      (mat ? '✓ ' : '○ ') +
-      'Madre asignada en la matriz (18/6)' +
-      (mat
-        ? ''
-        : ' <button type="button" class="btn btn-link btn-sm" onclick="typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)">Asignar madre</button>') +
-      '</li>' +
-      '<li class="hc-sis-fase-paso' +
-      (dep ? ' hc-sis-fase-paso--ok' : '') +
-      '">' +
-      (dep ? '✓ ' : '○ ') +
-      'Primer llenado del depósito madre' +
-      (dep
-        ? ''
-        : ' <button type="button" class="btn btn-link btn-sm" onclick="typeof abrirChecklist===\'function\'&&abrirChecklist(false)">Checklist</button>') +
-      '</li></ul>'
+    return htmlPasosLista(
+      cfg,
+      [
+        {
+          id: 'sala',
+          label: 'Sala configurada (18/6)',
+          onclick: 'typeof goTab===\'function\'&&goTab(\'sala\')',
+          btnTxt: 'Sala',
+        },
+        {
+          id: 'montaje',
+          label: 'Montaje de sala',
+          onclick: 'typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()',
+          btnTxt: 'Montaje',
+        },
+        {
+          id: 'hidro',
+          label: 'DWC/RDWC cerrado',
+          onclick: 'typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()',
+          btnTxt: 'Hidro',
+        },
+        {
+          id: 'matriz',
+          label: 'Madre asignada en la matriz (18/6)',
+          onclick: 'typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)',
+          btnTxt: 'Asignar madre',
+        },
+        {
+          id: 'deposito',
+          label: 'Primer llenado del depósito madre',
+          onclick: 'typeof abrirChecklist===\'function\'&&abrirChecklist(false)',
+          btnTxt: 'Checklist',
+        },
+      ],
+      pasoMadreListo
     );
   }
 
@@ -335,6 +424,33 @@
     }
 
     if (fase === 'enraizado') {
+      var nextEnr =
+        typeof hcSiguientePasoEsquejeHidro === 'function' ? hcSiguientePasoEsquejeHidro(cfg) : null;
+      var footEnr =
+        nextEnr && nextEnr.action
+          ? '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'' +
+            nextEnr.action +
+            '\')">Siguiente: ' +
+            esc(nextEnr.label) +
+            '</button></p>'
+          : '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'irEnraizadoHub\')">Inicio → protocolo domo</button></p>';
+      var ecEnr =
+        typeof getRecomendacionEcPhEsquejes === 'function' ? getRecomendacionEcPhEsquejes(cfg) : null;
+      var ecEnrHtml = '';
+      if (ecEnr && ecEnr.fase) {
+        ecEnrHtml =
+          '<div class="hc-sis-prop-nut"><h3 class="hc-sis-prop-subtitle">EC/pH orientativos</h3><p class="setup-field-hint">' +
+          esc(ecEnr.fase.label) +
+          ' · EC ' +
+          esc(String(ecEnr.fase.ec.min)) +
+          '–' +
+          esc(String(ecEnr.fase.ec.max)) +
+          ' µS · pH ' +
+          esc(String(ecEnr.fase.ph.min)) +
+          '–' +
+          esc(String(ecEnr.fase.ph.max)) +
+          '</p></div>';
+      }
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -342,13 +458,25 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">Domo de clones → raíz en rockwool → <strong>asignar en el esquema</strong> → primer llenado del depósito.</p>' +
+        '<p class="hc-sis-prop-lead">El <strong>domo y la bandeja</strong> están arriba (SVG). Domo de clones → raíz en rockwool → <strong>asignar en el esquema DWC</strong> → primer llenado del depósito. El seguimiento día a día está en <strong>Inicio</strong> y el detalle en <strong>Medir</strong>.</p>' +
+        ecEnrHtml +
         htmlEnraizadoPasos(cfg) +
-        '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Checklist enraizado</button></p></section>'
+        footEnr +
+        '</section>'
       );
     }
 
     if (fase === 'madre') {
+      var nextMad =
+        typeof hcSiguientePasoMadreHidro === 'function' ? hcSiguientePasoMadreHidro(cfg) : null;
+      var footMad =
+        nextMad && nextMad.action
+          ? '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'' +
+            nextMad.action +
+            '\')">Siguiente: ' +
+            esc(nextMad.label) +
+            '</button></p>'
+          : '';
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -356,9 +484,10 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">Una planta en cubo <strong>18/6</strong> permanente. Sesiones de esqueje desde Consejos / registro.</p>' +
+        '<p class="hc-sis-prop-lead">Una planta en cubo <strong>18/6</strong> permanente. El <strong>esquema DWC/RDWC</strong> de arriba muestra el cubo madre. Sesiones de esqueje y EC/pH en <strong>Medir</strong>.</p>' +
         htmlMadrePasos(cfg) +
-        '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-secondary btn-sm" onclick="typeof hcIrCultivoMatriz===\'function\'&&hcIrCultivoMatriz(true)">Asignar madre</button></p></section>'
+        footMad +
+        '</section>'
       );
     }
 
@@ -412,6 +541,14 @@
     var esquemaGermHidro =
       typeof hcSistemaSemillaHidroMuestraEsquemaDwc === 'function' &&
       hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
+    var esquemaDomoEsqueje =
+      fase === 'enraizado' &&
+      typeof hcSistemaEsquejeMuestraEsquemaDomo === 'function' &&
+      hcSistemaEsquejeMuestraEsquemaDomo(cfg);
+    var esquemaMadreDwc =
+      fase === 'madre' &&
+      typeof hcSistemaMadreMuestraEsquemaDwc === 'function' &&
+      hcSistemaMadreMuestraEsquemaDwc(cfg);
     var sinHidro =
       esPropagador &&
       typeof hcSistemaPropagadorSinHidro === 'function' &&
@@ -425,21 +562,34 @@
           if (typeof hcRenderPropagadorSvg === 'function') {
             hcRenderPropagadorSvg(cfg);
           }
-        } else if (esquemaGermHidro) {
+        } else if (esquemaDomoEsqueje) {
+          torreWrap.classList.remove('setup-hidden');
+          torreWrap.hidden = false;
+          torreWrap.style.display = '';
+          if (typeof hcRenderPropagadorSvg === 'function') {
+            var cfgDomo =
+              typeof hcCfgPropagadorVizDesdeEsqueje === 'function'
+                ? hcCfgPropagadorVizDesdeEsqueje(cfg)
+                : cfg;
+            hcRenderPropagadorSvg(cfgDomo);
+          }
+        } else if (esquemaGermHidro || esquemaMadreDwc) {
           torreWrap.classList.remove('setup-hidden', 'torre-svg-canvas--propagador');
           torreWrap.hidden = false;
           torreWrap.style.display = '';
           if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
-          try {
-            if (typeof hcAplicarGerminacionATorreTrasHidro === 'function') {
-              hcAplicarGerminacionATorreTrasHidro(cfg, state.torre);
-            }
-          } catch (_) {}
+          if (esquemaGermHidro) {
+            try {
+              if (typeof hcAplicarGerminacionATorreTrasHidro === 'function') {
+                hcAplicarGerminacionATorreTrasHidro(cfg, state.torre);
+              }
+            } catch (_) {}
+          }
           try {
             if (typeof renderTorre === 'function') renderTorre();
           } catch (_) {}
           try {
-            if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
+            if (esquemaGermHidro && typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
               applySistemaEsquemaChromeSemillaHidro(cfg);
             }
           } catch (_) {}
@@ -448,10 +598,11 @@
           if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
         }
       }
-      if (torreCard) torreCard.classList.toggle('setup-hidden', !esquemaGermHidro);
-      if (resumenSup) resumenSup.classList.toggle('setup-hidden', !esquemaGermHidro);
+      var muestraEsquemaHidro = esquemaGermHidro || esquemaMadreDwc;
+      if (torreCard) torreCard.classList.toggle('setup-hidden', !muestraEsquemaHidro && !esquemaDomoEsqueje);
+      if (resumenSup) resumenSup.classList.toggle('setup-hidden', !muestraEsquemaHidro);
       if (dwcCard) {
-        if (esquemaGermHidro) {
+        if (muestraEsquemaHidro) {
           dwcCard.classList.remove('setup-hidden');
           dwcCard.hidden = false;
           dwcCard.style.display = '';
@@ -466,8 +617,8 @@
         ecphCard.hidden = true;
         ecphCard.classList.add('setup-hidden');
       }
-      if (cultivoExtras) cultivoExtras.classList.toggle('setup-hidden', !esquemaGermHidro);
-      setTorreHidroChromeVisible(!sinHidro || esquemaGermHidro);
+      if (cultivoExtras) cultivoExtras.classList.toggle('setup-hidden', !muestraEsquemaHidro);
+      setTorreHidroChromeVisible(!sinHidro || muestraEsquemaHidro || esquemaDomoEsqueje);
     } else {
       if (torreWrap) torreWrap.classList.remove('setup-hidden');
       if (torreCard) torreCard.classList.remove('setup-hidden');

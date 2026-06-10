@@ -457,10 +457,18 @@
       return '<strong>Prep hidro.</strong> Completa los pasos en la pestaña Sistema antes de las 6 fases en el cubo.';
     }
     if (f === 'enraizado') {
-      return '<strong>Enraizado.</strong> Control del domo en Inicio/checklist; el depósito completo tras asignar clones.';
+      return (
+        '<strong>Enraizado.</strong> Domo y bandeja: <strong>T°</strong>, <strong>HR 70–80 %</strong> y EC/pH bajos según fase. ' +
+        'Seguimiento día a día en ' +
+        '<button type="button" class="btn btn-link btn-sm" onclick="typeof hcEjecutarAccionInstalacion===\'function\'&&hcEjecutarAccionInstalacion(\'irEnraizadoHub\')">Inicio</button>. ' +
+        'El <strong>depósito DWC/RDWC</strong> completo tras asignar clones en la matriz.'
+      );
     }
     if (f === 'madre') {
-      return '<strong>Cubo madre.</strong> 18/6 · asigna la madre en Sistema y el primer llenado del depósito.';
+      return (
+        '<strong>Cubo madre (18/6).</strong> EC 1000–1400 µS en producción; sesiones de corte cada 10–14 d. ' +
+        'Asigna la madre en Sistema; rutina y protocolo en Medir.'
+      );
     }
     return '';
   }

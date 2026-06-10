@@ -306,6 +306,7 @@
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     renderEsquejesSetupUI();
     renderMedirEsquejesPanel();
+    if (typeof refreshDashEnraizadoHub === 'function') refreshDashEnraizadoHub(cfg);
   }
 
   function getDomoDiaSugerido(ep) {
@@ -677,6 +678,144 @@
     }
   }
 
+  function escHtml(t) {
+    return String(t == null ? '' : t)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderDashEnraizadoHubHtml(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const ep = ensureEsquejesState(cfg);
+    const rec = getRecomendacionEcPhEsquejes(cfg);
+    const fase = getFaseEsquejesActual(cfg);
+    const domoDone = Object.keys(ep.domoDias || {}).filter(function (k) {
+      return ep.domoDias[k];
+    }).length;
+    const pct = Math.round((domoDone / DOMO_DIA_PASOS.length) * 100);
+    const diaSug = getDomoDiaSugerido(ep);
+    const pasoHoy = diaSug ? DOMO_DIA_PASOS[diaSug - 1] : null;
+    const diasDesde =
+      rec && rec.diasDesdeSesion != null && rec.diasDesdeSesion >= 0 ? rec.diasDesdeSesion + 1 : null;
+    const alerta =
+      diasDesde != null && diasDesde <= DOMO_DIA_PASOS.length
+        ? '<p class="setup-field-hint setup-field-hint--banner">Día <strong>' +
+          diasDesde +
+          '</strong> post-corte' +
+          (pasoHoy ? ' · ' + escHtml(pasoHoy.titulo) : '') +
+          '</p>'
+        : '<p class="setup-field-hint">Registra la sesión de corte en Medir para activar el calendario domo día a día.</p>';
+    const ecHtml = fase
+      ? '<p class="hc-enr-hub-ec setup-field-hint">EC ' +
+        fase.ec.min +
+        '–' +
+        fase.ec.max +
+        ' µS · pH ' +
+        fase.ph.min +
+        '–' +
+        fase.ph.max +
+        '</p>'
+      : '';
+    return (
+      '<div class="hc-germ-hub-card hc-germ-hub-card--compact hc-germ-hub-card--enraizado">' +
+      '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+      '<div class="hc-germ-hub-badge hc-germ-hub-badge--enraizado">Enraizado de esquejes</div>' +
+      '<div class="hc-germ-hub-pct-ring" style="--hc-germ-pct:' +
+      pct +
+      '%" aria-hidden="true"><span>' +
+      domoDone +
+      '/' +
+      DOMO_DIA_PASOS.length +
+      '</span></div>' +
+      '<div class="hc-germ-hub-titles">' +
+      '<h2 class="hc-germ-hub-title">Domo y rockwool</h2>' +
+      '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">Progreso domo <strong>' +
+      pct +
+      '%</strong> · HR 70–80 % · ventilar 2×/día</p>' +
+      '</div></div>' +
+      alerta +
+      (pasoHoy
+        ? '<div class="hc-enr-hub-hoy card"><strong>Hoy (día ' +
+          pasoHoy.dia +
+          ')</strong><p>' +
+          escHtml(pasoHoy.desc) +
+          '</p></div>'
+        : '') +
+      ecHtml +
+      '<p class="hc-germ-hub-sistema-cta">' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Esquema domo → Sistema</button> ' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'medir\')">Protocolo completo → Medir</button>' +
+      '</p></div>'
+    );
+  }
+
+  function refreshDashEnraizadoHub(cfg) {
+    const host = el('dashEnraizadoHub');
+    if (!host) return;
+    const show =
+      typeof hcEsquejeEnraizadoHubEsPrincipal === 'function' && hcEsquejeEnraizadoHubEsPrincipal(cfg);
+    if (!show) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
+    host.classList.remove('setup-hidden');
+    host.innerHTML = renderDashEnraizadoHubHtml(cfg);
+  }
+
+  function renderDashMadreHubHtml(cfg) {
+    cfg = cfg || ((typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {});
+    const ep = ensureEsquejesState(cfg);
+    const matOk = typeof cultivoMatrizListo === 'function' && cultivoMatrizListo();
+    const depOk = typeof depositoListo === 'function' && depositoListo(cfg);
+    const proxima = getProximaSesionFecha(ep);
+    const proxTxt = proxima ? proxima.toLocaleDateString('es-ES') : '—';
+    const fase = getFaseEsquejesActual(cfg);
+    const ecHtml = fase
+      ? '<p class="hc-enr-hub-ec setup-field-hint">' +
+        escHtml(fase.label) +
+        ' · EC ' +
+        fase.ec.min +
+        '–' +
+        fase.ec.max +
+        ' µS</p>'
+      : '';
+    return (
+      '<div class="hc-germ-hub-card hc-germ-hub-card--compact hc-germ-hub-card--madre">' +
+      '<div class="hc-germ-hub-head hc-germ-hub-head--compact">' +
+      '<div class="hc-germ-hub-badge hc-germ-hub-badge--madre">Cubo madre · 18/6</div>' +
+      '<div class="hc-germ-hub-titles">' +
+      '<h2 class="hc-germ-hub-title">Mantener y esquejar</h2>' +
+      '<p class="hc-germ-hub-sub hc-germ-hub-sub--compact">' +
+      (matOk ? 'Madre en matriz' : 'Pendiente: asignar madre') +
+      ' · ' +
+      (depOk ? 'Depósito listo' : 'Pendiente: primer llenado') +
+      '</p></div></div>' +
+      '<p class="setup-field-hint">Próxima sesión estimada: <strong>' +
+      escHtml(proxTxt) +
+      '</strong> · máx. ~30 % follaje por corte</p>' +
+      ecHtml +
+      '<p class="hc-germ-hub-sistema-cta">' +
+      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Esquema DWC → Sistema</button> ' +
+      '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'medir\')">Sesiones y EC → Medir</button>' +
+      '</p></div>'
+    );
+  }
+
+  function refreshDashMadreHub(cfg) {
+    const host = el('dashMadreHub');
+    if (!host) return;
+    const show = typeof hcMadreHubEsPrincipal === 'function' && hcMadreHubEsPrincipal(cfg);
+    if (!show) {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
+    host.classList.remove('setup-hidden');
+    host.innerHTML = renderDashMadreHubHtml(cfg);
+  }
+
   window.toggleEsquejePaso = toggleEsquejePaso;
   window.renderEsquejesSetupUI = renderEsquejesSetupUI;
   window.renderMedirEsquejesPanel = renderMedirEsquejesPanel;
@@ -694,4 +833,8 @@
   window.evaluarAvisosEsquejesNotif = evaluarAvisosEsquejesNotif;
   window.getDomoDiaSugerido = getDomoDiaSugerido;
   window.DOMO_DIA_PASOS = DOMO_DIA_PASOS;
+  window.refreshDashEnraizadoHub = refreshDashEnraizadoHub;
+  window.refreshDashMadreHub = refreshDashMadreHub;
+  window.renderDashEnraizadoHubHtml = renderDashEnraizadoHubHtml;
+  window.renderDashMadreHubHtml = renderDashMadreHubHtml;
 })();

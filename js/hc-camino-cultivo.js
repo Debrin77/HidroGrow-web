@@ -2156,6 +2156,11 @@
       germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
     var lcBox = document.getElementById('dashInstalacionLifecycle');
     var lcVisible = lcBox && !lcBox.classList.contains('setup-hidden');
+    var enrHub = document.getElementById('dashEnraizadoHub');
+    var madreHub = document.getElementById('dashMadreHub');
+    var cloneHubVisible =
+      (enrHub && !enrHub.classList.contains('setup-hidden') && !!enrHub.innerHTML.trim()) ||
+      (madreHub && !madreHub.classList.contains('setup-hidden') && !!madreHub.innerHTML.trim());
     var resumenDuranteGermPropag =
       cam === 'semilla_propagador' &&
       germHubVisible &&
@@ -2163,6 +2168,7 @@
       typeof propagadorMontajeCompleto === 'function' &&
       propagadorMontajeCompleto(cfg);
     if (
+      cloneHubVisible ||
       (germHubVisible && !(cam === 'semilla_propagador' && (germConcl || resumenDuranteGermPropag))) ||
       lcVisible
     ) {
@@ -2214,6 +2220,81 @@
     return { label: '6 fases en Inicio', action: 'irGerminacion', etapa: 'germ_cubo' };
   }
 
+  /**
+   * Cadena sala → montaje → DWC → checklist enraizado → matriz → depósito (esqueje_hidro).
+   */
+  function hcSiguientePasoEsquejeHidro(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'esqueje_hidro') return null;
+    if (
+      !(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada)
+    ) {
+      return { label: 'Completar asistente', action: 'abrirSetup', etapa: 'config' };
+    }
+    if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+      return { label: 'Configurar sala', action: 'abrirSetupFaseSala', etapa: 'sala_config' };
+    }
+    if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+      return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
+    }
+    if (
+      cfg.checklistInstalacionConfirmada !== true ||
+      (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg))
+    ) {
+      return { label: 'Configurar DWC/RDWC', action: 'abrirSetupFaseHidro', etapa: 'hidro_config' };
+    }
+    if (typeof enraizadoMontajeCompleto === 'function' && !enraizadoMontajeCompleto(cfg)) {
+      return { label: 'Checklist enraizado', action: 'irPropagadorMontaje', etapa: 'enraizado' };
+    }
+    if (typeof cultivoMatrizListo === 'function' && !cultivoMatrizListo()) {
+      return { label: 'Asignar esquejes en matriz', action: 'irCultivo', etapa: 'matriz' };
+    }
+    if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+      return {
+        label: 'Primer llenado del depósito',
+        action: 'abrirChecklist',
+        etapa: 'deposito_llenado',
+      };
+    }
+    return { label: 'Protocolo domo en Inicio', action: 'irEnraizadoHub', etapa: 'operativa' };
+  }
+
+  /**
+   * Cadena sala → montaje → DWC → madre en matriz → depósito (madre_hidro).
+   */
+  function hcSiguientePasoMadreHidro(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'madre_hidro') return null;
+    if (
+      !(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada)
+    ) {
+      return { label: 'Completar asistente', action: 'abrirSetup', etapa: 'config' };
+    }
+    if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+      return { label: 'Configurar sala (18/6)', action: 'abrirSetupFaseSala', etapa: 'sala_config' };
+    }
+    if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+      return { label: 'Montaje de sala', action: 'irMontaje', etapa: 'sala_montaje' };
+    }
+    if (
+      cfg.checklistInstalacionConfirmada !== true ||
+      (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg))
+    ) {
+      return { label: 'Configurar DWC/RDWC', action: 'abrirSetupFaseHidro', etapa: 'hidro_config' };
+    }
+    if (typeof cultivoMatrizListo === 'function' && !cultivoMatrizListo()) {
+      return { label: 'Asignar madre en matriz', action: 'irCultivo', etapa: 'matriz' };
+    }
+    if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+      return {
+        label: 'Primer llenado del depósito madre',
+        action: 'abrirChecklist',
+        etapa: 'deposito_llenado',
+      };
+    }
+    return { label: 'Rutina madre en Medir', action: 'irMedir', etapa: 'operativa' };
+  }
+
   global.HC_CAMINOS_CULTIVO = CAMINOS;
   global.ensurePremiumCamino = ensurePremiumCamino;
   global.getCaminoCultivo = getCaminoCultivo;
@@ -2228,6 +2309,8 @@
   global.hcCaminoSemillaHidroSetupGerm = hcCaminoSemillaHidroSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
+  global.hcSiguientePasoEsquejeHidro = hcSiguientePasoEsquejeHidro;
+  global.hcSiguientePasoMadreHidro = hcSiguientePasoMadreHidro;
   global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;
   global.hcSyncPremiumAsistenteDesdeConfig = hcSyncPremiumAsistenteDesdeConfig;
   global.hcResetPremiumBorradorNuevaInstalacion = hcResetPremiumBorradorNuevaInstalacion;
