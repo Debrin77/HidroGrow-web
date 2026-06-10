@@ -985,10 +985,61 @@
     return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
   }
 
+  /**
+   * Semilla_hidro con DWC configurado: mostrar esquema hidropónico durante germinación en cubo
+   * (misma instalación, no propagador aparte).
+   */
+  function hcSistemaSemillaHidroMuestraEsquemaDwc(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    if (!hidroCerrado(cfg)) return false;
+    if (getSistemaFaseCamino(cfg) === 'germ_cubo') return true;
+    if (
+      typeof hcGerminacionActiva === 'function' &&
+      hcGerminacionActiva(cfg) &&
+      prepGermHidroListo(cfg) &&
+      salaLista(cfg) &&
+      depListo(cfg)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  /** Subtítulo del esquema DWC en Sistema (fase de germinación en el mismo hidro). */
+  function hcSubtituloEsquemaSemillaHidro(cfg) {
+    cfg = cfg || cfgActiva();
+    var g = cfg.germinacionFlow || {};
+    var vid = String(
+      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+    ).trim();
+    var nomVar = '';
+    if (vid && typeof getCultivoDB === 'function') {
+      var cu = getCultivoDB(vid);
+      if (cu && cu.nombre) nomVar = cu.nombre;
+      else nomVar = vid;
+    }
+    var faseTxt = etiquetaFaseGermCorta(cfg);
+    var fasesN = typeof contarFasesGermHechas === 'function' ? contarFasesGermHechas(cfg) : 0;
+    var geom =
+      typeof hcGeomTorreFilasCestas === 'function' ? hcGeomTorreFilasCestas(cfg).label : '';
+    var base =
+      '<strong>Esquema DWC/RDWC</strong> · germinación en el mismo sistema · <strong>' +
+      faseTxt +
+      '</strong> · <strong>' +
+      fasesN +
+      '/6</strong> fases';
+    if (geom) base += ' · ' + geom;
+    if (nomVar) base += ' · <strong>' + nomVar + '</strong>';
+    base += '. Toca un cubo para notas o registro en matriz.';
+    return base;
+  }
+
   /** Depósito DWC en Sistema: solo consulta (valores fijados en asistente). */
   function hcSistemaDwcSoloConsulta(cfg) {
     cfg = cfg || cfgActiva();
-    return typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+    if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) return true;
+    return hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
   }
 
   /** Depósito DWC/RDWC en Sistema: colapsado por defecto en semilla_hidro operativa. */
@@ -1235,6 +1286,9 @@
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
   global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
   global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
+  global.hcSistemaSemillaHidroMuestraEsquemaDwc = hcSistemaSemillaHidroMuestraEsquemaDwc;
+  global.hcSubtituloEsquemaSemillaHidro = hcSubtituloEsquemaSemillaHidro;
+  global.etiquetaFaseGermCorta = etiquetaFaseGermCorta;
   global.hcSistemaDwcPanelColapsado = hcSistemaDwcPanelColapsado;
   global.hcGeomTorreFilasCestas = hcGeomTorreFilasCestas;
 })(typeof window !== 'undefined' ? window : globalThis);

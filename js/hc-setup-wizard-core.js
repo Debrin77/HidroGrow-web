@@ -3229,21 +3229,25 @@ function applySistemaEsquemaChromeSemillaHidro(cfg) {
   if (typeof hcSistemaDwcSoloConsulta !== 'function' || !hcSistemaDwcSoloConsulta(cfg)) return;
   const sub = document.getElementById('torreEsquemaSub');
   if (sub) {
-    const g = cfg.germinacionFlow || {};
-    const vid = String(
-      g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
-    ).trim();
-    let nomVar = '';
-    if (vid && typeof getCultivoDB === 'function') {
-      const cu = getCultivoDB(vid);
-      if (cu && cu.nombre) nomVar = cu.nombre;
-      else nomVar = vid;
+    if (typeof hcSubtituloEsquemaSemillaHidro === 'function') {
+      sub.innerHTML = hcSubtituloEsquemaSemillaHidro(cfg);
+    } else {
+      const g = cfg.germinacionFlow || {};
+      const vid = String(
+        g.variedadId || (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) || ''
+      ).trim();
+      let nomVar = '';
+      if (vid && typeof getCultivoDB === 'function') {
+        const cu = getCultivoDB(vid);
+        if (cu && cu.nombre) nomVar = cu.nombre;
+        else nomVar = vid;
+      }
+      sub.innerHTML = nomVar
+        ? '<strong>Esquema del montaje</strong> · genética del asistente: <strong>' +
+          escHtmlUi(nomVar) +
+          '</strong>. Toca el cubo para notas o registro.'
+        : '<strong>Esquema del montaje</strong> · toca una cesta/cubo o usa <strong>Lista</strong> para asignar variedad.';
     }
-    sub.innerHTML = nomVar
-      ? '<strong>Esquema del montaje</strong> · genética del asistente: <strong>' +
-        escHtmlUi(nomVar) +
-        '</strong>. Toca el cubo para notas o registro.'
-      : '<strong>Esquema del montaje</strong> · toca una cesta/cubo o usa <strong>Lista</strong> para asignar variedad.';
   }
   const wrap = document.getElementById('torreSVGWrap');
   if (wrap) {

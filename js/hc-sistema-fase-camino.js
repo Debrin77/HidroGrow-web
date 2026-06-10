@@ -314,7 +314,9 @@
         '</h2>' +
         '<p class="hc-sis-prop-lead">Semilla en <strong>net pot</strong> sobre ' +
         esc(tipo) +
-        ' (no suelta en el depósito). El esquema completo se activa tras la <strong>checklist operativa</strong> y registrar la plántula en la matriz.</p>' +
+        ' (no suelta en el depósito). El <strong>esquema DWC/RDWC</strong> arriba muestra cubos y fase de germinación (<strong>' +
+        esc(typeof etiquetaFaseGermCorta === 'function' ? etiquetaFaseGermCorta(cfg) : 'en curso') +
+        '</strong>). Tras las 6 fases, registra la plántula en la matriz.</p>' +
         '<div class="hc-sis-prop-grid">' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Fases</span><strong>' +
         fasesN +
@@ -400,6 +402,7 @@
   }
 
   function toggleTorreChrome(mostrarFase, cfg, fase) {
+    cfg = cfg || cfgActiva();
     var torreWrap = document.getElementById('torreSVGWrap');
     var torreCard = document.getElementById('torreNombreCard');
     var resumenSup = document.querySelector('#tab-sistema .torre-tab-resumen-superior');
@@ -407,10 +410,13 @@
     var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
     var cultivoExtras = document.getElementById('sistemaCultivoExtras');
     var esPropagador = fase === 'propagador';
+    var esquemaGermHidro =
+      typeof hcSistemaSemillaHidroMuestraEsquemaDwc === 'function' &&
+      hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
     var sinHidro =
       esPropagador &&
       typeof hcSistemaPropagadorSinHidro === 'function' &&
-      hcSistemaPropagadorSinHidro(cfg || cfgActiva());
+      hcSistemaPropagadorSinHidro(cfg);
     if (mostrarFase) {
       if (torreWrap) {
         if (esPropagador) {
@@ -418,27 +424,51 @@
           torreWrap.hidden = false;
           torreWrap.style.display = '';
           if (typeof hcRenderPropagadorSvg === 'function') {
-            hcRenderPropagadorSvg(cfg || cfgActiva());
+            hcRenderPropagadorSvg(cfg);
           }
+        } else if (esquemaGermHidro) {
+          torreWrap.classList.remove('setup-hidden', 'torre-svg-canvas--propagador');
+          torreWrap.hidden = false;
+          torreWrap.style.display = '';
+          if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
+          try {
+            if (typeof hcAplicarGerminacionATorreTrasHidro === 'function') {
+              hcAplicarGerminacionATorreTrasHidro(cfg, state.torre);
+            }
+          } catch (_) {}
+          try {
+            if (typeof renderTorre === 'function') renderTorre();
+          } catch (_) {}
+          try {
+            if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
+              applySistemaEsquemaChromeSemillaHidro(cfg);
+            }
+          } catch (_) {}
         } else {
           torreWrap.classList.add('setup-hidden');
           if (typeof hcClearPropagadorSvg === 'function') hcClearPropagadorSvg();
         }
       }
-      if (torreCard) torreCard.classList.add('setup-hidden');
-      if (resumenSup) resumenSup.classList.add('setup-hidden');
+      if (torreCard) torreCard.classList.toggle('setup-hidden', !esquemaGermHidro);
+      if (resumenSup) resumenSup.classList.toggle('setup-hidden', !esquemaGermHidro);
       if (dwcCard) {
-        dwcCard.style.display = 'none';
-        dwcCard.hidden = true;
-        dwcCard.classList.add('setup-hidden');
+        if (esquemaGermHidro) {
+          dwcCard.classList.remove('setup-hidden');
+          dwcCard.hidden = false;
+          dwcCard.style.display = '';
+        } else {
+          dwcCard.style.display = 'none';
+          dwcCard.hidden = true;
+          dwcCard.classList.add('setup-hidden');
+        }
       }
       if (ecphCard) {
         ecphCard.style.display = 'none';
         ecphCard.hidden = true;
         ecphCard.classList.add('setup-hidden');
       }
-      if (cultivoExtras) cultivoExtras.classList.add('setup-hidden');
-      setTorreHidroChromeVisible(!sinHidro);
+      if (cultivoExtras) cultivoExtras.classList.toggle('setup-hidden', !esquemaGermHidro);
+      setTorreHidroChromeVisible(!sinHidro || esquemaGermHidro);
     } else {
       if (torreWrap) torreWrap.classList.remove('setup-hidden');
       if (torreCard) torreCard.classList.remove('setup-hidden');
