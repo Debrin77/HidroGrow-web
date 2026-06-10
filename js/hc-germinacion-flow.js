@@ -921,8 +921,14 @@
 
   function persistirGerminacion() {
     try {
-      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
-      if (typeof saveState === 'function') saveState();
+      var sesionNueva =
+        (typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+          hidrogrowSesionNuevaInstalacionActiva()) ||
+        (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre);
+      if (!sesionNueva) {
+        if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+        if (typeof saveState === 'function') saveState();
+      }
     } catch (_) {}
     try {
       if (typeof refreshDashCaminoResumen === 'function') refreshDashCaminoResumen();

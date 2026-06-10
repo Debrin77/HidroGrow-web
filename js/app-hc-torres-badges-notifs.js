@@ -162,9 +162,15 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
   const soloFantasmas =
     !state.torres.length || state.torres.every((t) => hcEsSlotInstalacionFantasma(t));
   let newIdx;
-  if (soloFantasmas) {
-    state.torres = [nuevaTorre];
-    newIdx = 0;
+  if (!state.torres.length || soloFantasmas) {
+    state.torres = (soloFantasmas ? [] : state.torres).filter((t) => !hcEsSlotInstalacionFantasma(t));
+    if (!state.torres.length) {
+      state.torres = [nuevaTorre];
+      newIdx = 0;
+    } else {
+      state.torres.push(nuevaTorre);
+      newIdx = state.torres.length - 1;
+    }
   } else {
     state.torres.push(nuevaTorre);
     newIdx = state.torres.length - 1;
@@ -366,35 +372,14 @@ function hcDedupTorresInstalacionGemelas() {
   return true;
 }
 
-/** Ranura con configuración guardada por el usuario (no plantilla vacía). */
+/** Ranura con configuración guardada por el usuario (no plantilla vacía). Delega en hidrogrowTorreSlotEsReal. */
 function hcSlotInstalacionEsReal(t) {
+  if (typeof hidrogrowTorreSlotEsReal === 'function') return hidrogrowTorreSlotEsReal(t);
   if (!t || typeof t !== 'object') return false;
   const cfg = t.config;
   if (!cfg || typeof cfg !== 'object') return false;
   if (cfg.checklistInstalacionConfirmada === true) return true;
-  if (hcCaminoGermSemillaEnSlot(cfg)) {
-    if (cfg.hcPropagadorGermAsistenteGuardadoAt) return true;
-    if (cfg.preparacionGermHidroChecks) return true;
-    if (hcSlotTienePrepCaminoSemilla(cfg)) return true;
-    if (!cfg.hcPlantillaAutogenerada) return true;
-    if (hcSlotTienePlanGerminacion(cfg)) return true;
-  }
   if (cfg.nutriente && !cfg.hcPlantillaAutogenerada) return true;
-  if (hcTorreTienePlantasAsignadas(t.torre)) return true;
-  const hasMed = Array.isArray(t.mediciones) && t.mediciones.length > 0;
-  const hasRec = !!(t.ultimaRecarga);
-  const hasReg =
-    Array.isArray(t.registro) && t.registro.some((r) => r && (r.tipo === 'recarga' || r.tipo === 'medicion'));
-  if (hasMed || hasRec || hasReg) return true;
-  const nom = String(t.nombre || '').trim();
-  if (
-    nom &&
-    nom !== 'Mi instalación' &&
-    nom !== 'Instalación' &&
-    !cfg.hcPlantillaAutogenerada
-  ) {
-    return true;
-  }
   return false;
 }
 
@@ -1023,6 +1008,13 @@ function reconciliarSlotTorreActivaAntesDeCargar() {
 }
 
 function guardarEstadoTorreActual() {
+  if (
+    (typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+      hidrogrowSesionNuevaInstalacionActiva()) ||
+    (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)
+  ) {
+    return true;
+  }
   if (!state.torres) return;
   const idx = state.torreActiva || 0;
   if (!state.torres[idx]) return;

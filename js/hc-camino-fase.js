@@ -234,6 +234,9 @@
     var c = cam(cfg);
 
     if (c === 'semilla_propagador') {
+      if (hcPropagadorTrasladoCompletado(cfg)) {
+        return null;
+      }
       if (
         typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function' &&
         hidrogrowPropagadorEnFaseGermSinHidro(cfg)
@@ -301,10 +304,11 @@
     return getSistemaFaseCamino(cfg) === 'propagador';
   }
 
-  /** Semilla + propagador: sin bloques de depósito DWC/RDWC hasta cerrar el asistente hidro. */
+  /** Semilla + propagador: sin bloques de depósito DWC/RDWC hasta traslado; tras traslado, modo cultivo hidro. */
   function hcSistemaPropagadorSinHidro(cfg) {
     cfg = cfg || cfgActiva();
     if (cam(cfg) !== 'semilla_propagador') return false;
+    if (hcPropagadorTrasladoCompletado(cfg)) return false;
     return !hidroCerrado(cfg);
   }
 
@@ -327,6 +331,9 @@
   /** Subtítulo del banner «Instalación seleccionada» en Inicio (sin L ni nutriente de depósito). */
   function hcDashUsaTilesGerminacion(cfg) {
     cfg = cfg || cfgActiva();
+    if (cam(cfg) === 'semilla_propagador' && hcPropagadorTrasladoCompletado(cfg)) {
+      return false;
+    }
     if (hcMostrarSistemaPropagador(cfg)) return true;
     if (getSistemaFaseCamino(cfg) === 'germ_cubo') return true;
     if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
@@ -944,6 +951,11 @@
     return f === 'propagador' || f === 'germ_cubo' || f === 'prep_hidro';
   }
 
+  /** Medir: guardar depósito tras traslado aunque operativa diaria aún no esté cerrada. */
+  function hcMedirPermiteRegistroPostTrasladoPropagador(cfg) {
+    return hcPropagadorTrasladoCompletado(cfg);
+  }
+
   /** Trasladó plántulas del propagador al DWC/RDWC (depósito operativo en Medir). */
   function hcPropagadorTrasladoCompletado(cfg) {
     cfg = cfg || cfgActiva();
@@ -1043,6 +1055,7 @@
   global.hcMetaListaInstalacionTorre = hcMetaListaInstalacionTorre;
   global.hcDashUsaTilesGerminacion = hcDashUsaTilesGerminacion;
   global.hcPropagadorTrasladoCompletado = hcPropagadorTrasladoCompletado;
+  global.hcMedirPermiteRegistroPostTrasladoPropagador = hcMedirPermiteRegistroPostTrasladoPropagador;
   global.hcSemillaHidroTrasladoCompletado = hcSemillaHidroTrasladoCompletado;
   global.hcRecargaCompletaAplicaEnCamino = hcRecargaCompletaAplicaEnCamino;
   global.hcDashRecargaPropagadorInfo = hcDashRecargaPropagadorInfo;

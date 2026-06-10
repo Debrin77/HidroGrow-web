@@ -120,7 +120,13 @@
         }
         if (typeof hcGerminacionSyncEquipDesdeInstalado === 'function') hcGerminacionSyncEquipDesdeInstalado(cfg);
         if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
-        if (typeof saveState === 'function') saveState();
+        if (
+          !(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) &&
+          !(typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+            hidrogrowSesionNuevaInstalacionActiva())
+        ) {
+          if (typeof saveState === 'function') saveState();
+        }
       } catch (_) {}
     }
     try {

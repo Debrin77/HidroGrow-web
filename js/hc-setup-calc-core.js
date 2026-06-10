@@ -2609,9 +2609,19 @@ function guardarSetupYContinuarCore() {
         return typeof hcEsSlotInstalacionFantasma === 'function' && hcEsSlotInstalacionFantasma(t);
       });
     let newIdx;
-    if (soloFantasmas) {
-      state.torres = [nuevaTorre];
-      newIdx = 0;
+    if (!state.torres.length || soloFantasmas) {
+      if (typeof hcEsSlotInstalacionFantasma === 'function') {
+        state.torres = (soloFantasmas ? state.torres : []).filter(function (t) {
+          return !hcEsSlotInstalacionFantasma(t);
+        });
+      }
+      if (!state.torres.length) {
+        state.torres = [nuevaTorre];
+        newIdx = 0;
+      } else {
+        state.torres.push(nuevaTorre);
+        newIdx = state.torres.length - 1;
+      }
     } else {
       state.torres.push(nuevaTorre);
       newIdx = state.torres.length - 1;

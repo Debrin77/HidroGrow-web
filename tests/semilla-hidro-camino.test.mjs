@@ -547,13 +547,18 @@ test('propagador: guardar asistente germ no exige formulario DWC', () => {
   assert.match(setup, /hcCompletarGermPlanPropagadorDefaults/);
 });
 
-test('propagador: tras montaje sala verificado no reaparece paso 1 en Sala', () => {
+test('propagador: montaje domo independiente de sala (solo checklist propagador)', () => {
   const prop = read('js/hc-propagador-montaje.js');
   const onboard = read('js/hc-bootstrap-onboarding.js');
   const life = read('js/hc-instalacion-lifecycle.js');
-  assert.match(prop, /montajeSalaPreGermOk/);
+  assert.match(prop, /return !!ch\.completedAt/);
+  assert.doesNotMatch(
+    prop,
+    /function propagadorMontajeCompleto[\s\S]{0,220}montajeSalaPreGermOk/
+  );
   assert.match(onboard, /currentTab === 'sala'[\s\S]*semilla_propagador[\s\S]*montajeSalaPreGermOk/);
-  assert.match(life, /!propOk && !salaOk/);
+  assert.match(life, /pasos\[0\]\.done = propOk/);
+  assert.doesNotMatch(life, /pasos\[0\]\.done = propOk \|\| salaOk/);
 });
 
 test('propagador: catálogo asistente sin iconos visuales por equipamiento', () => {

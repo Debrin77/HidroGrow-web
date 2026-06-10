@@ -152,30 +152,115 @@ function hidrogrowDimsTorreDesdeConfig(cfg, torre) {
   };
 }
 
-/** Ranura en `state.torres` con datos reales del usuario (no plantilla vacía). */
+function hidrogrowCaminoGermSemillaEnSlot(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  const cam =
+    cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
+  return cam === 'semilla_propagador' || cam === 'semilla_hidro';
+}
+
+function hidrogrowTorreTienePlantas(torreMat) {
+  if (!Array.isArray(torreMat)) return false;
+  return torreMat.some(
+    (nivel) =>
+      Array.isArray(nivel) && nivel.some((c) => c && String(c.variedad || '').trim())
+  );
+}
+
+function hidrogrowSlotTienePlanGerminacion(cfg, g, prem) {
+  g = g || (cfg && cfg.germinacionFlow) || {};
+  prem = prem || (cfg && cfg.premiumSetup) || {};
+  if (String(g.variedadId || g.variedad || prem.variedadGerminacion || '').trim()) return true;
+  if (String(prem.fechaSiembraGerm || g.fechaSiembraGerm || g.startedAt || '').trim()) return true;
+  if (prem.numSemillasGermManual && Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+    return true;
+  }
+  if (prem.sustratoGermManual && String(prem.sustratoGerm || '').trim()) return true;
+  if (Number.isFinite(prem.numSemillasGerm) && prem.numSemillasGerm >= 1) {
+    const camPlan =
+      (cfg && cfg.caminoCultivo) ||
+      prem.caminoCultivo ||
+      '';
+    if (camPlan === 'semilla_hidro' && prem.numSemillasGermManual) return true;
+    if (
+      camPlan === 'semilla_propagador' &&
+      (prem.numSemillasGermManual || cfg.hcPropagadorGermAsistenteGuardadoAt)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hidrogrowSlotTienePrepCaminoSemilla(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.salaPreGermConfigAt) return true;
+  if (cfg.preparacionGermHidroChecks) return true;
+  if (cfg.hcSetupFase === 'germinacion' || cfg.hcSetupFase === 'sala_pre_germ') return true;
+  if (cfg.hcPropagadorGermAsistenteGuardadoAt) return true;
+  if (cfg.propagadorMontajeChecks && typeof cfg.propagadorMontajeChecks === 'object') {
+    if (cfg.propagadorMontajeChecks.completedAt) return true;
+    if (Object.keys(cfg.propagadorMontajeChecks).length > 1) return true;
+  }
+  if (cfg.puestaMarchaChecks && typeof cfg.puestaMarchaChecks === 'object') {
+    if (cfg.puestaMarchaChecks.completedAt) return true;
+    if (
+      Object.keys(cfg.puestaMarchaChecks).some(function (k) {
+        return !!cfg.puestaMarchaChecks[k];
+      })
+    ) {
+      return true;
+    }
+  }
+  if (cfg.germinacionFlow) {
+    if (hidrogrowSlotTienePlanGerminacion(cfg)) return true;
+    if (cfg.germinacionFlow.trasladoAt || cfg.germinacionFlow.concluidaAt) return true;
+    if (cfg.germinacionFlow.activo && cfg.germinacionFlow.startedAt) return true;
+    const pasos = cfg.germinacionFlow.pasos;
+    if (pasos && typeof pasos === 'object' && Object.keys(pasos).length > 0) return true;
+  }
+  return false;
+}
+
+/** Ranura en `state.torres` con datos reales del usuario (no plantilla vacía). Fuente única con hcSlotInstalacionEsReal. */
 function hidrogrowTorreSlotEsReal(t) {
   if (!t || typeof t !== 'object') return false;
   const cfg = t.config;
   if (!cfg || typeof cfg !== 'object') return false;
-  if (cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo)) return true;
-  if (cfg.salaPreGermConfigAt || cfg.germinacionFlow) return true;
-  if (cfg.propagadorMontajeChecks || cfg.preparacionGermHidroChecks) return true;
-  if (cfg.puestaMarchaChecks && cfg.puestaMarchaChecks.completedAt) return true;
   if (cfg.checklistInstalacionConfirmada === true) return true;
-  if (cfg.nutriente) return true;
-  if (cfg.hcPlantillaAutogenerada) return false;
-  const torre = t.torre;
-  if (Array.isArray(torre)) {
-    for (let n = 0; n < torre.length; n++) {
-      const row = torre[n];
-      if (!row) continue;
-      for (let c = 0; c < row.length; c++) {
-        if (row[c] && String(row[c].variedad || '').trim()) return true;
-      }
-    }
+  if (hidrogrowCaminoGermSemillaEnSlot(cfg)) {
+    if (cfg.hcPropagadorGermAsistenteGuardadoAt) return true;
+    if (cfg.preparacionGermHidroChecks) return true;
+    if (hidrogrowSlotTienePrepCaminoSemilla(cfg)) return true;
+    if (!cfg.hcPlantillaAutogenerada) return true;
+    if (hidrogrowSlotTienePlanGerminacion(cfg)) return true;
   }
+  if (cfg.nutriente && !cfg.hcPlantillaAutogenerada) return true;
+  if (hidrogrowTorreTienePlantas(t.torre)) return true;
+  const hasMed = Array.isArray(t.mediciones) && t.mediciones.length > 0;
+  const hasRec = !!(t.ultimaRecarga);
+  const hasReg =
+    Array.isArray(t.registro) &&
+    t.registro.some((r) => r && (r.tipo === 'recarga' || r.tipo === 'medicion'));
+  if (hasMed || hasRec || hasReg) return true;
   const nom = String(t.nombre || '').trim();
-  if (nom && nom !== 'Mi instalación' && nom !== 'Instalación') return true;
+  if (
+    nom &&
+    nom !== 'Mi instalación' &&
+    nom !== 'Instalación' &&
+    !cfg.hcPlantillaAutogenerada
+  ) {
+    return true;
+  }
+  return false;
+}
+
+/** Asistente «Nueva instalación»: no sincronizar borrador vacío sobre la ranura de origen. */
+function hidrogrowSesionNuevaInstalacionActiva() {
+  try {
+    if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
+    if (typeof window !== 'undefined' && window._hcNuevaInstalacionOrigenIdx != null) return true;
+  } catch (_) {}
   return false;
 }
 
@@ -750,7 +835,13 @@ function saveState(opts) {
     // Multi-torre: la copia en state.torres[idx] es la que se rehidrata al abrir la app.
     // Sin esto, guardar solo state.torre (p. ej. tras editar una cesta) deja el slot obsoleto
     // y al recargar cargarEstadoTorre() sobrescribe la torre vacía → desaparecen plantas y el Diario.
-    if (state && state.torres && state.torres.length > 0 && !opts.skipSlotGuard) {
+    if (
+      state &&
+      state.torres &&
+      state.torres.length > 0 &&
+      !opts.skipSlotGuard &&
+      !hidrogrowSesionNuevaInstalacionActiva()
+    ) {
       const okSaveSlot = guardarEstadoTorreActual();
       if (okSaveSlot === false) return false;
     }

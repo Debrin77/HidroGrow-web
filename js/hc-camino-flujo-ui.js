@@ -426,19 +426,19 @@
     ) {
       return '';
     }
+    if (
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      hcPropagadorTrasladoCompletado(cfg)
+    ) {
+      return (
+        '<strong>Sistema hidropónico:</strong> registra <strong>EC</strong>, <strong>pH</strong>, <strong>T° del agua</strong> y <strong>volumen</strong> del depósito DWC/RDWC. ' +
+        'Con <strong>sala montada</strong>, también el ambiente de cultivo (T°, HR, VPD y equipamiento).'
+      );
+    }
     var f =
       typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
     if (!f) return '';
     if (f === 'propagador') {
-      if (
-        typeof hcPropagadorTrasladoCompletado === 'function' &&
-        hcPropagadorTrasladoCompletado(cfg)
-      ) {
-        return (
-          '<strong>Sistema hidropónico:</strong> registra <strong>EC</strong>, <strong>pH</strong>, <strong>T° del agua</strong> y <strong>volumen</strong> del depósito DWC/RDWC. ' +
-          'Con <strong>sala montada</strong>, también el ambiente de cultivo (T°, HR, VPD y equipamiento).'
-        );
-      }
       return (
         '<strong>Propagador:</strong> registra <strong>T° del agua con nutrientes</strong>, <strong>HR</strong> y <strong>volumen</strong> del domo. ' +
         'EC/pH del agua cuando aplique por fase. Tras <strong>configurar sala y montaje</strong>, aparecen parámetros del equipamiento. ' +

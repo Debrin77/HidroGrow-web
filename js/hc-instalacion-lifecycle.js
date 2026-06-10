@@ -108,7 +108,7 @@
       montajeSalaPreGermOk(cfg);
     var germOk =
       typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
-    pasos[0].done = propOk || salaOk;
+    pasos[0].done = propOk;
     pasos[1].done = salaOk;
     pasos[2].done = germOk;
     var fase = 'germinacion';
@@ -185,9 +185,10 @@
       }
       pasos[2].blocked = true;
       pasos[3].blocked = true;
+      var faseCtx = montajeEstaVerificado(cfg) ? 'germinacion' : 'montaje_pendiente';
       var sigCam =
         typeof hcSiguientePasoInstalacion === 'function'
-          ? hcSiguientePasoInstalacion(cfg)
+          ? hcSiguientePasoInstalacion(cfg, faseCtx)
           : null;
       fase = 'germinacion';
       if (sigCam && sigCam.etapa === 'sala_config') fase = 'montaje_pendiente';

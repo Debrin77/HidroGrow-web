@@ -309,8 +309,14 @@
     var key = getChecksKey(cfg || getCfg());
     state.configTorre[key] = checks;
     try {
-      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
-      if (typeof saveState === 'function') saveState();
+      if (
+        !(typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+          hidrogrowSesionNuevaInstalacionActiva()) &&
+        !(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)
+      ) {
+        if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+        if (typeof saveState === 'function') saveState();
+      }
     } catch (_) {}
   }
 
@@ -318,15 +324,7 @@
     cfg = cfg || getCfg();
     if (!aplicaChecklistGerm(cfg)) return true;
     var ch = getChecks(cfg);
-    if (ch.completedAt) return true;
-    if (
-      esRutaPropagador(cfg) &&
-      typeof montajeSalaPreGermOk === 'function' &&
-      montajeSalaPreGermOk(cfg)
-    ) {
-      return true;
-    }
-    return false;
+    return !!ch.completedAt;
   }
 
   function enraizadoMontajeCompleto(cfg) {
@@ -832,8 +830,14 @@
         if (typeof state !== 'undefined' && state && state.configTorre) {
           state.configTorre[keyFix] = checks;
           try {
-            if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
-            if (typeof saveState === 'function') saveState();
+            if (
+              !(typeof hidrogrowSesionNuevaInstalacionActiva === 'function' &&
+                hidrogrowSesionNuevaInstalacionActiva()) &&
+              !(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)
+            ) {
+              if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+              if (typeof saveState === 'function') saveState();
+            }
           } catch (_) {}
         }
       }
