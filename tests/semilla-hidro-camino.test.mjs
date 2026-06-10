@@ -228,6 +228,19 @@ test('semilla_hidro: slot con prep no es fantasma ni se filtra al cargar', () =>
   assert.doesNotMatch(torres, /g\.numSemillas\) && g\.numSemillas >= 1/);
 });
 
+test('multi-instalacion: hidro y propagador independientes (sin fusionar ni borrar)', () => {
+  const torres = read('js/app-hc-torres-badges-notifs.js');
+  const setup = read('js/hc-setup-calc-core.js');
+  assert.match(torres, /function hcSlotInstalacionEsReal/);
+  assert.match(torres, /Instalaciones independientes/);
+  assert.doesNotMatch(torres, /existIdx >= 0 && hcPuntajeSlotInstalacionReal/);
+  assert.doesNotMatch(
+    setup,
+    /soloFantasmas[\s\S]{0,120}esPrimeraInstalacionGuardada/
+  );
+  assert.match(setup, /state\.torres\.push\(nuevaTorre\)/);
+});
+
 test('propagador: no tratar germinacionFlow por defecto como instalacion real', () => {
   const torres = read('js/app-hc-torres-badges-notifs.js');
   assert.match(torres, /function hcPuntajeSlotInstalacionReal/);

@@ -2604,7 +2604,6 @@ function guardarSetupYContinuarCore() {
     };
     if (!state.torres) state.torres = [];
     const soloFantasmas =
-      esPrimeraInstalacionGuardada ||
       !state.torres.length ||
       state.torres.every(function (t) {
         return typeof hcEsSlotInstalacionFantasma === 'function' && hcEsSlotInstalacionFantasma(t);

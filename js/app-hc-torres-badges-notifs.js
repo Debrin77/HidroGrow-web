@@ -161,32 +161,6 @@ function hcAppendNuevaInstalacionDesdeEstado(opts) {
   };
   const soloFantasmas =
     !state.torres.length || state.torres.every((t) => hcEsSlotInstalacionFantasma(t));
-  const camNueva = hcCaminoInstalacionSlot(state.configTorre);
-  if (
-    !soloFantasmas &&
-    (camNueva === 'semilla_propagador' || camNueva === 'semilla_hidro')
-  ) {
-    var existIdx = -1;
-    var existScore = -9999;
-    state.torres.forEach(function (t, i) {
-      if (hcEsSlotInstalacionFantasma(t)) return;
-      if (hcCaminoInstalacionSlot(t.config) !== camNueva) return;
-      var sc = hcPuntajeSlotInstalacionReal(t);
-      if (sc > existScore) {
-        existScore = sc;
-        existIdx = i;
-      }
-    });
-    if (existIdx >= 0 && hcPuntajeSlotInstalacionReal(nuevaTorre) <= existScore) {
-      state.torreActiva = existIdx;
-      if (typeof guardarEstadoTorreActual === 'function') {
-        try {
-          guardarEstadoTorreActual();
-        } catch (_) {}
-      }
-      return existIdx;
-    }
-  }
   let newIdx;
   if (soloFantasmas) {
     state.torres = [nuevaTorre];
@@ -329,8 +303,9 @@ function hcCaminoInstalacionSlot(cfg) {
   );
 }
 
-/** Elimina ranuras gemelas del mismo camino (p. ej. propagador duplicado con 1 semilla por defecto). */
+/** Instalaciones independientes: no fusionar ni borrar ranuras del mismo camino. */
 function hcDedupTorresInstalacionGemelas() {
+  return false;
   if (!state || !Array.isArray(state.torres) || state.torres.length < 2) return false;
   var grupos = {};
   state.torres.forEach(function (t, idx) {
@@ -391,8 +366,41 @@ function hcDedupTorresInstalacionGemelas() {
   return true;
 }
 
+/** Ranura con configuración guardada por el usuario (no plantilla vacía). */
+function hcSlotInstalacionEsReal(t) {
+  if (!t || typeof t !== 'object') return false;
+  const cfg = t.config;
+  if (!cfg || typeof cfg !== 'object') return false;
+  if (cfg.checklistInstalacionConfirmada === true) return true;
+  if (hcCaminoGermSemillaEnSlot(cfg)) {
+    if (cfg.hcPropagadorGermAsistenteGuardadoAt) return true;
+    if (cfg.preparacionGermHidroChecks) return true;
+    if (hcSlotTienePrepCaminoSemilla(cfg)) return true;
+    if (!cfg.hcPlantillaAutogenerada) return true;
+    if (hcSlotTienePlanGerminacion(cfg)) return true;
+  }
+  if (cfg.nutriente && !cfg.hcPlantillaAutogenerada) return true;
+  if (hcTorreTienePlantasAsignadas(t.torre)) return true;
+  const hasMed = Array.isArray(t.mediciones) && t.mediciones.length > 0;
+  const hasRec = !!(t.ultimaRecarga);
+  const hasReg =
+    Array.isArray(t.registro) && t.registro.some((r) => r && (r.tipo === 'recarga' || r.tipo === 'medicion'));
+  if (hasMed || hasRec || hasReg) return true;
+  const nom = String(t.nombre || '').trim();
+  if (
+    nom &&
+    nom !== 'Mi instalación' &&
+    nom !== 'Instalación' &&
+    !cfg.hcPlantillaAutogenerada
+  ) {
+    return true;
+  }
+  return false;
+}
+
 /** Ranura creada solo por migración/plantilla sin datos reales del usuario. */
 function hcEsSlotInstalacionFantasma(t) {
+  if (hcSlotInstalacionEsReal(t)) return false;
   if (!t || typeof t !== 'object') return true;
   const cfg = t.config;
   if (hcCaminoGermSemillaEnSlot(cfg)) {
@@ -1042,6 +1050,15 @@ function guardarEstadoTorreActual() {
   if (integrity.removedKeys && integrity.removedKeys.length) {
     state.configTorre = hcClonePlainData(integrity.normalizedConfig, null);
   }
+  var cfgGuardar = integrity.normalizedConfig || state.configTorre || {};
+  if (
+    cfgGuardar.checklistInstalacionConfirmada === true ||
+    hcSlotInstalacionEsReal({ config: cfgGuardar, torre: state.torre, mediciones: state.mediciones })
+  ) {
+    try {
+      delete cfgGuardar.hcPlantillaAutogenerada;
+    } catch (_) {}
+  }
   state.torres[idx].torre      = hcClonePlainData(state.torre, []);
   state.torres[idx].modoActual = modoActual;
   state.torres[idx].mediciones = hcClonePlainData(state.mediciones, []);
@@ -1051,7 +1068,7 @@ function guardarEstadoTorreActual() {
     : null;
   state.torres[idx].ultimaRecarga = state.ultimaRecarga ?? null;
   state.torres[idx].recargaSnoozeHasta = state.recargaSnoozeHasta ?? null;
-  state.torres[idx].config     = hcClonePlainData(integrity.normalizedConfig, null);
+  state.torres[idx].config     = hcClonePlainData(cfgGuardar, null);
   ensureFotosSistemaCompletoState();
   state.torres[idx].fotosSistemaCompleto = hcClonePlainData(state.fotosSistemaCompleto, { fotoKeys: [], fotos: [] });
   // Guardar configuración de riego: no machacar con valores por defecto del HTML si el input va vacío o inválido
