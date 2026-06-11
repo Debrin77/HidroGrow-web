@@ -193,7 +193,11 @@ async function renderFotosCesta() {
   const cestaData = state.torre[nivel] && state.torre[nivel][cesta];
   if (!cestaData) return;
   const lista = await getFotosCompletasParaCesta(nivel, cesta);
-  if (lista.length === 0) { preview.innerHTML = ''; return; }
+  if (lista.length === 0) {
+    preview.innerHTML =
+      '<p class="modal-fotos-empty-hint setup-field-hint">Sin fotos aún. Una imagen aquí se verá en miniatura en el esquema de <strong>Sistema</strong> (pulsa la cesta en el dibujo).</p>';
+    return;
+  }
   preview.innerHTML = '';
   const renderOne = (f, i, src) => {
     const wrap = document.createElement('div');

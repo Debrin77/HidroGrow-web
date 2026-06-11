@@ -131,6 +131,14 @@
     );
   }
 
+  /** Hay foto persistida (memoria o IndexedDB) para badge / miniatura en esquema. */
+  function cestaTieneFotoVisible(dat) {
+    if (!dat) return false;
+    const fotos = (dat.fotos || []).filter((f) => f && f.data);
+    if (fotos.length > 0) return true;
+    return Array.isArray(dat.fotoKeys) && dat.fotoKeys.length > 0;
+  }
+
   /** Cubo multiválvula en alzado con cara lateral y tapa (pseudo-3D). */
   function mcCuboFront3d(x, y, w, h, volPctAgua, tieneDifusor, Dw, idx, volPerCubo, ta) {
     const T = tokens();
@@ -201,7 +209,9 @@
     isoTopFace: isoTopFace,
     scadaDefs: scadaDefs,
     plantAccent: plantAccent,
+    cestaTieneFotoVisible: cestaTieneFotoVisible,
     mcCuboFront3d: mcCuboFront3d,
     mcCuboPlan3d: mcCuboPlan3d,
   };
+  global.hcCestaTieneFotoVisible = cestaTieneFotoVisible;
 })(typeof window !== 'undefined' ? window : globalThis);

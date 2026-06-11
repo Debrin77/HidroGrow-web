@@ -797,6 +797,7 @@
         '%</strong></p>' +
         '</div></div>' +
         '<p class="setup-field-hint setup-field-hint--banner">Domo, rockwool pH 5,5, higiene, luz 18/6 y aireación antes del corte.</p>' +
+        '<p class="setup-field-hint">Tras el traslado al cubo: asigna cada clone en <strong>Sistema</strong> y añade una <strong>foto por cesta</strong> — aparecerá en el esquema.</p>' +
         '<p class="hc-germ-hub-sistema-cta">' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist de enraizado</button> ' +
         '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Ver pasos en Sistema</button>' +
@@ -858,6 +859,9 @@
           '</p></div>'
         : '') +
       ecHtml +
+      (diaSug != null && diaSug >= 8
+        ? '<p class="setup-field-hint setup-field-hint--banner hc-enr-foto-tip">Al trasladar al net pot: en <strong>Sistema</strong> pulsa cada cesta → <strong>Fotos de seguimiento</strong>. La miniatura sustituye el icono genérico en el dibujo.</p>'
+        : '<p class="setup-field-hint hc-enr-foto-tip">Cuando tengas raíces en rockwool y pases al cubo, una foto por cesta en Sistema ayuda a reconocer cada clone en el esquema.</p>') +
       '<p class="hc-germ-hub-sistema-cta">' +
       '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Esquema domo → Sistema</button> ' +
       '<button type="button" class="btn btn-primary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'medir\')">Protocolo completo → Medir</button>' +

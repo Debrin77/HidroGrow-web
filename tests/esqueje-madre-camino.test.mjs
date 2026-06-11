@@ -33,6 +33,19 @@ test('madre: cadena hcSiguientePasoMadreHidro y lifecycle', () => {
   assert.match(lc, /hcSiguientePasoMadreHidro/);
 });
 
+test('cestas: sin icono cámara en esquema; tips foto en modal y hub enraizado', () => {
+  const scada = read('js/diagrams/dwc/dwc-scada-parts.js');
+  const torre = read('js/torre-render-build.js');
+  const dwc = read('js/diagrams/dwc/dwc-diagram.js');
+  const enr = read('js/hc-esquejes-madre.js');
+  const modal = read('js/hc-setup-compat-modal.js');
+  assert.doesNotMatch(scada, /hcCestaFotoHintSvg/);
+  assert.doesNotMatch(torre, /hcCestaFotoHintSvg/);
+  assert.doesNotMatch(dwc, /hcCestaFotoHintSvg/);
+  assert.match(enr, /Fotos de seguimiento/);
+  assert.match(modal, /modal-fotos-empty-hint/);
+});
+
 test('fase camino: gates sala+hidro y SVG domo/DWC', () => {
   const fase = read('js/hc-camino-fase.js');
   const sis = read('js/hc-sistema-fase-camino.js');

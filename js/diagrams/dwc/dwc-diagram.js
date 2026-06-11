@@ -660,6 +660,8 @@ function generarSVGDwc() {
     const isMultiSel = torreInteraccionModo === 'asignar' && torreCestasMultiSel.has(multiKey);
     const fotos = (dat.fotos || []).filter((f) => f && f.data);
     const ultimaFoto = fotos.length > 0 ? fotos[fotos.length - 1] : null;
+    const tieneFoto =
+      typeof hcCestaTieneFotoVisible === 'function' ? hcCestaTieneFotoVisible(dat) : !!ultimaFoto?.data;
     const varTxt = dat.variedad ? String(dat.variedad) : 'vacía';
     const ariaCesta = escAriaAttr(
       (esMulticubo
@@ -748,7 +750,7 @@ function generarSVGDwc() {
     }
     const notasRaw = state.torre && state.torre[n] && state.torre[n][c] ? state.torre[n][c].notas : '';
     const hasNotas = !!(notasRaw && String(notasRaw).trim().length > 0);
-    if (ultimaFoto?.data) {
+    if (tieneFoto) {
       o += `<rect x="${(cx - r + 2).toFixed(1)}" y="${(cy - r + 2).toFixed(1)}" width="14" height="10" rx="2"
         fill="#0f172a" opacity="0.88"/><text x="${(cx - r + 9).toFixed(1)}" y="${(cy - r + 10).toFixed(1)}" font-family="Inconsolata,monospace" font-size="7" font-weight="800" text-anchor="middle" fill="#f8fafc">F</text>`;
     }
