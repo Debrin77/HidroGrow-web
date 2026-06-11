@@ -262,24 +262,97 @@ function ecSubePorMlParABEnVolumen(nut, volLitros) {
   return base * (VOL_OBJETIVO / v);
 }
 
-/** ml de CalMag para acercar agua destilada/ósmosis a ~EC_CALMAG_BASE µS/cm (misma lógica en toda la app). */
+/** ml de CalMag para acercar agua destilada/ósmosis a ~EC_CALMAG_BASE µS/cm (referencia fabricante / Consejos). */
 function mlCalMagParaAguaBlanda(volLitros) {
   const v = volLitros > 0 ? volLitros : VOL_OBJETIVO;
   return Math.round((EC_CALMAG_BASE / CALMAG_POR_ML) * (v / VOL_OBJETIVO) * 10) / 10;
 }
 
-function calcularMlCalMag() {
+/** EC inicial del agua (µS/cm) antes de CalMag en checklist / recarga. */
+function getEcAguaInicialChecklistMicroS(cfg) {
+  cfg = cfg || state.configTorre || {};
+  const agua = cfg.agua || state.configAgua || 'destilada';
+  if (agua === 'grifo') {
+    const g = Number(cfg.configAguaEC ?? state.configAguaEC);
+    if (Number.isFinite(g) && g >= 0) return Math.round(g);
+    return Math.round(
+      typeof CONFIG_AGUA !== 'undefined' && CONFIG_AGUA.grifo ? CONFIG_AGUA.grifo.ecBase || 0 : 0
+    );
+  }
+  return 0;
+}
+
+/**
+ * Litros para dosificar en checklist (mismo volumen en CalMag, nutrientes y EC estimada).
+ * Primer llenado sin capacidad configurada → VOL_OBJETIVO (18 L).
+ */
+function getVolNutrientesChecklistLitros(cfg) {
+  cfg = cfg || state.configTorre || {};
+  let vol =
+    typeof getVolumenNutrientesLitros === 'function'
+      ? getVolumenNutrientesLitros(cfg)
+      : typeof getVolumenMezclaLitros === 'function'
+        ? getVolumenMezclaLitros(cfg)
+        : null;
+  if (
+    (vol == null || !Number.isFinite(vol) || vol <= 0) &&
+    typeof clRutaChecklist !== 'undefined' &&
+    clRutaChecklist === 'primer_llenado'
+  ) {
+    vol = typeof VOL_OBJETIVO === 'number' ? VOL_OBJETIVO : 18;
+  }
+  return vol;
+}
+
+/**
+ * EC total (µS/cm) tras CalMag: meta de recarga si es baja (arranque), si no ~EC_CALMAG_BASE.
+ */
+function getEcObjetivoTrasCalMagMicroS(cfg) {
+  cfg = cfg || state.configTorre || {};
+  const ecMeta =
+    typeof getRecargaEcMetaMicroS === 'function' ? getRecargaEcMetaMicroS() : EC_CALMAG_BASE;
+  const ec0 = getEcAguaInicialChecklistMicroS(cfg);
+  if (ecMeta <= EC_CALMAG_BASE) return ecMeta;
+  return Math.max(ec0, EC_CALMAG_BASE);
+}
+
+/** ml CalMag para alcanzar ecObjetivoTotal (µS/cm) desde ecAguaInicial a volumen v. */
+function mlCalMagParaEcObjetivoMicroS(volLitros, ecObjetivoTotalMicroS, ecAguaInicialMicroS) {
+  const v = volLitros > 0 ? volLitros : VOL_OBJETIVO;
+  const ec0 = Number.isFinite(ecAguaInicialMicroS) ? ecAguaInicialMicroS : 0;
+  const delta = Math.max(0, ecObjetivoTotalMicroS - ec0);
+  if (delta <= 0) return 0;
+  return Math.round((delta / CALMAG_POR_ML) * (v / VOL_OBJETIVO) * 10) / 10;
+}
+
+function mlCalMagParaVolumenLitros(volLitros, cfg) {
+  cfg = cfg || state.configTorre || {};
+  const v = volLitros > 0 ? volLitros : VOL_OBJETIVO;
+  const ecObj = getEcObjetivoTrasCalMagMicroS(cfg);
+  return mlCalMagParaEcObjetivoMicroS(v, ecObj, getEcAguaInicialChecklistMicroS(cfg));
+}
+
+function calcularMlCalMag(volLitrosOpt) {
   if (!usarCalMagEnRecarga()) return 0;
   const nut = getNutrienteTorre();
   if (!nut || !nut.calmagNecesario) return 0;
   const cfg = state.configTorre || {};
-  const volObj = getVolumenNutrientesLitros(cfg);
-  let ml = mlCalMagParaAguaBlanda(volObj);
-  if (typeof getFactorArranquePlantulaHidro === 'function') {
-    const fa = getFactorArranquePlantulaHidro();
-    if (fa < 1) ml = Math.round(ml * fa * 10) / 10;
-  }
-  return ml;
+  const vol =
+    volLitrosOpt > 0 ? volLitrosOpt : getVolNutrientesChecklistLitros(cfg);
+  return mlCalMagParaVolumenLitros(vol > 0 ? vol : VOL_OBJETIVO, cfg);
+}
+
+/** EC total estimada (µS/cm) tras disolver CalMag al volumen indicado. */
+function getEcTrasCalMagEstimadoMicroS(cfg, volLitros) {
+  cfg = cfg || state.configTorre || {};
+  const ec0 = getEcAguaInicialChecklistMicroS(cfg);
+  const v =
+    volLitros > 0
+      ? volLitros
+      : getVolNutrientesChecklistLitros(cfg) || VOL_OBJETIVO;
+  const ml = calcularMlCalMag(v);
+  if (!ml || ml <= 0) return ec0;
+  return ec0 + estimarEcCalMagMicroS(ml, v);
 }
 
 function calcularDescAB(parte) {

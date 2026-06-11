@@ -3182,8 +3182,11 @@ function preguntarIniciarChecklist() {
   const faArr      = typeof getFactorArranquePlantulaHidro === 'function' ? getFactorArranquePlantulaHidro() : 1;
   const ecMetaRec  = typeof getRecargaEcMetaMicroS === 'function' ? getRecargaEcMetaMicroS() : Math.round((ecObj.min + ecObj.max) / 2);
 
-  const mlCalMag   = calcularMlCalMag();
-  const ecCalMag   = estimarEcCalMagMicroS(mlCalMag, vol);
+  const mlCalMag   = calcularMlCalMag(vol);
+  const ecCalMag   =
+    typeof getEcTrasCalMagEstimadoMicroS === 'function'
+      ? getEcTrasCalMagEstimadoMicroS(cfg, vol)
+      : estimarEcCalMagMicroS(mlCalMag, vol);
   const orden      = (nut.orden && nut.orden.length >= nut.partes) ? nut.orden : ['Parte A','Parte B','Parte C'];
   const mlCadaParte = [];
   for (let i = 0; i < (nut.partes || 2); i++) {

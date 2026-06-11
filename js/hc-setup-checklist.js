@@ -265,15 +265,30 @@ function generarPasosNutriente() {
   if (!nut) return [];
   const refNut = getRefDosisFabricante(nut.id);
   let vol =
-    typeof getVolumenNutrientesLitros === 'function' ? getVolumenNutrientesLitros(cfg) : getVolumenMezclaLitros(cfg);
+    typeof getVolNutrientesChecklistLitros === 'function'
+      ? getVolNutrientesChecklistLitros(cfg)
+      : typeof getVolumenNutrientesLitros === 'function'
+        ? getVolumenNutrientesLitros(cfg)
+        : getVolumenMezclaLitros(cfg);
   if (primerLlenadoNut && (vol == null || !Number.isFinite(vol) || vol <= 0)) {
     vol = typeof VOL_OBJETIVO === 'number' ? VOL_OBJETIVO : 18;
   }
-  const mlCM   = calcularMlCalMag();
+  const mlCM   = vol > 0 ? calcularMlCalMag(vol) : calcularMlCalMag();
   const mlP0   = calcularMlParteNutriente(0);
   const mlP1   = nut.partes >= 2 ? calcularMlParteNutriente(1) : mlP0;
   const mlP2   = nut.partes >= 3 ? calcularMlParteNutriente(2) : mlP0;
-  const ecCM   = usarCalMagEnRecarga() && mlCM > 0 ? estimarEcCalMagMicroS(mlCM, vol) : 0;
+  const ecObjCalMag =
+    typeof getEcObjetivoTrasCalMagMicroS === 'function'
+      ? getEcObjetivoTrasCalMagMicroS(cfg)
+      : EC_CALMAG_BASE;
+  const ecCM =
+    usarCalMagEnRecarga() && mlCM > 0
+      ? typeof getEcTrasCalMagEstimadoMicroS === 'function'
+        ? getEcTrasCalMagEstimadoMicroS(cfg, vol)
+        : estimarEcCalMagMicroS(mlCM, vol)
+      : typeof getEcAguaInicialChecklistMicroS === 'function'
+        ? getEcAguaInicialChecklistMicroS(cfg)
+        : 0;
   const ecFinal = getRecargaEcMetaMicroS();
   const tieneBuffer = nut.pHBuffer;
   const pHRango =
@@ -332,9 +347,21 @@ function generarPasosNutriente() {
       id:'4.2', seccion:null, paso:'4.2',
       desc: 'Añadir CalMag: ' + mlCM + ' ml — remover 2 min',
       nota:
-        (faPl < 1
-          ? 'Arranque suave: menos CalMag que en mezcla «adulta»; tras estos ml: ~' + ecCM + ' µS estimados. '
-          : 'Con agua destilada u ósmosis el objetivo habitual es ~' + EC_CALMAG_BASE + ' µS/cm (~' + (EC_CALMAG_BASE / 1000).toFixed(2) + ' mS/cm). Tras estos ml: ~' + ecCM + ' µS estimados. ') +
+        (ecObjCalMag < EC_CALMAG_BASE - 20
+          ? 'Objetivo tras CalMag alineado con EC de arranque (~' +
+            ecObjCalMag +
+            ' µS/cm). Tras estos ml: ~' +
+            ecCM +
+            ' µS estimados. '
+          : faPl < 1
+            ? 'Arranque suave: menos CalMag que en mezcla «adulta»; tras estos ml: ~' + ecCM + ' µS estimados. '
+            : 'Con agua destilada u ósmosis el objetivo habitual es ~' +
+              EC_CALMAG_BASE +
+              ' µS/cm (~' +
+              (EC_CALMAG_BASE / 1000).toFixed(2) +
+              ' mS/cm). Tras estos ml: ~' +
+              ecCM +
+              ' µS estimados. ') +
         (cfg.agua === 'grifo' ? 'Con agua del grifo, verificar si es necesario.' : '') +
         notaRdwcMezcla +
         notaArranquePl +

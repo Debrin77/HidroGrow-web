@@ -514,8 +514,22 @@ function mlNutrientePorParte(nutId, partIndex, volLitros) {
  */
 function getEcBaseAguaPreAbonoMicroS(volLitros, nut, modoSoft, usarCalMag) {
   if (modoSoft && nut.calmagNecesario && usarCalMag) {
-    const mlCM = mlCalMagParaAguaBlanda(volLitros);
-    return mlCM > 0 ? estimarEcCalMagMicroS(mlCM, volLitros) : 0;
+    const v = volLitros > 0 ? volLitros : VOL_OBJETIVO;
+    const cfg = state.configTorre || {};
+    const mlCM =
+      typeof mlCalMagParaVolumenLitros === 'function'
+        ? mlCalMagParaVolumenLitros(v, cfg)
+        : mlCalMagParaAguaBlanda(v);
+    if (mlCM <= 0) {
+      return typeof getEcAguaInicialChecklistMicroS === 'function'
+        ? getEcAguaInicialChecklistMicroS(cfg)
+        : 0;
+    }
+    const ec0 =
+      typeof getEcAguaInicialChecklistMicroS === 'function'
+        ? getEcAguaInicialChecklistMicroS(cfg)
+        : 0;
+    return ec0 + estimarEcCalMagMicroS(mlCM, v);
   }
   if (!modoSoft) {
     const g = Number(state.configAguaEC);
@@ -581,14 +595,11 @@ function calcularMlParteNutriente(partIndex) {
   if (!nut) return 0;
   const cfg = state.configTorre || {};
   let volObj =
-    typeof getVolumenNutrientesLitros === 'function' ? getVolumenNutrientesLitros(cfg) : getVolumenMezclaLitros(cfg);
-  if (
-    (volObj == null || !Number.isFinite(volObj) || volObj <= 0) &&
-    typeof clRutaChecklist !== 'undefined' &&
-    clRutaChecklist === 'primer_llenado'
-  ) {
-    volObj = typeof VOL_OBJETIVO === 'number' ? VOL_OBJETIVO : 18;
-  }
+    typeof getVolNutrientesChecklistLitros === 'function'
+      ? getVolNutrientesChecklistLitros(cfg)
+      : typeof getVolumenNutrientesLitros === 'function'
+        ? getVolumenNutrientesLitros(cfg)
+        : getVolumenMezclaLitros(cfg);
   if (volObj == null || !Number.isFinite(volObj) || volObj <= 0) return 0;
   const aguaGrifo = (cfg.agua || state.configAgua || 'destilada') === 'grifo';
   return mlAbonoParteDinamica(nut, partIndex, volObj, getRecargaEcMetaMicroS(), {
@@ -618,9 +629,13 @@ function ecSubePorMlCorreccion(nut, volLitros) {
   const v = volLitros > 0 ? volLitros : VOL_OBJETIVO;
   const ref = getRefDosisFabricante(nut.id);
   const ecMeta = getRecargaEcMetaMicroS();
-  const mlCM = nut.calmagNecesario && usarCalMagEnRecarga() ? calcularMlCalMag() : 0;
-  const ecCal = estimarEcCalMagMicroS(mlCM, v);
-  const ecN = Math.max(60, ecMeta - ecCal);
+  const mlCM = nut.calmagNecesario && usarCalMagEnRecarga() ? calcularMlCalMag(v) : 0;
+  const ec0 =
+    typeof getEcAguaInicialChecklistMicroS === 'function'
+      ? getEcAguaInicialChecklistMicroS(state.configTorre || {})
+      : 0;
+  const ecTrasCal = ec0 + estimarEcCalMagMicroS(mlCM, v);
+  const ecN = Math.max(60, ecMeta - ecTrasCal);
   const p = nut.partes || 2;
   const sumMl = ref.mlPorLitro.reduce((s, x) => s + x * v, 0);
   if (sumMl <= 0 || ecN <= 0) return nut.ecPorMl || 25;
