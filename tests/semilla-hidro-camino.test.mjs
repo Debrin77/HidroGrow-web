@@ -700,10 +700,27 @@ test('semilla_hidro: primer llenado y germ fuerzan VEG, no BLOOM', () => {
   assert.match(calc, /function hcSemillaHidroUsaNutrienteVegGerm/);
   assert.match(calc, /semillaHidroGerm: true/);
   assert.match(calc, /recomendado: 'veg'/);
-  assert.match(calc, /hcSemillaHidroUsaNutrienteVegGerm\(cfg\)[\s\S]{0,80}return null/);
-  assert.match(cl, /hcSemillaHidroUsaNutrienteVegGerm\(cfg\)[\s\S]{0,60}return null/);
-  assert.match(cl, /cl-note--nut-veg-germ/);
+  assert.match(
+    calc,
+    /function hcGetAvisoCambioNutrientePorFase[\s\S]{0,500}hcCaminoUsaEcArranqueBaja\(cfg\)[\s\S]{0,80}return null/
+  );
+  assert.match(cl, /hcCaminoUsaEcArranqueBaja\(cfg\)[\s\S]{0,60}return null/);
+  assert.match(cl, /hcGetChecklistPc2HintEcArranque/);
   assert.match(dash, /hcSemillaHidroUsaNutrienteVegGerm/);
+});
+
+test('checklist PC-2: EC arranque en los 4 caminos, no media floración', () => {
+  const calc = read('js/hc-setup-calc-core.js');
+  const cl = read('js/hc-setup-checklist.js');
+  assert.match(calc, /function hcCaminoUsaEcArranqueBaja/);
+  assert.match(calc, /function hcGetEcMetaArranqueCamino/);
+  assert.match(calc, /semilla_propagador/);
+  assert.match(calc, /esqueje_hidro/);
+  assert.match(calc, /madre_hidro/);
+  assert.match(calc, /hcChecklistEcManualEnBandaArranque/);
+  assert.match(calc, /arranque_camino/);
+  assert.match(cl, /hcGetChecklistPc2HintEcArranque/);
+  assert.match(cl, /hcCaminoUsaEcArranqueBaja\(cfg\)[\s\S]{0,60}return null/);
 });
 
 test('boot: scripts diferidos llevan cache bust y recarga automática al cambiar versión', () => {

@@ -388,6 +388,29 @@ function torreBloqueaChecklistPorFaltaDatosCultivo() {
   ) {
     return false;
   }
+  if (cam === 'semilla_propagador') {
+    if (typeof germinacionConcluida === 'function' && !germinacionConcluida(cfg)) {
+      if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, state)) {
+        return false;
+      }
+      if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return false;
+    }
+  }
+  if (cam === 'esqueje_hidro') {
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'enraizado') {
+      return false;
+    }
+    if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, state)) {
+      return false;
+    }
+  }
+  if (cam === 'madre_hidro') {
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'madre') {
+      if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, state)) {
+        return false;
+      }
+    }
+  }
   if (typeof getEcPhStrategy === 'function' && getEcPhStrategy(cfg) === 'manual') return false;
   if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) return true;
   return !torreTodasLasCestasConVariedadTienenFechaValida();
@@ -861,6 +884,21 @@ function getRecomendacionEcPhTorre() {
     ecAgregacionFinal = 'esquejes';
   }
 
+  if (
+    typeof hcCaminoUsaEcArranqueBaja === 'function' &&
+    hcCaminoUsaEcArranqueBaja(cfg) &&
+    typeof hcGetEcMetaArranqueCamino === 'function'
+  ) {
+    const arr = hcGetEcMetaArranqueCamino(cfg);
+    if (arr) {
+      const torAlto = Number.isFinite(ecRec.min) && ecRec.min > arr.ecMax + 120;
+      if (rangosEc.length === 0 || torAlto) {
+        ecRec = { min: arr.ecMin, max: arr.ecMax, arranqueContexto: arr.label };
+        ecAgregacionFinal = 'arranque_camino';
+      }
+    }
+  }
+
   return {
     ec: ecRec,
     ph: phRec,
@@ -1088,25 +1126,171 @@ function hcSemillaHidroUsaNutrienteVegGerm(cfg) {
   return false;
 }
 
-function hcSemillaHidroEcMetaGerminacionMicroS(cfg) {
+function hcMidEcRangoMicroS(ec) {
+  if (!ec || !Number.isFinite(ec.min) || !Number.isFinite(ec.max)) return null;
+  return Math.round((ec.min + ec.max) / 2);
+}
+
+function hcEcMetaDesdeGerminacionRangos(cfg, cam) {
   cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  cam = cam || (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '');
   var vid =
     (cfg.germinacionFlow && cfg.germinacionFlow.variedadId) ||
     (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) ||
     '';
   var faseId =
-    typeof hcGerminacionFaseActualId === 'function'
-      ? hcGerminacionFaseActualId(cfg)
-      : typeof getSistemaFaseCamino === 'function'
-        ? getSistemaFaseCamino(cfg) || 'dwc'
-        : 'dwc';
+    typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'dwc';
+  if (
+    cam === 'semilla_propagador' &&
+    typeof hcPropagadorTrasladoCompletado === 'function' &&
+    !hcPropagadorTrasladoCompletado(cfg)
+  ) {
+    if (!faseId || faseId === 'dwc') faseId = 'domo';
+  }
+  var meta = 400;
+  var ecMin = 200;
+  var ecMax = 600;
   if (typeof getGerminacionRangosMonitoreo === 'function') {
     var r = getGerminacionRangosMonitoreo(vid, faseId, cfg);
+    var mid = r && r.ec ? hcMidEcRangoMicroS(r.ec) : null;
+    if (mid == null && r && Number.isFinite(r.ecObjetivo)) mid = Math.round(r.ecObjetivo);
+    if (mid != null) meta = mid;
     if (r && r.ec && Number.isFinite(r.ec.min) && Number.isFinite(r.ec.max)) {
-      return Math.round((r.ec.min + r.ec.max) / 2);
+      ecMin = Math.round(r.ec.min);
+      ecMax = Math.round(r.ec.max);
+    } else if (mid != null) {
+      ecMin = Math.max(0, mid - 100);
+      ecMax = mid + 100;
     }
   }
-  return 400;
+  return {
+    metaUs: meta,
+    ecMin: ecMin,
+    ecMax: ecMax,
+    contexto: 'germinacion',
+    label: 'Germinación / arranque',
+    hint: 'EC baja hasta enraizar; no uses valores de floración o media del ciclo completo.',
+  };
+}
+
+function hcSemillaHidroEcMetaGerminacionMicroS(cfg) {
+  return hcEcMetaDesdeGerminacionRangos(cfg, 'semilla_hidro').metaUs;
+}
+
+/**
+ * Los 4 caminos: primer llenado / germinación / enraizado exigen EC baja, no media floración.
+ */
+function hcCaminoUsaEcArranqueBaja(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+  var st = typeof state !== 'undefined' ? state : {};
+
+  if (cam === 'semilla_hidro' && typeof hcSemillaHidroUsaNutrienteVegGerm === 'function') {
+    return hcSemillaHidroUsaNutrienteVegGerm(cfg);
+  }
+
+  if (cam === 'semilla_propagador') {
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
+    if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) return true;
+    if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'propagador') {
+      return true;
+    }
+    if (typeof hcPropagadorTrasladoCompletado === 'function' && hcPropagadorTrasladoCompletado(cfg)) {
+      return true;
+    }
+    return true;
+  }
+
+  if (cam === 'esqueje_hidro') {
+    if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) return true;
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'enraizado') {
+      return true;
+    }
+    if (typeof getRecomendacionEcPhEsquejes === 'function') {
+      var recE = getRecomendacionEcPhEsquejes(cfg);
+      if (recE && recE.activo && ['clonador_48h', 'enraizamiento', 'traslado_dwc'].indexOf(recE.fase) >= 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  if (cam === 'madre_hidro') {
+    if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) return true;
+    if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'madre') return true;
+    if (typeof getRecomendacionEcPhEsquejes === 'function') {
+      var recM = getRecomendacionEcPhEsquejes(cfg);
+      if (recM && recM.activo && recM.fase === 'prep_madre') return true;
+    }
+    return false;
+  }
+
+  return false;
+}
+
+function hcGetEcMetaArranqueCamino(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (!hcCaminoUsaEcArranqueBaja(cfg)) return null;
+  var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+
+  if (cam === 'semilla_hidro' || cam === 'semilla_propagador') {
+    return hcEcMetaDesdeGerminacionRangos(cfg, cam);
+  }
+
+  if ((cam === 'esqueje_hidro' || cam === 'madre_hidro') && typeof getRecomendacionEcPhEsquejes === 'function') {
+    var rec = getRecomendacionEcPhEsquejes(cfg);
+    if (rec && rec.activo && rec.ec) {
+      var metaEq = hcMidEcRangoMicroS(rec.ec);
+      if (metaEq == null) return null;
+      return {
+        metaUs: metaEq,
+        ecMin: Math.round(rec.ec.min),
+        ecMax: Math.round(rec.ec.max),
+        contexto: 'esquejes',
+        label: rec.label || 'Enraizado / madre',
+        hint: rec.nota || '',
+      };
+    }
+  }
+
+  return hcEcMetaDesdeGerminacionRangos(cfg, cam);
+}
+
+function hcGetChecklistPc2HintEcArranque(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  var meta = hcGetEcMetaArranqueCamino(cfg);
+  if (!meta) return '';
+  var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+  var vegNote = '';
+  if (
+    (cam === 'semilla_hidro' || cam === 'semilla_propagador') &&
+    typeof hcCaminoUsaEcArranqueBaja === 'function' &&
+    hcCaminoUsaEcArranqueBaja(cfg)
+  ) {
+    vegNote =
+      ' Mantén la línea <strong>VEG</strong> del configurador; BLOOM corresponde a prefloración/floración.';
+  }
+  return (
+    '<div class="cl-note cl-note--nut-veg-germ" role="status">🌱 <strong>' +
+    (meta.label || 'Arranque') +
+    ':</strong> EC recomendada <strong>' +
+    meta.metaUs +
+    ' µS/cm</strong> (banda ' +
+    meta.ecMin +
+    '–' +
+    meta.ecMax +
+    ' µS/cm).' +
+    vegNote +
+    (meta.hint ? ' ' + meta.hint : '') +
+    '</div>'
+  );
+}
+
+function hcChecklistEcManualEnBandaArranque(cfg, manualUs) {
+  var arr = typeof hcGetEcMetaArranqueCamino === 'function' ? hcGetEcMetaArranqueCamino(cfg) : null;
+  if (!arr || !Number.isFinite(manualUs)) return false;
+  return manualUs >= arr.ecMin - 80 && manualUs <= arr.ecMax + 120;
 }
 
 function torreTieneAlgunaPlantaDeFrutoActiva() {
@@ -1247,18 +1431,21 @@ function hcGetRecomendacionNutrienteContexto() {
   const cfg = state.configTorre || {};
   const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
   const uso = hcNutrienteFaseUso(nut);
-  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+  if (typeof hcCaminoUsaEcArranqueBaja === 'function' && hcCaminoUsaEcArranqueBaja(cfg)) {
+    var arrCtx =
+      typeof hcGetEcMetaArranqueCamino === 'function' ? hcGetEcMetaArranqueCamino(cfg) : null;
     return {
       actual: uso,
       recomendado: 'veg',
       hayFruto: false,
-      fase: 'germinacion',
+      fase: arrCtx && arrCtx.contexto === 'esquejes' ? 'enraizado' : 'germinacion',
       conFaseReal: true,
       faseFlor: false,
       fechaCambioMs: null,
       fechaCambioTxt: '',
       recomendadoBloomPorFecha: false,
       semillaHidroGerm: true,
+      ecArranqueMeta: arrCtx ? arrCtx.metaUs : null,
     };
   }
   const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
@@ -1299,7 +1486,7 @@ function hcGetAvisoCambioNutrientePorFase(contexto) {
   const cfg = state.configTorre || {};
   const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
   if (!nut) return null;
-  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+  if (typeof hcCaminoUsaEcArranqueBaja === 'function' && hcCaminoUsaEcArranqueBaja(cfg)) {
     return null;
   }
 
@@ -1421,12 +1608,19 @@ function getFactorArranquePlantulaHidro() {
 /** EC meta (µS/cm) para recarga / checklist: manual en torre o intermedio óptimo automático */
 function getRecargaEcMetaMicroS() {
   const cfg = state.configTorre || {};
-  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
-    const manualGerm = Number(cfg.checklistEcObjetivoUs);
-    if (Number.isFinite(manualGerm) && manualGerm >= 200 && manualGerm <= 6000) {
-      return Math.round(manualGerm);
+  const arranque =
+    typeof hcGetEcMetaArranqueCamino === 'function' ? hcGetEcMetaArranqueCamino(cfg) : null;
+  if (arranque) {
+    const manualArr = Number(cfg.checklistEcObjetivoUs);
+    if (
+      Number.isFinite(manualArr) &&
+      manualArr >= 200 &&
+      manualArr <= 6000 &&
+      hcChecklistEcManualEnBandaArranque(cfg, manualArr)
+    ) {
+      return Math.round(manualArr);
     }
-    return hcSemillaHidroEcMetaGerminacionMicroS(cfg);
+    return arranque.metaUs;
   }
   const strategy = getEcPhStrategy(cfg);
   if (strategy === 'manual') {
@@ -1447,7 +1641,6 @@ function getRecargaEcMetaMicroS() {
   const fa = getFactorArranquePlantulaHidro();
   let meta = mid;
   if (fa < 1 && Number.isFinite(ecLo) && Number.isFinite(ecHi) && ecHi >= ecLo) {
-    // Arranque suave: interpolar entre el suelo del rango recomendado y el punto medio — nunca por debajo de ecLo (cuadra con Medir / Cultivo e instalación)
     meta = Math.round(ecLo + (mid - ecLo) * fa);
     meta = Math.max(Math.round(ecLo), Math.min(Math.round(ecHi), meta));
   }

@@ -1158,10 +1158,8 @@ function getCLPasos() {
     });
   }
   const infoCambioNutriente = getChecklistCambioNutrienteInfo();
-  const hintVegGermHidro =
-    typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)
-      ? '<div class="cl-note cl-note--nut-veg-germ" role="status">🌱 <strong>Semilla en hidro:</strong> mantén la línea <strong>VEG</strong> elegida en el configurador y EC baja en el depósito hasta enraizar. El cambio a <strong>BLOOM</strong> corresponde a prefloración/floración, no a la germinación.</div>'
-      : '';
+  const hintEcArranque =
+    typeof hcGetChecklistPc2HintEcArranque === 'function' ? hcGetChecklistPc2HintEcArranque(cfg) : '';
   if (infoCambioNutriente) {
     paso40campos.push({
       id: 'clCambioNutrienteActivado',
@@ -1322,10 +1320,14 @@ function getCLPasos() {
       ],
     },
     { id: 'PC2', seccion: null, paso: 'PC·2',
-      desc: 'EC objetivo de esta recarga (µS/cm) y, si aplica, CalMag antes del abono.',
-      nota: 'Tras escribir el EC, <strong>sal del campo</strong> (toca fuera, Tab o Intro) para recalcular los ml de nutriente y CalMag en los pasos siguientes.',
+      desc: 'EC objetivo de esta mezcla (µS/cm) y, si aplica, CalMag antes del abono.',
+      nota:
+        (typeof hcCaminoUsaEcArranqueBaja === 'function' && hcCaminoUsaEcArranqueBaja(cfg)
+          ? 'En <strong>arranque</strong> (germinación, enraizado o primer llenado) la app propone EC baja según tu camino — no la media de floración del catálogo. '
+          : '') +
+        'Tras escribir el EC, <strong>sal del campo</strong> (toca fuera, Tab o Intro) para recalcular los ml de nutriente y CalMag en los pasos siguientes.',
       postCamposHtml:
-        hintVegGermHidro +
+        hintEcArranque +
         (infoCambioNutriente && infoCambioNutriente.hintHtml
           ? '<div class="cl-note cl-note--nut-bloom-hint" role="status">' + infoCambioNutriente.hintHtml + '</div>'
           : ''),
@@ -2288,7 +2290,7 @@ function cerrarChecklist() {
 function getChecklistCambioNutrienteInfo() {
   try {
     const cfg = state.configTorre || {};
-    if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+    if (typeof hcCaminoUsaEcArranqueBaja === 'function' && hcCaminoUsaEcArranqueBaja(cfg)) {
       return null;
     }
     const ctx = typeof hcGetRecomendacionNutrienteContexto === 'function'
