@@ -422,6 +422,16 @@ test('semilla_hidro post primer llenado: Inicio sin legacy ni guías redundantes
   assert.match(lc, /refreshLegacyInstalacionBanner[\s\S]{0,500}hcInicioOcultarGuiasPostPrimerLlenado/);
 });
 
+test('Inicio: aviso EC transición oculto si vacío o foco germinación', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const calc = read('js/hc-setup-calc-core.js');
+  const css = read('css/main.css');
+  assert.match(fase, /refreshEcTransicionAvisoAll[\s\S]{0,500}ecTransicionAvisoInicio/);
+  assert.match(fase, /ecAvisoInicio[\s\S]{0,280}inicioGermFoco/);
+  assert.match(calc, /function refreshEcTransicionAvisoAll[\s\S]{0,420}setup-hidden/);
+  assert.match(css, /\.ec-transicion-aviso:empty/);
+});
+
 test('semilla_hidro: esquema DWC visible en Sistema durante germinacion en cubo', () => {
   const fase = read('js/hc-camino-fase.js');
   const sis = read('js/hc-sistema-fase-camino.js');

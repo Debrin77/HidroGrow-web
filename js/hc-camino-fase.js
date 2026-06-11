@@ -825,7 +825,6 @@
     var idsOcultarHidro = [
       'dashOperativaHub',
       'dashInstalacionLifecycle',
-      'ecTransicionAvisoInicio',
       'dashGerminacionHub',
     ];
     idsOcultarHidro.forEach(function (id) {
@@ -970,6 +969,15 @@
     try {
       if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner(cfg);
     } catch (_) {}
+    try {
+      if (typeof refreshEcTransicionAvisoAll === 'function') refreshEcTransicionAvisoAll();
+    } catch (_) {}
+    var ecAvisoInicio = document.getElementById('ecTransicionAvisoInicio');
+    if (ecAvisoInicio) {
+      if (soloPropag || ocultarLcHidro || inicioGermFoco || !ecAvisoInicio.innerHTML.trim()) {
+        ecAvisoInicio.classList.add('setup-hidden');
+      }
+    }
     var enraizadoFoco =
       typeof hcEsquejeEnraizadoHubEsPrincipal === 'function' && hcEsquejeEnraizadoHubEsPrincipal(cfg);
     var madreFoco =

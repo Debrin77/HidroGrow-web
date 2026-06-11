@@ -617,10 +617,10 @@ function buildEcTransicionAvisoHtml() {
 
 function refreshEcTransicionAvisoAll() {
   const html = typeof buildEcTransicionAvisoHtml === 'function' ? buildEcTransicionAvisoHtml() : '';
+  const show = Boolean(html);
   ['ecTransicionAvisoInicio', 'ecTransicionAvisoMedir'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const show = Boolean(html);
     el.classList.toggle('setup-hidden', !show);
     el.innerHTML = show ? html : '';
   });
