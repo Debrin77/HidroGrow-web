@@ -670,6 +670,13 @@ test('semilla_hidro: modal plan y wizard sin textos de bandeja propagador', () =
   assert.match(wiz, /hcCaminoSemillaHidroSetupGerm\(\)\)[\s\S]{0,80}sec\.innerHTML = ''/);
 });
 
+test('checklist depósito: checklistTieneCalentador definido en getCLPasos', () => {
+  const cl = read('js/hc-setup-checklist.js');
+  assert.match(cl, /const checklistTieneCalentador/);
+  assert.match(cl, /checklistTieneCalentador \? \[/);
+  assert.match(cl, /equipamientoInstalado\.calentador/);
+});
+
 test('semilla_hidro: primer llenado sin matriz ni bloqueo cultivo', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
   const life = read('js/hc-instalacion-lifecycle.js');

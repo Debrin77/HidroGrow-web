@@ -1131,6 +1131,13 @@ function getCLPasos() {
   const nftCh = nftHyd ? nftHyd.nCh : 0;
   const nftHx = nftHyd ? nftHyd.nHx : 0;
   const shCl = ensureSensoresHardware();
+  const checklistTieneCalentador =
+    (Array.isArray(cfg.equipamiento) && cfg.equipamiento.includes('calentador')) ||
+    !!(
+      cfg.equipamientoInstalado &&
+      cfg.equipamientoInstalado.calentador &&
+      (cfg.equipamientoInstalado.calentador.id || cfg.equipamientoInstalado.calentador.marca)
+    );
   const hwLista = [shCl.ec && 'EC', shCl.ph && 'pH', shCl.humedad && 'humedad'].filter(Boolean);
   const paso6SeccionTitulo = hwLista.length ? null : '📊 Paso 6 — Registro';
   const paso40campos = [
