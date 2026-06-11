@@ -745,6 +745,37 @@ test('checklist 4.2: EC tras CalMag menor que meta final PC-2 en arranque', () =
   );
 });
 
+test('Sala semilla_hidro: municipio del asistente y equipamiento visible', () => {
+  const agua = read('js/hc-setup-agua-sustrato.js');
+  const sala = read('js/hc-medir-sala-layout.js');
+  const prem = read('js/hc-premium-wizard.js');
+  const equip = read('js/hc-luz-equip-sync.js');
+  assert.match(agua, /function hcAsegurarLocalidadMeteoDesdeAsistente/);
+  assert.match(agua, /Municipio del <strong>asistente<\/strong>/);
+  assert.match(sala, /function refreshSalaLocalidadDesdeAsistente/);
+  assert.match(sala, /renderMedirEquipamientoPanel\(\)/);
+  assert.match(prem, /ciudadPersist/);
+  assert.match(equip, /renderMedirEquipamientoPanel/);
+  assert.doesNotMatch(
+    sala,
+    /if \(hidroOper\) \{[\s\S]{0,400}sistemaEquipDetails[\s\S]{0,120}setup-hidden/
+  );
+});
+
+test('Sistema post primer llenado: hidro y propagador', () => {
+  const fase = read('js/hc-sistema-fase-camino.js');
+  const calc = read('js/hc-setup-wizard-core.js');
+  const cam = read('js/hc-camino-fase.js');
+  assert.match(fase, /depOk[\s\S]{0,200}!depOk[\s\S]{0,120}bloqueNut/);
+  assert.match(fase, /depOk[\s\S]{0,400}mezcla hidropónica/);
+  assert.match(fase, /Nutrientes en agua/);
+  assert.match(fase, /function applySistemaPostPrimerLlenadoChrome/);
+  assert.match(cam, /function hcSistemaDepositoRecuadroInformativo/);
+  assert.match(cam, /semilla_propagador[\s\S]{0,200}hcPropagadorTrasladoCompletado/);
+  assert.match(calc, /function buildSistemaDepositoInfoLitrosHtml/);
+  assert.match(calc, /applySistemaDepositoRecuadroInformativoUi/);
+});
+
 test('boot: gate de build, cache bust y recarga al cambiar versión', () => {
   const boot = read('js/hc-boot-loader.js');
   const state = read('js/hc-bootstrap-state.js');

@@ -17016,6 +17016,64 @@ html.hc-theme-dark .torre-sistema-dwc--solo-consulta .torre-dwc-input:disabled {
 .torre-sistema-dwc--solo-consulta #sysDwcTroncoVolBlock.sistema-dwc-sh-visible {
   display: block !important;
 }
+.torre-sistema-dwc--info-only .config-section-collapse-chevron {
+  display: none !important;
+}
+.torre-sistema-dwc--info-only .torre-sistema-panel-head {
+  pointer-events: none;
+  cursor: default;
+}
+.torre-sistema-dwc--info-only .torre-sistema-panel-head:hover,
+.torre-sistema-dwc--info-only .torre-sistema-panel-head:focus-visible {
+  background: transparent;
+}
+.torre-sistema-dwc--info-only #sistemaDwcAyudaBody {
+  display: block !important;
+}
+.torre-sistema-dwc--info-only #sistemaDwcAyudaBody > :not(#sistemaDepositoInfoRecuadro) {
+  display: none !important;
+}
+.sistema-deposito-info-recuadro {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(13, 148, 136, 0.08);
+  border: 1px solid rgba(13, 148, 136, 0.22);
+}
+.sistema-deposito-info-title {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #0f766e;
+}
+.sistema-deposito-info-dl {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 0 0 8px;
+}
+.sistema-deposito-info-dl dt {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+.sistema-deposito-info-dl dd {
+  margin: 2px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.sistema-deposito-info-ec {
+  margin: 8px 0 0;
+  font-size: 0.88rem;
+}
+.sistema-deposito-info-foot {
+  margin: 10px 0 0;
+}
+html.hc-theme-dark .sistema-deposito-info-dl dd {
+  color: #e2e8f0;
+}
 .torre-sistema-panel--rdwc .torre-sistema-panel-body {
   margin-top: 0;
 }

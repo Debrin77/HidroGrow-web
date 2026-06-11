@@ -398,6 +398,15 @@
       var esquemaArriba =
         typeof hcSistemaSemillaHidroMuestraEsquemaDwc === 'function' &&
         hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
+      var depOk =
+        typeof depositoListo === 'function' && depositoListo(cfg);
+      var bloqueNut = '';
+      if (!depOk) {
+        bloqueNut =
+          '<div class="hc-sis-prop-nut"><h3 class="hc-sis-prop-subtitle">Nutrientes (agua / cubo)</h3>' +
+          htmlNutrientesGerm(g, 'cubo') +
+          '</div>';
+      }
       return (
         '<section class="hc-sis-prop card">' +
         '<h2 class="hc-sis-prop-title">' +
@@ -412,7 +421,10 @@
             esc(typeof etiquetaFaseGermCorta === 'function' ? etiquetaFaseGermCorta(cfg) : 'en curso') +
             '</strong>.'
           : '. Configura el DWC/RDWC en el asistente para ver el esquema.') +
-        ' Marca las fases en <strong>Inicio</strong>; al completarlas, registra la plántula en la matriz.</p>' +
+        (depOk
+          ? ' El <strong>depósito ya está en mezcla hidropónica</strong> (primer llenado hecho): la EC y los ml del abono están en el checklist, no en la receta de bandeja propagador.'
+          : ' Marca las fases en <strong>Inicio</strong>; al completarlas, registra la plántula en la matriz.') +
+        '</p>' +
         '<div class="hc-sis-prop-grid">' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Fases</span><strong>' +
         fasesN +
@@ -421,11 +433,9 @@
         esc(String(diaN)) +
         '</strong></div>' +
         '<div class="hc-sis-prop-stat"><span class="hc-sis-prop-stat-lbl">Depósito</span><strong>' +
-        (typeof depositoListo === 'function' && depositoListo(cfg) ? 'Listo' : 'Pendiente') +
+        (depOk ? 'Listo' : 'Pendiente') +
         '</strong></div></div>' +
-        '<div class="hc-sis-prop-nut"><h3 class="hc-sis-prop-subtitle">Nutrientes (agua / cubo)</h3>' +
-        htmlNutrientesGerm(g, 'cubo') +
-        '</div>' +
+        bloqueNut +
         '<p class="hc-sis-prop-foot"><button type="button" class="btn btn-primary btn-sm" onclick="goTab(\'inicio\');setTimeout(function(){document.getElementById(\'dashGerminacionHub\')?.scrollIntoView({behavior:\'smooth\'})},200)">Marcar fases en Inicio</button></p></section>'
       );
     }
@@ -641,20 +651,27 @@
         }
       } catch (_) {}
       try {
-        applySistemaSemillaHidroOperativaChrome(cfg || cfgActiva());
+        applySistemaPostPrimerLlenadoChrome(cfg || cfgActiva());
       } catch (_) {}
     }
   }
 
-  function applySistemaSemillaHidroOperativaChrome(cfg) {
+  function applySistemaPostPrimerLlenadoChrome(cfg) {
     cfg = cfg || cfgActiva();
-    if (typeof hcMedirEsSemillaHidro !== 'function' || !hcMedirEsSemillaHidro(cfg)) return;
-    var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
-    if (ecphCard) {
-      ecphCard.style.display = 'none';
-      ecphCard.hidden = true;
-      ecphCard.classList.add('setup-hidden');
-      ecphCard.setAttribute('aria-hidden', 'true');
+    var recuadro =
+      typeof hcSistemaDepositoRecuadroInformativo === 'function' &&
+      hcSistemaDepositoRecuadroInformativo(cfg);
+    var hidroOperSh =
+      typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg);
+    if (!recuadro && !hidroOperSh) return;
+    if (hidroOperSh) {
+      var ecphCard = document.getElementById('sistemaEcPhStrategyCard');
+      if (ecphCard) {
+        ecphCard.style.display = 'none';
+        ecphCard.hidden = true;
+        ecphCard.classList.add('setup-hidden');
+        ecphCard.setAttribute('aria-hidden', 'true');
+      }
     }
     try {
       if (typeof applySistemaTipoPanelesColapsablesUI === 'function') {
@@ -666,11 +683,17 @@
         applySistemaDwcSoloConsultaUi(cfg);
       }
     } catch (_) {}
-    try {
-      if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
-        applySistemaEsquemaChromeSemillaHidro(cfg);
-      }
-    } catch (_) {}
+    if (hidroOperSh) {
+      try {
+        if (typeof applySistemaEsquemaChromeSemillaHidro === 'function') {
+          applySistemaEsquemaChromeSemillaHidro(cfg);
+        }
+      } catch (_) {}
+    }
+  }
+
+  function applySistemaSemillaHidroOperativaChrome(cfg) {
+    applySistemaPostPrimerLlenadoChrome(cfg);
   }
 
   function refreshTorreExtrasCaminoUi(cfg) {

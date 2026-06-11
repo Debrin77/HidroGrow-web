@@ -1403,7 +1403,52 @@ function textoLocalidadMeteoCfg(cfg) {
   if (m) return m;
   const ci = (c.ciudad || '').trim();
   if (ci) return ci.split(',')[0].trim();
+  const sd = typeof setupData !== 'undefined' && setupData && setupData.ciudad ? String(setupData.ciudad).trim() : '';
+  if (sd) return sd.split(',')[0].trim();
   return '';
+}
+
+/**
+ * Copia municipio/coords del asistente (Entorno) a `localidadMeteo` si la Sala aún no los tiene.
+ * @returns {boolean} true si se escribió algo en cfg
+ */
+function hcAsegurarLocalidadMeteoDesdeAsistente(cfg) {
+  cfg = cfg || state.configTorre || {};
+  if (!cfg || typeof cfg !== 'object') return false;
+  let changed = false;
+  const sd = typeof setupData !== 'undefined' ? setupData : null;
+  const ciudadSetup = sd && sd.ciudad ? String(sd.ciudad).trim() : '';
+  const ciudadCfg = (cfg.ciudad || '').trim();
+  const fuente =
+    (cfg.localidadMeteo || '').trim() ||
+    (ciudadCfg ? ciudadCfg.split(',')[0].trim() : '') ||
+    (ciudadSetup ? ciudadSetup.split(',')[0].trim() : '');
+  if (!fuente) return false;
+  if (!(cfg.localidadMeteo || '').trim()) {
+    cfg.localidadMeteo = fuente;
+    changed = true;
+  }
+  if (!ciudadCfg && ciudadSetup) {
+    cfg.ciudad = ciudadSetup;
+    changed = true;
+  }
+  const latSd = sd != null ? Number(sd.lat) : NaN;
+  const lonSd = sd != null ? Number(sd.lon) : NaN;
+  if (!Number.isFinite(Number(cfg.lat)) && Number.isFinite(latSd)) {
+    cfg.lat = latSd;
+    changed = true;
+  }
+  if (!Number.isFinite(Number(cfg.lon)) && Number.isFinite(lonSd)) {
+    cfg.lon = lonSd;
+    changed = true;
+  }
+  if (changed) {
+    try {
+      if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
+      if (typeof saveState === 'function') saveState();
+    } catch (_) {}
+  }
+  return changed;
 }
 
 /** Sincroniza líneas de ubicación en Inicio, Riego y estados derivados. */
@@ -1450,7 +1495,19 @@ function refreshMedirLocalidadMeteoLeadUI() {
     typeof instalacionEsUbicacionInterior === 'function' && instalacionEsUbicacionInterior(cfg);
   const prop =
     typeof hcMeteoRequiereLocalidad === 'function' && hcMeteoRequiereLocalidad(cfg);
-  if (prop) {
+  const cam =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+  const mun =
+    typeof textoLocalidadMeteoCfg === 'function' ? textoLocalidadMeteoCfg(cfg) : '';
+  if (prop && mun) {
+    lead.innerHTML =
+      'Municipio del <strong>asistente</strong> (paso Entorno): <strong>' +
+      mun +
+      '</strong>. Meteo y avisos usan esta localidad; corrígelo aquí solo si cambió.';
+  } else if (prop && cam === 'semilla_hidro') {
+    lead.innerHTML =
+      'Camino <strong>semilla en hidro</strong>: indica el municipio de la instalación (ya lo puedes haber definido en el asistente → Entorno). Meteo usará esa zona.';
+  } else if (prop) {
     lead.innerHTML =
       'Camino <strong>propagador</strong>: indica el municipio donde está la instalación (interior o exterior). La pestaña <strong>Meteo</strong> mostrará la previsión de esa zona. También puedes definirlo en el <strong>asistente</strong> (paso Entorno).';
   } else if (int) {
@@ -1488,8 +1545,12 @@ function refreshAvisoUbicacionExteriorPendiente() {
   const partes = [];
   if (faltaMun) partes.push('el <strong>municipio</strong> (clima y avisos)');
   if (faltaCoords) partes.push('las <strong>coordenadas</strong> en el mapa del paso de ubicación');
+  const cam =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
   const ctxLbl = reqLoc
-    ? 'camino propagador'
+    ? cam === 'semilla_hidro'
+      ? 'semilla en hidro'
+      : 'camino propagador'
     : interior
       ? 'interior'
       : 'exterior';
@@ -1542,10 +1603,18 @@ window.persistLocalidadMeteo = persistLocalidadMeteo;
 function cargarLocalidadMeteoUI() {
   const el = document.getElementById('inputLocalidadMeteo');
   if (!el) return;
+  if (typeof hcAsegurarLocalidadMeteoDesdeAsistente === 'function') {
+    hcAsegurarLocalidadMeteoDesdeAsistente(state.configTorre);
+  }
   try {
     if (typeof refreshMedirLocalidadMeteoLeadUI === 'function') refreshMedirLocalidadMeteoLeadUI();
   } catch (_) {}
-  const v = (state.configTorre && state.configTorre.localidadMeteo) ? String(state.configTorre.localidadMeteo) : '';
+  const v =
+    typeof textoLocalidadMeteoCfg === 'function'
+      ? textoLocalidadMeteoCfg(state.configTorre)
+      : (state.configTorre && state.configTorre.localidadMeteo)
+        ? String(state.configTorre.localidadMeteo)
+        : '';
   el.value = v;
   const btn = document.getElementById('btnMunicipioGrifoAMeteo');
   if (btn) {

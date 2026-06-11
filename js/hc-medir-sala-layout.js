@@ -629,21 +629,6 @@
         intGrow.setAttribute('aria-hidden', 'true');
         intGrow.style.display = 'none';
       }
-      var equipDet = document.getElementById('sistemaEquipDetails');
-      var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
-      var flujoGuiado = document.getElementById('salaPropagadorFlujoGuiado');
-      if (equipDet) {
-        equipDet.classList.add('setup-hidden');
-        equipDet.open = false;
-      }
-      if (montajeDet) {
-        montajeDet.classList.add('setup-hidden');
-        montajeDet.open = false;
-      }
-      if (flujoGuiado) {
-        flujoGuiado.classList.add('setup-hidden');
-        flujoGuiado.innerHTML = '';
-      }
     }
     var stabAgua = document.getElementById('stab-agua');
     if (stabAgua) {
@@ -770,8 +755,20 @@
     bindSalaEquipCollapsibles();
     var det = document.getElementById('sistemaEquipDetails');
     var montajeDet = document.getElementById('sistemaMontajeChecksDetails');
+    var cfgEq =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
     if (opts.lightOnly) {
-      if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen();
+      if (typeof refreshSistemaEquipResumen === 'function') refreshSistemaEquipResumen(cfgEq);
+      var hidroOpLo =
+        typeof hcSemillaHidroUiOperativaLista === 'function' && hcSemillaHidroUiOperativaLista(cfgEq);
+      if (
+        hidroOpLo &&
+        det &&
+        !det.classList.contains('setup-hidden') &&
+        typeof renderMedirEquipamientoPanel === 'function'
+      ) {
+        renderMedirEquipamientoPanel();
+      }
       return;
     }
     if (det && det.open && typeof renderMedirEquipamientoPanel === 'function') {
@@ -812,12 +809,23 @@
     );
   }
 
+  function refreshSalaLocalidadDesdeAsistente(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    var panelLoc = document.getElementById('panelLocalidadMeteo');
+    if (!panelLoc || panelLoc.classList.contains('setup-hidden')) return;
+    if (typeof hcAsegurarLocalidadMeteoDesdeAsistente === 'function') {
+      hcAsegurarLocalidadMeteoDesdeAsistente(cfg);
+    }
+    if (typeof cargarLocalidadMeteoUI === 'function') cargarLocalidadMeteoUI();
+  }
+
   function refreshSalaTabLight(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
     ensureSalaTorreBanner();
     bindSalaEquipCollapsibles();
     ocultarRecargaUiSemillaHidro(cfg);
     refreshSalaSubTabsCaminoUi(cfg);
+    refreshSalaLocalidadDesdeAsistente(cfg);
     if (typeof applySalaMontajeRecomendadoUi === 'function') applySalaMontajeRecomendadoUi(cfg);
     refreshSalaEquipMontaje({ lightOnly: true });
     if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();

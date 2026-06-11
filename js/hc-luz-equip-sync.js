@@ -631,9 +631,11 @@
       cfg = cfg || getCfg();
       if (applySalaSemillaHidroOperativaChrome(cfg)) {
         if (typeof global.refreshSistemaEquipResumen === 'function') {
-          global.refreshSistemaEquipResumen();
+          global.refreshSistemaEquipResumen(cfg);
         }
-        if (typeof global.renderSalaLayoutPanel === 'function') {
+        if (typeof global.renderMedirEquipamientoPanel === 'function') {
+          global.renderMedirEquipamientoPanel();
+        } else if (typeof global.renderSalaLayoutPanel === 'function') {
           global.renderSalaLayoutPanel();
         }
         return;

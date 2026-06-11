@@ -1056,12 +1056,18 @@
     if (typeof persistPremiumNutrienteGermToConfig === 'function') persistPremiumNutrienteGermToConfig(cfg);
     if (typeof hcAsegurarNutrienteGermEnCfg === 'function') hcAsegurarNutrienteGermEnCfg(cfg);
     if (typeof hcGerminacionSyncDesdePremium === 'function') hcGerminacionSyncDesdePremium(cfg);
-    if (typeof setupData !== 'undefined' && setupData.ciudad) {
-      cfg.ciudad = setupData.ciudad;
-      cfg.lat = setupData.lat;
-      cfg.lon = setupData.lon;
-      const firstM = String(setupData.ciudad).split(',')[0].trim();
-      if (firstM) cfg.localidadMeteo = firstM;
+    const ciudadPersist =
+      (typeof setupData !== 'undefined' && setupData.ciudad) || cfg.ciudad || '';
+    if (ciudadPersist) {
+      cfg.ciudad = String(ciudadPersist).trim();
+      if (typeof setupData !== 'undefined') {
+        if (setupData.lat != null) cfg.lat = setupData.lat;
+        if (setupData.lon != null) cfg.lon = setupData.lon;
+      }
+      const firstM = cfg.ciudad.split(',')[0].trim();
+      if (firstM && !(cfg.localidadMeteo && String(cfg.localidadMeteo).trim())) {
+        cfg.localidadMeteo = firstM;
+      }
     }
     if (Number.isFinite(p.horasLuz)) cfg.horasLuz = p.horasLuz;
     if (p.intensidadLuz) cfg.interiorIntensidadLuz = p.intensidadLuz;

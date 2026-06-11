@@ -1125,11 +1125,41 @@
     return base;
   }
 
+  /** Tras primer llenado: depósito solo informativo (litros del checklist). */
+  function hcSistemaDepositoRecuadroInformativo(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof depositoListo !== 'function' || !depositoListo(cfg)) return false;
+    var c = cam(cfg);
+    if (c === 'semilla_hidro') return true;
+    if (
+      c === 'semilla_propagador' &&
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      hcPropagadorTrasladoCompletado(cfg) &&
+      typeof hidroInstalacionCerrada === 'function' &&
+      hidroInstalacionCerrada(cfg)
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   /** Depósito DWC en Sistema: solo consulta (valores fijados en asistente). */
   function hcSistemaDwcSoloConsulta(cfg) {
     cfg = cfg || cfgActiva();
     if (typeof hcMedirEsSemillaHidro === 'function' && hcMedirEsSemillaHidro(cfg)) return true;
-    return hcSistemaSemillaHidroMuestraEsquemaDwc(cfg);
+    if (typeof hcSistemaSemillaHidroMuestraEsquemaDwc === 'function' && hcSistemaSemillaHidroMuestraEsquemaDwc(cfg)) {
+      return true;
+    }
+    if (
+      cam(cfg) === 'semilla_propagador' &&
+      typeof hcPropagadorTrasladoCompletado === 'function' &&
+      hcPropagadorTrasladoCompletado(cfg) &&
+      typeof hidroInstalacionCerrada === 'function' &&
+      hidroInstalacionCerrada(cfg)
+    ) {
+      return true;
+    }
+    return false;
   }
 
   /** Depósito DWC/RDWC en Sistema: colapsado por defecto en semilla_hidro operativa. */
@@ -1376,6 +1406,7 @@
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
   global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
   global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
+  global.hcSistemaDepositoRecuadroInformativo = hcSistemaDepositoRecuadroInformativo;
   global.hcSistemaSemillaHidroMuestraEsquemaDwc = hcSistemaSemillaHidroMuestraEsquemaDwc;
   global.hcEsquejeEnraizadoHubEsPrincipal = hcEsquejeEnraizadoHubEsPrincipal;
   global.hcMadreHubEsPrincipal = hcMadreHubEsPrincipal;
