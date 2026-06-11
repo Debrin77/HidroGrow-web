@@ -112,7 +112,13 @@
       { id: 'sala', label: 'Sala configurada', onclick: 'typeof goTab===\'function\'&&goTab(\'sala\')', btnTxt: 'Sala' },
       { id: 'montaje', label: 'Montaje de sala', onclick: 'typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala()', btnTxt: 'Montaje' },
       { id: 'hidro', label: 'DWC/RDWC cerrado', onclick: 'typeof abrirSetup===\'function\'&&abrirSetup()', btnTxt: 'Asistente' },
-      { id: 'deposito', label: 'Primer llenado (germinar)', onclick: 'typeof abrirChecklist===\'function\'&&abrirChecklist(false)', btnTxt: 'Depósito' },
+      {
+        id: 'deposito',
+        label: 'Primer llenado (germinar)',
+        onclick:
+          'typeof hcAbrirChecklistPrimerLlenado===\'function\'?hcAbrirChecklistPrimerLlenado({}):(typeof abrirChecklist===\'function\'&&abrirChecklist(false))',
+        btnTxt: 'Depósito',
+      },
     ];
     return (
       '<ul class="hc-sis-fase-pasos">' +
@@ -276,7 +282,8 @@
         {
           id: 'deposito',
           label: 'Primer llenado del depósito madre',
-          onclick: 'typeof abrirChecklist===\'function\'&&abrirChecklist(false)',
+          onclick:
+            'typeof hcAbrirChecklistPrimerLlenado===\'function\'?hcAbrirChecklistPrimerLlenado({}):(typeof abrirChecklist===\'function\'&&abrirChecklist(false))',
           btnTxt: 'Checklist',
         },
       ],

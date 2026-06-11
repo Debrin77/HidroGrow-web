@@ -2055,6 +2055,9 @@ function getCLPasos() {
 function getCLTotal() { return getCLPasos().length; }
 
 function intentarAbrirChecklistDesdeInicio(esPrimeraVez) {
+  if (typeof hcAbrirChecklistPrimerLlenado === 'function') {
+    return hcAbrirChecklistPrimerLlenado({ saltarPreguntaRuta: !!esPrimeraVez });
+  }
   if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) {
     return false;
   }

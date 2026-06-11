@@ -197,7 +197,18 @@
       pasoIdx = montajeEstaVerificado(cfg) ? 1 : 1;
     } else {
       pasos[0].done = true;
-      if (!montajeEstaVerificado(cfg)) {
+      var camLc = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      if (
+        camLc === 'semilla_hidro' &&
+        typeof hcSemillaHidroListoParaPrimerLlenado === 'function' &&
+        hcSemillaHidroListoParaPrimerLlenado(cfg)
+      ) {
+        pasos[1].done = true;
+        pasos[2].done = true;
+        pasos[3].current = true;
+        fase = 'deposito_pendiente';
+        pasoIdx = 3;
+      } else if (!montajeEstaVerificado(cfg)) {
         fase = 'montaje_pendiente';
         pasoIdx = 1;
         pasos[1].current = true;
@@ -451,6 +462,12 @@
     if (!lc.esPrimeraInstalacion || lc.operativaDiaria) return null;
     var cfg = cfgActiva();
     if (
+      typeof hcSemillaHidroListoParaPrimerLlenado === 'function' &&
+      hcSemillaHidroListoParaPrimerLlenado(cfg)
+    ) {
+      return null;
+    }
+    if (
       typeof enraizadoMontajeCompleto === 'function' &&
       typeof getCaminoCultivo === 'function' &&
       getCaminoCultivo(cfg) === 'esqueje_hidro' &&
@@ -579,6 +596,39 @@
     });
   }
 
+  function hcAbrirChecklistPrimerLlenado(opts) {
+    opts = opts && typeof opts === 'object' ? opts : {};
+    if (typeof sistemaEstaOperativa === 'function' && !sistemaEstaOperativa()) {
+      if (typeof showToast === 'function') {
+        showToast(
+          typeof getMensajeStandbyContinuar === 'function'
+            ? getMensajeStandbyContinuar()
+            : '⏸ Instalación en stand-by. Reactiva modo operativa para continuar.',
+          true
+        );
+      }
+      return false;
+    }
+    if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito(opts)) {
+      return false;
+    }
+    if (
+      typeof torreBloqueaChecklistPorFaltaDatosCultivo === 'function' &&
+      torreBloqueaChecklistPorFaltaDatosCultivo()
+    ) {
+      if (typeof mostrarChecklistBloqueadoCultivoSistema === 'function') {
+        mostrarChecklistBloqueadoCultivoSistema({ desdeWizard: false });
+      }
+      return false;
+    }
+    if (typeof abrirChecklist !== 'function') return false;
+    abrirChecklist(false, {
+      saltarPreguntaRuta: opts.saltarPreguntaRuta,
+      omitirRequisitoCultivo: !!opts.omitirRequisitoCultivo,
+    });
+    return true;
+  }
+
   function hcGateChecklistDeposito(opts) {
     opts = opts || {};
     var lc = getInstalacionLifecycle();
@@ -678,8 +728,7 @@
         hcIrCultivoMatriz(true);
         break;
       case 'abrirChecklist':
-        if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) return;
-        if (typeof abrirChecklist === 'function') abrirChecklist(false, { saltarPreguntaRuta: false });
+        hcAbrirChecklistPrimerLlenado({ saltarPreguntaRuta: false });
         break;
       case 'irMedir':
         hcIrRutinaDia();
@@ -1127,6 +1176,7 @@
   global.getInstalacionLifecycle = getInstalacionLifecycle;
   global.instalacionGuidadaActiva = instalacionGuidadaActiva;
   global.hcGateChecklistDeposito = hcGateChecklistDeposito;
+  global.hcAbrirChecklistPrimerLlenado = hcAbrirChecklistPrimerLlenado;
   global.hcIrMontajeSala = hcIrMontajeSala;
   global.hcAbrirMontajeSalaChecklist = hcAbrirMontajeSalaChecklist;
   global.hcIrCultivoMatriz = hcIrCultivoMatriz;

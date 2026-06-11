@@ -1712,6 +1712,26 @@
     return !!(cfg && cfg.instalacionPrimerLlenadoAt);
   }
 
+  /** Semilla en hidro: primer llenado tras prep + sala + montaje + DWC, sin matriz ni 6 fases previas. */
+  function hcSemillaHidroListoParaPrimerLlenado(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_hidro') return false;
+    if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
+      return false;
+    }
+    if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+      return false;
+    }
+    if (typeof montajeSalaPreGermOk === 'function' && !montajeSalaPreGermOk(cfg)) {
+      return false;
+    }
+    if (typeof hidroInstalacionCerrada === 'function' && !hidroInstalacionCerrada(cfg)) {
+      return false;
+    }
+    if (typeof depositoListo === 'function' && depositoListo(cfg)) return false;
+    return true;
+  }
+
   function cultivoMatrizListo() {
     if (typeof torreTieneAlgunaVariedadAsignada !== 'function' || !torreTieneAlgunaVariedadAsignada()) {
       return false;
@@ -2393,6 +2413,7 @@
   global.hidroInstalacionCerrada = hidroInstalacionCerrada;
   global.germinacionListaParaConfigHidro = germinacionListaParaConfigHidro;
   global.depositoListo = depositoListo;
+  global.hcSemillaHidroListoParaPrimerLlenado = hcSemillaHidroListoParaPrimerLlenado;
   global.persistCaminoToConfig = persistCaminoToConfig;
   global.hcClearSetupSalaPreGermFlags = hcClearSetupSalaPreGermFlags;
   global.hcPropagadorAsistenteGermPendiente = hcPropagadorAsistenteGermPendiente;

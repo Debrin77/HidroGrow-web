@@ -382,8 +382,9 @@ function torreBloqueaChecklistPorFaltaDatosCultivo() {
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
   if (
     cam === 'semilla_hidro' &&
-    typeof hcGerminacionActiva === 'function' &&
-    hcGerminacionActiva(cfg)
+    ((typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) ||
+      (typeof hcSemillaHidroListoParaPrimerLlenado === 'function' &&
+        hcSemillaHidroListoParaPrimerLlenado(cfg)))
   ) {
     return false;
   }

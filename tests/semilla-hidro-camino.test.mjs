@@ -669,3 +669,19 @@ test('semilla_hidro: modal plan y wizard sin textos de bandeja propagador', () =
   assert.match(plan, /esHidroModal[\s\S]{0,400}depósito DWC\/RDWC/);
   assert.match(wiz, /hcCaminoSemillaHidroSetupGerm\(\)\)[\s\S]{0,80}sec\.innerHTML = ''/);
 });
+
+test('semilla_hidro: primer llenado sin matriz ni bloqueo cultivo', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  const life = read('js/hc-instalacion-lifecycle.js');
+  const calc = read('js/hc-setup-calc-core.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  assert.match(cultivo, /function hcSemillaHidroListoParaPrimerLlenado/);
+  assert.match(life, /hcSemillaHidroListoParaPrimerLlenado\(cfg\)[\s\S]{0,120}return null/);
+  assert.match(life, /function hcAbrirChecklistPrimerLlenado/);
+  assert.match(calc, /hcSemillaHidroListoParaPrimerLlenado\(cfg\)/);
+  assert.match(germ, /hcAbrirChecklistPrimerLlenado/);
+  assert.doesNotMatch(
+    germ,
+    /deposito_llenado[\s\S]{0,200}!hcGateChecklistDeposito\(\{\}\)\)[\s\S]{0,80}abrirChecklist\(false\)/
+  );
+});

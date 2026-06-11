@@ -1032,9 +1032,16 @@
           );
           if (typeof abrirSetupFaseHidro === 'function') setTimeout(abrirSetupFaseHidro, 400);
         } else if (bloqueo === 'deposito_llenado') {
-          showToast('Completa el primer llenado del depósito (checklist) para iniciar la germinación.', true);
-          if (typeof hcGateChecklistDeposito === 'function' && !hcGateChecklistDeposito({})) {
-            if (typeof abrirChecklist === 'function') setTimeout(function () { abrirChecklist(false); }, 400);
+          if (typeof hcAbrirChecklistPrimerLlenado === 'function') {
+            setTimeout(function () {
+              hcAbrirChecklistPrimerLlenado({});
+            }, 200);
+          } else if (typeof abrirChecklist === 'function') {
+            setTimeout(function () {
+              abrirChecklist(false);
+            }, 200);
+          } else if (typeof showToast === 'function') {
+            showToast('Completa el primer llenado del depósito (checklist) para iniciar la germinación.', true);
           }
         } else if (bloqueo === 'plan_germ') {
           var camPlan =
@@ -1985,7 +1992,7 @@
             '</div></div>' +
             (typeof renderHubLlenadoGermHidroHtml === 'function' ? renderHubLlenadoGermHidroHtml(cfg) : '') +
             '<p class="hc-germ-hub-sistema-cta">' +
-            '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirChecklist===\'function\'&&abrirChecklist(false)">Checklist depósito</button> ' +
+            '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirChecklistPrimerLlenado===\'function\'?hcAbrirChecklistPrimerLlenado({}):(typeof abrirChecklist===\'function\'&&abrirChecklist(false))">Checklist depósito</button> ' +
             '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">Ver sistema</button></p></div>';
           refreshDashPropagadorOscuridadBanner(cfg);
           refreshSalaPropagadorDomoPanel(cfg);
@@ -2132,7 +2139,7 @@
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>Primer llenado.</strong> Completa el checklist del depósito para iniciar la germinación en el cubo. ' +
-        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirChecklist===\'function\'&&abrirChecklist(false)">Checklist depósito</button></div>';
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirChecklistPrimerLlenado===\'function\'?hcAbrirChecklistPrimerLlenado({}):(typeof abrirChecklist===\'function\'&&abrirChecklist(false))">Checklist depósito</button></div>';
     } else if (bloqueoSala === 'sala_config') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
