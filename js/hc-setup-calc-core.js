@@ -1059,6 +1059,56 @@ function getPhOptimaTorre(nut, cfg) {
 // AVISO: nutriente veg vs floración (cultivos de fruto)
 // ══════════════════════════════════════════════════
 
+/**
+ * semilla_hidro: primer llenado y germinación en cubo exigen línea VEG (EC baja), no BLOOM.
+ */
+function hcSemillaHidroUsaNutrienteVegGerm(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo(cfg) !== 'semilla_hidro') {
+    return false;
+  }
+  if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
+    return false;
+  }
+  if (typeof getSistemaFaseCamino === 'function') {
+    var fase = getSistemaFaseCamino(cfg);
+    if (fase === 'prep_hidro' || fase === 'germ_cubo') return true;
+  }
+  if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
+  var st = typeof state !== 'undefined' ? state : {};
+  if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) {
+    return true;
+  }
+  var g = cfg.germinacionFlow;
+  if (g && !g.trasladoAt && g.activo !== true) {
+    if (typeof depositoPrimerLlenadoOk === 'function' && depositoPrimerLlenadoOk(cfg, st)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function hcSemillaHidroEcMetaGerminacionMicroS(cfg) {
+  cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+  var vid =
+    (cfg.germinacionFlow && cfg.germinacionFlow.variedadId) ||
+    (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) ||
+    '';
+  var faseId =
+    typeof hcGerminacionFaseActualId === 'function'
+      ? hcGerminacionFaseActualId(cfg)
+      : typeof getSistemaFaseCamino === 'function'
+        ? getSistemaFaseCamino(cfg) || 'dwc'
+        : 'dwc';
+  if (typeof getGerminacionRangosMonitoreo === 'function') {
+    var r = getGerminacionRangosMonitoreo(vid, faseId, cfg);
+    if (r && r.ec && Number.isFinite(r.ec.min) && Number.isFinite(r.ec.max)) {
+      return Math.round((r.ec.min + r.ec.max) / 2);
+    }
+  }
+  return 400;
+}
+
 function torreTieneAlgunaPlantaDeFrutoActiva() {
   try {
     const tor = state.torre || [];
@@ -1194,8 +1244,23 @@ function hcGetFechaSugeridaCambioVegABloomMs() {
 }
 
 function hcGetRecomendacionNutrienteContexto() {
+  const cfg = state.configTorre || {};
   const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
   const uso = hcNutrienteFaseUso(nut);
+  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+    return {
+      actual: uso,
+      recomendado: 'veg',
+      hayFruto: false,
+      fase: 'germinacion',
+      conFaseReal: true,
+      faseFlor: false,
+      fechaCambioMs: null,
+      fechaCambioTxt: '',
+      recomendadoBloomPorFecha: false,
+      semillaHidroGerm: true,
+    };
+  }
   const rec = typeof getRecomendacionEcPhTorre === 'function' ? getRecomendacionEcPhTorre() : null;
   const fase = rec && rec.faseDominante ? String(rec.faseDominante) : '';
   const conFaseReal = !!(rec && rec.conFaseReal);
@@ -1234,6 +1299,9 @@ function hcGetAvisoCambioNutrientePorFase(contexto) {
   const cfg = state.configTorre || {};
   const nut = typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null;
   if (!nut) return null;
+  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+    return null;
+  }
 
   const uso = hcNutrienteFaseUso(nut);
   const hayFruto = torreTieneAlgunaPlantaDeFrutoActiva();
@@ -1353,6 +1421,13 @@ function getFactorArranquePlantulaHidro() {
 /** EC meta (µS/cm) para recarga / checklist: manual en torre o intermedio óptimo automático */
 function getRecargaEcMetaMicroS() {
   const cfg = state.configTorre || {};
+  if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+    const manualGerm = Number(cfg.checklistEcObjetivoUs);
+    if (Number.isFinite(manualGerm) && manualGerm >= 200 && manualGerm <= 6000) {
+      return Math.round(manualGerm);
+    }
+    return hcSemillaHidroEcMetaGerminacionMicroS(cfg);
+  }
   const strategy = getEcPhStrategy(cfg);
   if (strategy === 'manual') {
     const m = getEcObjetivoManualUs(cfg);

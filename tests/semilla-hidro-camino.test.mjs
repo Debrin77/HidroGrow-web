@@ -692,3 +692,16 @@ test('semilla_hidro: primer llenado sin matriz ni bloqueo cultivo', () => {
     /deposito_llenado[\s\S]{0,200}!hcGateChecklistDeposito\(\{\}\)\)[\s\S]{0,80}abrirChecklist\(false\)/
   );
 });
+
+test('semilla_hidro: primer llenado y germ fuerzan VEG, no BLOOM', () => {
+  const calc = read('js/hc-setup-calc-core.js');
+  const cl = read('js/hc-setup-checklist.js');
+  const dash = read('js/app-hc-torres-badges-notifs.js');
+  assert.match(calc, /function hcSemillaHidroUsaNutrienteVegGerm/);
+  assert.match(calc, /semillaHidroGerm: true/);
+  assert.match(calc, /recomendado: 'veg'/);
+  assert.match(calc, /hcSemillaHidroUsaNutrienteVegGerm\(cfg\)[\s\S]{0,80}return null/);
+  assert.match(cl, /hcSemillaHidroUsaNutrienteVegGerm\(cfg\)[\s\S]{0,60}return null/);
+  assert.match(cl, /cl-note--nut-veg-germ/);
+  assert.match(dash, /hcSemillaHidroUsaNutrienteVegGerm/);
+});

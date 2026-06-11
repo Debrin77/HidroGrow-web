@@ -2068,10 +2068,7 @@ function actualizarBadgesNutriente() {
   const camDash =
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
   const dashSemillaHidroGerm =
-    camDash === 'semilla_hidro' &&
-    ((typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) ||
-      (typeof getSistemaFaseCamino === 'function' &&
-        (getSistemaFaseCamino(cfg) === 'prep_hidro' || getSistemaFaseCamino(cfg) === 'germ_cubo')));
+    typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg);
   const dashUsaGermNut =
     propagDashInicio ||
     dashSemillaHidroGerm ||
@@ -2137,8 +2134,12 @@ function actualizarBadgesNutriente() {
           : null;
       var ecMin = rangosHidro && rangosHidro.ec ? rangosHidro.ec.min : 400;
       var ecMax = rangosHidro && rangosHidro.ec ? rangosHidro.ec.max : 800;
+      var usoNutGerm =
+        nut && typeof hcNutrienteFaseUso === 'function' ? hcNutrienteFaseUso(nut) : 'unknown';
+      var usoGermTxt =
+        usoNutGerm === 'bloom' ? 'BLOOM' : usoNutGerm === 'both' ? 'BOTH' : usoNutGerm === 'veg' ? 'VEG' : '—';
       if (dashEstado) {
-        dashEstado.textContent = nut ? 'Actual: VEG' : 'Actual: —';
+        dashEstado.textContent = nut ? 'Actual: ' + usoGermTxt : 'Actual: —';
       }
       if (dashRecomendado) {
         dashRecomendado.textContent = nut
@@ -2146,8 +2147,9 @@ function actualizarBadgesNutriente() {
           : 'Recomendado ahora: VEG';
       }
       if (dashTagEstado) {
-        dashTagEstado.classList.remove('is-mismatch', 'is-germ');
-        dashTagEstado.classList.add('is-match');
+        dashTagEstado.classList.remove('is-germ');
+        dashTagEstado.classList.toggle('is-match', usoNutGerm === 'veg' || usoNutGerm === 'both');
+        dashTagEstado.classList.toggle('is-mismatch', usoNutGerm === 'bloom');
       }
       if (dashFuente) dashFuente.textContent = 'Fuente: germinación en cubo · línea veg';
       if (dashRazon) {

@@ -1158,6 +1158,10 @@ function getCLPasos() {
     });
   }
   const infoCambioNutriente = getChecklistCambioNutrienteInfo();
+  const hintVegGermHidro =
+    typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)
+      ? '<div class="cl-note cl-note--nut-veg-germ" role="status">🌱 <strong>Semilla en hidro:</strong> mantén la línea <strong>VEG</strong> elegida en el configurador y EC baja en el depósito hasta enraizar. El cambio a <strong>BLOOM</strong> corresponde a prefloración/floración, no a la germinación.</div>'
+      : '';
   if (infoCambioNutriente) {
     paso40campos.push({
       id: 'clCambioNutrienteActivado',
@@ -1321,9 +1325,10 @@ function getCLPasos() {
       desc: 'EC objetivo de esta recarga (µS/cm) y, si aplica, CalMag antes del abono.',
       nota: 'Tras escribir el EC, <strong>sal del campo</strong> (toca fuera, Tab o Intro) para recalcular los ml de nutriente y CalMag en los pasos siguientes.',
       postCamposHtml:
-        infoCambioNutriente && infoCambioNutriente.hintHtml
+        hintVegGermHidro +
+        (infoCambioNutriente && infoCambioNutriente.hintHtml
           ? '<div class="cl-note cl-note--nut-bloom-hint" role="status">' + infoCambioNutriente.hintHtml + '</div>'
-          : '',
+          : ''),
       campos: paso40campos,
     },
   ];
@@ -2283,6 +2288,9 @@ function cerrarChecklist() {
 function getChecklistCambioNutrienteInfo() {
   try {
     const cfg = state.configTorre || {};
+    if (typeof hcSemillaHidroUsaNutrienteVegGerm === 'function' && hcSemillaHidroUsaNutrienteVegGerm(cfg)) {
+      return null;
+    }
     const ctx = typeof hcGetRecomendacionNutrienteContexto === 'function'
       ? hcGetRecomendacionNutrienteContexto()
       : null;
