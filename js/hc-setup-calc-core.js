@@ -1190,8 +1190,8 @@ function hcCaminoUsaEcArranqueBaja(cfg) {
   }
 
   if (cam === 'semilla_propagador') {
-    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
     if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) return true;
+    if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) return false;
     if (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg)) return true;
     if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'propagador') {
       return true;
@@ -1206,6 +1206,11 @@ function hcCaminoUsaEcArranqueBaja(cfg) {
     if (typeof depositoPrimerLlenadoOk === 'function' && !depositoPrimerLlenadoOk(cfg, st)) return true;
     if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg) === 'enraizado') {
       return true;
+    }
+    if (typeof depositoPrimerLlenadoOk === 'function' && depositoPrimerLlenadoOk(cfg, st)) {
+      var faseSisEsqueje =
+        typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;
+      if (faseSisEsqueje !== 'enraizado') return false;
     }
     if (typeof getRecomendacionEcPhEsquejes === 'function') {
       var recE = getRecomendacionEcPhEsquejes(cfg);
