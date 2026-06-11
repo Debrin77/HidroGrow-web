@@ -336,3 +336,96 @@ function hcEtapaCultivoIconMarkup(etapaKey) {
   var sym = map[etapaKey] || 'hc-i-sprout';
   return typeof hcIcon === 'function' ? hcIcon(sym, 'hc-ico--etapa') : '🌱';
 }
+
+/** Emoji de fase para SVG inline (no markup HTML de hcIcon). */
+function hcEstadoEmojiChar(est) {
+  var map = { plantula: '🌱', crecimiento: '🌿', madurez: '🥬', cosecha: '✂️' };
+  return map[est] || '🌱';
+}
+
+/** PNG hoja cannabis — fase vegetativa en cestas del esquema (sin foto del usuario). */
+var HC_CESTA_HOJA_VEG_SRC = 'icons/cesta-hoja-veg.png';
+
+function hcCestaEtapaUsaHojaVeg(est) {
+  return est === 'crecimiento';
+}
+
+function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
+  opts = opts || {};
+  if (!hcCestaEtapaUsaHojaVeg(opts.est)) return '';
+  var fx = typeof opts.fx === 'function' ? opts.fx : function (n) {
+    return Number(n).toFixed(1);
+  };
+  var scale = opts.scale != null ? opts.scale : 0.58;
+  var size = r * 2 * scale;
+  var ix = cx - size / 2;
+  var iy = cy - size / 2;
+  var clipId = opts.clipId;
+  var opacity = opts.opacity != null ? opts.opacity : 0.92;
+  var out = '';
+  if (clipId) {
+    var shape = opts.clipShape || 'circle';
+    out += '<defs><clipPath id="' + clipId + '">';
+    if (shape === 'rect') {
+      var pad = opts.clipPad != null ? opts.clipPad : 1.5;
+      out +=
+        '<rect x="' +
+        fx(cx - r + pad) +
+        '" y="' +
+        fx(cy - r + pad) +
+        '" width="' +
+        fx((r - pad) * 2) +
+        '" height="' +
+        fx((r - pad) * 2) +
+        '" rx="3"/>';
+    } else if (shape === 'ellipse') {
+      var erx = opts.erx != null ? opts.erx : r - 1;
+      var ery = opts.ery != null ? opts.ery : r - 1;
+      out +=
+        '<ellipse cx="' +
+        fx(cx) +
+        '" cy="' +
+        fx(cy) +
+        '" rx="' +
+        fx(erx) +
+        '" ry="' +
+        fx(ery) +
+        '"/>';
+    } else {
+      out += '<circle cx="' + fx(cx) + '" cy="' + fx(cy) + '" r="' + fx(r - 1.2) + '"/>';
+    }
+    out += '</clipPath></defs>';
+  }
+  var clipAttr = clipId ? ' clip-path="url(#' + clipId + ')"' : '';
+  return (
+    out +
+    '<image class="hc-cesta-hoja-veg" href="' +
+    HC_CESTA_HOJA_VEG_SRC +
+    '" x="' +
+    fx(ix) +
+    '" y="' +
+    fx(iy) +
+    '" width="' +
+    fx(size) +
+    '" height="' +
+    fx(size) +
+    '" preserveAspectRatio="xMidYMid meet"' +
+    clipAttr +
+    ' opacity="' +
+    opacity +
+    '" pointer-events="none"/>'
+  );
+}
+
+/** Emoji de fase/variedad en centro de cesta; la hoja vegetativa sustituye texto en SVG. */
+function hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, tieneFoto) {
+  if (tieneFoto) return '';
+  if (hcCestaEtapaUsaHojaVeg(est)) return '';
+  return cultEmoji || phaseEmoji || '';
+}
+
+function hcCestaTieneIndicadorCultivo(est, phaseEmoji, cultEmoji, tieneFoto) {
+  if (tieneFoto) return true;
+  if (hcCestaEtapaUsaHojaVeg(est)) return true;
+  return !!(cultEmoji || phaseEmoji);
+}

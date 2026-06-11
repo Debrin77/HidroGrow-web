@@ -640,19 +640,19 @@ function generarSVGDwc() {
     } else if (est === 'plantula') {
       fill = '#eff6ff';
       stroke = '#2563eb';
-      phaseEmoji = getEmoji(est);
+      phaseEmoji = typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : getEmoji(est);
     } else if (est === 'crecimiento') {
       fill = '#f0fdf4';
       stroke = '#15803d';
-      phaseEmoji = getEmoji(est);
+      phaseEmoji = typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : getEmoji(est);
     } else if (est === 'madurez') {
       fill = '#fffbeb';
       stroke = '#b45309';
-      phaseEmoji = getEmoji(est);
+      phaseEmoji = typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : getEmoji(est);
     } else {
       fill = '#faf5ff';
       stroke = '#7c3aed';
-      phaseEmoji = getEmoji(est);
+      phaseEmoji = typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : getEmoji(est);
     }
     const clipId = `dwc_clip_${n}_${c}`;
     const isSelected = !!(window.editingCesta && editingCesta.nivel === n && editingCesta.cesta === c);
@@ -721,6 +721,12 @@ function generarSVGDwc() {
         width="${(r * 2).toFixed(1)}" height="${(r * 2).toFixed(1)}" preserveAspectRatio="xMidYMid slice"
         clip-path="url(#${clipId})" opacity="0.93"></image>`;
       o += `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(r - 0.5).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="1.1"/>`;
+    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
+      o += hcCestaHojaVegSvgMarkup(cx, cy, r, {
+        est,
+        clipId: clipId + '_veg',
+        clipShape: squarePot && topView ? 'rect' : 'circle',
+      });
     }
     if (pct > 0 && pct < 100) {
       const r2 = r + 5;
@@ -733,15 +739,26 @@ function generarSVGDwc() {
         fill="none" stroke="${stroke}" stroke-width="2" stroke-linecap="round" opacity="0.5"/>`;
     }
     const emoFs = topView ? Math.min(13, Math.max(8, r * 0.95)) : 14;
-    if (phaseEmoji) {
-      o += `<text x="${cx.toFixed(1)}" y="${(topView ? cy + 2 : cy - r - 5).toFixed(1)}" font-size="${emoFs}" text-anchor="middle" dominant-baseline="${topView ? 'central' : 'alphabetic'}" opacity="0.95">${phaseEmoji}</text>`;
-    } else if (!ultimaFoto?.data) {
+    const faseTxt =
+      typeof hcCestaIconoFaseTexto === 'function'
+        ? hcCestaIconoFaseTexto(est, phaseEmoji, '', !!ultimaFoto?.data)
+        : phaseEmoji;
+    if (faseTxt) {
+      o += `<text x="${cx.toFixed(1)}" y="${(topView ? cy + 2 : cy - r - 5).toFixed(1)}" font-size="${emoFs}" text-anchor="middle" dominant-baseline="${topView ? 'central' : 'alphabetic'}" opacity="0.95">${faseTxt}</text>`;
+    } else if (
+      !ultimaFoto?.data &&
+      !(typeof hcCestaEtapaUsaHojaVeg === 'function' && hcCestaEtapaUsaHojaVeg(est))
+    ) {
       const dotFs = topView ? Math.min(11, r * 0.9) : 11;
       o += `<text x="${cx.toFixed(1)}" y="${(cy + 4).toFixed(1)}" font-family="Inconsolata,monospace" font-size="${dotFs}" font-weight="600" text-anchor="middle" fill="#cbd5e1">·</text>`;
     }
     const subFs = topView ? Math.min(7.5, r * 0.55) : 8;
     const subY = topView ? cy + r * 0.85 : cy + r + 12;
-    if (dias > 0 && phaseEmoji) {
+    const tieneIndicador =
+      typeof hcCestaTieneIndicadorCultivo === 'function'
+        ? hcCestaTieneIndicadorCultivo(est, phaseEmoji, '', !!ultimaFoto?.data)
+        : !!phaseEmoji;
+    if (dias > 0 && tieneIndicador) {
       o += `<text x="${cx.toFixed(1)}" y="${subY.toFixed(1)}" font-family="Inconsolata,monospace"
         font-size="${subFs}" font-weight="700" fill="${stroke}" text-anchor="middle">${dias}d</text>`;
     } else {

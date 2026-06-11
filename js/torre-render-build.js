@@ -530,13 +530,13 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
       : diasBase;
     const pct  = dat.variedad ? Math.min(100, Math.round((dias / diasT) * 100)) : 0;
 
-    /** Icono encima de la cesta según etapa de crecimiento (🌱 🌿 🥬 ✂️) */
+    /** Icono de fase en cesta (🌱 plántula; hoja PNG vegetativo; 🥬/✂️ madurez/cosecha) */
     let fill, stroke, phaseEmoji;
     if (!dat.variedad)            { fill='#f8fafc'; stroke='#cbd5e1'; phaseEmoji=''; }
-    else if (est==='plantula')    { fill='#eff6ff'; stroke='#2563eb'; phaseEmoji=getEmoji(est); }
-    else if (est==='crecimiento') { fill='#f0fdf4'; stroke='#15803d'; phaseEmoji=getEmoji(est); }
-    else if (est==='madurez')     { fill='#fffbeb'; stroke='#b45309'; phaseEmoji=getEmoji(est); }
-    else                          { fill='#fef2f2'; stroke='#b91c1c'; phaseEmoji=getEmoji(est); }
+    else if (est==='plantula')    { fill='#eff6ff'; stroke='#2563eb'; phaseEmoji=typeof hcEstadoEmojiChar==='function'?hcEstadoEmojiChar(est):getEmoji(est); }
+    else if (est==='crecimiento') { fill='#f0fdf4'; stroke='#15803d'; phaseEmoji=typeof hcEstadoEmojiChar==='function'?hcEstadoEmojiChar(est):getEmoji(est); }
+    else if (est==='madurez')     { fill='#fffbeb'; stroke='#b45309'; phaseEmoji=typeof hcEstadoEmojiChar==='function'?hcEstadoEmojiChar(est):getEmoji(est); }
+    else                          { fill='#fef2f2'; stroke='#b91c1c'; phaseEmoji=typeof hcEstadoEmojiChar==='function'?hcEstadoEmojiChar(est):getEmoji(est); }
 
     const ang = (Math.PI * 2 * (c / numCestas)) + phase;
     const z = (Math.sin(ang) + 1) / 2;
@@ -594,6 +594,12 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
         width="${(r*2).toFixed(1)}" height="${(r*2).toFixed(1)}" preserveAspectRatio="xMidYMid slice"
         clip-path="url(#${clipId})" opacity="${(0.92).toFixed(2)}"></image>`;
       out += `<circle cx="${b.cx2.toFixed(1)}" cy="${b.cy2.toFixed(1)}" r="${(r-0.6).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="${(1.2*b.scale).toFixed(1)}"/>`;
+    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
+      out += hcCestaHojaVegSvgMarkup(b.cx2, b.cy2, r, {
+        est: b.est,
+        clipId: clipId + '_veg',
+        fx: (n) => Number(n).toFixed(1),
+      });
     }
 
     if (b.pct > 0 && b.pct < 100) {
@@ -607,13 +613,24 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
         fill="none" stroke="${b.stroke}" stroke-width="${(2.0*b.scale).toFixed(1)}" stroke-linecap="round" opacity="0.55"/>`;
     }
 
-    if (b.phaseEmoji) {
-      out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 - r - 4).toFixed(1)}" font-size="${(14*b.scale).toFixed(1)}" text-anchor="middle" opacity="0.95">${b.phaseEmoji}</text>`;
-    } else if (!b.ultimaFoto?.data) {
+    const faseTxt =
+      typeof hcCestaIconoFaseTexto === 'function'
+        ? hcCestaIconoFaseTexto(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data)
+        : b.phaseEmoji;
+    if (faseTxt) {
+      out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 - r - 4).toFixed(1)}" font-size="${(14*b.scale).toFixed(1)}" text-anchor="middle" opacity="0.95">${faseTxt}</text>`;
+    } else if (
+      !b.ultimaFoto?.data &&
+      !(typeof hcCestaEtapaUsaHojaVeg === 'function' && hcCestaEtapaUsaHojaVeg(b.est))
+    ) {
       out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 + 3.5).toFixed(1)}" font-family="Inconsolata,monospace" font-size="${(12*b.scale).toFixed(1)}" font-weight="600" text-anchor="middle" fill="#cbd5e1">·</text>`;
     }
 
-    if (b.dias && b.dias > 0 && b.phaseEmoji) {
+    const tieneIndicador =
+      typeof hcCestaTieneIndicadorCultivo === 'function'
+        ? hcCestaTieneIndicadorCultivo(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data)
+        : !!b.phaseEmoji;
+    if (b.dias && b.dias > 0 && tieneIndicador) {
       out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 + r + 11).toFixed(1)}" font-family="Inconsolata,monospace"
         font-size="${(8*b.scale).toFixed(1)}" font-weight="700" fill="${b.stroke}" text-anchor="middle">${b.dias}d</text>`;
     } else {

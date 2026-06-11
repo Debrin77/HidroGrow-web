@@ -15,6 +15,9 @@ Salida:
 Splash de arranque, PIN, header y bienvenida:
   splash-brand-gold.png
 
+Cestas — fase vegetativa (esquema SVG, sin foto):
+  icons/cesta-hoja-veg.png
+
 Legacy (HidroCultivo / pruebas — no usar en manifest):
   splash-brand-card.png
   splash-brand-icon.png

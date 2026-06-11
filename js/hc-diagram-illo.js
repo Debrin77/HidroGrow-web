@@ -1309,6 +1309,15 @@
         '" preserveAspectRatio="xMidYMid slice" clip-path="url(#' +
         clipId +
         ')" opacity="0.92"/>';
+    } else if (typeof hcCestaHojaVegSvgMarkup === 'function' && est) {
+      out += hcCestaHojaVegSvgMarkup(cx, cy, Math.min(rx, ry), {
+        est: est,
+        clipId: clipId + '_veg',
+        clipShape: 'ellipse',
+        erx: rx - 1,
+        ery: ry - 1,
+        fx: f1,
+      });
     }
     var onGreyLid =
       o.onGreyLid === true ||
@@ -1344,7 +1353,11 @@
     }
     var textoEnMaceta = !o.sinTexto || isSelected || isMulti || isFocused || tieneCultivo;
     if (textoEnMaceta) {
-      if (cultEmoji) {
+      var faseTxt =
+        typeof hcCestaIconoFaseTexto === 'function'
+          ? hcCestaIconoFaseTexto(est, est && typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : '', cultEmoji, !!(ultimaFoto && ultimaFoto.data))
+          : cultEmoji;
+      if (faseTxt) {
         var emFs = tieneCultivo ? Math.min(14, Math.max(9, rx * 0.82)) : Math.min(16, Math.max(10, rx * 0.95));
         if (isSelected || isMulti || isFocused) {
           emFs = Math.min(22, Math.max(14, rx * 1.12));
@@ -1357,7 +1370,7 @@
           '" text-anchor="middle" dominant-baseline="central" font-size="' +
           emFs +
           '" font-family="Segoe UI Emoji,Apple Color Emoji,Noto Color Emoji,sans-serif" pointer-events="none">' +
-          cultEmoji +
+          faseTxt +
           '</text>';
       }
       var subY = cy + ry + (topView ? 10 : 14);
@@ -1373,7 +1386,11 @@
           '" text-anchor="middle">' +
           dias +
           'd</text>';
-      } else if (!cultEmoji && !o.sinTexto) {
+      } else if (
+        !faseTxt &&
+        !(typeof hcCestaEtapaUsaHojaVeg === 'function' && hcCestaEtapaUsaHojaVeg(est) && !(ultimaFoto && ultimaFoto.data)) &&
+        !o.sinTexto
+      ) {
         out +=
           '<text x="' +
           f1(cx) +

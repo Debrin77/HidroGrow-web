@@ -443,7 +443,8 @@
         fill = '#faf5ff';
         stroke = '#7c3aed';
       }
-      if (typeof getEmoji === 'function') phaseEmoji = getEmoji(est) || '';
+      if (typeof hcEstadoEmojiChar === 'function') phaseEmoji = hcEstadoEmojiChar(est) || '';
+      else if (typeof getEmoji === 'function') phaseEmoji = getEmoji(est) || '';
     }
     const cult = dat.variedad && typeof getCultivoDB === 'function' ? getCultivoDB(dat.variedad) : null;
     const cultEmoji = cult && cult.emoji ? String(cult.emoji) : '';
@@ -486,6 +487,8 @@
     if (ultimaFoto?.data) {
       s += `<defs><clipPath id="${clipId}"><circle cx="${x}" cy="${y}" r="${rPot.toFixed(1)}"/></clipPath></defs>`;
       s += `<image href="${ultimaFoto.data}" x="${(x - rPot).toFixed(1)}" y="${(y - rPot).toFixed(1)}" width="${(rPot * 2).toFixed(1)}" height="${(rPot * 2).toFixed(1)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" opacity="0.88"/>`;
+    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
+      s += hcCestaHojaVegSvgMarkup(x, y, rPot, { est, clipId: clipId + '_veg' });
     }
     if (pctC > 0 && pctC < 100 && dat.variedad) {
       const r2 = rPot + 4;
@@ -494,8 +497,12 @@
         fill="none" stroke="${stroke}" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/>`;
     }
     const emoFs = Math.min(16, Math.max(11, rPot * 0.88));
-    if (cultEmoji || phaseEmoji) {
-      s += `<text x="${x}" y="${(y - 1).toFixed(1)}" text-anchor="middle" font-size="${emoFs.toFixed(1)}" dominant-baseline="middle">${cultEmoji || phaseEmoji}</text>`;
+    const faseTxt =
+      typeof hcCestaIconoFaseTexto === 'function'
+        ? hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, !!ultimaFoto?.data)
+        : cultEmoji || phaseEmoji;
+    if (faseTxt) {
+      s += `<text x="${x}" y="${(y - 1).toFixed(1)}" text-anchor="middle" font-size="${emoFs.toFixed(1)}" dominant-baseline="middle">${faseTxt}</text>`;
     }
     if (dias > 0 && dat.variedad) {
       s += `<text x="${x}" y="${(y + rPot - 7).toFixed(1)}" font-family="Inconsolata,monospace" font-size="8" font-weight="700" fill="${stroke}" text-anchor="middle">${dias}d</text>`;
