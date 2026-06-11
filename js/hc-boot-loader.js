@@ -136,10 +136,17 @@
     poll();
   }
 
+  function hcBootScriptUrl(url) {
+    if (!url || typeof url !== 'string') return url;
+    if (url.indexOf('?') !== -1) return url;
+    var v = typeof global.APP_BUILD_VERSION !== 'undefined' ? global.APP_BUILD_VERSION : '';
+    return v ? url + '?v=' + encodeURIComponent(v) : url;
+  }
+
   function loadScriptUrl(url) {
     return new Promise(function (resolve) {
       var s = document.createElement('script');
-      s.src = url;
+      s.src = hcBootScriptUrl(url);
       s.async = false;
       s.onload = function () {
         resolve(true);
@@ -287,6 +294,7 @@
   global.hcBootProgressPct = hcBootProgressPct;
   global.hcBootUpdatePinProgress = hcBootUpdatePinProgress;
   global.hcBootIsMobile = hcBootIsMobile;
+  global.hcBootScriptUrl = hcBootScriptUrl;
 
   setTimeout(hcBootStartLoading, 0);
 })(typeof window !== 'undefined' ? window : globalThis);

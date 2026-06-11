@@ -705,3 +705,17 @@ test('semilla_hidro: primer llenado y germ fuerzan VEG, no BLOOM', () => {
   assert.match(cl, /cl-note--nut-veg-germ/);
   assert.match(dash, /hcSemillaHidroUsaNutrienteVegGerm/);
 });
+
+test('boot: scripts diferidos llevan cache bust y recarga automática al cambiar versión', () => {
+  const boot = read('js/hc-boot-loader.js');
+  const state = read('js/hc-bootstrap-state.js');
+  const pwa = read('js/app-hc-pwa-fotodb.js');
+  assert.match(boot, /function hcBootScriptUrl/);
+  assert.match(boot, /s\.src = hcBootScriptUrl\(url\)/);
+  assert.match(state, /hg_version_reload:/);
+  assert.match(state, /location\.replace\(url\.toString\(\)\)/);
+  const cfg = read('js/hc-bootstrap-config.js');
+  const ver = cfg.match(/APP_BUILD_VERSION = '([^']+)'/)?.[1];
+  assert.ok(ver, 'APP_BUILD_VERSION definido');
+  assert.match(pwa, new RegExp('service-worker\\.js\\?v=' + ver.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+});

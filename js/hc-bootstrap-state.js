@@ -969,19 +969,35 @@ function gestionarCambioVersionEnArranque() {
     if (prev === APP_BUILD_VERSION) return;
 
     const transition = String((prev || 'none') + '->' + APP_BUILD_VERSION);
+    const reloadKey = 'hg_version_reload:' + transition;
     const yaGuardada = localStorage.getItem(AUTO_RESTORE_POINT_TRANSITION_KEY) === transition;
-    localStorage.setItem(APP_BUILD_VERSION_KEY, APP_BUILD_VERSION);
-    try {
-      if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
-        navigator.serviceWorker.getRegistrations().then(function (regs) {
-          regs.forEach(function (r) {
-            try {
-              r.unregister();
-            } catch (_) {}
+
+    if (!sessionStorage.getItem(reloadKey)) {
+      sessionStorage.setItem(reloadKey, '1');
+      try {
+        if ('serviceWorker' in navigator && navigator.serviceWorker.getRegistrations) {
+          navigator.serviceWorker.getRegistrations().then(function (regs) {
+            regs.forEach(function (r) {
+              try {
+                r.unregister();
+              } catch (_) {}
+            });
           });
-        });
-      }
-    } catch (_) {}
+        }
+      } catch (_) {}
+      setTimeout(function () {
+        try {
+          var url = new URL(location.href);
+          url.searchParams.set('_hgv', APP_BUILD_VERSION);
+          location.replace(url.toString());
+        } catch (_) {
+          location.reload();
+        }
+      }, 400);
+      return;
+    }
+
+    localStorage.setItem(APP_BUILD_VERSION_KEY, APP_BUILD_VERSION);
     if (!yaGuardada) {
       const backupOpts = {
         reason: 'before-version-upgrade',
@@ -996,11 +1012,9 @@ function gestionarCambioVersionEnArranque() {
       setTimeout(runBackup, 100);
     }
     showToast(
-      'Nueva versión (' +
-        APP_BUILD_VERSION +
-        '). Recarga forzada: Ctrl+Shift+R. Tus datos se conservan.',
+      'Nueva versión (' + APP_BUILD_VERSION + '). Tus datos se conservan.',
       false,
-      { durationMs: 9000 }
+      { durationMs: 7000 }
     );
   } catch (_) {}
 }
