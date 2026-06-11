@@ -343,16 +343,58 @@ function hcEstadoEmojiChar(est) {
   return map[est] || '🌱';
 }
 
-/** PNG hoja cannabis — fase vegetativa en cestas del esquema (sin foto del usuario). */
+/** PNG en cestas del esquema (sin foto del usuario). */
 var HC_CESTA_HOJA_VEG_SRC = 'icons/cesta-hoja-veg.png';
+/** Añadir asset y poner HC_CESTA_FLORACION_LISTO = true cuando esté listo. */
+var HC_CESTA_FLORACION_SRC = 'icons/cesta-floracion.png';
+var HC_CESTA_FLORACION_LISTO = false;
 
-function hcCestaEtapaUsaHojaVeg(est) {
-  return est === 'crecimiento';
+/**
+ * Icono PNG de fase en cesta: 'hoja_veg' | 'floracion' | null.
+ * @param {object|null} cultivo fila GENETICS_DB
+ * @param {number} dias días efectivos de ciclo
+ * @param {string} est getEstado (plantula|crecimiento|madurez|cosecha)
+ */
+function hcCestaFaseIconoKey(cultivo, dias, est) {
+  if (!est || est === 'plantula' || est === 'cosecha') return null;
+  if (!Number.isFinite(Number(dias))) return null;
+
+  if (cultivo && typeof cultivoFaseDesdeDias === 'function') {
+    var fd = cultivoFaseDesdeDias(cultivo, dias, { desdeTrasplante: true });
+    if (fd && fd.key) {
+      if (fd.key === 'floracion') return 'floracion';
+      if (fd.key === 'fructificacion' || fd.key === 'madurez') return 'hoja_veg';
+      if (fd.key === 'vegetativo' || fd.key === 'prefloracion' || fd.key === 'crecimiento') {
+        return 'hoja_veg';
+      }
+    }
+  }
+
+  var dVeg = cultivo ? Number(cultivo.diasVeg) : 0;
+  var dFlor = cultivo ? Number(cultivo.diasFlor) : 0;
+  if (dVeg > 0 && dFlor > 0 && dias >= 7) {
+    var finVeg = 7 + Math.round(dVeg);
+    var finFlor = finVeg + Math.max(1, Math.round(dFlor * 0.7));
+    if (dias < finVeg) return 'hoja_veg';
+    if (dias < finFlor) return 'floracion';
+    return 'hoja_veg';
+  }
+
+  if (est === 'crecimiento' || est === 'madurez') return 'hoja_veg';
+  return null;
 }
 
-function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
+function hcCestaFasePngSrc(iconKey) {
+  if (iconKey === 'hoja_veg') return HC_CESTA_HOJA_VEG_SRC;
+  if (iconKey === 'floracion' && HC_CESTA_FLORACION_LISTO) return HC_CESTA_FLORACION_SRC;
+  return '';
+}
+
+function hcCestaFasePngSvgMarkup(cx, cy, r, opts) {
   opts = opts || {};
-  if (!hcCestaEtapaUsaHojaVeg(opts.est)) return '';
+  var iconKey = opts.iconKey;
+  var src = hcCestaFasePngSrc(iconKey);
+  if (!src) return '';
   var fx = typeof opts.fx === 'function' ? opts.fx : function (n) {
     return Number(n).toFixed(1);
   };
@@ -362,6 +404,8 @@ function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
   var iy = cy - size / 2;
   var clipId = opts.clipId;
   var opacity = opts.opacity != null ? opts.opacity : 0.92;
+  var cssClass =
+    iconKey === 'floracion' ? 'hc-cesta-icono-floracion' : 'hc-cesta-hoja-veg';
   var out = '';
   if (clipId) {
     var shape = opts.clipShape || 'circle';
@@ -399,8 +443,10 @@ function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
   var clipAttr = clipId ? ' clip-path="url(#' + clipId + ')"' : '';
   return (
     out +
-    '<image class="hc-cesta-hoja-veg" href="' +
-    HC_CESTA_HOJA_VEG_SRC +
+    '<image class="' +
+    cssClass +
+    '" href="' +
+    src +
     '" x="' +
     fx(ix) +
     '" y="' +
@@ -417,15 +463,34 @@ function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
   );
 }
 
-/** Emoji de fase/variedad en centro de cesta; la hoja vegetativa sustituye texto en SVG. */
-function hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, tieneFoto) {
+/** @deprecated usar hcCestaFaseIconoKey + hcCestaFasePngSvgMarkup */
+function hcCestaEtapaUsaHojaVeg(est) {
+  return est === 'crecimiento' || est === 'madurez';
+}
+
+/** @deprecated usar hcCestaFasePngSvgMarkup */
+function hcCestaHojaVegSvgMarkup(cx, cy, r, opts) {
+  opts = opts || {};
+  var iconKey =
+    opts.iconKey ||
+    (opts.est && hcCestaEtapaUsaHojaVeg(opts.est) ? 'hoja_veg' : null);
+  if (!iconKey) return '';
+  return hcCestaFasePngSvgMarkup(cx, cy, r, Object.assign({}, opts, { iconKey: iconKey }));
+}
+
+/** Emoji de fase/variedad en centro de cesta; PNG de fase sustituye texto en SVG. */
+function hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, tieneFoto, iconKey) {
   if (tieneFoto) return '';
-  if (hcCestaEtapaUsaHojaVeg(est)) return '';
+  if (iconKey === 'hoja_veg') return '';
+  if (iconKey === 'floracion') {
+    return HC_CESTA_FLORACION_LISTO ? '' : '🌸';
+  }
   return cultEmoji || phaseEmoji || '';
 }
 
-function hcCestaTieneIndicadorCultivo(est, phaseEmoji, cultEmoji, tieneFoto) {
+function hcCestaTieneIndicadorCultivo(est, phaseEmoji, cultEmoji, tieneFoto, iconKey) {
   if (tieneFoto) return true;
-  if (hcCestaEtapaUsaHojaVeg(est)) return true;
+  if (iconKey === 'hoja_veg') return true;
+  if (iconKey === 'floracion') return true;
   return !!(cultEmoji || phaseEmoji);
 }

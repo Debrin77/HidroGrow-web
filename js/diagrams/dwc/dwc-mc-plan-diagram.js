@@ -461,6 +461,8 @@
       torreCestasMultiSel.has(multiKey);
     const fotos = (dat.fotos || []).filter((f) => f && f.data);
     const ultimaFoto = fotos.length > 0 ? fotos[fotos.length - 1] : null;
+    const iconKey =
+      typeof hcCestaFaseIconoKey === 'function' ? hcCestaFaseIconoKey(cult, dias, est) : null;
     const clipId = 'dwc_mc_clip_' + idx;
     const ariaMod =
       typeof escAriaAttr === 'function'
@@ -487,8 +489,8 @@
     if (ultimaFoto?.data) {
       s += `<defs><clipPath id="${clipId}"><circle cx="${x}" cy="${y}" r="${rPot.toFixed(1)}"/></clipPath></defs>`;
       s += `<image href="${ultimaFoto.data}" x="${(x - rPot).toFixed(1)}" y="${(y - rPot).toFixed(1)}" width="${(rPot * 2).toFixed(1)}" height="${(rPot * 2).toFixed(1)}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" opacity="0.88"/>`;
-    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
-      s += hcCestaHojaVegSvgMarkup(x, y, rPot, { est, clipId: clipId + '_veg' });
+    } else if (iconKey && typeof hcCestaFasePngSvgMarkup === 'function') {
+      s += hcCestaFasePngSvgMarkup(x, y, rPot, { iconKey, clipId: clipId + '_fase' });
     }
     if (pctC > 0 && pctC < 100 && dat.variedad) {
       const r2 = rPot + 4;
@@ -499,7 +501,7 @@
     const emoFs = Math.min(16, Math.max(11, rPot * 0.88));
     const faseTxt =
       typeof hcCestaIconoFaseTexto === 'function'
-        ? hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, !!ultimaFoto?.data)
+        ? hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, !!ultimaFoto?.data, iconKey)
         : cultEmoji || phaseEmoji;
     if (faseTxt) {
       s += `<text x="${x}" y="${(y - 1).toFixed(1)}" text-anchor="middle" font-size="${emoFs.toFixed(1)}" dominant-baseline="middle">${faseTxt}</text>`;

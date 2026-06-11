@@ -58,6 +58,8 @@
     const isMultiSel = torreInteraccionModo === 'asignar' && torreCestasMultiSel.has(multiKey);
     const fotos = (dat.fotos || []).filter((f) => f && f.data);
     const ultimaFoto = fotos.length > 0 ? fotos[fotos.length - 1] : null;
+    const iconKey =
+      typeof hcCestaFaseIconoKey === 'function' ? hcCestaFaseIconoKey(cult, dias, est) : null;
     const clipId = `rdwc_sc_clip_${rn}_${c}`;
     const ariaMod = escAriaAttr(
       'Módulo RDWC ' +
@@ -112,10 +114,10 @@
         s += `<defs><clipPath id="${clipId}"><rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" rx="${(rPot * 0.22).toFixed(1)}"/></clipPath></defs>`;
         s += `<image href="${ultimaFoto.data}" x="${rx}" y="${ry}" width="${rw}" height="${rh}" preserveAspectRatio="xMidYMid slice" clip-path="url(#${clipId})" opacity="0.88"/>`;
       }
-    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
-      s += hcCestaHojaVegSvgMarkup(x, y, rPot, {
-        est,
-        clipId: clipId + '_veg',
+    } else if (iconKey && typeof hcCestaFasePngSvgMarkup === 'function') {
+      s += hcCestaFasePngSvgMarkup(x, y, rPot, {
+        iconKey,
+        clipId: clipId + '_fase',
         clipShape: esPlanRedondo ? 'circle' : 'rect',
       });
     }
@@ -128,7 +130,7 @@
     const emoFs = Math.min(16, Math.max(11, rPot * 0.88));
     const faseTxt =
       typeof hcCestaIconoFaseTexto === 'function'
-        ? hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, !!ultimaFoto?.data)
+        ? hcCestaIconoFaseTexto(est, phaseEmoji, cultEmoji, !!ultimaFoto?.data, iconKey)
         : cultEmoji || phaseEmoji;
     if (faseTxt) {
       s += `<text x="${x}" y="${(y - 1).toFixed(1)}" text-anchor="middle" font-size="${emoFs.toFixed(1)}" dominant-baseline="middle">${faseTxt}</text>`;

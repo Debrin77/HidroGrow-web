@@ -1161,6 +1161,8 @@
       return f && f.data;
     });
     var ultimaFoto = fotos.length > 0 ? fotos[fotos.length - 1] : null;
+    var iconKey =
+      typeof hcCestaFaseIconoKey === 'function' ? hcCestaFaseIconoKey(cult, dias, est) : null;
     var varTxt = dat.variedad ? String(dat.variedad) : 'vacía';
     var aria = escAria(
       (o.label || 'Maceta fila ' + (n + 1) + ' columna ' + (c + 1)) +
@@ -1309,10 +1311,10 @@
         '" preserveAspectRatio="xMidYMid slice" clip-path="url(#' +
         clipId +
         ')" opacity="0.92"/>';
-    } else if (typeof hcCestaHojaVegSvgMarkup === 'function' && est) {
-      out += hcCestaHojaVegSvgMarkup(cx, cy, Math.min(rx, ry), {
-        est: est,
-        clipId: clipId + '_veg',
+    } else if (iconKey && typeof hcCestaFasePngSvgMarkup === 'function') {
+      out += hcCestaFasePngSvgMarkup(cx, cy, Math.min(rx, ry), {
+        iconKey: iconKey,
+        clipId: clipId + '_fase',
         clipShape: 'ellipse',
         erx: rx - 1,
         ery: ry - 1,
@@ -1355,7 +1357,13 @@
     if (textoEnMaceta) {
       var faseTxt =
         typeof hcCestaIconoFaseTexto === 'function'
-          ? hcCestaIconoFaseTexto(est, est && typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : '', cultEmoji, !!(ultimaFoto && ultimaFoto.data))
+          ? hcCestaIconoFaseTexto(
+              est,
+              est && typeof hcEstadoEmojiChar === 'function' ? hcEstadoEmojiChar(est) : '',
+              cultEmoji,
+              !!(ultimaFoto && ultimaFoto.data),
+              iconKey
+            )
           : cultEmoji;
       if (faseTxt) {
         var emFs = tieneCultivo ? Math.min(14, Math.max(9, rx * 0.82)) : Math.min(16, Math.max(10, rx * 0.95));
@@ -1386,11 +1394,7 @@
           '" text-anchor="middle">' +
           dias +
           'd</text>';
-      } else if (
-        !faseTxt &&
-        !(typeof hcCestaEtapaUsaHojaVeg === 'function' && hcCestaEtapaUsaHojaVeg(est) && !(ultimaFoto && ultimaFoto.data)) &&
-        !o.sinTexto
-      ) {
+      } else if (!faseTxt && !iconKey && !o.sinTexto) {
         out +=
           '<text x="' +
           f1(cx) +

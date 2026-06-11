@@ -530,7 +530,7 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
       : diasBase;
     const pct  = dat.variedad ? Math.min(100, Math.round((dias / diasT) * 100)) : 0;
 
-    /** Icono de fase en cesta (🌱 plántula; hoja PNG vegetativo; 🥬/✂️ madurez/cosecha) */
+    /** Icono de fase en cesta (🌱 plántula; hoja PNG veg/maduración; 🌸 floración hasta PNG) */
     let fill, stroke, phaseEmoji;
     if (!dat.variedad)            { fill='#f8fafc'; stroke='#cbd5e1'; phaseEmoji=''; }
     else if (est==='plantula')    { fill='#eff6ff'; stroke='#2563eb'; phaseEmoji=typeof hcEstadoEmojiChar==='function'?hcEstadoEmojiChar(est):getEmoji(est); }
@@ -547,8 +547,11 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
 
     const fotos = (dat.fotos || []).filter(f => f && f.data);
     const ultimaFoto = fotos.length > 0 ? fotos[fotos.length - 1] : null;
+    const cultIco = dat.variedad && typeof getCultivoDB === 'function' ? getCultivoDB(dat.variedad) : null;
+    const iconKey =
+      typeof hcCestaFaseIconoKey === 'function' ? hcCestaFaseIconoKey(cultIco, dias, est) : null;
 
-    baskets.push({ n, c, cx2, cy2, z, scale, opacity, fill, stroke, phaseEmoji, pct, est, dias, ultimaFoto });
+    baskets.push({ n, c, cx2, cy2, z, scale, opacity, fill, stroke, phaseEmoji, pct, est, dias, ultimaFoto, iconKey });
   }
 
   let out = '';
@@ -594,10 +597,10 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
         width="${(r*2).toFixed(1)}" height="${(r*2).toFixed(1)}" preserveAspectRatio="xMidYMid slice"
         clip-path="url(#${clipId})" opacity="${(0.92).toFixed(2)}"></image>`;
       out += `<circle cx="${b.cx2.toFixed(1)}" cy="${b.cy2.toFixed(1)}" r="${(r-0.6).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="${(1.2*b.scale).toFixed(1)}"/>`;
-    } else if (typeof hcCestaHojaVegSvgMarkup === 'function') {
-      out += hcCestaHojaVegSvgMarkup(b.cx2, b.cy2, r, {
-        est: b.est,
-        clipId: clipId + '_veg',
+    } else if (b.iconKey && typeof hcCestaFasePngSvgMarkup === 'function') {
+      out += hcCestaFasePngSvgMarkup(b.cx2, b.cy2, r, {
+        iconKey: b.iconKey,
+        clipId: clipId + '_fase',
         fx: (n) => Number(n).toFixed(1),
       });
     }
@@ -615,21 +618,19 @@ function generarSVGTorreCestasNivelHTML(n, rot) {
 
     const faseTxt =
       typeof hcCestaIconoFaseTexto === 'function'
-        ? hcCestaIconoFaseTexto(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data)
+        ? hcCestaIconoFaseTexto(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data, b.iconKey)
         : b.phaseEmoji;
     if (faseTxt) {
-      out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 - r - 4).toFixed(1)}" font-size="${(14*b.scale).toFixed(1)}" text-anchor="middle" opacity="0.95">${faseTxt}</text>`;
-    } else if (
-      !b.ultimaFoto?.data &&
-      !(typeof hcCestaEtapaUsaHojaVeg === 'function' && hcCestaEtapaUsaHojaVeg(b.est))
-    ) {
+      const emCentro = b.iconKey === 'floracion';
+      out += `<text x="${b.cx2.toFixed(1)}" y="${(emCentro ? b.cy2 + 1 : b.cy2 - r - 4).toFixed(1)}" font-size="${(emCentro ? 13 : 14 * b.scale).toFixed(1)}" text-anchor="middle" dominant-baseline="${emCentro ? 'central' : 'alphabetic'}" opacity="0.95">${faseTxt}</text>`;
+    } else if (!b.ultimaFoto?.data && !b.iconKey) {
       out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 + 3.5).toFixed(1)}" font-family="Inconsolata,monospace" font-size="${(12*b.scale).toFixed(1)}" font-weight="600" text-anchor="middle" fill="#cbd5e1">·</text>`;
     }
 
     const tieneIndicador =
       typeof hcCestaTieneIndicadorCultivo === 'function'
-        ? hcCestaTieneIndicadorCultivo(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data)
-        : !!b.phaseEmoji;
+        ? hcCestaTieneIndicadorCultivo(b.est, b.phaseEmoji, '', !!b.ultimaFoto?.data, b.iconKey)
+        : !!(b.phaseEmoji || b.iconKey);
     if (b.dias && b.dias > 0 && tieneIndicador) {
       out += `<text x="${b.cx2.toFixed(1)}" y="${(b.cy2 + r + 11).toFixed(1)}" font-family="Inconsolata,monospace"
         font-size="${(8*b.scale).toFixed(1)}" font-weight="700" fill="${b.stroke}" text-anchor="middle">${b.dias}d</text>`;
