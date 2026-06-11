@@ -4560,6 +4560,7 @@ body.hc-welcome-open .welcome-card--guide .welcome-caminos,
 body.hc-welcome-open .welcome-card--guide .welcome-showcase,
 body.hc-welcome-open .welcome-card--guide .welcome-legal-details,
 body.hc-welcome-open .welcome-card--guide .welcome-kpis,
+body.hc-welcome-open .welcome-card--guide .welcome-promise,
 body.hc-welcome-open .welcome-card--guide .welcome-value-grid,
 body.hc-welcome-open .welcome-card--guide .welcome-foot--guide,
 body.hc-welcome-open .welcome-card--guide .welcome-no-mas-label,
@@ -4570,6 +4571,7 @@ body.hc-welcome-open .welcome-card--guide .welcome-guide-actions {
 }
 body.hc-welcome-open .welcome-card--guide .welcome-hero { animation-delay: 60ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-kpis { animation-delay: 120ms; }
+body.hc-welcome-open .welcome-card--guide .welcome-promise { animation-delay: 128ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-caminos { animation-delay: 135ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-showcase { animation-delay: 155ms; }
 body.hc-welcome-open .welcome-card--guide .welcome-legal-details { animation-delay: 200ms; }
@@ -5181,6 +5183,39 @@ body.hc-welcome-open .welcome-card--guide .welcome-value-icon {
   border-radius: 10px;
   background: rgba(34, 197, 94, 0.12);
   box-sizing: content-box;
+}
+.welcome-promise {
+  margin: 0 14px 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.38);
+  background: linear-gradient(145deg, rgba(220, 252, 231, 0.95) 0%, rgba(255, 255, 255, 0.88) 55%);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+.welcome-promise-lead,
+.welcome-promise-foot {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.48;
+  color: #334155;
+}
+.welcome-promise-foot {
+  margin-top: 8px;
+  color: #475569;
+}
+.welcome-promise strong {
+  color: #14532d;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-promise {
+  background: linear-gradient(145deg, rgba(6, 78, 59, 0.45) 0%, rgba(15, 23, 42, 0.88) 60%);
+  border-color: rgba(52, 211, 153, 0.35);
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-promise-lead,
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-promise-foot {
+  color: #cbd5e1;
+}
+#welcomeOverlay[data-welcome-theme="dark"] .welcome-promise strong {
+  color: #86efac;
 }
 .welcome-caminos {
   margin: 0 14px 14px;
