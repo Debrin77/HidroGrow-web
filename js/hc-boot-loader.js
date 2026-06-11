@@ -139,7 +139,12 @@
   function hcBootScriptUrl(url) {
     if (!url || typeof url !== 'string') return url;
     if (url.indexOf('?') !== -1) return url;
-    var v = typeof global.APP_BUILD_VERSION !== 'undefined' ? global.APP_BUILD_VERSION : '';
+    var v =
+      typeof global.APP_BUILD_VERSION !== 'undefined'
+        ? global.APP_BUILD_VERSION
+        : typeof global.HG_ACTIVE_BUILD !== 'undefined'
+          ? global.HG_ACTIVE_BUILD
+          : '';
     return v ? url + '?v=' + encodeURIComponent(v) : url;
   }
 

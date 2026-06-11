@@ -723,16 +723,19 @@ test('checklist PC-2: EC arranque en los 4 caminos, no media floración', () => 
   assert.match(cl, /hcCaminoUsaEcArranqueBaja\(cfg\)[\s\S]{0,60}return null/);
 });
 
-test('boot: scripts diferidos llevan cache bust y recarga automática al cambiar versión', () => {
+test('boot: gate de build, cache bust y recarga al cambiar versión', () => {
   const boot = read('js/hc-boot-loader.js');
   const state = read('js/hc-bootstrap-state.js');
   const pwa = read('js/app-hc-pwa-fotodb.js');
-  assert.match(boot, /function hcBootScriptUrl/);
-  assert.match(boot, /s\.src = hcBootScriptUrl\(url\)/);
-  assert.match(state, /hg_version_reload:/);
-  assert.match(state, /location\.replace\(url\.toString\(\)\)/);
+  const index = read('index.html');
   const cfg = read('js/hc-bootstrap-config.js');
   const ver = cfg.match(/APP_BUILD_VERSION = '([^']+)'/)?.[1];
   assert.ok(ver, 'APP_BUILD_VERSION definido');
+  assert.match(index, /name="hg-build" content="/);
+  assert.match(index, /HG_ACTIVE_BUILD/);
+  assert.match(index, /_hcvgate=/);
+  assert.match(boot, /function hcBootScriptUrl/);
+  assert.match(boot, /HG_ACTIVE_BUILD/);
+  assert.match(state, /hg_version_reload:/);
   assert.match(pwa, new RegExp('service-worker\\.js\\?v=' + ver.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
 });

@@ -10,7 +10,7 @@
 if ('serviceWorker' in navigator) {
   var hcRegisterSw = function () {
     navigator.serviceWorker
-      .register('service-worker.js?v=2026-06-01-perf74')
+      .register('service-worker.js?v=2026-06-01-perf75')
       .then(function (reg) {
         try {
           console.log('[HidroGrow] SW registrado:', reg.scope);
@@ -22,9 +22,11 @@ if ('serviceWorker' in navigator) {
         } catch (_) {}
       });
   };
-  window.addEventListener('load', function () {
-    setTimeout(hcRegisterSw, 2000);
-  });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', hcRegisterSw);
+  } else {
+    setTimeout(hcRegisterSw, 0);
+  }
 }
 
 /** Safari iOS / iPadOS no dispara beforeinstallprompt: la instalación es manual. */
@@ -185,7 +187,7 @@ function hcScheduleVersionCheckOnIdle() {
       }
     } catch (_) {}
   };
-  setTimeout(run, 1200);
+  setTimeout(run, 0);
 }
 
 function hcShowPinAsap() {

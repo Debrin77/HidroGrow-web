@@ -965,6 +965,10 @@ function crearPuntoRestauracionLocal(opts = {}) {
 
 function gestionarCambioVersionEnArranque() {
   try {
+    const metaEl = document.querySelector('meta[name="hg-build"]');
+    const htmlBuild = metaEl ? String(metaEl.getAttribute('content') || '') : '';
+    if (htmlBuild && htmlBuild !== APP_BUILD_VERSION) return;
+
     const prev = localStorage.getItem(APP_BUILD_VERSION_KEY) || '';
     if (prev === APP_BUILD_VERSION) return;
 
