@@ -723,23 +723,25 @@ test('checklist PC-2: EC arranque en los 4 caminos, no media floración', () => 
   assert.match(cl, /hcCaminoUsaEcArranqueBaja\(cfg\)[\s\S]{0,60}return null/);
 });
 
-test('checklist 4.2: CalMag EC alineado con meta arranque y mismo volumen', () => {
+test('checklist 4.2: EC tras CalMag menor que meta final PC-2 en arranque', () => {
   const med = read('js/hc-setup-mediciones-logic.js');
   const cl = read('js/hc-setup-checklist.js');
   const cons = read('js/hc-setup-consejos.js');
   assert.match(med, /function getVolNutrientesChecklistLitros/);
   assert.match(med, /function getEcObjetivoTrasCalMagMicroS/);
+  assert.match(med, /function getEcReservaAbonoArranqueMicroS/);
   assert.match(med, /function getEcTrasCalMagEstimadoMicroS/);
-  assert.match(med, /function mlCalMagParaEcObjetivoMicroS/);
-  assert.match(med, /ecMeta <= EC_CALMAG_BASE/);
-  assert.match(med, /calcularMlCalMag\(volLitrosOpt\)/);
+  assert.match(med, /ecMeta - reserva/);
+  assert.match(med, /ecMeta > EC_CALMAG_BASE/);
+  assert.match(cl, /por debajo del objetivo final/);
   assert.match(cl, /getEcTrasCalMagEstimadoMicroS\(cfg, vol\)/);
-  assert.match(cl, /calcularMlCalMag\(vol\)/);
   assert.match(cons, /mlCalMagParaVolumenLitros/);
-  assert.match(cons, /ecTrasCal = ec0 \+ estimarEcCalMagMicroS/);
+  assert.match(cons, /function getEcTrasMezclaCompletaEstimadoMicroS/);
+  assert.match(cl, /placeholder: String\(ecFinal\)/);
+  assert.match(cl, /getRecargaEcMetaMicroS\(\)/);
   assert.doesNotMatch(
     med,
-    /function calcularMlCalMag[\s\S]{0,400}getFactorArranquePlantulaHidro/
+    /function getEcObjetivoTrasCalMagMicroS[\s\S]{0,280}if \(ecMeta <= EC_CALMAG_BASE\) return ecMeta/
   );
 });
 

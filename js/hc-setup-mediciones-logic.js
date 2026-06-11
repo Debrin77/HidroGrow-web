@@ -305,15 +305,33 @@ function getVolNutrientesChecklistLitros(cfg) {
 }
 
 /**
- * EC total (µS/cm) tras CalMag: meta de recarga si es baja (arranque), si no ~EC_CALMAG_BASE.
+ * µS/cm que debe aportar el abono (pasos 4.3+) cuando la EC meta final es baja (arranque).
+ * CalMag cubre Ca/Mg; el nutriente completa hasta la meta de PC·2.
+ */
+function getEcReservaAbonoArranqueMicroS(ecMetaMicroS) {
+  const m = Number(ecMetaMicroS);
+  if (!Number.isFinite(m) || m <= 0) return 80;
+  return Math.max(50, Math.min(160, Math.round(m * 0.28)));
+}
+
+/**
+ * EC total (µS/cm) tras CalMag, antes del abono.
+ * Veg/flor: ~EC_CALMAG_BASE; arranque: por debajo de la meta final (queda margen para nutriente).
  */
 function getEcObjetivoTrasCalMagMicroS(cfg) {
   cfg = cfg || state.configTorre || {};
   const ecMeta =
     typeof getRecargaEcMetaMicroS === 'function' ? getRecargaEcMetaMicroS() : EC_CALMAG_BASE;
   const ec0 = getEcAguaInicialChecklistMicroS(cfg);
-  if (ecMeta <= EC_CALMAG_BASE) return ecMeta;
-  return Math.max(ec0, EC_CALMAG_BASE);
+  if (ecMeta > EC_CALMAG_BASE) {
+    return Math.max(ec0, EC_CALMAG_BASE);
+  }
+  const reserva = getEcReservaAbonoArranqueMicroS(ecMeta);
+  let objetivo = ecMeta - reserva;
+  if (objetivo <= ec0) {
+    objetivo = Math.max(ec0, ecMeta - Math.max(40, Math.round(reserva * 0.5)));
+  }
+  return Math.min(ecMeta - 40, Math.max(ec0, objetivo));
 }
 
 /** ml CalMag para alcanzar ecObjetivoTotal (µS/cm) desde ecAguaInicial a volumen v. */

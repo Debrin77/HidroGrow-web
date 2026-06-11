@@ -347,21 +347,25 @@ function generarPasosNutriente() {
       id:'4.2', seccion:null, paso:'4.2',
       desc: 'Añadir CalMag: ' + mlCM + ' ml — remover 2 min',
       nota:
-        (ecObjCalMag < EC_CALMAG_BASE - 20
-          ? 'Objetivo tras CalMag alineado con EC de arranque (~' +
-            ecObjCalMag +
-            ' µS/cm). Tras estos ml: ~' +
+        (ecFinal > ecCM + 30
+          ? 'Tras CalMag la EC debe quedar en ~' +
             ecCM +
-            ' µS estimados. '
+            ' µS (por debajo del objetivo final de ' +
+            ecFinal +
+            ' µS en PC·2). El abono en los pasos 4.3+ sube la mezcla hasta ~' +
+            ecFinal +
+            ' µS/cm. '
           : faPl < 1
             ? 'Arranque suave: menos CalMag que en mezcla «adulta»; tras estos ml: ~' + ecCM + ' µS estimados. '
-            : 'Con agua destilada u ósmosis el objetivo habitual es ~' +
-              EC_CALMAG_BASE +
+            : 'Con agua destilada u ósmosis el objetivo habitual tras CalMag es ~' +
+              ecObjCalMag +
               ' µS/cm (~' +
-              (EC_CALMAG_BASE / 1000).toFixed(2) +
+              (ecObjCalMag / 1000).toFixed(2) +
               ' mS/cm). Tras estos ml: ~' +
               ecCM +
-              ' µS estimados. ') +
+              ' µS estimados; el abono lleva la mezcla a ~' +
+              ecFinal +
+              ' µS/cm. ') +
         (cfg.agua === 'grifo' ? 'Con agua del grifo, verificar si es necesario.' : '') +
         notaRdwcMezcla +
         notaArranquePl +
@@ -379,8 +383,8 @@ function generarPasosNutriente() {
       id:'4.3', seccion:null, paso:'4.3', alert:true,
       desc: 'Añadir ' + orden[0] + ': ' + mlP0 + suf + ' — remover 3 min',
       nota: 'Dosis recomendada: ' + nut.dosis.recomendado + ' ' + nut.dosis.unidad +
-        '. EC objetivo: ' + ecFinal + ' µS/cm.' + notaRdwcMezcla + notaArranquePl + notaDwcMulticuboNut,
-      campos:[{ id:'clEcAB', label:'EC tras mezcla:', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
+        '. EC objetivo (PC·2): ' + ecFinal + ' µS/cm.' + notaRdwcMezcla + notaArranquePl + notaDwcMulticuboNut,
+      campos:[{ id:'clEcAB', label:'EC tras mezcla (objetivo PC·2):', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
     });
   } else if (nut.partes === 2) {
     pasos.push({
@@ -397,8 +401,14 @@ function generarPasosNutriente() {
     pasos.push({
       id:'4.4', seccion:null, paso:'4.4',
       desc: 'Agitar ' + orden[1] + '. Añadir ' + mlP1 + suf + ' — remover 3 min',
-      nota: 'EC objetivo de la mezcla: ~' + ecFinal + ' µS/cm.' + notaRdwcMezcla + notaArranquePl + notaDwcMulticuboNut,
-      campos:[{ id:'clEcAB', label:'EC tras mezcla completa (A+B):', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
+      nota:
+        'EC objetivo de la mezcla (PC·2): ~' +
+        ecFinal +
+        ' µS/cm. Los ml de A y B están calculados para alcanzar ese valor tras CalMag.' +
+        notaRdwcMezcla +
+        notaArranquePl +
+        notaDwcMulticuboNut,
+      campos:[{ id:'clEcAB', label:'EC tras mezcla completa (A+B, PC·2):', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
     });
   } else if (nut.partes === 3) {
     pasos.push({
@@ -413,8 +423,14 @@ function generarPasosNutriente() {
     pasos.push({
       id:'4.4b', seccion:null, paso:'4.4b',
       desc: 'Añadir ' + orden[2] + ': ' + mlP2 + suf + ' — remover 3 min',
-      nota: 'EC objetivo de la mezcla: ~' + ecFinal + ' µS/cm.' + notaRdwcMezcla + notaArranquePl + notaDwcMulticuboNut,
-      campos:[{ id:'clEcAB', label:'EC tras mezcla completa:', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
+      nota:
+        'EC objetivo de la mezcla (PC·2): ~' +
+        ecFinal +
+        ' µS/cm.' +
+        notaRdwcMezcla +
+        notaArranquePl +
+        notaDwcMulticuboNut,
+      campos:[{ id:'clEcAB', label:'EC tras mezcla completa (PC·2):', unit:'µS/cm', type:'number', step:'10', placeholder: String(ecFinal) }]
     });
   }
 

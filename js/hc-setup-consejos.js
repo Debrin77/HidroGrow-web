@@ -556,7 +556,8 @@ function mlAbonoParteDinamica(nut, partIndex, volLitros, ecMetaMicroS, ctx) {
   const ecBase = getEcBaseAguaPreAbonoMicroS(volLitros, nut, modoSoft, usarCalMag);
   let pendiente = ecMetaMicroS - ecBase;
   if (!Number.isFinite(pendiente)) pendiente = ecMetaMicroS;
-  pendiente = Math.max(50, pendiente);
+  pendiente = Math.max(0, pendiente);
+  if (pendiente > 0 && pendiente < 12) pendiente = 12;
 
   if (nut.partes === 2 && arr.length >= 2 && Math.abs(arr[0] - arr[1]) < 1e-6) {
     const slope = ecSubePorMlParABEnVolumen(nut, volLitros);
@@ -611,6 +612,43 @@ function calcularMlParteNutriente(partIndex) {
 /** Compatibilidad: primera parte; el checklist usa calcularMlParteNutriente por índice. */
 function calcularMlAB() {
   return calcularMlParteNutriente(0);
+}
+
+/**
+ * EC total estimada (µS/cm) tras CalMag + abono dinámico (1 o 2 partes simétricas).
+ * Debe coincidir con `getRecargaEcMetaMicroS()` / PC·2 cuando el modelo aplica.
+ */
+function getEcTrasMezclaCompletaEstimadoMicroS(cfg, volLitros, nut) {
+  cfg = cfg || state.configTorre || {};
+  nut =
+    nut ||
+    (typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null);
+  const ecMeta = typeof getRecargaEcMetaMicroS === 'function' ? getRecargaEcMetaMicroS() : 0;
+  if (!nut) return ecMeta;
+  const v =
+    volLitros > 0
+      ? volLitros
+      : typeof getVolNutrientesChecklistLitros === 'function'
+        ? getVolNutrientesChecklistLitros(cfg) || VOL_OBJETIVO
+        : VOL_OBJETIVO;
+  const aguaGrifo = (cfg.agua || state.configAgua || 'destilada') === 'grifo';
+  const usarCalMag = !!(nut.calmagNecesario && usarCalMagEnRecarga());
+  const ecBase = getEcBaseAguaPreAbonoMicroS(v, nut, !aguaGrifo, usarCalMag);
+  if (nut.partes === 3 || nut.tipoDosis === 'polvo') return ecMeta;
+  const ctx = { modoSoft: !aguaGrifo, usarCalMag };
+  const ref = getRefDosisFabricante(nut.id);
+  const arr = ref.mlPorLitro || [];
+  if (nut.partes === 1 && arr.length >= 1) {
+    const ml = mlAbonoParteDinamica(nut, 0, v, ecMeta, ctx);
+    const slope = ecSubePorMlParABEnVolumen(nut, v);
+    return Math.round(ecBase + ml * slope);
+  }
+  if (nut.partes === 2 && arr.length >= 2 && Math.abs(arr[0] - arr[1]) < 1e-6) {
+    const ml = mlAbonoParteDinamica(nut, 0, v, ecMeta, ctx);
+    const slope = ecSubePorMlParABEnVolumen(nut, v);
+    return Math.round(ecBase + ml * slope);
+  }
+  return ecMeta;
 }
 
 /** EC (µS/cm) aportada por CalMag a volumen V, calibrado como CALMAG_POR_ML en 18 L. */
