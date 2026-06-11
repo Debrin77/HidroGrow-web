@@ -242,7 +242,13 @@
     }
     const head = document.createElement('div');
     head.className = 'equip-catalog-head';
-    head.textContent = cat.label || key;
+    head.textContent =
+      typeof equipCategoriaLabelContextual === 'function'
+        ? equipCategoriaLabelContextual(key, {
+            origen: typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : '',
+            camino: typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '',
+          })
+        : cat.label || key;
     if (key === 'cupula_maceta' || cat.perMaceta) {
       const per = document.createElement('span');
       per.className = 'equip-catalog-per-maceta';
@@ -289,10 +295,17 @@
       ok.textContent = '✓ ' + cur.marca + ' ' + (cur.modelo || '');
       card.appendChild(ok);
     }
-    if (cat.hint) {
+    var hintTxt =
+      typeof equipCategoriaHintContextual === 'function'
+        ? equipCategoriaHintContextual(key, {
+            origen: typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : '',
+            camino: typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '',
+          })
+        : cat.hint;
+    if (hintTxt) {
       const hintP = document.createElement('p');
       hintP.className = 'equip-catalog-hint';
-      hintP.textContent = cat.hint;
+      hintP.textContent = hintTxt;
       card.appendChild(hintP);
     }
     host.appendChild(card);
@@ -466,7 +479,8 @@
       banner.classList.remove('setup-hidden');
       banner.className = 'setup-box-info setup-mb-8';
       banner.innerHTML =
-        '<strong>Esqueje/clon:</strong> recomendado <strong>propagador con domo</strong> en el grupo de enraizado. El calendario día a día está en este mismo paso (bloques de domo).';
+        '<strong>Esqueje/clon:</strong> <strong>domo de enraizado</strong> (no bandeja de semillas) en el grupo de abajo. ' +
+        'Tras raíz en rockwool → net pot en el DWC/RDWC. El protocolo día a día está en <strong>Inicio → Enraizado</strong>.';
       return;
     }
     banner.classList.add('setup-hidden');

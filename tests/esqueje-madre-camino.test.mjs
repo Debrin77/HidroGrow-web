@@ -78,3 +78,25 @@ test('enraizado: montaje unificado en esquejesProtocolo.montaje', () => {
   const cultivo = read('js/hc-camino-cultivo.js');
   assert.match(cultivo, /'esquejesProtocolo'/);
 });
+
+test('esqueje: textos domo de enraizado, no propagador semilla', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  const wiz = read('js/hc-equipamiento-wizard.js');
+  const orig = read('js/hc-premium-origen-paso.js');
+  const sis = read('js/hc-sistema-fase-camino.js');
+  assert.match(cat, /function equipCategoriaHintContextual/);
+  assert.match(cat, /Domo de enraizado para esquejes/);
+  assert.match(cat, /EQUIP_ENRAIZADO_GROUP[\s\S]*Domo para enraizar esquejes/);
+  assert.match(wiz, /domo de enraizado/);
+  assert.match(orig, /Domo de enraizado/);
+  assert.doesNotMatch(orig, /esqueje_hidro[\s\S]{0,120}Propagador para enraizar/);
+  assert.match(sis, /domo de enraizado/);
+  assert.doesNotMatch(sis, /domo y la bandeja/);
+});
+
+test('madre: sin checklist propagador ni grupo enraizado', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  const mont = read('js/hc-propagador-montaje.js');
+  assert.doesNotMatch(cat, /madre_hidro[\s\S]{0,400}EQUIP_ENRAIZADO_GROUP/);
+  assert.match(mont, /esRutaEsqueje\(cfg\)[\s\S]{0,40}ITEMS_ENRAIZADO/);
+});

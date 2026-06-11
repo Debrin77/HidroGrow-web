@@ -465,7 +465,7 @@
         ' ' +
         esc(ui.tituloPanel) +
         '</h2>' +
-        '<p class="hc-sis-prop-lead">El <strong>domo y la bandeja</strong> están arriba (SVG). Domo de clones → raíz en rockwool → <strong>asignar en el esquema DWC</strong> → primer llenado del depósito. El seguimiento día a día está en <strong>Inicio</strong> y el detalle en <strong>Medir</strong>.</p>' +
+        '<p class="hc-sis-prop-lead">El <strong>domo de enraizado</strong> está arriba (SVG). Esquejes en rockwool/jiffy → raíz → <strong>asignar en el esquema DWC</strong> → primer llenado del depósito. Seguimiento en <strong>Inicio → Enraizado</strong> y detalle en <strong>Medir</strong>.</p>' +
         ecEnrHtml +
         htmlEnraizadoPasos(cfg) +
         footEnr +

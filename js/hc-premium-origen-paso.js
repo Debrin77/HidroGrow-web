@@ -107,7 +107,8 @@
           'El DWC/RDWC se configuró en el mismo asistente (no hay segundo paso hidro).';
     } else if (cam === 'esqueje_hidro') {
       txt =
-        '<strong>Ruta: esqueje.</strong> <strong>Propagador</strong> para enraizar + sala y circuito hidro en este asistente.';
+        '<strong>Ruta: esqueje.</strong> <strong>Domo de enraizado</strong> (rockwool/jiffy) + sala y <strong>DWC/RDWC</strong> en este asistente. ' +
+        'No es propagador de semilla en bandeja.';
     } else if (cam === 'madre_hidro') {
       txt =
         '<strong>Ruta: madre.</strong> Sala y depósito para la madre (18/6); esquejes con checklist de clon.';

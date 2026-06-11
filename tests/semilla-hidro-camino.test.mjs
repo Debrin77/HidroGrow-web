@@ -605,7 +605,7 @@ test('propagador: montaje domo independiente de sala (solo checklist propagador)
 test('propagador: catálogo asistente sin iconos visuales por equipamiento', () => {
   const wiz = read('js/hc-equipamiento-wizard.js');
   assert.doesNotMatch(wiz, /renderEquipCatalogCard[\s\S]{0,900}hcVisualIconSvg/);
-  assert.match(wiz, /head\.textContent = cat\.label \|\| key/);
+  assert.match(wiz, /equipCategoriaLabelContextual/);
 });
 
 test('sala: ocultar sala interior riego tras montaje verificado (no solo propagador)', () => {

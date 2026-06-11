@@ -180,7 +180,7 @@
       metodoCultivo: 'sog',
       geneticaPref: 'foto',
       recoOrigen:
-        '<strong>Esqueje:</strong> sin las 6 fases de semilla. Enraizado en propagador → net pot → mismo DWC/RDWC → floración.',
+        '<strong>Esqueje:</strong> sin las 6 fases de semilla. Domo de enraizado → net pot → mismo DWC/RDWC → floración.',
       recoPaso6:
         'Checklist de corte y domo en este paso. Recomendación: <strong>SOG + fotoperíodo</strong>.',
       recoPaso5:

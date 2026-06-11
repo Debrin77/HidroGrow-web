@@ -189,7 +189,8 @@ const EQUIP_CATEGORIAS = {
       { key: 'tipo', label: 'Tipo', type: 'text' },
       { key: 'bandejas', label: 'Bandejas / celdas', type: 'number' },
     ],
-    hint: 'Bandeja con domo: 22–26 °C, HR 70–80 %, ventilar 2×/día. Imprescindible para germinar semilla antes del cubo rockwool.',
+    hint:
+      'Bandeja con domo: 22–26 °C, HR 70–80 %, ventilar 2×/día. Camino semilla en propagador: germinar aquí antes del traslado al DWC.',
   },
   /** Semilla en hidro (DWC/RDWC): una cúpula por maceta, no bandeja propagador multicelda. */
   cupula_maceta: {
@@ -567,6 +568,8 @@ const EQUIP_ENRAIZADO_GROUP = {
   label: 'Enraizado (esqueje)',
   icon: '💧',
   keys: ['propagador', 'higrometro_germ', 'mat_termica_germ'],
+  hint:
+    'Domo para enraizar esquejes en rockwool/jiffy (no bandeja de semillas). Tras raíz → net pot en el DWC/RDWC.',
 };
 
 /** Semilla en hidro: germina en el depósito/cubo (DWC/RDWC), no en bandeja propagador aparte. */
@@ -907,4 +910,69 @@ window.getEquipCategorias = getEquipCategorias;
 window.getEquipamientoByCategoria = getEquipamientoByCategoria;
 window.getEquipamientoById = getEquipamientoById;
 window.getEquipTopPorCategoria = getEquipTopPorCategoria;
+
+/** Hint de categoría según camino/origen (esqueje ≠ propagador semilla; hidro ≠ bandeja). */
+function equipCategoriaHintContextual(catId, ctx) {
+  ctx = ctx && typeof ctx === 'object' ? ctx : {};
+  var cat = EQUIP_CATEGORIAS[catId];
+  if (!cat) return '';
+  var origen =
+    ctx.origen ||
+    (typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : '');
+  var cam = ctx.camino || (typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '');
+  if (catId === 'propagador') {
+    if (origen === 'clon' || cam === 'esqueje_hidro') {
+      return (
+        'Domo de enraizado para esquejes: 22–26 °C, HR 70–80 %, ventilar 2×/día. ' +
+        'Cubos rockwool/jiffy; después al net pot del DWC/RDWC. No es propagador de semilla en bandeja.'
+      );
+    }
+    if (cam === 'semilla_hidro') {
+      return (
+        'En semilla en hidro no uses bandeja multicelda: germina en el cubo del depósito. ' +
+        'Opcional: cúpula individual por maceta (grupo de abajo).'
+      );
+    }
+    return cat.hint;
+  }
+  if (catId === 'mat_termica_germ') {
+    if (origen === 'clon' || cam === 'esqueje_hidro') {
+      return 'Opcional bajo el domo de enraizado si la estancia baja de ~20 °C. No va en el depósito DWC.';
+    }
+    if (cam === 'semilla_hidro') {
+      return 'No uses manta bajo el depósito DWC. Si hace frío, calentador sumergible en «Clima del depósito».';
+    }
+    return cat.hint;
+  }
+  if (catId === 'higrometro_germ') {
+    if (origen === 'clon' || cam === 'esqueje_hidro') {
+      return 'HR bajo el domo de enraizado (70–80 %). Registra en Inicio → protocolo esquejes y Medir.';
+    }
+    if (cam === 'semilla_hidro') {
+      return 'Opcional junto a cada cúpula/net pot. HR bajo mini cúpula ≠ HR del aire de la sala.';
+    }
+    return cat.hint;
+  }
+  return cat.hint || '';
+}
+
+function equipCategoriaLabelContextual(catId, ctx) {
+  ctx = ctx && typeof ctx === 'object' ? ctx : {};
+  var cat = EQUIP_CATEGORIAS[catId];
+  if (!cat) return catId;
+  var origen =
+    ctx.origen ||
+    (typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : '');
+  var cam = ctx.camino || (typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '');
+  if (catId === 'propagador' && (origen === 'clon' || cam === 'esqueje_hidro')) {
+    return 'Domo de enraizado';
+  }
+  if (catId === 'mat_termica_germ' && (origen === 'clon' || cam === 'esqueje_hidro')) {
+    return 'Mat térmica (domo esquejes)';
+  }
+  return cat.label || catId;
+}
+
+window.equipCategoriaHintContextual = equipCategoriaHintContextual;
+window.equipCategoriaLabelContextual = equipCategoriaLabelContextual;
 window.getPremiumOrigenPlanta = getPremiumOrigenPlanta;

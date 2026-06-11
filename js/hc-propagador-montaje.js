@@ -34,7 +34,12 @@
   ];
 
   var ITEMS_ENRAIZADO = [
-    { id: 'enr_domo', label: 'Domo de enraizado montado', hint: 'HR 70–80 %, 22–26 °C; ventilar 2×/día.', accent: 'germ' },
+    {
+      id: 'enr_domo',
+      label: 'Domo de enraizado montado',
+      hint: 'HR 70–80 %, 22–26 °C; ventilar 2×/día. No es bandeja de semillas — esquejes en rockwool/jiffy.',
+      accent: 'germ',
+    },
     { id: 'enr_rockwool', label: 'Cubos rockwool pH 5,5 listos', hint: 'Humedecidos, no encharcados; gel/polvo de enraizante a mano.', accent: 'hydro' },
     { id: 'enr_higiene', label: 'Tijeras y superficie esterilizadas', hint: 'Alcohol 70 %; corte 45° por la mañana si puedes.', accent: 'tool' },
     { id: 'enr_luz', label: 'Luz tenue 18/6 sobre el domo', hint: 'Sin LED de floración directo sobre esquejes tiernos.', accent: 'light' },
