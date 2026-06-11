@@ -64,17 +64,13 @@ async function guardarMedicion(payloadOverride) {
   const fromPayload = payloadOverride && typeof payloadOverride === 'object';
   if (!fromPayload) {
     var cfgMed = state && state.configTorre ? state.configTorre : {};
-    var medirGerm =
-      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
-      hcMedirPermiteRegistroGerminacion(cfgMed);
-    var medirPostTraslado =
-      typeof hcMedirPermiteRegistroPostTrasladoPropagador === 'function' &&
-      hcMedirPermiteRegistroPostTrasladoPropagador(cfgMed);
+    var medirContextual =
+      typeof hcMedirPermiteRegistroContextual === 'function' &&
+      hcMedirPermiteRegistroContextual(cfgMed);
     if (
       typeof medicionesOperativasPermitidas === 'function' &&
       !medicionesOperativasPermitidas() &&
-      !medirGerm &&
-      !medirPostTraslado
+      !medirContextual
     ) {
       showToast(
         'Completa montaje, cultivo y primer llenado antes del seguimiento diario en Medir.',
@@ -88,8 +84,7 @@ async function guardarMedicion(payloadOverride) {
     if (
       typeof sistemaEstaOperativa === 'function' &&
       !sistemaEstaOperativa() &&
-      !medirGerm &&
-      !medirPostTraslado
+      !medirContextual
     ) {
       showToast(typeof getMensajeStandbyContinuar === 'function'
         ? getMensajeStandbyContinuar()
@@ -98,17 +93,13 @@ async function guardarMedicion(payloadOverride) {
     }
   } else {
     var cfgMedP = state && state.configTorre ? state.configTorre : {};
-    var medirGermP =
-      typeof hcMedirPermiteRegistroGerminacion === 'function' &&
-      hcMedirPermiteRegistroGerminacion(cfgMedP);
-    var medirPostTrasladoP =
-      typeof hcMedirPermiteRegistroPostTrasladoPropagador === 'function' &&
-      hcMedirPermiteRegistroPostTrasladoPropagador(cfgMedP);
+    var medirContextualP =
+      typeof hcMedirPermiteRegistroContextual === 'function' &&
+      hcMedirPermiteRegistroContextual(cfgMedP);
     if (
       typeof medicionesOperativasPermitidas === 'function' &&
       !medicionesOperativasPermitidas() &&
-      !medirGermP &&
-      !medirPostTrasladoP
+      !medirContextualP
     ) {
       showToast(
         'Completa montaje, cultivo y primer llenado antes del seguimiento diario.',
@@ -119,8 +110,7 @@ async function guardarMedicion(payloadOverride) {
     if (
       typeof sistemaEstaOperativa === 'function' &&
       !sistemaEstaOperativa() &&
-      !medirGermP &&
-      !medirPostTrasladoP
+      !medirContextualP
     ) {
       showToast(typeof getMensajeStandbyContinuar === 'function'
         ? getMensajeStandbyContinuar()

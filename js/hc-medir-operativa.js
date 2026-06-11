@@ -151,22 +151,20 @@
     var monitorCard = document.getElementById('medirMonitorCard');
     var guiaCard = document.getElementById('medirGuiaDiaCard');
 
-    if (preGate) {
-      preGate.classList.toggle('setup-hidden', !pendiente || germMedir || ocultarSeguimientoMedir);
-      if (pendiente) {
-        var nextEl = document.getElementById('medirPreOperativaNext');
-        var ctaEl = document.getElementById('medirPreOperativaCta');
-        if (nextEl && lc.siguientePaso) {
-          nextEl.innerHTML = 'Pendiente: <strong>' + esc(lc.siguientePaso.label) + '</strong> (' + lc.porcentaje + '% instalación).';
-        }
-        if (ctaEl && lc.siguientePaso) {
-          ctaEl.textContent = lc.siguientePaso.label;
-          ctaEl.onclick = function () {
-            if (typeof hcEjecutarAccionInstalacion === 'function') {
-              hcEjecutarAccionInstalacion(lc.siguientePaso.action);
-            }
-          };
-        }
+    if (preGate && pendiente) {
+      var nextEl = document.getElementById('medirPreOperativaNext');
+      var ctaEl = document.getElementById('medirPreOperativaCta');
+      if (nextEl && lc.siguientePaso) {
+        nextEl.innerHTML =
+          'Pendiente: <strong>' + esc(lc.siguientePaso.label) + '</strong> (' + lc.porcentaje + '% instalación).';
+      }
+      if (ctaEl && lc.siguientePaso) {
+        ctaEl.textContent = lc.siguientePaso.label;
+        ctaEl.onclick = function () {
+          if (typeof hcEjecutarAccionInstalacion === 'function') {
+            hcEjecutarAccionInstalacion(lc.siguientePaso.action);
+          }
+        };
       }
     }
 
@@ -181,9 +179,7 @@
     }
 
     if (flow) {
-      var bloquearFlow = !!pendiente && !germMedir;
-      flow.classList.toggle('medir-flow--pre-operativa', bloquearFlow);
-      flow.setAttribute('aria-hidden', bloquearFlow ? 'true' : 'false');
+      flow.classList.remove('medir-flow--pre-operativa');
       var lead = flow.querySelector('.medir-flow-lead');
       if (lead) lead.classList.add('setup-hidden');
     }

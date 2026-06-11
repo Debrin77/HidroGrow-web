@@ -505,7 +505,10 @@
     const card = el('medirEsquejesCard');
     const panel = el('medirEsquejesPanel');
     if (!card || !panel) return;
-    const show = origenEsMadreOClon();
+    const cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+    const show =
+      origenEsMadreOClon() || cam === 'esqueje_hidro' || cam === 'madre_hidro';
     card.classList.toggle('setup-hidden', !show);
     if (!show) return;
     const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
