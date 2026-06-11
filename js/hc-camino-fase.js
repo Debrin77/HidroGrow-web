@@ -1044,6 +1044,21 @@
     return false;
   }
 
+  /** Ocultar #configPanel en Sala (municipio en panelLocalidadMeteo; equip en raíz del tab). */
+  function hcSalaConfigPanelOcultoEnUi(cfg) {
+    cfg = cfg || cfgActiva();
+    if (
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      return true;
+    }
+    return (
+      typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
+      hcSalaOcultarPanelesDuplicadosMedir(cfg)
+    );
+  }
+
   function hcMedirEnfocadoGerminacion(cfg) {
     cfg = cfg || cfgActiva();
     if (
@@ -1303,6 +1318,7 @@
   global.refreshDashInicioVistaCamino = refreshDashInicioVistaCamino;
   global.refreshSalaVistaCamino = refreshSalaVistaCamino;
   global.hcSalaOcultarPanelesDuplicadosMedir = hcSalaOcultarPanelesDuplicadosMedir;
+  global.hcSalaConfigPanelOcultoEnUi = hcSalaConfigPanelOcultoEnUi;
   global.hcMedirEnfocadoGerminacion = hcMedirEnfocadoGerminacion;
   global.salaConfiguradaCamino = salaConfiguradaCamino;
   global.montajeSalaOkCamino = montajeSalaOkCamino;

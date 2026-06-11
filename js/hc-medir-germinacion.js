@@ -272,7 +272,12 @@
 
     var configPanel = document.getElementById('configPanel');
     if (configPanel) {
-      configPanel.classList.toggle('setup-hidden', !depOk && !preTraslado);
+      var ocultarConfigSala =
+        typeof hcSalaConfigPanelOcultoEnUi === 'function' && hcSalaConfigPanelOcultoEnUi(cfg);
+      configPanel.classList.toggle(
+        'setup-hidden',
+        (!depOk && !preTraslado) || ocultarConfigSala
+      );
     }
 
     var recarga = document.getElementById('recargaCardMediciones');

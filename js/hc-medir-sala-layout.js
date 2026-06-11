@@ -9,7 +9,6 @@
     agua: [
       'panelLocalidadMeteo',
       'configPanel',
-      'salaCultivoEquipMount',
       'panelGrowRoomSala',
       'panelConfigInteriorGrow',
       'panelMedirCalentadorConsigna',
@@ -606,6 +605,35 @@
     repositionMedirTorreBannerTop();
   }
 
+  function refreshSalaUbicacionSinDuplicarUi() {
+    var agua = document.getElementById('salaPanelAgua');
+    var panelLoc = document.getElementById('panelLocalidadMeteo');
+    var configPanel = document.getElementById('configPanel');
+    if (!agua || !panelLoc || !configPanel) return;
+    if (!agua.contains(panelLoc) || !agua.contains(configPanel)) return;
+    var dedupe =
+      !panelLoc.classList.contains('setup-hidden') &&
+      !configPanel.classList.contains('setup-hidden');
+    configPanel.classList.toggle('sala-config-con-localidad', dedupe);
+    var btn2 = document.getElementById('btnMedirDwcBlock2');
+    if (btn2) {
+      if (!btn2.dataset.hcTitleDefault) {
+        var titleEl = btn2.querySelector('.config-section-collapse-title');
+        if (titleEl) btn2.dataset.hcTitleDefault = titleEl.innerHTML;
+      }
+      var tit = btn2.querySelector('.config-section-collapse-title');
+      if (tit && btn2.dataset.hcTitleDefault) {
+        tit.innerHTML = dedupe
+          ? '<svg class="hc-ico hc-ico--title-inline" aria-hidden="true" focusable="false"><use href="#hc-i-bulb"/></svg> Luz y sustrato'
+          : btn2.dataset.hcTitleDefault;
+      }
+      btn2.setAttribute(
+        'aria-label',
+        dedupe ? 'Luz y sustrato' : 'Ubicación del sistema, luz y sustrato'
+      );
+    }
+  }
+
   function refreshSalaPanelesDuplicadosMedirUi(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
     var hidroOper =
@@ -619,6 +647,13 @@
       if (!el) return;
       var hidePanel = ocultar;
       if (hidroOper && id === 'panelLocalidadMeteo') hidePanel = false;
+      if (
+        id === 'configPanel' &&
+        typeof hcSalaConfigPanelOcultoEnUi === 'function' &&
+        hcSalaConfigPanelOcultoEnUi(cfg)
+      ) {
+        hidePanel = true;
+      }
       el.classList.toggle('setup-hidden', hidePanel);
       el.setAttribute('aria-hidden', hidePanel ? 'true' : 'false');
     });
@@ -647,6 +682,7 @@
     }
     var shell = document.getElementById('tabSalaMount');
     if (shell) shell.classList.toggle('sala-sub-shell--solo-equip', ocultar);
+    refreshSalaUbicacionSinDuplicarUi();
   }
 
   function refreshSalaSubTabsCaminoUi(cfg) {
@@ -803,6 +839,13 @@
   }
 
   function salaPanelesAguaVisibles(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {});
+    if (
+      typeof hcSemillaHidroUiOperativaLista === 'function' &&
+      hcSemillaHidroUiOperativaLista(cfg)
+    ) {
+      return true;
+    }
     return !(
       typeof hcSalaOcultarPanelesDuplicadosMedir === 'function' &&
       hcSalaOcultarPanelesDuplicadosMedir(cfg)
@@ -949,6 +992,7 @@
   window.salaSubTab = salaSubTab;
   window.refreshSalaSubTabsCaminoUi = refreshSalaSubTabsCaminoUi;
   window.refreshSalaPanelesDuplicadosMedirUi = refreshSalaPanelesDuplicadosMedirUi;
+  window.refreshSalaUbicacionSinDuplicarUi = refreshSalaUbicacionSinDuplicarUi;
   window.goTabSala = function (sub) {
     if (typeof goTab === 'function') goTab('sala');
     setTimeout(function () {

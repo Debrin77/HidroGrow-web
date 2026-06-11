@@ -1816,6 +1816,7 @@ function initConfigUI() {
 
   syncMedirAguaResumen();
   syncMedirSustratoResumen();
+  if (typeof refreshSalaUbicacionSinDuplicarUi === 'function') refreshSalaUbicacionSinDuplicarUi();
   const chkA = document.getElementById('chkMedirCambiarAgua');
   const chkS = document.getElementById('chkMedirCambiarSustrato');
   const aguaIncompletaGrifo = agua === 'grifo' && !state.configAguaMunicipio && !(parseFloat(state.configAguaEC) > 0);

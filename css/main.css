@@ -22786,6 +22786,15 @@ button.hc-monitor-check { cursor: pointer; }
 .medir-ambiente-details--operativa-unificado .medir-ambiente-summary { font-weight: 600; }
 .config-panel--hidro-operativa .config-option-desc { display: none; }
 .config-panel--hidro-operativa .medir-note-block--ubic-luz { display: none; }
+#tab-sala .sala-config-con-localidad .medir-dwc-block--2 #panelUbicacionLuzMediciones > .medir-note-block--ubic-luz,
+#tab-sala .sala-config-con-localidad .medir-dwc-block--2 #panelUbicacionLuzMediciones > .config-options[aria-labelledby="labelUbicacionLuzMed"] {
+  display: none;
+}
+#tab-sala .sala-config-con-localidad #ecBaseGrifo .medir-geo-btn,
+#tab-sala .sala-config-con-localidad #ecBaseGrifo .medir-separador-row,
+#tab-sala .sala-config-con-localidad #ecBaseGrifo .medir-mb-10:first-of-type {
+  display: none;
+}
 .luz-origen-equip-solo-led {
   font-size: 14px;
   padding: 8px 0;

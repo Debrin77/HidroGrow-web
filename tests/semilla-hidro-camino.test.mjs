@@ -773,15 +773,25 @@ test('Sala semilla_hidro: municipio del asistente y equipamiento visible', () =>
   const sala = read('js/hc-medir-sala-layout.js');
   const prem = read('js/hc-premium-wizard.js');
   const equip = read('js/hc-luz-equip-sync.js');
+  const germ = read('js/hc-medir-germinacion.js');
+  const fase = read('js/hc-camino-fase.js');
   assert.match(agua, /function hcAsegurarLocalidadMeteoDesdeAsistente/);
   assert.match(agua, /Municipio del <strong>asistente<\/strong>/);
   assert.match(sala, /function refreshSalaLocalidadDesdeAsistente/);
+  assert.match(sala, /function refreshSalaUbicacionSinDuplicarUi/);
+  assert.match(sala, /sala-config-con-localidad/);
   assert.match(sala, /renderMedirEquipamientoPanel\(\)/);
+  assert.match(fase, /function hcSalaConfigPanelOcultoEnUi/);
+  assert.match(germ, /hcSalaConfigPanelOcultoEnUi\(cfg\)/);
   assert.match(prem, /ciudadPersist/);
   assert.match(equip, /renderMedirEquipamientoPanel/);
   assert.doesNotMatch(
     sala,
     /if \(hidroOper\) \{[\s\S]{0,400}sistemaEquipDetails[\s\S]{0,120}setup-hidden/
+  );
+  assert.doesNotMatch(
+    sala,
+    /agua:\s*\[[\s\S]{0,260}'salaCultivoEquipMount'/
   );
 });
 
