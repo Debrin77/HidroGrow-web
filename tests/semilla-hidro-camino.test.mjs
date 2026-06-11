@@ -125,10 +125,12 @@ test('equipamiento hidro: medidor y bomba_aire solo en prep_hidro (sin duplicar 
   );
 });
 
-test('equipamiento hidro: cúpula por maceta, no propagador en grupo opcional', () => {
+test('equipamiento hidro: cúpula por maceta, calentador en depósito (sin manta)', () => {
   const cat = read('js/hc-equipamiento-catalog.js');
   assert.match(cat, /cupula_maceta/);
-  assert.match(cat, /germ_opcional_hidro[\s\S]*keys:\s*\['cupula_maceta',\s*'mat_termica_germ'\]/);
+  assert.match(cat, /germ_opcional_hidro[\s\S]*keys:\s*\['cupula_maceta'\]/);
+  assert.match(cat, /germ_clima_deposito[\s\S]*keys:\s*\['calentador'\]/);
+  assert.doesNotMatch(cat, /germ_opcional_hidro[\s\S]{0,200}mat_termica_germ/);
   assert.match(cat, /hidroGermEquip/);
   const wiz = read('js/hc-equipamiento-wizard.js');
   assert.match(wiz, /isSemillaHidroEquipWizard/);
@@ -635,4 +637,35 @@ test('semilla: fase inicial por defecto esqueje/plántula', () => {
   assert.match(prem, /faseSala: 'esqueje'/);
   assert.match(grow, /growRoomFase \|\| 'esqueje'/);
   assert.match(cultivo, /faseInicial === 'germinacion'[\s\S]{0,200}esqueje/);
+});
+
+test('semilla_hidro: equipamiento sin manta térmica; calentador sumergible opcional', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /germ_clima_deposito[\s\S]{0,280}keys: \['calentador'\]/);
+  assert.match(cat, /germ_opcional_hidro[\s\S]{0,200}keys: \['cupula_maceta'\]/);
+  assert.doesNotMatch(cat, /germ_opcional_hidro[\s\S]{0,200}mat_termica_germ/);
+  assert.match(cat, /calentador sumergible/);
+});
+
+test('semilla_hidro: bloque agua/EC de depósito, no bandeja propagador', () => {
+  const germ = read('js/cultivos-germinacion.js');
+  const plan = read('js/hc-premium-germ-plan.js');
+  const montaje = read('js/hc-propagador-montaje.js');
+  assert.match(germ, /function renderSustratoGermHidroDepositoBlockHtml/);
+  assert.match(germ, /Depósito DWC\/RDWC/);
+  assert.match(plan, /camino: esHidroPlan \? 'semilla_hidro'/);
+  assert.match(montaje, /camino: esRutaGermHidro\(cfg\) \? 'semilla_hidro'/);
+});
+
+test('semilla_hidro: checklist prep no importa propagadorMontajeChecks', () => {
+  const montaje = read('js/hc-propagador-montaje.js');
+  assert.doesNotMatch(montaje, /Object\.assign\(cfg\[key\], wrong\)/);
+  assert.match(montaje, /esRutaGermHidro\(cfg\)[\s\S]{0,80}\? ITEMS_PREP_HIDRO/);
+});
+
+test('semilla_hidro: modal plan y wizard sin textos de bandeja propagador', () => {
+  const plan = read('js/hc-premium-germ-plan.js');
+  const wiz = read('js/hc-premium-wizard.js');
+  assert.match(plan, /esHidroModal[\s\S]{0,400}depósito DWC\/RDWC/);
+  assert.match(wiz, /hcCaminoSemillaHidroSetupGerm\(\)\)[\s\S]{0,80}sec\.innerHTML = ''/);
 });

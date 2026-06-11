@@ -3150,10 +3150,17 @@
       if (typeof refreshPremiumGerminacionUI === 'function') refreshPremiumGerminacionUI();
       return;
     }
+    var camPrev = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    var leadPrev =
+      camPrev === 'semilla_hidro'
+        ? '<p><strong>Semilla en hidro (DWC/RDWC):</strong> prep cubo en depósito → checklist → 6 fases en <strong>Inicio → Germinación</strong>. Sin bandeja propagador aparte.</p>'
+        : camPrev === 'semilla_propagador'
+          ? '<p><strong>Semilla en propagador:</strong> checklist domo → 6 fases → sala → traslado al hidro.</p>'
+          : '<p><strong>Propagador:</strong> checklist → 6 fases + registro aquí → sala → traslado. <strong>Hidro directo:</strong> prep + sala + sistema + depósito → 6 fases en el cubo.</p>';
     sec.innerHTML =
       '<div class="hc-germ-setup-preview setup-box-info" role="note">' +
       '<p><strong>Camino semilla → cubo (6 fases).</strong> No las marques aquí: son días de trabajo real.</p>' +
-      '<p><strong>Propagador:</strong> checklist → 6 fases + registro aquí → sala → traslado. <strong>Hidro directo:</strong> prep + sala + sistema + depósito → 6 fases en el cubo.</p>' +
+      leadPrev +
       (function () {
         var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
         var vid = p && p.variedadGerminacion;

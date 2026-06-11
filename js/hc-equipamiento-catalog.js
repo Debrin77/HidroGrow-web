@@ -93,6 +93,20 @@ const EQUIP_CATEGORIAS = {
     ],
     hint: 'RDWC/NFT/torre: caudal y altura manométrica según circuito. Revisa en montaje.',
   },
+  calentador: {
+    id: 'calentador',
+    label: 'Calentador sumergible (depósito)',
+    icon: '🔥',
+    entorno: 'both',
+    indispensable: false,
+    recommended: false,
+    campos: [
+      { key: 'watts', label: 'Potencia (W)', type: 'number' },
+      { key: 'litrosMax', label: 'Litros máx. (orient.)', type: 'number' },
+    ],
+    hint:
+      'Calefactor tipo acuario dentro del depósito DWC/RDWC (no manta térmica bajo el cubo). Recomendado si el agua puede bajar de ~18 °C; objetivo 20–24 °C.',
+  },
   co2: {
     id: 'co2',
     label: 'CO₂ / enriquecedor',
@@ -503,6 +517,15 @@ const EQUIPAMIENTO_CATALOG = [
   { id: 'hydropony_mat', categoria: 'mat_termica_germ', marca: 'Hydropony', modelo: 'Manta 21W', top_es: true, rank: 4,
     specs: { watts: 21 }, nota: 'Entrada de gama · germinador doméstico.' },
 
+  { id: 'tetra_ht50', categoria: 'calentador', marca: 'Tetra', modelo: 'HT 50W', top_es: true, rank: 1,
+    specs: { watts: 50, litrosMax: 60 }, nota: 'Uso acuario · depósitos pequeños/medianos.' },
+  { id: 'jbl_protemp_s', categoria: 'calentador', marca: 'JBL', modelo: 'ProTemp S 100W', top_es: true, rank: 2,
+    specs: { watts: 100, litrosMax: 150 }, nota: 'Termostato integrado · habituales en hidro.' },
+  { id: 'eheim_jager_100', categoria: 'calentador', marca: 'Eheim', modelo: 'Jäger 100W', top_es: true, rank: 3,
+    specs: { watts: 100, litrosMax: 160 }, nota: 'Sumergible · precisión estable.' },
+  { id: 'sera_75', categoria: 'calentador', marca: 'Sera', modelo: 'Aquarium Heater 75W', top_es: true, rank: 4,
+    specs: { watts: 75, litrosMax: 100 }, nota: 'Alternativa económica en growshops.' },
+
   { id: 'thermopro_tp50', categoria: 'higrometro_germ', marca: 'ThermoPro', modelo: 'TP50', top_es: true, rank: 1,
     specs: { precisionHr: 3 }, nota: 'Digital básico · muy usado bajo domo.' },
   { id: 'govee_h5100', categoria: 'higrometro_germ', marca: 'Govee', modelo: 'H5100', top_es: true, rank: 2,
@@ -522,12 +545,12 @@ const EQUIP_TOP_ES_LIMIT = 10;
 const EQUIP_CATALOG_GROUPS = {
   interior: [
     { id: 'sala', label: 'Sala interior', icon: '🏠', keys: ['armario', 'led', 'extractor', 'filtro_carbon', 'ventilador_circ', 'temporizador', 'humidificador', 'deshumidificador', 'co2'] },
-    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc'] },
+    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc', 'calentador'] },
     { id: 'tools', label: 'Herramientas cultivo', icon: '✂️', keys: ['tijeras', 'lupa'] },
   ],
   exterior: [
     { id: 'ext', label: 'Exterior', icon: '☀️', keys: ['toldo_malla', 'ventilador_circ'] },
-    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc'] },
+    { id: 'hidro', label: 'Circuito hidro', icon: '🫧', keys: ['medidor', 'bomba_aire', 'bomba_recirc', 'calentador'] },
     { id: 'tools', label: 'Herramientas cultivo', icon: '✂️', keys: ['tijeras', 'lupa'] },
   ],
 };
@@ -553,11 +576,11 @@ const EQUIP_PREP_HIDRO_GROUP = {
   icon: '🪴',
   keys: ['medidor', 'bomba_aire'],
   hint:
-    'La semilla va en net pot dentro del DWC/RDWC. Aquí solo: medidor EC/pH y bomba de aire con piedra difusora en el depósito (oxigenación para germinar en el cubo). Mini domo por maceta es opcional más abajo.',
+    'La semilla va en net pot dentro del DWC/RDWC. Medidor EC/pH y bomba de aire con piedra difusora en el depósito. Si hace frío, añade calentador sumergible más abajo (no manta térmica bajo el depósito).',
 };
 
 /** Claves ya cubiertas en Prep cubo (no repetir en «Circuito hidro» del mismo paso). */
-var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire'];
+var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire', 'calentador'];
 
 /**
  * Semilla en hidro: el paso de equipamiento (premium 3) va antes de elegir DWC/RDWC (premium END).
@@ -774,14 +797,24 @@ function getEquipCatalogGroups(entorno) {
         hint: EQUIP_PREP_HIDRO_GROUP.hint + ' Debajo: equipamiento de sala (carpa, LED, extractor).',
       }),
       {
-        id: 'germ_opcional_hidro',
-        label: 'Opcional · microclima por maceta',
-        icon: '🪴',
-        keys: ['cupula_maceta', 'mat_termica_germ'],
+        id: 'germ_clima_deposito',
+        label: 'Clima del depósito (si hace frío)',
+        icon: '🔥',
+        keys: ['calentador'],
         required: false,
         optional: true,
         hint:
-          'No sustituye germinar en el cubo. Si usas cúpula: una por cada net pot/cesta (DWC/RDWC), no bandeja propagador de muchas celdas.',
+          'Calentador sumergible tipo acuario dentro del depósito. Recomendado si la T° del agua puede bajar de ~18 °C (objetivo 20–24 °C). La manta térmica es para domo/bandeja propagador, no para DWC/RDWC.',
+      },
+      {
+        id: 'germ_opcional_hidro',
+        label: 'Opcional · cúpula por maceta',
+        icon: '🪴',
+        keys: ['cupula_maceta'],
+        required: false,
+        optional: true,
+        hint:
+          'Una mini cúpula por cada net pot/cesta (no bandeja propagador). Oscuridad y ventilación las marcas en Inicio → Germinación.',
       },
     ].concat(
       base

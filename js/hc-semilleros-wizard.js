@@ -103,6 +103,20 @@
       explain.classList.add('setup-hidden');
     } else if (explain) {
       explain.classList.remove('setup-hidden');
+      var camSem =
+        typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      if (camSem === 'semilla_hidro') {
+        explain.innerHTML =
+          '<strong>Tienda de semillas (breeder)</strong> — no es el depósito DWC ni la cúpula. ' +
+          'El <strong>cubo/net pot, bomba de aire y calentador</strong> (si hace frío) van en <strong>Espacio y equipamiento</strong>. ' +
+          'El seguimiento día a día va en <strong>Inicio — Germinación</strong>.';
+      } else {
+        explain.innerHTML =
+          '<strong>Tienda de semillas (breeder)</strong> — no es el propagador. ' +
+          '¿Semillero aquí = marca donde compraste (Dinafem, RQSí), no el domo. ' +
+          'El <strong>propagador / domo</strong> se registra en <strong>Espacio y equipamiento</strong> (grupo Germinación). ' +
+          'Cubos rockwool y pH del germinador se marcan en <strong>Inicio — Germinación</strong> al seguir el camino.';
+      }
     }
     if (omitido) {
       renderSemilleroPerfilPanel();

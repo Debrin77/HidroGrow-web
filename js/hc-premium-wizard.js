@@ -743,8 +743,9 @@
     } else if (typeof hcGerminacionRenderSetupPreview === 'function') {
       if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
       if (
-        typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-        hcCaminoSemillaPropagadorSetupGerm()
+        (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
+          hcCaminoSemillaPropagadorSetupGerm()) ||
+        (typeof hcCaminoSemillaHidroSetupGerm === 'function' && hcCaminoSemillaHidroSetupGerm())
       ) {
         sec.innerHTML = '';
       } else {

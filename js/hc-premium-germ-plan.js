@@ -4,7 +4,19 @@
 (function (global) {
   'use strict';
 
+  function hintSustratoGermHidro(id) {
+    var fb = {
+      lana: 'Remojo pH 5,5 en cubo · depósito EC 200–400 µS · 20–24 °C.',
+      esponja: 'Pellet tibio pH 5,8 · sin charco en depósito · burbujeo suave.',
+      papel: 'Papel sin EC · traslado a cubo en net pot antes del depósito.',
+      coco: 'Plug pH 5,6 · EC depósito baja hasta enraizar en cubo.',
+    };
+    return fb[id] || '';
+  }
+
   function hintSustratoGerm(id) {
+    var camHint = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (camHint === 'semilla_hidro') return hintSustratoGermHidro(id);
     if (typeof getSustratoGermAguaEc !== 'function') {
       var fb = {
         lana: 'Remojo pH 5,5 · bandeja 2–5 mm · EC propagador 0–500 µS.',
@@ -372,8 +384,13 @@
         p.numSemillasGerm = sugerirNumSemillas(cfg, p);
       }
     }
+    var camPlan = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    var esHidroPlan = camPlan === 'semilla_hidro';
     var capHtml = '';
-    if (!cap) {
+    if (esHidroPlan) {
+      capHtml =
+        '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint"><strong>1 semilla = 1 cubo/net pot</strong> en el DWC/RDWC. Indica cuántas cestas vas a germinar.</p>';
+    } else if (!cap) {
       capHtml =
         '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint">Elige domo arriba para sugerir semillas.</p>';
     }
@@ -402,7 +419,10 @@
     }).join('');
     var sustratoAguaHtml =
       typeof renderSustratoGermAguaEcBlockHtml === 'function'
-        ? renderSustratoGermAguaEcBlockHtml(p.sustratoGerm || 'lana', 'semilla', { compact: false })
+        ? renderSustratoGermAguaEcBlockHtml(p.sustratoGerm || 'lana', 'semilla', {
+            compact: false,
+            camino: esHidroPlan ? 'semilla_hidro' : '',
+          })
         : '';
     var bandOpts = BANDEJA_OPTS.map(function (o) {
       return (
@@ -415,9 +435,17 @@
         '</option>'
       );
     }).join('');
-    var camPlan = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     var tituloPlan =
-      camPlan === 'semilla_hidro' ? 'Plan de germinación en cubo' : 'Plan en el propagador';
+      esHidroPlan ? 'Plan de germinación en cubo (DWC/RDWC)' : 'Plan en el propagador';
+    var bandejaBlock = esHidroPlan
+      ? ''
+      : '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Bandeja</label>' +
+        '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermBandejaFromUI()">' +
+        bandOpts +
+        '</select></div>';
+    var fechaLbl = esHidroPlan
+      ? 'Fecha: semillas en el cubo (prep hidro lista)'
+      : 'Fecha: semillas en el sustrato y propagador listo';
     sec.innerHTML =
       '<div class="setup-block-title setup-mb-8">' + tituloPlan + '</div>' +
       capHtml +
@@ -426,10 +454,8 @@
       '<input type="number" id="setupPremiumNumSemillasGerm" class="setup-input-city" min="1" max="72" step="1" placeholder="—" value="' +
       nSemInputVal +
       '" onchange="persistPremiumGermPlanFromUI(true)" onblur="persistPremiumGermPlanFromUI(true)"></div>' +
-      '<div><label class="setup-field-label" for="setupPremiumBandejaGerm">Bandeja</label>' +
-      '<select id="setupPremiumBandejaGerm" class="setup-input-city" onchange="persistPremiumGermBandejaFromUI()">' +
-      bandOpts +
-      '</select></div></div>' +
+      bandejaBlock +
+      '</div>' +
       '<label class="setup-field-label setup-mb-4">Sustrato</label>' +
       '<div class="setup-grid-2 setup-grid-gap-8 setup-mb-4 hc-germ-ahora-sustrato">' +
       sustratoBtns +
@@ -438,7 +464,9 @@
       sustratoAguaHtml +
       '</div>' +
       '<div class="setup-mb-8 hc-germ-fecha-siembra-block">' +
-      '<label class="setup-field-label" for="setupPremiumFechaSiembraGerm">Fecha: semillas en el sustrato y propagador listo</label>' +
+      '<label class="setup-field-label" for="setupPremiumFechaSiembraGerm">' +
+      fechaLbl +
+      '</label>' +
       '<input type="date" id="setupPremiumFechaSiembraGerm" class="setup-input-city" max="' +
       hoyIsoGerm() +
       '" value="' +
@@ -464,7 +492,11 @@
     if (!p.fechaSiembraGerm) {
       req.classList.remove('setup-hidden');
       req.className = 'setup-field-hint setup-mb-4';
-      req.textContent = 'Indica la fecha en que pones las semillas en el sustrato (propagador preparado).';
+      var camReq = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      req.textContent =
+        camReq === 'semilla_hidro'
+          ? 'Indica la fecha en que pones las semillas en el cubo/net pot (prep hidro lista).'
+          : 'Indica la fecha en que pones las semillas en el sustrato (propagador preparado).';
       return;
     }
     req.classList.add('setup-hidden');
@@ -487,7 +519,11 @@
       });
       var aguaHost = el('setupPremiumGermSustratoAguaHost');
       if (aguaHost && typeof renderSustratoGermAguaEcBlockHtml === 'function') {
-        aguaHost.innerHTML = renderSustratoGermAguaEcBlockHtml(p.sustratoGerm, 'semilla', { compact: false });
+        var camAg = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+        aguaHost.innerHTML = renderSustratoGermAguaEcBlockHtml(p.sustratoGerm, 'semilla', {
+          compact: false,
+          camino: camAg === 'semilla_hidro' ? 'semilla_hidro' : '',
+        });
       }
     } else {
       renderPremiumGermPlanUI();
@@ -897,6 +933,8 @@
     var v = validarPlanGerminacionCompleto(cfg, hcOptsValidacionPlanGerm(cfg));
     var prem = cfg.premiumSetup || {};
     var pref = prem.geneticaPref === 'auto' ? 'auto' : prem.geneticaPref === 'foto' ? 'foto' : '';
+    var camModal = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    var esHidroModal = camModal === 'semilla_hidro';
     var opts =
       typeof listGeneticasGerminacionOptions === 'function'
         ? listGeneticasGerminacionOptions(st.variedad, pref)
@@ -916,10 +954,23 @@
       );
     }).join('');
     var alertCls = v.ok ? 'setup-box-info' : 'setup-box-warn';
+    var introModal = esHidroModal
+      ? 'Antes de cerrar el checklist: genética, semillas, sustrato en cubo y <strong>abono</strong> para el depósito DWC/RDWC (receta abajo). Se guarda en la instalación y en <strong>Inicio → Germinación</strong>.'
+      : 'Antes de cerrar el checklist: genética, semillas, sustrato y <strong>abono</strong>. Dosifica en <strong>2 L destilada</strong> (receta abajo); el sobrante en botella. Se guarda en la instalación y en <strong>Sistema → Propagador</strong>.';
+    var statusOkExtra = esHidroModal
+      ? (st.nutrienteVolL ? ' · depósito ~' + st.nutrienteVolL + ' L' : '')
+      : (st.nutrienteVolL ? ' · ' + st.nutrienteVolL + ' L bandeja' : '') +
+        (st.propagador ? '' : ' · <em>sin domo en catálogo</em>');
+    var fechaLblModal = esHidroModal ? 'Fecha en cubo/net pot' : 'Fecha en sustrato';
+    var fechaHintModal = esHidroModal
+      ? 'Día 1 del calendario genético (semilla en el cubo del DWC/RDWC).'
+      : 'Día 1 del calendario genético.';
     return (
       '<section class="hc-prop-plan-block setup-mb-12" id="hcPropPlanGermBlock" aria-label="Plan de germinación">' +
       '<div class="setup-block-title">Plan de germinación <span class="setup-required-tag">obligatorio</span></div>' +
-      '<p class="setup-field-hint setup-mb-8">Antes de cerrar el checklist: genética, semillas, sustrato y <strong>abono</strong>. Dosifica en <strong>2 L destilada</strong> (receta abajo); el sobrante en botella. Se guarda en la instalación y en <strong>Sistema → Propagador</strong>.</p>' +
+      '<p class="setup-field-hint setup-mb-8">' +
+      introModal +
+      '</p>' +
       '<div class="' +
       alertCls +
       ' setup-mb-8" id="hcPropPlanGermStatus" role="status">' +
@@ -931,9 +982,8 @@
           ' semilla(s) · ' +
           etiquetaSustratoGerm(st.sustrato) +
           (st.nutrienteNombre ? ' · ' + esc(st.nutrienteNombre) : '') +
-          (st.nutrienteVolL ? ' · ' + st.nutrienteVolL + ' L bandeja' : '') +
-          (st.fechaSiembraDisplay ? ' · siembra ' + esc(st.fechaSiembraDisplay) : '') +
-          (st.propagador ? '' : ' · <em>sin domo en catálogo</em>')
+          statusOkExtra +
+          (st.fechaSiembraDisplay ? ' · siembra ' + esc(st.fechaSiembraDisplay) : '')
         : '<strong>Pendiente:</strong> ' +
           esc(v.message) +
           ' Complétalo aquí o en el asistente (Germinación ahora).') +
@@ -961,13 +1011,17 @@
         );
       }).join('') +
       '</select></div>' +
-      '<div><label class="setup-field-label" for="hcPropFechaSiembraGerm">Fecha en sustrato</label>' +
+      '<div><label class="setup-field-label" for="hcPropFechaSiembraGerm">' +
+      fechaLblModal +
+      '</label>' +
       '<input type="date" id="hcPropFechaSiembraGerm" class="setup-input-city" max="' +
       hoyIsoGerm() +
       '" value="' +
       (st.fechaSiembraGerm || '') +
       '" onchange="persistHcPropPlanFromModal();hcPropPlanRefreshModalBody()" aria-describedby="hcPropFechaSiembraHint">' +
-      '<p id="hcPropFechaSiembraHint" class="setup-field-hint setup-mt-4">Día 1 del calendario genético.</p></div></div>' +
+      '<p id="hcPropFechaSiembraHint" class="setup-field-hint setup-mt-4">' +
+      fechaHintModal +
+      '</p></div></div>' +
       (typeof renderHcPropNutrienteGermFields === 'function'
         ? renderHcPropNutrienteGermFields(cfg)
         : '') +

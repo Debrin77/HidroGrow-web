@@ -300,12 +300,6 @@
       }
     }
     if (!cfg[key] || typeof cfg[key] !== 'object') cfg[key] = {};
-    if (key === 'preparacionGermHidroChecks' && !cfg[key].completedAt) {
-      var wrong = cfg.propagadorMontajeChecks;
-      if (wrong && typeof wrong === 'object' && Object.keys(wrong).length) {
-        Object.assign(cfg[key], wrong);
-      }
-    }
     return cfg[key];
   }
 
@@ -586,7 +580,22 @@
         : 'Solo montaje físico del domo: solución, sustrato y microclima. La <strong>oscuridad días 1–2</strong>, la <strong>luz 18/6</strong> y las <strong>tijeras</strong> van en las <strong>6 fases</strong> y al <strong>traslado al hidro</strong>, no en este checklist.';
     var inst = cfg.equipamientoInstalado || {};
     var equipRef = '';
-    if (inst.propagador && inst.propagador.marca) {
+    if (esRutaGermHidro(cfg)) {
+      var partsH = [];
+      if (inst.bomba_aire && inst.bomba_aire.marca) {
+        partsH.push(esc(inst.bomba_aire.marca + ' ' + (inst.bomba_aire.modelo || '')));
+      }
+      if (inst.calentador && inst.calentador.marca) {
+        partsH.push(esc(inst.calentador.marca + ' ' + (inst.calentador.modelo || '')));
+      }
+      if (inst.cupula_maceta && inst.cupula_maceta.marca) {
+        partsH.push(esc(inst.cupula_maceta.marca + ' (cúpula/maceta)'));
+      }
+      if (partsH.length) {
+        equipRef =
+          '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' + partsH.join(' · ') + '</p>';
+      }
+    } else if (inst.propagador && inst.propagador.marca) {
       equipRef =
         '<p class="hc-pm-equip-ref"><strong>En catálogo:</strong> ' +
         esc(inst.propagador.marca + ' ' + (inst.propagador.modelo || '')) +
@@ -606,7 +615,10 @@
         ? renderSustratoGermAguaEcBlockHtml(
             typeof resolveSustratoGermFromCfg === 'function' ? resolveSustratoGermFromCfg(cfg) : 'lana',
             typeof hcGerminacionFaseActualId === 'function' ? hcGerminacionFaseActualId(cfg) : 'semilla',
-            { compact: false }
+            {
+              compact: false,
+              camino: esRutaGermHidro(cfg) ? 'semilla_hidro' : '',
+            }
           )
         : '';
     return (

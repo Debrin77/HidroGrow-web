@@ -1093,8 +1093,46 @@ function renderGerminacionRangosPanelHtml(cfg, opts) {
   );
 }
 
+/** Agua/EC para semilla_hidro: depósito DWC/RDWC, no bandeja propagador. */
+function renderSustratoGermHidroDepositoBlockHtml(sustratoId, faseId, opts) {
+  opts = opts && typeof opts === 'object' ? opts : {};
+  const sub = getSustratoGermAguaEc(sustratoId);
+  const esc =
+    typeof meteoEscHtml === 'function'
+      ? meteoEscHtml
+      : function (s) {
+          return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+        };
+  const rm = sub.remojo || {};
+  const compact = !!opts.compact;
+  const cuboLine =
+    '<dt>Cubo / net pot</dt><dd>' +
+    esc(rm.detalle || 'Remoja el cubo y coloca la semilla en el hueco central.') +
+    (rm.phRango && rm.phRango !== '— (no mides EC en papel)'
+      ? ' <span class="hc-germ-sustrato-meta">pH ' + esc(rm.phRango) + '</span>'
+      : '') +
+    '</dd>';
+  const depLine =
+    '<dt>Depósito DWC/RDWC</dt><dd>EC <strong>200–400 µS</strong> · pH <strong>5,5–6,0</strong> · T° agua <strong>20–24 °C</strong>. ' +
+    'Burbujeo suave con piedra difusora. Si el ambiente baja de ~18 °C, usa <strong>calentador sumergible</strong> (no manta bajo el cubo).</dd>';
+  const cls = compact ? 'hc-germ-sustrato-agua hc-germ-sustrato-agua--compact' : 'hc-germ-sustrato-agua';
+  return (
+    '<div class="' +
+    cls +
+    '" role="region" aria-label="Agua y EC en depósito hidro">' +
+    (compact ? '' : '<p class="hc-germ-sustrato-agua-title">Agua y EC · ' + esc(sub.label) + ' en cubo</p>') +
+    '<dl class="hc-germ-sustrato-agua-dl">' +
+    cuboLine +
+    depLine +
+    '</dl></div>'
+  );
+}
+
 function renderSustratoGermAguaEcBlockHtml(sustratoId, faseId, opts) {
   opts = opts && typeof opts === 'object' ? opts : {};
+  if (opts.camino === 'semilla_hidro' || opts.modo === 'hidro') {
+    return renderSustratoGermHidroDepositoBlockHtml(sustratoId, faseId, opts);
+  }
   const sub = getSustratoGermAguaEc(sustratoId);
   const esc =
     typeof meteoEscHtml === 'function'
@@ -1252,6 +1290,7 @@ window.SUSTRATO_GERM_AGUA_EC = SUSTRATO_GERM_AGUA_EC;
 window.getSustratoGermAguaEc = getSustratoGermAguaEc;
 window.resolveSustratoGermFromCfg = resolveSustratoGermFromCfg;
 window.renderSustratoGermAguaEcBlockHtml = renderSustratoGermAguaEcBlockHtml;
+window.renderSustratoGermHidroDepositoBlockHtml = renderSustratoGermHidroDepositoBlockHtml;
 window.getGerminacionRangosMonitoreo = getGerminacionRangosMonitoreo;
 window.getGerminacionDashTilesPlan = getGerminacionDashTilesPlan;
 window.getGerminacionLecturasParaDash = getGerminacionLecturasParaDash;

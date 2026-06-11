@@ -113,7 +113,14 @@
     }
     renderEquipamientoPremiumUI();
     renderMedirEquipamientoPanel();
-    if (catId === 'propagador' || catId === 'mat_termica_germ' || catId === 'higrometro_germ') {
+    if (
+      catId === 'propagador' ||
+      catId === 'mat_termica_germ' ||
+      catId === 'higrometro_germ' ||
+      catId === 'calentador' ||
+      catId === 'bomba_aire' ||
+      catId === 'cupula_maceta'
+    ) {
       try {
         if (catId === 'propagador' && typeof onPropagadorEquipSeleccionado === 'function') {
           onPropagadorEquipSeleccionado();
