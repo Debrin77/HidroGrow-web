@@ -18,10 +18,6 @@ function hcSaludoInicioPorHora(h) {
   return 'Buenas noches';
 }
 
-function hcIconoSaludoInicioPorHora(h) {
-  return 'hc-i-cannabis-leaf';
-}
-
 function actualizarSaludoInicio(now) {
   now = now && now.getHours != null ? now : new Date();
   var hora = now.getHours();
@@ -38,9 +34,10 @@ function actualizarSaludoInicio(now) {
     });
   }
   if (icoEl) {
-    var sym = hcIconoSaludoInicioPorHora(hora);
-    if (typeof hcIcon === 'function') {
-      icoEl.innerHTML = hcIcon(sym, 'hc-ico hc-greeting-ico-svg');
+    if (typeof hcHojaCannabisImgHtml === 'function') {
+      icoEl.innerHTML = hcHojaCannabisImgHtml('hc-greeting-leaf-img');
+    } else if (typeof hcIcon === 'function') {
+      icoEl.innerHTML = hcIcon('hc-i-cannabis-leaf', 'hc-ico hc-greeting-ico-svg');
     } else {
       icoEl.textContent = '';
     }

@@ -19,9 +19,16 @@ test('cesta: helpers hoja, maduración y floración pendiente', () => {
   assert.match(icons, /HC_CESTA_FLORACION_LISTO = false/);
   assert.match(icons, /function hcCestaFaseIconoKey/);
   assert.match(icons, /function hcCestaFasePngSvgMarkup/);
+  assert.match(icons, /function hcHojaCannabisImgHtml/);
   assert.match(icons, /diasVeg/);
   assert.match(icons, /est === 'madurez'/);
   assert.match(icons, /return 'floracion'/);
+});
+
+test('inicio: saludo usa PNG hoja cannabis', () => {
+  const dash = read('js/meteo-forecast-dashboard.js');
+  assert.match(dash, /hcHojaCannabisImgHtml/);
+  assert.match(dash, /hc-greeting-leaf-img/);
 });
 
 test('cesta: renderizadores resuelven iconKey de fase', () => {

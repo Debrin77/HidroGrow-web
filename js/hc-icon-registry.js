@@ -343,8 +343,18 @@ function hcEstadoEmojiChar(est) {
   return map[est] || '🌱';
 }
 
-/** PNG en cestas del esquema (sin foto del usuario). */
+/** Hoja cannabis PNG — cestas (veg/maduración) y saludo Inicio. */
 var HC_CESTA_HOJA_VEG_SRC = 'icons/cesta-hoja-veg.png';
+
+function hcHojaCannabisImgHtml(cssClass) {
+  return (
+    '<img class="' +
+    (cssClass || 'hc-hoja-cannabis-img') +
+    '" src="' +
+    HC_CESTA_HOJA_VEG_SRC +
+    '" alt="" width="32" height="32" decoding="async" draggable="false" aria-hidden="true"/>'
+  );
+}
 /** Añadir asset y poner HC_CESTA_FLORACION_LISTO = true cuando esté listo. */
 var HC_CESTA_FLORACION_SRC = 'icons/cesta-floracion.png';
 var HC_CESTA_FLORACION_LISTO = false;
