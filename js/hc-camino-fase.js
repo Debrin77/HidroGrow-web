@@ -1125,6 +1125,17 @@
     return base;
   }
 
+  /**
+   * Inicio tras checklist primer llenado: ocultar legacy, CTA esquema DWC y desplegable 6 fases.
+   * Los datos de fases siguen en cfg para calendario y avisos.
+   */
+  function hcInicioOcultarGuiasPostPrimerLlenado(cfg) {
+    cfg = cfg || cfgActiva();
+    if (typeof depositoListo !== 'function' || !depositoListo(cfg)) return false;
+    if (cam(cfg) !== 'semilla_hidro') return false;
+    return typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
+  }
+
   /** Tras primer llenado: depósito solo informativo (litros del checklist). */
   function hcSistemaDepositoRecuadroInformativo(cfg) {
     cfg = cfg || cfgActiva();
@@ -1406,6 +1417,7 @@
   global.hcRecargaUiVisibleUsuario = hcRecargaUiVisibleUsuario;
   global.hcSistemaOcultarEcPhStrategy = hcSistemaOcultarEcPhStrategy;
   global.hcSistemaDwcSoloConsulta = hcSistemaDwcSoloConsulta;
+  global.hcInicioOcultarGuiasPostPrimerLlenado = hcInicioOcultarGuiasPostPrimerLlenado;
   global.hcSistemaDepositoRecuadroInformativo = hcSistemaDepositoRecuadroInformativo;
   global.hcSistemaSemillaHidroMuestraEsquemaDwc = hcSistemaSemillaHidroMuestraEsquemaDwc;
   global.hcEsquejeEnraizadoHubEsPrincipal = hcEsquejeEnraizadoHubEsPrincipal;

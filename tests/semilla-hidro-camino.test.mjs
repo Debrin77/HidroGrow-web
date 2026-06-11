@@ -407,6 +407,19 @@ test('semilla_hidro: Inicio hub sin matriz cubos ni llenado durante germinacion'
   );
   assert.match(germ, /Guía de las 6 fases/);
   assert.match(germ, /Esquema DWC y fase de crecimiento/);
+  assert.match(germ, /hcInicioOcultarGuiasPostPrimerLlenado[\s\S]{0,900}ocultarGuiasInicio/);
+});
+
+test('semilla_hidro post primer llenado: Inicio sin legacy ni guías redundantes', () => {
+  const fase = read('js/hc-camino-fase.js');
+  const germ = read('js/hc-germinacion-flow.js');
+  const lc = read('js/hc-instalacion-lifecycle.js');
+  assert.match(fase, /function hcInicioOcultarGuiasPostPrimerLlenado/);
+  assert.match(fase, /hcInicioOcultarGuiasPostPrimerLlenado[\s\S]{0,420}depositoListo/);
+  assert.match(fase, /hcInicioOcultarGuiasPostPrimerLlenado[\s\S]{0,420}semilla_hidro/);
+  assert.match(germ, /ocultarGuiasInicio[\s\S]{0,600}sistemaCtaHtml/);
+  assert.match(germ, /ocultarGuiasInicio[\s\S]{0,600}fasesAdvancedHtml/);
+  assert.match(lc, /refreshLegacyInstalacionBanner[\s\S]{0,500}hcInicioOcultarGuiasPostPrimerLlenado/);
 });
 
 test('semilla_hidro: esquema DWC visible en Sistema durante germinacion en cubo', () => {

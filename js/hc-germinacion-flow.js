@@ -1768,6 +1768,29 @@
         '<button type="button" class="btn btn-primary btn-lg hc-germ-traslado-btn" onclick="hcGerminacionAbrirTraslado()">Registrar en la matriz →</button>' +
         '<p class="hc-germ-traslado-foot">Siguiente: asigna la cesta en Cultivo e instalación.</p></div>'
       : '';
+    var ocultarGuiasInicio =
+      typeof hcInicioOcultarGuiasPostPrimerLlenado === 'function' &&
+      hcInicioOcultarGuiasPostPrimerLlenado(o.cfg);
+    var sistemaCtaHtml = ocultarGuiasInicio
+      ? ''
+      : '<p class="hc-germ-hub-sistema-cta">' +
+        '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">' +
+        'Esquema DWC y fase de crecimiento → Sistema</button></p>';
+    var fasesAdvancedHtml = ocultarGuiasInicio
+      ? ''
+      : '<details class="hc-germ-advanced config-section-collapsible">' +
+        buildGermAdvancedSummaryHtml('Guía de las 6 fases') +
+        '<div class="hc-germ-advanced-body config-section-collapse-body">' +
+        '<div class="hc-germ-advanced-section">' +
+        renderTimeline(o.g, o.idx, o.modo) +
+        renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
+        '</div>' +
+        '<div class="hc-germ-advanced-section">' +
+        '<h4 class="hc-germ-advanced-lbl">Fecha de siembra</h4>' +
+        renderHubFechaSiembraEditor(o.cfg, o.g) +
+        (o.semMarca || '') +
+        '</div>' +
+        '</div></details>';
 
     return (
       '<div class="hc-germ-hub-card hc-germ-hub-card--compact hc-germ-hub-card--hidro">' +
@@ -1792,22 +1815,8 @@
       '</div></div>' +
       renderHubCupulaGermHidroHtml(o.cfg, o.g) +
       (hubMuestraGuiaLlenadoGermHidro(o.cfg) ? renderHubLlenadoGermHidroHtml(o.cfg) : '') +
-      '<p class="hc-germ-hub-sistema-cta">' +
-      '<button type="button" class="btn btn-secondary btn-sm" onclick="typeof goTab===\'function\'&&goTab(\'sistema\')">' +
-      'Esquema DWC y fase de crecimiento → Sistema</button></p>' +
-      '<details class="hc-germ-advanced config-section-collapsible">' +
-      buildGermAdvancedSummaryHtml('Guía de las 6 fases') +
-      '<div class="hc-germ-advanced-body config-section-collapse-body">' +
-      '<div class="hc-germ-advanced-section">' +
-      renderTimeline(o.g, o.idx, o.modo) +
-      renderFasesCalendarioBlock(o.g, o.idx, o.diaN, o.allDone) +
-      '</div>' +
-      '<div class="hc-germ-advanced-section">' +
-      '<h4 class="hc-germ-advanced-lbl">Fecha de siembra</h4>' +
-      renderHubFechaSiembraEditor(o.cfg, o.g) +
-      (o.semMarca || '') +
-      '</div>' +
-      '</div></details>' +
+      sistemaCtaHtml +
+      fasesAdvancedHtml +
       trasladoTail +
       '</div>'
     );

@@ -961,6 +961,14 @@
     var host = document.getElementById('tab-inicio');
     if (!host) return;
     var prev = document.getElementById('hcLegacyInstalacionBanner');
+    var cfgBan = cfgActiva();
+    if (
+      typeof hcInicioOcultarGuiasPostPrimerLlenado === 'function' &&
+      hcInicioOcultarGuiasPostPrimerLlenado(cfgBan)
+    ) {
+      if (prev) prev.remove();
+      return;
+    }
     if (!lc.legacyOperativa) {
       if (prev) prev.remove();
       return;
