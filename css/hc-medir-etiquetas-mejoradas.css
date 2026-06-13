@@ -1,0 +1,423 @@
+/**
+ * Estilos Mejorados para Etiquetas de Mediciones
+ * Mejora sustancial: Diseño unificado y barras de rango visuales
+ * Versión: 1.0.0
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   Tarjetas de Parámetros - Diseño Moderno
+   ═══════════════════════════════════════════════════════════════ */
+
+.param-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid #e5e0d8;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.param-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Barra superior con gradiente según estado */
+.param-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+}
+
+.param-card.warn::before {
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.param-card.alert::before {
+  background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+}
+
+/* Estados de las tarjetas */
+.param-card.ok {
+  border-color: #10B981;
+  background: linear-gradient(135deg, #F0FDF4 0%, #ffffff 100%);
+}
+
+.param-card.warn {
+  border-color: #F59E0B;
+  background: linear-gradient(135deg, #FFFBEB 0%, #ffffff 100%);
+}
+
+.param-card.alert {
+  border-color: #DC2626;
+  background: linear-gradient(135deg, #FEF2F2 0%, #ffffff 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Header de Parámetro
+   ═══════════════════════════════════════════════════════════════ */
+
+.param-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.param-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.param-label .hc-ico {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #10B981;
+}
+
+/* Colores específicos de iconos por parámetro */
+#cardEC .param-label .hc-ico { color: #2563eb; }
+#cardPH .param-label .hc-ico { color: #7c3aed; }
+#cardTemp .param-label .hc-ico { color: #ea580c; }
+#cardVol .param-label .hc-ico { color: #0891b2; }
+#cardTempAire .param-label .hc-ico { color: #ea580c; }
+#cardHumSala .param-label .hc-ico { color: #3b82f6; }
+#cardVPD .param-label .hc-ico { color: #8b5cf6; }
+#cardPPFD .param-label .hc-ico { color: #f59e0b; }
+#cardTempExt .param-label .hc-ico { color: #ef4444; }
+#cardCO2 .param-label .hc-ico { color: #10b981; }
+
+/* Rango objetivo */
+.param-range {
+  font-family: 'Inconsolata', monospace;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Barra de Rango Visual
+   ═══════════════════════════════════════════════════════════════ */
+
+.param-range-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e0d8;
+  border-radius: 4px;
+  margin: 12px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.param-range-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.param-range-bar-fill.warn {
+  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+}
+
+.param-range-bar-fill.alert {
+  background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+}
+
+/* Marcadores de rango */
+.param-range-markers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Input Row
+   ═══════════════════════════════════════════════════════════════ */
+
+.param-input-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.param-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-family: 'Inconsolata', monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  background: white;
+  border: 2px solid #e5e0d8;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.param-input:focus {
+  outline: none;
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.param-input::placeholder {
+  color: #d1d5db;
+  font-weight: 400;
+}
+
+.param-unit {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #6b7280;
+  min-width: 50px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Status y Corrección
+   ═══════════════════════════════════════════════════════════════ */
+
+.param-status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #10B981;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.param-status::before {
+  content: '✓';
+  font-weight: 900;
+}
+
+.param-status.warn {
+  color: #F59E0B;
+}
+
+.param-status.warn::before {
+  content: '⚠️';
+  font-weight: normal;
+}
+
+.param-status.alert {
+  color: #DC2626;
+}
+
+.param-status.alert::before {
+  content: '✗';
+  font-weight: 900;
+}
+
+.param-status.empty {
+  color: #9ca3af;
+}
+
+.param-status.empty::before {
+  content: '';
+}
+
+.correccion-box {
+  background: #f3f4f6;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #4b5563;
+  line-height: 1.5;
+  border-left: 3px solid #10B981;
+}
+
+.correccion-box.warn {
+  border-left-color: #F59E0B;
+  background: #FFFBEB;
+}
+
+.correccion-box.alert {
+  border-left-color: #DC2626;
+  background: #FEF2F2;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Dark Mode
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (prefers-color-scheme: dark) {
+  .param-card {
+    background: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  .param-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  }
+
+  .param-card.ok {
+    background: linear-gradient(135deg, #064E3B 0%, #1f2937 100%);
+    border-color: #059669;
+  }
+
+  .param-card.warn {
+    background: linear-gradient(135deg, #78350F 0%, #1f2937 100%);
+    border-color: #D97706;
+  }
+
+  .param-card.alert {
+    background: linear-gradient(135deg, #7F1D1D 0%, #1f2937 100%);
+    border-color: #DC2626;
+  }
+
+  .param-label {
+    color: #f9fafb;
+  }
+
+  .param-range {
+    background: #374151;
+    color: #9ca3af;
+  }
+
+  .param-range-bar {
+    background: #374151;
+  }
+
+  .param-range-markers {
+    color: #6b7280;
+  }
+
+  .param-input {
+    background: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+
+  .param-input:focus {
+    border-color: #10B981;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+
+  .param-input::placeholder {
+    color: #6b7280;
+  }
+
+  .param-unit {
+    color: #9ca3af;
+  }
+
+  .param-status {
+    color: #10B981;
+  }
+
+  .param-status.warn {
+    color: #F59E0B;
+  }
+
+  .param-status.alert {
+    color: #DC2626;
+  }
+
+  .param-status.empty {
+    color: #6b7280;
+  }
+
+  .correccion-box {
+    background: #374151;
+    color: #e5e7eb;
+    border-left-color: #10B981;
+  }
+
+  .correccion-box.warn {
+    background: #78350F;
+    border-left-color: #F59E0B;
+  }
+
+  .correccion-box.alert {
+    background: #7F1D1D;
+    border-left-color: #DC2626;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .param-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .param-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .param-label {
+    font-size: 0.95rem;
+  }
+
+  .param-input {
+    font-size: 1.1rem;
+    padding: 10px 14px;
+  }
+
+  .param-unit {
+    font-size: 0.85rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Animaciones
+   ═══════════════════════════════════════════════════════════════ */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.param-card {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.param-card:nth-child(2) {
+  animation-delay: 0.05s;
+}
+
+.param-card:nth-child(3) {
+  animation-delay: 0.1s;
+}
+
+.param-card:nth-child(4) {
+  animation-delay: 0.15s;
+}

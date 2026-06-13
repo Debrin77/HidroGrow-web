@@ -338,7 +338,8 @@
         container = document.createElement('div');
         container.id = 'alertasInteligentesContainer';
         container.className = 'alertas-inteligentes-container';
-        dashOperativa.parentNode.insertBefore(container, dashOperativa);
+        // Insertar DESPUÉS de dashOperativa para no tapar el saludo
+        dashOperativa.parentNode.insertBefore(container, dashOperativa.nextSibling);
       }
     }
 

@@ -1,25 +1,40 @@
 /**
  * Estilos para Sistema de Alertas Inteligentes
  * Mejora sustancial: Alertas proactivas con contexto y acciones recomendadas
+ * Estilo moderno inspirado en apps como Grow Diaries
  */
 
 /* Contenedor principal */
 .alertas-inteligentes-container {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border: 2px solid #e5e0d8;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: none;
 }
 
 .alertas-sin-problemas {
   text-align: center;
-  color: #16A34A;
-  font-size: 1.1rem;
-  font-weight: 500;
-  padding: 20px;
+  color: #10B981;
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 32px 20px;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.alertas-sin-problemas::before {
+  content: '✓';
+  font-size: 3rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .alertas-inteligentes-wrapper {
@@ -28,13 +43,18 @@
 
 .alertas-titulo {
   font-family: 'Syne', sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 16px 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2D5016;
+  margin: 0 0 20px 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+.alertas-titulo::before {
+  content: '🔔';
+  font-size: 1.5rem;
 }
 
 /* Lista de alertas */
@@ -46,27 +66,48 @@
 
 /* Alerta individual */
 .alerta-item {
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 20px;
   border-left: 4px solid;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.alerta-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 12px 12px 0 0;
 }
 
 .alerta-item.critica {
-  background: #FEF2F2;
+  background: linear-gradient(135deg, #FEF2F2 0%, #ffffff 100%);
   border-left-color: #DC2626;
-  border: 2px solid #DC2626;
+  border: 2px solid #FECACA;
+}
+
+.alerta-item.critica::before {
+  background: linear-gradient(90deg, #DC2626, #EF4444);
 }
 
 .alerta-item.advertencia {
-  background: #FFFBEB;
+  background: linear-gradient(135deg, #FFFBEB 0%, #ffffff 100%);
   border-left-color: #F59E0B;
-  border: 2px solid #F59E0B;
+  border: 2px solid #FDE68A;
+}
+
+.alerta-item.advertencia::before {
+  background: linear-gradient(90deg, #F59E0B, #FBBF24);
 }
 
 .alerta-item:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 /* Header de alerta */
@@ -74,59 +115,102 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  position: relative;
 }
 
 .alerta-titulo {
   font-family: 'Syne', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
   margin: 0;
   color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.alerta-titulo::before {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.alerta-item.critica .alerta-titulo::before {
+  content: '🔴';
+  background: #FEF2F2;
+}
+
+.alerta-item.advertencia .alerta-titulo::before {
+  content: '🟡';
+  background: #FFFBEB;
 }
 
 .alerta-descartar {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #6b7280;
+  color: #9ca3af;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   line-height: 1;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .alerta-descartar:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: #1f2937;
+  background: rgba(0, 0, 0, 0.05);
+  color: #6b7280;
+  transform: rotate(90deg);
 }
 
 .alerta-mensaje {
-  margin: 0 0 16px 0;
-  font-size: 0.95rem;
+  margin: 0 0 20px 0;
+  font-size: 1rem;
   color: #374151;
-  line-height: 1.5;
+  line-height: 1.7;
+  font-weight: 500;
 }
 
 /* Detalles de alerta */
 .alerta-detalles {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 2px solid rgba(0, 0, 0, 0.08);
 }
 
 .alerta-detalle {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #4b5563;
-  line-height: 1.4;
+  line-height: 1.6;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.alerta-detalle::before {
+  content: '•';
+  color: #10B981;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 
 .alerta-detalle strong {
   color: #1f2937;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Responsive */
@@ -163,6 +247,7 @@
   .alertas-inteligentes-container {
     background: #1f2937;
     border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
   }
 
   .alertas-sin-problemas {
@@ -170,25 +255,33 @@
   }
 
   .alertas-titulo {
-    color: #f9fafb;
+    color: #10B981;
   }
 
   .alerta-item.critica {
-    background: #7F1D1D;
+    background: linear-gradient(135deg, #7F1D1D 0%, #1f2937 100%);
     border-color: #DC2626;
   }
 
   .alerta-item.advertencia {
-    background: #78350F;
+    background: linear-gradient(135deg, #78350F 0%, #1f2937 100%);
     border-color: #F59E0B;
   }
 
   .alerta-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
   }
 
   .alerta-titulo {
     color: #f9fafb;
+  }
+
+  .alerta-item.critica .alerta-titulo::before {
+    background: #7F1D1D;
+  }
+
+  .alerta-item.advertencia .alerta-titulo::before {
+    background: #78350F;
   }
 
   .alerta-descartar {
@@ -210,6 +303,10 @@
 
   .alerta-detalle {
     color: #D1D5DB;
+  }
+
+  .alerta-detalle::before {
+    color: #10B981;
   }
 
   .alerta-detalle strong {

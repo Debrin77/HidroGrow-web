@@ -144,9 +144,21 @@
     
     toggle.addEventListener('click', toggleDarkMode);
     
-    // Insertar en el header
+    // Insertar en el header con posición fija
     const headerContent = header.querySelector('.header-content') || header;
-    headerContent.appendChild(toggle);
+    
+    // Crear contenedor flotante para el toggle
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'dark-mode-toggle-container';
+    toggleContainer.style.cssText = `
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 10000;
+    `;
+    
+    toggleContainer.appendChild(toggle);
+    document.body.appendChild(toggleContainer);
   }
 
   /**

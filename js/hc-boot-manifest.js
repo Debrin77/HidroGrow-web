@@ -114,7 +114,8 @@ window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/hc-multi-system-ux.js",
   "js/hc-salas-plan.js",
   "js/hc-puesta-marcha.js",
-  "js/hc-graficos-basicos.js"
+  "js/hc-graficos-basicos.js",
+  "js/hc-medir-rangos-visuales.js"
 ];
 window.HC_BOOT_LAZY_SCRIPTS = window.HC_BOOT_CRITICAL_SCRIPTS.concat(
   window.HC_BOOT_ESSENTIAL_SCRIPTS,
