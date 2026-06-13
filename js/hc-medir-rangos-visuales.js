@@ -212,16 +212,20 @@
    * Inicializa las barras de rango visuales
    */
   function initBarrasRango() {
+    console.log('[hc-medir-rangos-visuales] Inicializando barras de rango visuales...');
+    
     // Esperar a que el DOM esté completamente cargado
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
+          console.log('[hc-medir-rangos-visuales] DOMContentLoaded, renderizando barras...');
           renderizarBarrasRango();
           añadirListenersInputs();
         }, 500);
       });
     } else {
       setTimeout(() => {
+        console.log('[hc-medir-rangos-visuales] DOM ya cargado, renderizando barras...');
         renderizarBarrasRango();
         añadirListenersInputs();
       }, 500);
@@ -233,6 +237,7 @@
       window.goTab = function (tabId) {
         originalGoTab(tabId);
         if (tabId === 'mediciones') {
+          console.log('[hc-medir-rangos-visuales] Cambio a pestaña mediciones, renderizando barras...');
           setTimeout(renderizarBarrasRango, 300);
         }
       };
@@ -248,5 +253,6 @@
 
   // Inicializar
   initBarrasRango();
+  console.log('[hc-medir-rangos-visuales] Módulo cargado correctamente');
 
 })();

@@ -115,7 +115,13 @@ window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/hc-salas-plan.js",
   "js/hc-puesta-marcha.js",
   "js/hc-graficos-basicos.js",
-  "js/hc-medir-rangos-visuales.js"
+  "js/hc-medir-rangos-visuales.js",
+  "js/hc-ec-ph-rangos-actualizados.js",
+  "js/hc-calculadora-iluminacion.js",
+  "js/hc-esquejado-sistema.js",
+  "js/hc-asistentes-sistema.js",
+  "js/hc-calculadora-nutrientes.js",
+  "js/hc-alertas-sistema.js"
 ];
 window.HC_BOOT_LAZY_SCRIPTS = window.HC_BOOT_CRITICAL_SCRIPTS.concat(
   window.HC_BOOT_ESSENTIAL_SCRIPTS,

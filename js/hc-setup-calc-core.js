@@ -1015,7 +1015,19 @@ function getRecomendacionEcPhDesdeInstalacion(cfg, torreGrid, atMs) {
   }
   let ecRec;
   if (rangosEc.length === 0) {
-    ecRec = { min: nut.ecObjetivo?.[0] || 900, max: nut.ecObjetivo?.[1] || 1400 };
+    // Usar rangos actualizados según investigación si no hay cestas
+    const faseDominante = dom ? dom[0] : 'vegetativo';
+    if (typeof getEcRangoPorCaminoYFase === 'function') {
+      const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+      const rangoInvestigacion = getEcRangoPorCaminoYFase(cam, faseDominante);
+      if (rangoInvestigacion) {
+        ecRec = { min: rangoInvestigacion.min, max: rangoInvestigacion.max };
+      } else {
+        ecRec = { min: nut.ecObjetivo?.[0] || 1200, max: nut.ecObjetivo?.[1] || 2000 };
+      }
+    } else {
+      ecRec = { min: nut.ecObjetivo?.[0] || 1200, max: nut.ecObjetivo?.[1] || 2000 };
+    }
   } else {
     const ecMin = Math.max(...rangosEc.map(r => r.min));
     const ecMax = Math.min(...rangosEc.map(r => r.max));
@@ -1041,8 +1053,20 @@ function getRecomendacionEcPhDesdeInstalacion(cfg, torreGrid, atMs) {
   }
   let phRec;
   if (rangosPh.length === 0) {
-    const b = nut && Array.isArray(nut.pHRango) ? nut.pHRango : [5.5, 6.5];
-    phRec = { min: b[0], max: b[1] };
+    // Usar rangos pH actualizados según investigación si no hay cestas
+    const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (typeof getPhRangoPorCamino === 'function') {
+      const rangoInvestigacion = getPhRangoPorCamino(cam);
+      if (rangoInvestigacion) {
+        phRec = { min: rangoInvestigacion.min, max: rangoInvestigacion.max };
+      } else {
+        const b = nut && Array.isArray(nut.pHRango) ? nut.pHRango : [5.5, 6.5];
+        phRec = { min: b[0], max: b[1] };
+      }
+    } else {
+      const b = nut && Array.isArray(nut.pHRango) ? nut.pHRango : [5.5, 6.5];
+      phRec = { min: b[0], max: b[1] };
+    }
   } else {
     const pMin = Math.max(...rangosPh.map(r => r.min));
     const pMax = Math.min(...rangosPh.map(r => r.max));
