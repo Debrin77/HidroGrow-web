@@ -1,0 +1,381 @@
+/**
+ * Estilos para Dashboard Contextual Inteligente
+ * Mejora sustancial: Usuario sabe exactamente qué hacer hoy
+ */
+
+/* Contenedor principal */
+.dash-contextual-container {
+  background: linear-gradient(135deg, #faf6ef 0%, #f5f0e8 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e0d8;
+}
+
+.dash-contextual-wrapper {
+  max-width: 100%;
+}
+
+/* Header */
+.dash-contextual-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #e5e0d8;
+}
+
+.dash-contextual-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2D5016;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Secciones */
+.dash-contextual-section {
+  margin-bottom: 24px;
+}
+
+.dash-contextual-section:last-child {
+  margin-bottom: 0;
+}
+
+.dash-contextual-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #B45309;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Acciones prioritarias */
+.dash-contextual-actions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dash-contextual-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #16A34A;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.dash-contextual-action:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dash-contextual-action.critical {
+  border-left-color: #DC2626;
+  background: #FEF2F2;
+}
+
+.dash-contextual-action.alta {
+  border-left-color: #F59E0B;
+  background: #FFFBEB;
+}
+
+.dash-contextual-action-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.dash-contextual-action-text {
+  flex: 1;
+  font-weight: 500;
+  color: #1f2937;
+  font-size: 0.95rem;
+}
+
+.dash-contextual-action-hint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Estado actual */
+.dash-contextual-estado-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.dash-contextual-estado-item {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  border: 2px solid #e5e0d8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.dash-contextual-estado-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dash-contextual-estado-item.ok {
+  border-color: #16A34A;
+  background: #F0FDF4;
+}
+
+.dash-contextual-estado-item.warning {
+  border-color: #F59E0B;
+  background: #FFFBEB;
+}
+
+.dash-contextual-estado-item.critical {
+  border-color: #DC2626;
+  background: #FEF2F2;
+}
+
+.dash-contextual-estado-param {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dash-contextual-estado-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  font-family: 'Inconsolata', monospace;
+}
+
+.dash-contextual-estado-unit {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 400;
+}
+
+.dash-contextual-estado-range {
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Próximos 7 días */
+.dash-contextual-proximos-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dash-contextual-proximo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  background: white;
+  border-radius: 6px;
+  border-left: 3px solid #B45309;
+  transition: all 0.2s ease;
+}
+
+.dash-contextual-proximo:hover {
+  background: #FFFBEB;
+  transform: translateX(2px);
+}
+
+.dash-contextual-proximo-dia {
+  font-weight: 600;
+  color: #B45309;
+  font-size: 0.9rem;
+  min-width: 80px;
+}
+
+.dash-contextual-proximo-texto {
+  flex: 1;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+/* Consejo del día */
+.dash-contextual-consejo {
+  background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+  padding: 16px;
+  border-radius: 8px;
+  border: 2px solid #10B981;
+}
+
+.dash-contextual-consejo-texto {
+  margin: 0;
+  color: #065F46;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dash-contextual-container {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .dash-contextual-title {
+    font-size: 1.25rem;
+  }
+
+  .dash-contextual-estado-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-contextual-action {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dash-contextual-action-icon {
+    align-self: flex-start;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .dash-contextual-container {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border-color: #374151;
+  }
+
+  .dash-contextual-title {
+    color: #10B981;
+  }
+
+  .dash-contextual-section-title {
+    color: #F59E0B;
+  }
+
+  .dash-contextual-action {
+    background: #374151;
+    color: #f9fafb;
+  }
+
+  .dash-contextual-action.critical {
+    background: #7F1D1D;
+  }
+
+  .dash-contextual-action.alta {
+    background: #78350F;
+  }
+
+  .dash-contextual-action-text {
+    color: #f9fafb;
+  }
+
+  .dash-contextual-action-hint {
+    color: #9CA3AF;
+  }
+
+  .dash-contextual-estado-item {
+    background: #374151;
+    border-color: #4B5563;
+  }
+
+  .dash-contextual-estado-item.ok {
+    background: #064E3B;
+    border-color: #059669;
+  }
+
+  .dash-contextual-estado-item.warning {
+    background: #78350F;
+    border-color: #D97706;
+  }
+
+  .dash-contextual-estado-item.critical {
+    background: #7F1D1D;
+    border-color: #DC2626;
+  }
+
+  .dash-contextual-estado-param {
+    color: #9CA3AF;
+  }
+
+  .dash-contextual-estado-val {
+    color: #f9fafb;
+  }
+
+  .dash-contextual-estado-unit {
+    color: #9CA3AF;
+  }
+
+  .dash-contextual-estado-range {
+    color: #9CA3AF;
+  }
+
+  .dash-contextual-proximo {
+    background: #374151;
+    border-left-color: #F59E0B;
+  }
+
+  .dash-contextual-proximo:hover {
+    background: #4B5563;
+  }
+
+  .dash-contextual-proximo-dia {
+    color: #F59E0B;
+  }
+
+  .dash-contextual-proximo-texto {
+    color: #E5E7EB;
+  }
+
+  .dash-contextual-consejo {
+    background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+    border-color: #059669;
+  }
+
+  .dash-contextual-consejo-texto {
+    color: #D1FAE5;
+  }
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dash-contextual-container {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dash-contextual-action,
+.dash-contextual-proximo {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.dash-contextual-action:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.dash-contextual-action:nth-child(3) {
+  animation-delay: 0.2s;
+}

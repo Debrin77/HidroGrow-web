@@ -1,0 +1,329 @@
+/**
+ * Estilos para Dark Mode Nativo
+ * Mejora sustancial: Dark mode optimizado para grow rooms con poca luz
+ */
+
+/* Toggle de dark mode */
+.dark-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f3f4f6;
+  border: 2px solid #e5e0d8;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.dark-mode-toggle:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dark-mode-toggle:focus {
+  outline: 2px solid #10B981;
+  outline-offset: 2px;
+}
+
+.dark-mode-toggle.is-active {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.dark-mode-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.dark-mode-label {
+  font-size: 0.85rem;
+}
+
+/* Dark mode base styles */
+.hc-dark-mode {
+  color-scheme: dark;
+}
+
+.hc-dark-mode body {
+  background: #111827;
+  color: #f9fafb;
+}
+
+.hc-dark-mode #app {
+  background: #111827;
+}
+
+/* Transiciones suaves para dark mode */
+.hc-dark-mode,
+.hc-dark-mode *,
+.hc-dark-mode *::before,
+.hc-dark-mode *::after {
+  transition: background-color 0.3s ease,
+              color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Optimización para grow rooms con poca luz */
+@media (prefers-color-scheme: dark) {
+  .hc-dark-mode {
+    /* Reducir brillo en dark mode para grow rooms */
+    filter: brightness(0.95);
+  }
+}
+
+/* Cards y contenedores en dark mode */
+.hc-dark-mode .card,
+.hc-dark-mode .setup-card,
+.hc-dark-mode .panel {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.hc-dark-mode .card h1,
+.hc-dark-mode .card h2,
+.hc-dark-mode .card h3,
+.hc-dark-mode .card h4,
+.hc-dark-mode .card h5,
+.hc-dark-mode .card h6 {
+  color: #f9fafb;
+}
+
+.hc-dark-mode .card p,
+.hc-dark-mode .card span,
+.hc-dark-mode .card div {
+  color: #e5e7eb;
+}
+
+/* Inputs en dark mode */
+.hc-dark-mode input[type="text"],
+.hc-dark-mode input[type="number"],
+.hc-dark-mode input[type="email"],
+.hc-dark-mode input[type="password"],
+.hc-dark-mode input[type="date"],
+.hc-dark-mode input[type="time"],
+.hc-dark-mode select,
+.hc-dark-mode textarea {
+  background: #374151;
+  border-color: #4B5563;
+  color: #f9fafb;
+}
+
+.hc-dark-mode input[type="text"]:focus,
+.hc-dark-mode input[type="number"]:focus,
+.hc-dark-mode input[type="email"]:focus,
+.hc-dark-mode input[type="password"]:focus,
+.hc-dark-mode input[type="date"]:focus,
+.hc-dark-mode input[type="time"]:focus,
+.hc-dark-mode select:focus,
+.hc-dark-mode textarea:focus {
+  border-color: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.hc-dark-mode input::placeholder {
+  color: #9CA3AF;
+}
+
+/* Botones en dark mode */
+.hc-dark-mode .btn-primary {
+  background: #10B981;
+  border-color: #059669;
+  color: white;
+}
+
+.hc-dark-mode .btn-primary:hover {
+  background: #059669;
+  border-color: #047857;
+}
+
+.hc-dark-mode .btn-secondary {
+  background: #374151;
+  border-color: #4B5563;
+  color: #f9fafb;
+}
+
+.hc-dark-mode .btn-secondary:hover {
+  background: #4B5563;
+  border-color: #6B7280;
+}
+
+.hc-dark-mode .btn-outline {
+  background: transparent;
+  border-color: #4B5563;
+  color: #e5e7eb;
+}
+
+.hc-dark-mode .btn-outline:hover {
+  background: #374151;
+  border-color: #6B7280;
+}
+
+/* Links en dark mode */
+.hc-dark-mode a {
+  color: #10B981;
+}
+
+.hc-dark-mode a:hover {
+  color: #34D399;
+}
+
+/* Badges y chips en dark mode */
+.hc-dark-mode .badge,
+.hc-dark-mode .chip,
+.hc-dark-mode .tag {
+  background: #374151;
+  border-color: #4B5563;
+  color: #e5e7EB;
+}
+
+.hc-dark-mode .badge-success,
+.hc-dark-mode .chip-success {
+  background: #064E3B;
+  border-color: #059669;
+  color: #D1FAE5;
+}
+
+.hc-dark-mode .badge-warning,
+.hc-dark-mode .chip-warning {
+  background: #78350F;
+  border-color: #D97706;
+  color: #FCD34D;
+}
+
+.hc-dark-mode .badge-danger,
+.hc-dark-mode .chip-danger {
+  background: #7F1D1D;
+  border-color: #DC2626;
+  color: #FECACA;
+}
+
+/* Tablas en dark mode */
+.hc-dark-mode table {
+  background: #1f2937;
+  color: #f9fafb;
+}
+
+.hc-dark-mode thead {
+  background: #374151;
+  border-color: #4B5563;
+}
+
+.hc-dark-mode tbody tr {
+  border-color: #374151;
+}
+
+.hc-dark-mode tbody tr:hover {
+  background: #374151;
+}
+
+.hc-dark-mode th,
+.hc-dark-mode td {
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+/* Modals y overlays en dark mode */
+.hc-dark-mode .modal,
+.hc-dark-mode .overlay,
+.hc-dark-mode .dialog {
+  background: #1f2937;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.hc-dark-mode .modal-header,
+.hc-dark-mode .dialog-header {
+  border-color: #374151;
+}
+
+.hc-dark-mode .modal-footer,
+.hc-dark-mode .dialog-footer {
+  border-color: #374151;
+}
+
+/* Scrollbars en dark mode */
+.hc-dark-mode ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.hc-dark-mode ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.hc-dark-mode ::-webkit-scrollbar-thumb {
+  background: #4B5563;
+  border-radius: 5px;
+}
+
+.hc-dark-mode ::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
+}
+
+/* Código y pre en dark mode */
+.hc-dark-mode code,
+.hc-dark-mode pre {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+
+/* Separadores en dark mode */
+.hc-dark-mode hr,
+.hc-dark-mode .divider {
+  border-color: #374151;
+}
+
+/* Placeholder de imágenes en dark mode */
+.hc-dark-mode img {
+  filter: brightness(0.9);
+}
+
+/* SVG en dark mode */
+.hc-dark-mode svg {
+  filter: brightness(0.9);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dark-mode-toggle {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+  
+  .dark-mode-label {
+    display: none;
+  }
+  
+  .dark-mode-icon {
+    font-size: 1.1rem;
+  }
+}
+
+/* Print styles - siempre light mode */
+@media print {
+  .hc-dark-mode {
+    color-scheme: light;
+  }
+  
+  .hc-dark-mode body,
+  .hc-dark-mode #app {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .hc-dark-mode .card,
+  .hc-dark-mode .panel {
+    background: white !important;
+    color: black !important;
+  }
+}

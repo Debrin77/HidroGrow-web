@@ -1,0 +1,286 @@
+/**
+ * Estilos para Sistema de Alertas Inteligentes
+ * Mejora sustancial: Alertas proactivas con contexto y acciones recomendadas
+ */
+
+/* Contenedor principal */
+.alertas-inteligentes-container {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e5e0d8;
+}
+
+.alertas-sin-problemas {
+  text-align: center;
+  color: #16A34A;
+  font-size: 1.1rem;
+  font-weight: 500;
+  padding: 20px;
+  margin: 0;
+}
+
+.alertas-inteligentes-wrapper {
+  max-width: 100%;
+}
+
+.alertas-titulo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Lista de alertas */
+.alertas-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Alerta individual */
+.alerta-item {
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid;
+  transition: all 0.2s ease;
+}
+
+.alerta-item.critica {
+  background: #FEF2F2;
+  border-left-color: #DC2626;
+  border: 2px solid #DC2626;
+}
+
+.alerta-item.advertencia {
+  background: #FFFBEB;
+  border-left-color: #F59E0B;
+  border: 2px solid #F59E0B;
+}
+
+.alerta-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Header de alerta */
+.alerta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.alerta-titulo {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #1f2937;
+}
+
+.alerta-descartar {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.alerta-descartar:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #1f2937;
+}
+
+.alerta-mensaje {
+  margin: 0 0 16px 0;
+  font-size: 0.95rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+/* Detalles de alerta */
+.alerta-detalles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.alerta-detalle {
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.alerta-detalle strong {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .alertas-inteligentes-container {
+    padding: 16px;
+    border-radius: 8px;
+  }
+
+  .alertas-titulo {
+    font-size: 1.1rem;
+  }
+
+  .alerta-item {
+    padding: 14px;
+  }
+
+  .alerta-titulo {
+    font-size: 1rem;
+  }
+
+  .alerta-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .alerta-descartar {
+    align-self: flex-end;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .alertas-inteligentes-container {
+    background: #1f2937;
+    border-color: #374151;
+  }
+
+  .alertas-sin-problemas {
+    color: #10B981;
+  }
+
+  .alertas-titulo {
+    color: #f9fafb;
+  }
+
+  .alerta-item.critica {
+    background: #7F1D1D;
+    border-color: #DC2626;
+  }
+
+  .alerta-item.advertencia {
+    background: #78350F;
+    border-color: #F59E0B;
+  }
+
+  .alerta-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .alerta-titulo {
+    color: #f9fafb;
+  }
+
+  .alerta-descartar {
+    color: #9CA3AF;
+  }
+
+  .alerta-descartar:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #f9fafb;
+  }
+
+  .alerta-mensaje {
+    color: #E5E7EB;
+  }
+
+  .alerta-detalles {
+    border-top-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .alerta-detalle {
+    color: #D1D5DB;
+  }
+
+  .alerta-detalle strong {
+    color: #f9fafb;
+  }
+}
+
+/* Animaciones */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.alerta-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+.alerta-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.alerta-item:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+/* Indicador de severidad */
+.alerta-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 8px 8px 0 0;
+}
+
+.alerta-item.critica::before {
+  background: linear-gradient(90deg, #DC2626, #EF4444);
+}
+
+.alerta-item.advertencia::before {
+  background: linear-gradient(90deg, #F59E0B, #FBBF24);
+}
+
+/* Badge de severidad */
+.alerta-header::after {
+  content: attr(data-severidad);
+  position: absolute;
+  top: 12px;
+  right: 50px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.alerta-item.critica .alerta-header::after {
+  background: #DC2626;
+  color: white;
+  content: 'CRÍTICO';
+}
+
+.alerta-item.advertencia .alerta-header::after {
+  background: #F59E0B;
+  color: white;
+  content: 'ADVERTENCIA';
+}

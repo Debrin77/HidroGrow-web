@@ -1,0 +1,239 @@
+/**
+ * Estilos para Mejora de Checklists con Explicaciones
+ * Mejora sustancial: Añade explicaciones del "por qué" a cada ítem del checklist
+ */
+
+/* Icono de explicación */
+.checklist-explicacion-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  background: #E5E7EB;
+  border: none;
+  border-radius: 50%;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.checklist-explicacion-icon:hover {
+  background: #D1D5DB;
+  transform: scale(1.1);
+}
+
+.checklist-explicacion-icon:focus {
+  outline: 2px solid #10B981;
+  outline-offset: 2px;
+}
+
+/* Modal de explicación */
+.checklist-explicacion-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.checklist-explicacion-content {
+  background: white;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header del modal */
+.checklist-explicacion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.checklist-explicacion-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2D5016;
+  margin: 0;
+}
+
+.checklist-explicacion-close {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.checklist-explicacion-close:hover {
+  background: #F3F4F6;
+  color: #1f2937;
+}
+
+.checklist-explicacion-close:focus {
+  outline: 2px solid #10B981;
+  outline-offset: 2px;
+}
+
+/* Body del modal */
+.checklist-explicacion-body {
+  padding: 24px;
+}
+
+.checklist-explicacion-texto {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #374151;
+  margin: 0 0 16px 0;
+}
+
+.checklist-explicacion-prevencion {
+  background: #FFFBEB;
+  border-left: 4px solid #F59E0B;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #92400E;
+}
+
+.checklist-explicacion-prevencion strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .checklist-explicacion-modal {
+    padding: 10px;
+  }
+
+  .checklist-explicacion-content {
+    border-radius: 8px;
+    max-height: 85vh;
+  }
+
+  .checklist-explicacion-header {
+    padding: 16px 20px;
+  }
+
+  .checklist-explicacion-title {
+    font-size: 1.1rem;
+  }
+
+  .checklist-explicacion-body {
+    padding: 20px;
+  }
+
+  .checklist-explicacion-texto {
+    font-size: 0.95rem;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .checklist-explicacion-icon {
+    background: #374151;
+  }
+
+  .checklist-explicacion-icon:hover {
+    background: #4B5563;
+  }
+
+  .checklist-explicacion-content {
+    background: #1f2937;
+  }
+
+  .checklist-explicacion-header {
+    border-bottom-color: #374151;
+  }
+
+  .checklist-explicacion-title {
+    color: #10B981;
+  }
+
+  .checklist-explicacion-close {
+    color: #9CA3AF;
+  }
+
+  .checklist-explicacion-close:hover {
+    background: #374151;
+    color: #f9fafb;
+  }
+
+  .checklist-explicacion-texto {
+    color: #E5E7EB;
+  }
+
+  .checklist-explicacion-prevencion {
+    background: #78350F;
+    border-left-color: #D97706;
+    color: #FCD34D;
+  }
+}
+
+/* Animación para icono cuando hay explicación disponible */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.checklist-explicacion-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.checklist-explicacion-icon:hover {
+  animation: none;
+}

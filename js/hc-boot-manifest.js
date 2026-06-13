@@ -24,7 +24,9 @@ window.HC_BOOT_CRITICAL_SCRIPTS = [
   "js/hc-mobile-ui.js",
   "js/hc-medir-operativa.js",
   "js/hc-instalacion-lifecycle.js",
-  "js/app-hc-medicion-toast.js"
+  "js/app-hc-medicion-toast.js",
+  "js/hc-onboarding-express.js",
+  "js/hc-dark-mode.js"
 ];
 /** Tras críticos: Inicio/Medir/asistente guardado (en paralelo con diferidos) */
 window.HC_BOOT_ESSENTIAL_SCRIPTS = [
@@ -34,6 +36,10 @@ window.HC_BOOT_ESSENTIAL_SCRIPTS = [
   "js/meteo-forecast-meteo.js",
   "js/meteo-forecast-dashboard.js",
   "js/hc-dash-operativa.js",
+  "js/hc-dash-contextual.js",
+  "js/hc-alertas-inteligentes.js",
+  "js/hc-consejos-motor.js",
+  "js/hc-checklist-explicaciones.js",
   "js/hc-setup-mediciones-logic.js",
   "js/hc-setup-calc-core.js",
   "js/hc-medir-germinacion.js"
@@ -107,7 +113,8 @@ window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/hc-tools-pro.js",
   "js/hc-multi-system-ux.js",
   "js/hc-salas-plan.js",
-  "js/hc-puesta-marcha.js"
+  "js/hc-puesta-marcha.js",
+  "js/hc-graficos-basicos.js"
 ];
 window.HC_BOOT_LAZY_SCRIPTS = window.HC_BOOT_CRITICAL_SCRIPTS.concat(
   window.HC_BOOT_ESSENTIAL_SCRIPTS,
