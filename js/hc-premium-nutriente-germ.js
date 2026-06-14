@@ -55,9 +55,12 @@
 
   function isPremiumNutrienteGermActivo(cfg) {
     var cam = caminoRequiereNutrienteBandeja(cfg);
-    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return true;
+    // Solo activo para semilla_propagador, no para semilla_hidro (hidroponía no usa bandeja)
+    if (cam === 'semilla_propagador') return true;
     if (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()) {
-      return true;
+      // Verificar si realmente es propagador, no hidro
+      var caminoActual = getCaminoCultivo(cfg) || '';
+      if (caminoActual === 'semilla_propagador') return true;
     }
     return caminoUsaNutrienteBandejaPropagador(cfg);
   }

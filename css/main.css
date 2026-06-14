@@ -22703,6 +22703,28 @@ html.hc-theme-dark .torre-nft-p-note strong {
 .hc-eval-alerta--warn { color: #92400e; }
 .hc-eval-sol { margin: 4px 0 0; font-size: 10px; opacity: 0.9; }
 
+/* Alertas en modo oscuro */
+.hc-dark-mode .medir-alertas-panel {
+  background: #1f2937;
+  border-color: #fcd34d;
+}
+.hc-dark-mode .medir-alertas-head {
+  color: #fcd34d;
+}
+.hc-dark-mode .hc-eval-alerta {
+  border-bottom-color: #4B5563;
+  color: #e5e7eb;
+}
+.hc-dark-mode .hc-eval-alerta--bad {
+  color: #FECACA;
+}
+.hc-dark-mode .hc-eval-alerta--warn {
+  color: #FCD34D;
+}
+.hc-dark-mode .hc-eval-sol {
+  color: #9CA3AF;
+}
+
 /* Tareas para hoy (Medir) */
 .medir-tareas-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .medir-tareas-head-text { display: inline-flex; align-items: center; gap: 0.35rem; }
