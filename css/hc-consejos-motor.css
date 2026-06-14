@@ -108,7 +108,8 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - DESACTIVADO (usuario prefiere modo claro) */
+/*
 @media (prefers-color-scheme: dark) {
   .consejos-motor-container {
     background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
@@ -142,6 +143,7 @@
     background: #374151;
   }
 }
+*/
 
 /* Animaciones */
 @keyframes fadeInUp {

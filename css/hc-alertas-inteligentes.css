@@ -242,7 +242,8 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - DESACTIVADO (usuario prefiere modo claro) */
+/*
 @media (prefers-color-scheme: dark) {
   .alertas-inteligentes-container {
     background: #1f2937;
@@ -313,6 +314,7 @@
     color: #f9fafb;
   }
 }
+*/
 
 /* Animaciones */
 @keyframes slideIn {

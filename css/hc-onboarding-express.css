@@ -444,7 +444,8 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - DESACTIVADO (usuario prefiere modo claro) */
+/*
 @media (prefers-color-scheme: dark) {
   .onboarding-express-content {
     background: #1f2937;
@@ -575,3 +576,4 @@
     color: #E5E7EB;
   }
 }
+*/

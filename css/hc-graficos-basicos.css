@@ -205,7 +205,8 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - DESACTIVADO (usuario prefiere modo claro) */
+/*
 .hc-dark-mode .hc-grafico-card {
   background: var(--hc-color-bg-secondary-dark);
   border-color: var(--hc-color-border-dark);
@@ -229,6 +230,7 @@
   border-color: var(--hc-color-secondary);
   color: var(--hc-color-secondary);
 }
+*/
 
 /* Animaciones */
 .hc-grafico-card {

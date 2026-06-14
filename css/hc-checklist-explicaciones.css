@@ -178,7 +178,8 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - DESACTIVADO (usuario prefiere modo claro) */
+/*
 @media (prefers-color-scheme: dark) {
   .checklist-explicacion-icon {
     background: #374151;
@@ -219,6 +220,7 @@
     color: #FCD34D;
   }
 }
+*/
 
 /* Animación para icono cuando hay explicación disponible */
 @keyframes pulse {
