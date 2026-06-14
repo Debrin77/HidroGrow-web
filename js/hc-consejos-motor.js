@@ -359,6 +359,14 @@
   function renderConsejosWidget() {
     const container = document.getElementById('consejosMotorContainer');
     if (!container) return;
+    
+    // Ocultar en semilla_hidro porque los consejos se aplican en rangos/configuración
+    const cfg = (typeof state !== 'undefined' && state && state.configTorre) ? state.configTorre : {};
+    const cam = cfg && cfg.caminoCultivo ? cfg.caminoCultivo : '';
+    if (cam === 'semilla_hidro') {
+      container.classList.add('setup-hidden');
+      return;
+    }
 
     // CRÍTICO: Sincronizar con instalación activa para evitar mezclar datos
     try {

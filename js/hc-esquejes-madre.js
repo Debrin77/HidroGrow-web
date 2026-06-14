@@ -875,6 +875,13 @@
   function refreshDashEnraizadoHub(cfg) {
     const host = el('dashEnraizadoHub');
     if (!host) return;
+    const cam = cfg && cfg.caminoCultivo ? cfg.caminoCultivo : '';
+    // Ocultar en semilla_hidro porque no aplica enraizado de esquejes
+    if (cam === 'semilla_hidro') {
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      return;
+    }
     const show =
       typeof hcEsquejeEnraizadoHubEsPrincipal === 'function' && hcEsquejeEnraizadoHubEsPrincipal(cfg);
     if (!show) {

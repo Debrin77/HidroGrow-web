@@ -7839,7 +7839,7 @@ html.hc-theme-dark .quick-btn[data-quick-icon="reset"] .hc-ico--ion-quick { colo
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(240, 253, 244, 0.35);
+  background: transparent;
   padding: 6px 10px;
   border-radius: 8px;
 }
@@ -15762,7 +15762,7 @@ html.hc-theme-dark .dash-sala-equip-reco-cta {
 .medir-field-label {
   font-size: 12px;
   color: var(--muted);
-  background: rgba(240, 253, 244, 0.3);
+  background: transparent;
   padding: 4px 8px;
   border-radius: 6px;
   display: inline-block;
@@ -22767,6 +22767,8 @@ html.hc-theme-dark .torre-nft-p-note strong {
   background: #fef3c7;
   color: #92400e;
   border: 1px solid rgba(180, 83, 9, 0.35);
+  flex-shrink: 0;
+  margin-left: 8px;
 }
 .medir-tareas-badge--ok { background: #ecfdf5; color: #047857; border-color: #6ee7b7; }
 .medir-tareas-badge--mid { background: #eff6ff; color: #1d4ed8; border-color: #93c5fd; }
