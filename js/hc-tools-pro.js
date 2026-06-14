@@ -157,15 +157,29 @@
     const nut = getNutById(nutId) || (typeof getNutrienteTorre === 'function' ? getNutrienteTorre() : null);
     const ecBase = Number.isFinite(ecBaseRaw) && ecBaseRaw >= 0 ? ecBaseRaw : 0;
     const ecNutr = Math.max(0, ecO - ecBase);
-    const dose = calcDoseBreakdown(0, ecNutr, vol, nut);
-    const ml = dose.porParte;
-    const partes = dose.partes;
+    
+    // Usar calculadora de dilución del módulo hc-calculadora-nutrientes.js si está disponible
+    let ml, partes;
+    if (typeof calcularDilucion === 'function') {
+      // EC típico de nutrientes concentrados: 10 mS/cm = 10000 µS/cm
+      const ecConcentrado = 10000;
+      const resultado = calcularDilucion(vol, ecNutr, ecBase, ecConcentrado);
+      ml = resultado.volumenNutriente;
+      partes = Number(nut?.partes || 2);
+    } else {
+      // Fallback a implementación local
+      const dose = calcDoseBreakdown(0, ecNutr, vol, nut);
+      ml = dose.porParte;
+      partes = dose.partes;
+    }
+    
     const nombre = String(nut?.nombre || 'nutriente');
+    const total = ml * partes;
 
     if (!Number.isFinite(ml) || ml <= 0) { out.textContent = 'No se pudo estimar dosis.'; return; }
     out.textContent = (partes <= 1)
       ? ('Objetivo ' + Math.round(ecO) + ' µS/cm con ' + nombre + ': ~' + fmt(ml, 1) + ' ml total.')
-      : ('Objetivo ' + Math.round(ecO) + ' µS/cm con ' + nombre + ': ~' + fmt(ml, 1) + ' ml por parte (' + partes + ' partes · total ~' + fmt(dose.total, 1) + ' ml).');
+      : ('Objetivo ' + Math.round(ecO) + ' µS/cm con ' + nombre + ': ~' + fmt(ml, 1) + ' ml por parte (' + partes + ' partes · total ~' + fmt(total, 1) + ' ml).');
   }
 
   function compareNutrients() {

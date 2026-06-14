@@ -121,7 +121,8 @@ window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/hc-esquejado-sistema.js",
   "js/hc-asistentes-sistema.js",
   "js/hc-calculadora-nutrientes.js",
-  "js/hc-alertas-sistema.js"
+  "js/hc-alertas-sistema.js",
+  "js/hc-setup-coco-drip.js"
 ];
 window.HC_BOOT_LAZY_SCRIPTS = window.HC_BOOT_CRITICAL_SCRIPTS.concat(
   window.HC_BOOT_ESSENTIAL_SCRIPTS,

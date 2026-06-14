@@ -2340,6 +2340,7 @@ function seleccionarTipoInstalacionSetup(tipo) {
     _hcExposeMontajeDiyBlocks();
   } catch (_) {}
   if (tipo === 'rdwc') setupTipoInstalacion = 'rdwc';
+  else if (tipo === 'coco_drip') setupTipoInstalacion = 'coco_drip';
   else setupTipoInstalacion = 'dwc';
   if (setupEsNuevaTorre) {
     setupPlantasSeleccionadas = new Set();
@@ -2369,6 +2370,18 @@ function seleccionarTipoInstalacionSetup(tipo) {
       if (typeof rdwcEnsureConfigDefaults === 'function') rdwcEnsureConfigDefaults(setupRdwcDraft);
     }
   }
+  if (setupTipoInstalacion === 'coco_drip') {
+    if (setupEsNuevaTorre) {
+      setupCocoDripDraft = typeof hcFreshCocoDripSetupBare === 'function' ? hcFreshCocoDripSetupBare() : {};
+    } else if (!setupCocoDripDraft || tipoInstalacionNormalizado(setupCocoDripDraft) !== 'coco_drip') {
+      setupCocoDripDraft =
+        tipoInstalacionNormalizado(state.configTorre || {}) === 'coco_drip'
+          ? hcSetupClonePlain(state.configTorre, {}) || hcFreshCocoDripSetupDefaults()
+          : hcFreshCocoDripSetupDefaults();
+      setupCocoDripDraft.tipoInstalacion = 'coco_drip';
+      if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(setupCocoDripDraft);
+    }
+  }
   refrescarSetupTipoInstalacionUI();
   try {
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
@@ -2378,16 +2391,17 @@ function seleccionarTipoInstalacionSetup(tipo) {
 function refrescarSetupTipoInstalacionUI() {
   const esDwc = setupTipoInstalacion === 'dwc';
   const esRdwc = setupTipoInstalacion === 'rdwc';
-  const sinElegir = !esDwc && !esRdwc;
+  const esCocoDrip = setupTipoInstalacion === 'coco_drip';
+  const sinElegir = !esDwc && !esRdwc && !esCocoDrip;
   if (sinElegir && setupEsNuevaTorre) {
-    ['setupCardTipoDwc', 'setupCardTipoRdwc', 'setupInlineTipoDwc', 'setupInlineTipoRdwc'].forEach((id) => {
+    ['setupCardTipoDwc', 'setupCardTipoRdwc', 'setupCardTipoCocoDrip', 'setupInlineTipoDwc', 'setupInlineTipoRdwc', 'setupInlineTipoCocoDrip'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.classList.remove('selected');
       el.setAttribute('aria-pressed', 'false');
     });
     if (setupPagina !== SETUP_PAGE_GEOMETRY) return;
-  } else if (!sinElegir && !esRdwc) {
+  } else if (!sinElegir && !esRdwc && !esCocoDrip) {
     setupTipoInstalacion = 'dwc';
   }
   ['setupCardTipoTorre', 'setupCardTipoNft', 'setupCardTipoSrf', 'setupInlineTipoTorre', 'setupInlineTipoNft', 'setupInlineTipoSrf'].forEach((id) => {
@@ -2396,7 +2410,8 @@ function refrescarSetupTipoInstalacionUI() {
   });
   const dwcCard = document.getElementById('setupCardTipoDwc');
   const rdwcCard = document.getElementById('setupCardTipoRdwc');
-  [dwcCard, rdwcCard].forEach((card) => {
+  const cocoDripCard = document.getElementById('setupCardTipoCocoDrip');
+  [dwcCard, rdwcCard, cocoDripCard].forEach((card) => {
     if (!card) return;
     card.classList.remove('selected');
     card.setAttribute('aria-pressed', 'false');
@@ -2404,13 +2419,17 @@ function refrescarSetupTipoInstalacionUI() {
   if (setupTipoInstalacion === 'rdwc' && rdwcCard) {
     rdwcCard.classList.add('selected');
     rdwcCard.setAttribute('aria-pressed', 'true');
+  } else if (setupTipoInstalacion === 'coco_drip' && cocoDripCard) {
+    cocoDripCard.classList.add('selected');
+    cocoDripCard.setAttribute('aria-pressed', 'true');
   } else if (setupTipoInstalacion === 'dwc' && dwcCard) {
     dwcCard.classList.add('selected');
     dwcCard.setAttribute('aria-pressed', 'true');
   }
   const inlDwc = document.getElementById('setupInlineTipoDwc');
   const inlRdwc = document.getElementById('setupInlineTipoRdwc');
-  [inlDwc, inlRdwc].forEach((btn) => {
+  const inlCocoDrip = document.getElementById('setupInlineTipoCocoDrip');
+  [inlDwc, inlRdwc, inlCocoDrip].forEach((btn) => {
     if (!btn) return;
     btn.classList.remove('selected');
     btn.setAttribute('aria-pressed', 'false');
@@ -2418,6 +2437,9 @@ function refrescarSetupTipoInstalacionUI() {
   if (setupTipoInstalacion === 'rdwc' && inlRdwc) {
     inlRdwc.classList.add('selected');
     inlRdwc.setAttribute('aria-pressed', 'true');
+  } else if (setupTipoInstalacion === 'coco_drip' && inlCocoDrip) {
+    inlCocoDrip.classList.add('selected');
+    inlCocoDrip.setAttribute('aria-pressed', 'true');
   } else if (setupTipoInstalacion === 'dwc' && inlDwc) {
     inlDwc.classList.add('selected');
     inlDwc.setAttribute('aria-pressed', 'true');
@@ -2460,8 +2482,10 @@ function refrescarSetupTipoInstalacionUI() {
   if (dwcIntroSetup) dwcIntroSetup.classList.toggle('setup-hidden', isRdwc);
   const rdwcWizard = document.getElementById('setupRdwcDetalleWrap');
   if (rdwcWizard) rdwcWizard.classList.toggle('setup-hidden', !isRdwc);
+  const cocoDripWizard = document.getElementById('setupCocoDripDetalleWrap');
+  if (cocoDripWizard) cocoDripWizard.classList.toggle('setup-hidden', setupTipoInstalacion !== 'coco_drip');
   const dwcSoloWizard = document.getElementById('setupDwcSoloBloque');
-  if (dwcSoloWizard) dwcSoloWizard.classList.toggle('setup-hidden', isRdwc);
+  if (dwcSoloWizard) dwcSoloWizard.classList.toggle('setup-hidden', isRdwc || setupTipoInstalacion === 'coco_drip');
   if (isRdwc) {
     try {
       if (!(typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre)) {

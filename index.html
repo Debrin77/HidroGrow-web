@@ -1426,8 +1426,24 @@
                 onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
             </div>
           </div>
+          <div class="medir-grid-2-gap-10 medir-mb-10">
+            <div>
+              <label for="growRoomNumPlantas" class="medir-field-label">Número de plantas</label>
+              <input type="number" id="growRoomNumPlantas" class="form-input medir-input-md" inputmode="numeric" min="1" max="16" step="1" placeholder="4"
+                onchange="calcularGrowRoom()" onblur="calcularGrowRoom()">
+            </div>
+            <div>
+              <label for="growRoomTipoLed" class="medir-field-label">Tipo de LED</label>
+              <select id="growRoomTipoLed" class="form-input medir-input-md" onchange="calcularGrowRoom()">
+                <option value="panel" selected>Panel LED</option>
+                <option value="barra">Barra LED / lineal</option>
+                <option value="foco">Foco LED puntual</option>
+                <option value="quantum">Quantum board</option>
+              </select>
+            </div>
+          </div>
           <button type="button" class="btn btn-primary btn-sm medir-mb-10" onclick="calcularGrowRoom()">Calcular sala</button>
-          <div id="growRoomResultado" class="tools-pro-result grow-room-result-host">Indica medidas y pulsa Calcular sala.</div>
+          <div id="growRoomResultado" class="tools-pro-result grow-room-result-host">Indica medidas, plantas y pulsa Calcular sala.</div>
           </div>
         </div>
 
@@ -3632,13 +3648,13 @@
     </div>
 
     <div class="setup-page" id="spagePremium7">
-      <div class="setup-title">¿DWC o RDWC?</div>
+      <div class="setup-title">¿DWC, RDWC o Coco Coir + Drip?</div>
       <div class="setup-subtitle">
-        Elige el <strong>sistema hidropónico</strong> que montarás. Siguiente: medidas del cubo o circuito RDWC.
+        Elige el <strong>sistema hidropónico</strong> que montarás. Siguiente: medidas del cubo, circuito RDWC o configuración coco.
       </div>
       <div id="setupTipoInstalacionPanel" class="setup-tipo-panel setup-mb-12">
         <div class="setup-tipo-label">Tipo de sistema</div>
-        <div class="setup-tipo-grid setup-tipo-grid--dual">
+        <div class="setup-tipo-grid setup-tipo-grid--triple">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
             aria-pressed="false" aria-label="DWC: cubos con solución y aireador">
@@ -3652,6 +3668,13 @@
             <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></div>
             <div class="setup-tipo-name">RDWC</div>
             <div class="setup-tipo-hint">Recirculación — escala sala</div>
+          </button>
+          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupCardTipoCocoDrip"
+            onclick="seleccionarTipoInstalacionSetup('coco_drip')"
+            aria-pressed="false" aria-label="Coco Coir + Drip: coco coir con riego automatizado por goteo">
+            <div class="setup-tipo-icon" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-drop"/></svg></div>
+            <div class="setup-tipo-name">Coco + Drip</div>
+            <div class="setup-tipo-hint">Coco coir — riego automático</div>
           </button>
         </div>
       </div>
@@ -3677,14 +3700,17 @@
         <div class="setup-tipo-inline-label">
           Tipo de sistema
         </div>
-        <p id="setupFlowTipoHint" class="setup-flow-tipo-hint setup-hidden">DWC/RDWC ya elegido en el paso anterior — cambia aquí solo si te equivocaste.</p>
-        <div class="setup-tipo-inline-grid setup-tipo-inline-grid--dual">
+        <p id="setupFlowTipoHint" class="setup-flow-tipo-hint setup-hidden">DWC/RDWC/Coco ya elegido en el paso anterior — cambia aquí solo si te equivocaste.</p>
+        <div class="setup-tipo-inline-grid setup-tipo-inline-grid--triple">
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoDwc"
             onclick="seleccionarTipoInstalacionSetup('dwc')"
             aria-pressed="false" aria-label="DWC"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-dwc"/></svg></span> DWC</button>
           <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoRdwc"
             onclick="seleccionarTipoInstalacionSetup('rdwc')"
             aria-pressed="false" aria-label="RDWC"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-sys-rdwc"/></svg></span> RDWC</button>
+          <button type="button" class="equip-card setup-tipo-instalacion-card" id="setupInlineTipoCocoDrip"
+            onclick="seleccionarTipoInstalacionSetup('coco_drip')"
+            aria-pressed="false" aria-label="Coco + Drip"><span class="setup-inline-tipo-ico" aria-hidden="true"><svg class="hc-ico" focusable="false"><use href="#hc-i-drop"/></svg></span> Coco</button>
         </div>
       </div>
 
@@ -3787,6 +3813,53 @@
             <p id="setupRdwcRecoManualNote" class="setup-rdwc-litros-manual-note setup-hidden" role="note"></p>
           </div>
         </div>
+
+        <div id="setupCocoDripDetalleWrap" class="setup-hidden setup-coco-drip-wrap">
+          <div class="setup-dwc-title">Coco Coir + Riego por Goteo</div>
+          <p class="setup-dwc-help">Configura tu sistema de coco coir con riego automatizado. Smart Pots/Fabric Pots recomendados para mejor oxigenación radicular.</p>
+          <div class="setup-dwc-grid-2 setup-mt-8">
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripNumPlantas">Número de plantas</label><input type="number" id="setupCocoDripNumPlantas" class="setup-dwc-input" min="1" max="16" step="1" placeholder="4" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripTamanoMacetas">Tamaño de macetas</label>
+              <select id="setupCocoDripTamanoMacetas" class="setup-dwc-input" oninput="try{onSetupCocoDripInput()}catch(e){}">
+                <option value="small">Pequeñas (3-5 gal)</option>
+                <option value="medium" selected>Medianas (5-7 gal)</option>
+                <option value="large">Grandes (7-15 gal)</option>
+              </select>
+            </div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripReservorioLitros">Reservorio (L)</label><input type="number" id="setupCocoDripReservorioLitros" class="setup-dwc-input" min="14" max="200" step="1" placeholder="50" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripBombaGPH">Bomba riego (GPH)</label><input type="number" id="setupCocoDripBombaGPH" class="setup-dwc-input" min="100" max="1000" step="10" placeholder="300" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripTipoDistribucion">Tipo de distribución</label>
+              <select id="setupCocoDripTipoDistribucion" class="setup-dwc-input" oninput="try{onSetupCocoDripInput()}catch(e){}">
+                <option value="emitters" selected>Drip emitters (flexibles)</option>
+                <option value="halos">Hydro Halos (contenedores finales)</option>
+              </select>
+            </div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripFrecuenciaRiego">Frecuencia riego (veces/día)</label><input type="number" id="setupCocoDripFrecuenciaRiego" class="setup-dwc-input" min="1" max="6" step="1" placeholder="2" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripDrybackObjetivo">Dryback objetivo (%)</label><input type="number" id="setupCocoDripDrybackObjetivo" class="setup-dwc-input" min="20" max="50" step="5" placeholder="30" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+            <div><label class="form-label setup-dwc-label" for="setupCocoDripPerlitaPorcentaje">Perlita (%)</label><input type="number" id="setupCocoDripPerlitaPorcentaje" class="setup-dwc-input" min="0" max="50" step="5" placeholder="30" oninput="try{onSetupCocoDripInput()}catch(e){}"></div>
+          </div>
+          <div class="setup-dwc-grid-2 setup-mt-8">
+            <div style="grid-column:1/-1">
+              <label class="form-label setup-dwc-label" style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" id="setupCocoDripSmartPots" onchange="try{onSetupCocoDripInput()}catch(e){}">
+                <span>Usar Smart Pots / Fabric Pots (recomendado para air pruning)</span>
+              </label>
+            </div>
+            <div style="grid-column:1/-1">
+              <label class="form-label setup-dwc-label" for="setupCocoDripSistemaDrenaje">Sistema de drenaje</label>
+              <select id="setupCocoDripSistemaDrenaje" class="setup-dwc-input" oninput="try{onSetupCocoDripInput()}catch(e){}">
+                <option value="manual" selected>Manual (bandejas)</option>
+                <option value="auto">Automático (self-draining saucers)</option>
+              </select>
+            </div>
+          </div>
+          <p id="setupCocoDripCompatStatus" class="setup-dwc-help setup-mt-8" role="status" aria-live="polite"></p>
+          <div id="setupCocoDripRecoBlock" class="setup-dwc-litros-solucion-block setup-mt-8" role="status" aria-live="polite">
+            <p class="setup-dwc-litros-solucion-label">Recomendaciones</p>
+            <p class="setup-dwc-litros-solucion-valor" id="setupCocoDripRecoValor">Configura los parámetros para ver recomendaciones</p>
+          </div>
+        </div>
+
         <div id="setupDwcSoloBloque">
         <div>
           <label class="form-label setup-dwc-label" for="setupDwcDepositoForma">Forma del depósito DWC</label>

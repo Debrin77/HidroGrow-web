@@ -35,6 +35,8 @@
     const alto = readDimFromCfg(cfg, 'growRoomAltoM', 'growRoomAltoM');
     const ledW = readDimFromCfg(cfg, 'growRoomLedW', 'growRoomLedW');
     const fase = String(el('growRoomFase')?.value || cfg.growRoomFase || 'esqueje');
+    const numPlantas = readDimFromCfg(cfg, 'growRoomNumPlantas', 'growRoomNumPlantas');
+    const tipoLed = String(el('growRoomTipoLed')?.value || cfg.growRoomTipoLed || 'panel');
     const wM2 = (typeof GROW_ROOM_W_M2 !== 'undefined' && GROW_ROOM_W_M2[fase]) || GROW_ROOM_W_M2.vegetativo;
 
     if (!Number.isFinite(ancho) || !Number.isFinite(largo) || ancho <= 0 || largo <= 0) {
@@ -68,6 +70,30 @@
     const fotoperiodo =
       fase === 'floracion' ? '12/12' : fase === 'esqueje' ? '18/6 (luz suave)' : '18/6';
 
+    // Integrar calculadora de iluminación si está disponible
+    let alturaRecomendada = null;
+    let potenciaRecomendadaPct = null;
+    let ppfdObjetivo = null;
+    
+    if (typeof calcularIluminacionLED === 'function' && Number.isFinite(ledW) && ledW > 0) {
+      try {
+        const iluminacion = calcularIluminacionLED({
+          potenciaMaxima: ledW,
+          area: area,
+          etapa: fase,
+          tipo: tipoLed,
+          numPlantas: Number.isFinite(numPlantas) ? numPlantas : 4
+        });
+        if (iluminacion && !iluminacion.error) {
+          alturaRecomendada = iluminacion.alturaRecomendada;
+          potenciaRecomendadaPct = iluminacion.potenciaRecomendadaPct;
+          ppfdObjetivo = iluminacion.ppfdObjetivo;
+        }
+      } catch (e) {
+        console.error('[hc-grow-room] Error al usar calculadora de iluminación:', e);
+      }
+    }
+
     return {
       area,
       vol,
@@ -84,6 +110,11 @@
       extractorUser,
       extEstado,
       fotoperiodo,
+      numPlantas,
+      tipoLed,
+      alturaRecomendada,
+      potenciaRecomendadaPct,
+      ppfdObjetivo,
     };
   }
 
@@ -126,6 +157,22 @@
           ' m³/h</strong> (mín ~' +
           fmt(r.m3hMin, 0) +
           ')';
+    
+    // Añadir información de iluminación si está disponible
+    let iluminacionLine = '';
+    if (r.alturaRecomendada != null && r.potenciaRecomendadaPct != null) {
+      iluminacionLine = '<p><strong>Altura LED:</strong> ' + fmt(r.alturaRecomendada, 0) + ' cm · <strong>Potencia:</strong> ' + fmt(r.potenciaRecomendadaPct, 0) + '%';
+      if (r.ppfdObjetivo != null) {
+        iluminacionLine += ' · <strong>PPFD objetivo:</strong> ' + r.ppfdObjetivo + ' µmol/m²/s';
+      }
+      iluminacionLine += '</p>';
+    }
+    
+    let plantasLine = '';
+    if (Number.isFinite(r.numPlantas) && r.numPlantas > 0) {
+      plantasLine = '<p><strong>Plantas:</strong> ' + r.numPlantas + ' · <strong>Tipo LED:</strong> ' + esc(r.tipoLed) + '</p>';
+    }
+    
     out.innerHTML =
       '<div class="grow-room-result">' +
       '<p><strong>Sala ~' +
@@ -137,9 +184,11 @@
       '</strong> · fotoperiodo <strong>' +
       esc(r.fotoperiodo) +
       '</strong></p>' +
+      plantasLine +
       '<p>' +
       ledLine +
       '</p>' +
+      iluminacionLine +
       '<p>' +
       extLine +
       '</p>' +
@@ -158,10 +207,15 @@
     cfg.growRoomExtractorM3h = num('growRoomExtractorM3h');
     cfg.growRoomFase = String(el('growRoomFase')?.value || 'esqueje');
     cfg.growRoomTentPreset = String(el('growRoomTentPreset')?.value || '');
+    cfg.growRoomNumPlantas = num('growRoomNumPlantas');
+    cfg.growRoomTipoLed = String(el('growRoomTipoLed')?.value || 'panel');
     const r = calcularGrowRoomInterno(cfg);
     if (!r.error) {
       cfg.growRoomLedObjW = r.ledObj;
       cfg.growRoomExtractorObjM3h = r.m3hObj;
+      cfg.growRoomAlturaRecomendada = r.alturaRecomendada;
+      cfg.growRoomPotenciaRecomendadaPct = r.potenciaRecomendadaPct;
+      cfg.growRoomPpfdObjetivo = r.ppfdObjetivo;
     }
     if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
     if (typeof saveState === 'function') saveState();
@@ -186,11 +240,18 @@
       if (!e || v == null || !Number.isFinite(v)) return;
       e.value = String(v);
     };
+    const setStr = function (id, v) {
+      const e = el(id);
+      if (!e || v == null) return;
+      e.value = String(v);
+    };
     set('growRoomAnchoM', cfg.growRoomAnchoM);
     set('growRoomLargoM', cfg.growRoomLargoM);
     set('growRoomAltoM', cfg.growRoomAltoM);
     set('growRoomLedW', cfg.growRoomLedW);
     set('growRoomExtractorM3h', cfg.growRoomExtractorM3h);
+    set('growRoomNumPlantas', cfg.growRoomNumPlantas);
+    setStr('growRoomTipoLed', cfg.growRoomTipoLed);
     if (el('growRoomFase') && cfg.growRoomFase) el('growRoomFase').value = cfg.growRoomFase;
     const panel = el('panelGrowRoomSala');
     if (panel) {
