@@ -10,7 +10,6 @@
       'panelLocalidadMeteo',
       'configPanel',
       'panelGrowRoomSala',
-      'panelConfigInteriorGrow',
       'panelMedirCalentadorConsigna',
     ],
     iot: ['medirIotCard'],
@@ -416,7 +415,6 @@
   var SALA_PANELES_DUPLICADOS_MEDIR = [
     'configPanel',
     'panelGrowRoomSala',
-    'panelConfigInteriorGrow',
     'panelLocalidadMeteo',
   ];
 
@@ -657,14 +655,6 @@
       el.classList.toggle('setup-hidden', hidePanel);
       el.setAttribute('aria-hidden', hidePanel ? 'true' : 'false');
     });
-    if (hidroOper) {
-      var intGrow = document.getElementById('panelConfigInteriorGrow');
-      if (intGrow) {
-        intGrow.classList.add('setup-hidden');
-        intGrow.setAttribute('aria-hidden', 'true');
-        intGrow.style.display = 'none';
-      }
-    }
     var stabAgua = document.getElementById('stab-agua');
     if (stabAgua) {
       var label = ocultar ? 'Equipamiento' : 'Agua y ubicación';

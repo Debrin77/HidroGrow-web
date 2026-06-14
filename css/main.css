@@ -7839,6 +7839,21 @@ html.hc-theme-dark .quick-btn[data-quick-icon="reset"] .hc-ico--ion-quick { colo
   display: flex;
   align-items: center;
   gap: 6px;
+  background: rgba(240, 253, 244, 0.6);
+  padding: 6px 10px;
+  border-radius: 8px;
+}
+html.hc-theme-dark .param-label {
+  background: rgba(15, 23, 42, 0.6);
+  color: #e2e8f0;
+}
+/* Estilo de foco visible para accesibilidad móvil */
+.param-label:focus-within {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+html.hc-theme-dark .param-label:focus-within {
+  outline-color: #4ade80;
 }
 .param-label .hc-ico {
   width: 18px;
@@ -7846,11 +7861,11 @@ html.hc-theme-dark .quick-btn[data-quick-icon="reset"] .hc-ico--ion-quick { colo
   flex-shrink: 0;
   color: var(--muted);
 }
-/* Medir — iconos de cabecera por tarjeta */
-#cardEC .param-label .hc-ico { color: #2563eb; }
-#cardPH .param-label .hc-ico { color: #7c3aed; }
-#cardTemp .param-label .hc-ico { color: #ea580c; }
-#cardVol .param-label .hc-ico { color: #0891b2; }
+/* Medir — iconos de cabecera por tarjeta (colores con mejor contraste para móvil) */
+#cardEC .param-label .hc-ico { color: #1d4ed8; }
+#cardPH .param-label .hc-ico { color: #6d28d9; }
+#cardTemp .param-label .hc-ico { color: #c2410c; }
+#cardVol .param-label .hc-ico { color: #0e7490; }
 html.hc-theme-dark #cardEC .param-label .hc-ico { color: #60a5fa; }
 html.hc-theme-dark #cardPH .param-label .hc-ico { color: #a78bfa; }
 html.hc-theme-dark #cardTemp .param-label .hc-ico { color: #fb923c; }
@@ -15745,8 +15760,24 @@ html.hc-theme-dark .dash-sala-equip-reco-cta {
   gap: 8px;
 }
 .medir-field-label {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
+  background: rgba(240, 253, 244, 0.5);
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+html.hc-theme-dark .medir-field-label {
+  background: rgba(15, 23, 42, 0.5);
+  color: #cbd5e1;
+}
+/* Estilo de foco visible para etiquetas de campos en móvil */
+.medir-field-label:focus-within {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+html.hc-theme-dark .medir-field-label:focus-within {
+  outline-color: #4ade80;
 }
 .medir-input-md {
   width: 100%;
