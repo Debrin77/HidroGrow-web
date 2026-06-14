@@ -340,14 +340,28 @@
 
     let html = '<div class="dash-contextual-wrapper">';
 
-    // Header con información del cultivo
+    // Header con información del cultivo - SOLO para caminos que tienen fase de cultivo
     const fase = getFaseActual();
     const diasCultivo = config && config.fechaInicio ? 
       Math.floor((Date.now() - new Date(config.fechaInicio).getTime()) / 86400000) : 0;
     
-    html += '<div class="dash-contextual-header">';
-    html += `<h3 class="dash-contextual-title">🌿 Mi Cultivo - Día ${diasCultivo} de ${fase.charAt(0).toUpperCase() + fase.slice(1)}</h3>`;
-    html += '</div>';
+    // Verificar si el camino de cultivo corresponde para mostrar el header
+    let mostrarHeader = false;
+    try {
+      const camino = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+      // Solo mostrar header para caminos de semilla/hidro que tienen fase de cultivo
+      // NO mostrar para esqueje, madre, u otros caminos especializados
+      const caminosConFaseCultivo = ['semilla_hidro', 'semilla_propagador'];
+      mostrarHeader = caminosConFaseCultivo.includes(camino) && config && config.fechaInicio;
+    } catch (_) {
+      mostrarHeader = false;
+    }
+    
+    if (mostrarHeader) {
+      html += '<div class="dash-contextual-header">';
+      html += `<h3 class="dash-contextual-title">🌿 Mi Cultivo - Día ${diasCultivo} de ${fase.charAt(0).toUpperCase() + fase.slice(1)}</h3>`;
+      html += '</div>';
+    }
 
     // Acciones prioritarias
     if (acciones.length > 0) {

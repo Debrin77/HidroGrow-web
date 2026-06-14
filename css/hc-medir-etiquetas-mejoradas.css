@@ -313,9 +313,10 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   Dark Mode
+   Dark Mode - DESACTIVADO (usuario prefiere modo claro)
    ═══════════════════════════════════════════════════════════════ */
 
+/*
 @media (prefers-color-scheme: dark) {
   #tab-mediciones .param-card,
   .medir-ambiente-grid .param-card {
@@ -428,6 +429,7 @@
     border-left-color: #DC2626 !important;
   }
 }
+*/
 
 /* ═══════════════════════════════════════════════════════════════
    Responsive
