@@ -2150,8 +2150,8 @@ function guardarSetupYContinuarCore() {
         return false;
       }
     }
-    if (!faseGermSetup && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
-      showToast('Elige DWC o RDWC en el paso «DWC o RDWC» del asistente', true);
+    if (!faseGermSetup && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'coco_drip') {
+      showToast('Elige DWC, RDWC o Coco + Drip en el paso de tipo de instalación del asistente', true);
       setupPagina = typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
       renderSetupPage();
       return false;
@@ -2177,6 +2177,7 @@ function guardarSetupYContinuarCore() {
 
   const isDwc = setupTipoInstalacion === 'dwc';
   const isRdwc = setupTipoInstalacion === 'rdwc';
+  const isCocoDrip = setupTipoInstalacion === 'coco_drip';
   const isSrf = setupTipoInstalacion === 'srf';
   const isNft = setupTipoInstalacion === 'nft';
   let niveles = parseInt(document.getElementById('sliderNiveles')?.value || 5, 10);
@@ -2247,8 +2248,52 @@ function guardarSetupYContinuarCore() {
     cestas = Math.max(1, Math.ceil(Number(cR.rdwcSites || 4) / niveles));
     vol = Math.max(1, Math.round(Number(cR.rdwcControlVolL || 40)));
   }
+  if (isCocoDrip && !faseGermSetup && !faseSalaPreGerm) {
+    try {
+      if (typeof hcCompletarCocoDripSetupDefaultsAntesGuardar === 'function') {
+        hcCompletarCocoDripSetupDefaultsAntesGuardar();
+      }
+    } catch (_) {}
+    let cC =
+      typeof applySetupCocoDripDesdeFormulario === 'function' ? applySetupCocoDripDesdeFormulario() || {} : {};
+    if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cC);
+    if (
+      typeof cocoDripSetupValidFromConfig === 'function' &&
+      !cocoDripSetupValidFromConfig(cC) &&
+      typeof cocoDripSetupFormularioCompleto === 'function' &&
+      !cocoDripSetupFormularioCompleto()
+    ) {
+      try {
+        if (typeof hcFreshCocoDripSetupDefaults === 'function') {
+          const defs = hcFreshCocoDripSetupDefaults();
+          cC = Object.assign({}, defs, cC);
+          if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cC);
+          if (typeof syncSetupCocoDripFieldsDesdeConfig === 'function') syncSetupCocoDripFieldsDesdeConfig(cC);
+          if (typeof applySetupCocoDripDesdeFormulario === 'function') {
+            cC = applySetupCocoDripDesdeFormulario() || cC;
+          }
+        }
+      } catch (_) {}
+    }
+    if (
+      typeof cocoDripSetupValidFromConfig === 'function'
+        ? !cocoDripSetupValidFromConfig(cC)
+        : typeof cocoDripSetupFormularioCompleto === 'function' && !cocoDripSetupFormularioCompleto()
+    ) {
+      showToast(
+        'Completa número de plantas, tamaño de macetas, reservorio y bomba en el bloque Coco + Drip.',
+        true
+      );
+      setupPagina = SETUP_PAGE_GEOMETRY;
+      renderSetupPage();
+      return false;
+    }
+    niveles = Math.max(1, Math.round(Number(cC.cocoDripNumPlantas || 4)));
+    cestas = 1; // Coco Drip usa macetas individuales, no cestas
+    vol = Math.max(1, Math.round(Number(cC.cocoDripReservorioLitros || 50)));
+  }
 
-  const tipoNuevoPrevio = faseGermSetup || faseSalaPreGerm ? '' : isRdwc ? 'rdwc' : 'dwc';
+  const tipoNuevoPrevio = faseGermSetup || faseSalaPreGerm ? '' : isRdwc ? 'rdwc' : isCocoDrip ? 'coco_drip' : 'dwc';
 
   const cfgPrevWizard =
     typeof hcClonePlainData === 'function'
@@ -2313,7 +2358,7 @@ function guardarSetupYContinuarCore() {
       );
       return false;
     }
-    const etiquetas = { dwc: 'DWC', rdwc: 'RDWC' };
+    const etiquetas = { dwc: 'DWC', rdwc: 'RDWC', coco_drip: 'Coco + Drip' };
     const nomAnt = etiquetas[tipoEnSlotAntes] || tipoEnSlotAntes;
     const nomNuevo = etiquetas[tipoNuevoPrevio] || tipoNuevoPrevio;
     if (
@@ -2331,7 +2376,7 @@ function guardarSetupYContinuarCore() {
       return false;
     }
     crearNuevaPorCambioTipo = true;
-    const pref = tipoNuevoPrevio === 'rdwc' ? 'RDWC' : 'DWC';
+    const pref = tipoNuevoPrevio === 'rdwc' ? 'RDWC' : tipoNuevoPrevio === 'coco_drip' ? 'Coco + Drip' : 'DWC';
     setupNombreNuevaTorre = pref + ' ' + (state.torres.length + 1);
   }
 
@@ -2487,6 +2532,14 @@ function guardarSetupYContinuarCore() {
         ? 'avanzado'
         : 'principiante',
   };
+  
+  // Guardar configuración específica de coco_drip
+  if (isCocoDrip && !faseGermSetup && !faseSalaPreGerm) {
+    const cC =
+      typeof applySetupCocoDripDesdeFormulario === 'function' ? applySetupCocoDripDesdeFormulario() || {} : {};
+    if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cC);
+    Object.assign(state.configTorre, cC);
+  }
   if (preservedEquipInstalado && Object.keys(preservedEquipInstalado).length) {
     state.configTorre.equipamientoInstalado = preservedEquipInstalado;
   }

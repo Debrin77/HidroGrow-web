@@ -109,13 +109,40 @@ const CONFIGURACION_SISTEMA = {
 
 const CHECKLIST_SISTEMA = {
   coco_drip: [
-    { id: 'medio', texto: 'Preparar coco coir pre-lavado con 30% perlita', completado: false },
-    { id: 'macetas', texto: 'Usar Smart Pots o Air-Pots de tamaño adecuado', completado: false },
-    { id: 'sistema_riego', texto: 'Instalar sistema de goteo con programador', completado: false },
-    { id: 'ph', texto: 'Calibrar pH del agua a 5.8-6.0', completado: false },
-    { id: 'ec_inicial', texto: 'Preparar solución nutricional con EC 0.8-1.0 mS/cm', completado: false },
-    { id: 'drenaje', texto: 'Verificar drenaje adecuado en cada maceta', completado: false },
-    { id: 'monitor', texto: 'Configurar monitor de humedad del sustrato', completado: false }
+    // Materiales
+    { id: 'reservorio', texto: 'Reservorio (14+ galones), preferiblemente oscuro', completado: false, categoria: 'materiales' },
+    { id: 'bomba', texto: 'Bomba de riego (300+ GPH, 60 GPH por planta)', completado: false, categoria: 'materiales' },
+    { id: 'timer', texto: 'Timer digital con intervalos de 1 segundo', completado: false, categoria: 'materiales' },
+    { id: 'linea_principal', texto: 'Línea principal de 1/2" desde bomba a tent', completado: false, categoria: 'materiales' },
+    { id: 'distribuidor', texto: 'Distribuidores (emitters o Hydro Halos)', completado: false, categoria: 'materiales' },
+    { id: 'valvulas', texto: 'Válvulas de control (master + por planta)', completado: false, categoria: 'materiales' },
+    { id: 'smart_pots', texto: 'Smart Pots o Air-Pots de tamaño adecuado', completado: false, categoria: 'materiales' },
+    { id: 'coco_coir', texto: 'Coco coir pre-lavado de alta calidad', completado: false, categoria: 'materiales' },
+    { id: 'perlita', texto: 'Perlita (30% del volumen del sustrato)', completado: false, categoria: 'materiales' },
+    { id: 'drenaje', texto: 'Sistema de drenaje (bandejas o self-draining saucers)', completado: false, categoria: 'materiales' },
+    { id: 'ph_ec', texto: 'Medidores de pH y EC', completado: false, categoria: 'materiales' },
+    // Puesta en marcha
+    { id: 'preparar_medio', texto: 'Preparar coco coir con 30% perlita, hidratar completamente', completado: false, categoria: 'puesta_marcha' },
+    { id: 'llenar_macetas', texto: 'Llenar macetas con medio, compactar ligeramente', completado: false, categoria: 'puesta_marcha' },
+    { id: 'instalar_bomba', texto: 'Instalar bomba en reservorio, conectar a timer', completado: false, categoria: 'puesta_marcha' },
+    { id: 'instalar_lineas', texto: 'Conectar línea principal y distribuidores', completado: false, categoria: 'puesta_marcha' },
+    { id: 'instalar_valvulas', texto: 'Instalar válvula master y válvulas por planta', completado: false, categoria: 'puesta_marcha' },
+    { id: 'posicionar_macetas', texto: 'Posicionar macetas en Smart Pots sobre elevadores', completado: false, categoria: 'puesta_marcha' },
+    { id: 'conectar_emitters', texto: 'Conectar emitters a cada maceta', completado: false, categoria: 'puesta_marcha' },
+    { id: 'calibrar_flujo', texto: 'Calibrar flujo de cada emitter con válvulas', completado: false, categoria: 'puesta_marcha' },
+    { id: 'configurar_timer', texto: 'Configurar timer según frecuencia recomendada', completado: false, categoria: 'puesta_marcha' },
+    { id: 'verificar_drenaje', texto: 'Verificar drenaje adecuado (10-15% run-off)', completado: false, categoria: 'puesta_marcha' },
+    { id: 'ajustar_ph', texto: 'Ajustar pH del agua a 5.8-6.0', completado: false, categoria: 'puesta_marcha' },
+    { id: 'preparar_solucion', texto: 'Preparar solución nutricional con EC inicial 0.8-1.0 mS/cm', completado: false, categoria: 'puesta_marcha' },
+    { id: 'primer_riego', texto: 'Realizar primer riego con solución completa', completado: false, categoria: 'puesta_marcha' },
+    // Seguimiento
+    { id: 'monitorear_dryback', texto: 'Monitorear dryback del 20-40% antes de cada riego', completado: false, categoria: 'seguimiento' },
+    { id: 'verificar_runoff', texto: 'Verificar run-off 10-15% del volumen aplicado', completado: false, categoria: 'seguimiento' },
+    { id: 'medir_ec_ph', texto: 'Medir EC y pH del run-off regularmente', completado: false, categoria: 'seguimiento' },
+    { id: 'ajustar_frecuencia', texto: 'Ajustar frecuencia según fase de cultivo', completado: false, categoria: 'seguimiento' },
+    { id: 'ajustar_duracion', texto: 'Ajustar duración según tamaño de maceta y emitter flow', completado: false, categoria: 'seguimiento' },
+    { id: 'limpiar_emitters', texto: 'Limpiar emitters regularmente para evitar obstrucciones', completado: false, categoria: 'seguimiento' },
+    { id: 'cambiar_agua', texto: 'Cambiar agua del reservorio cada 7-10 días', completado: false, categoria: 'seguimiento' }
   ],
   rdwc: [
     { id: 'depósito', texto: 'Instalar depósito central con capacidad adecuada', completado: false },
@@ -161,12 +188,15 @@ function obtenerConfiguracionSistema(sistemaId) {
 }
 
 /**
- * Obtiene checklist de un sistema específico
+ * Obtiene checklist de un sistema específico filtrado por categoría
  * @param {string} sistemaId - ID del sistema
- * @returns {Array} Checklist del sistema
+ * @param {string} categoria - 'materiales' | 'puesta_marcha' | 'seguimiento' | null (todas)
+ * @returns {Array} Checklist filtrado del sistema
  */
-function obtenerChecklistSistema(sistemaId) {
-  return CHECKLIST_SISTEMA[sistemaId] || [];
+function obtenerChecklistSistema(sistemaId, categoria = null) {
+  const checklist = CHECKLIST_SISTEMA[sistemaId] || [];
+  if (!categoria) return checklist;
+  return checklist.filter(item => item.categoria === categoria);
 }
 
 /**
@@ -319,9 +349,91 @@ function validarConfiguracionSistema(sistemaId, config) {
 }
 
 /**
- * Lista todos los sistemas disponibles
- * @returns {Array} Array de sistemas con id y nombre
+ * Calcula impulsos de micro riegos según número de plantas y variedad
+ * @param {string} sistemaId - ID del sistema (coco_drip)
+ * @param {Object} params - { numPlantas, tamanoMaceta, faseCultivo, variedad, emitterFlowLph }
+ * @returns {Object} { frecuencia, duracion, volumenPorEvento, volumenTotalDia, recomendaciones }
  */
+function calcularImpulsosMicroRiego(sistemaId, params) {
+  if (sistemaId !== 'coco_drip') {
+    return { error: 'Sistema no soportado para cálculo de micro riegos' };
+  }
+  
+  const p = params || {};
+  const numPlantas = p.numPlantas || 4;
+  const tamanoMaceta = p.tamanoMaceta || 'medium';
+  const faseCultivo = p.faseCultivo || 'vegetativo';
+  const variedad = p.variedad || 'sativa'; // sativa, indica, híbrida
+  const emitterFlowLph = p.emitterFlowLph || 2;
+  
+  // Volumen de maceta en litros según tamaño
+  const volumenMacetaLitros = {
+    small: 11.4,   // 3 gal
+    medium: 18.9,  // 5 gal
+    large: 56.8    // 15 gal
+  }[tamanoMaceta] || 18.9;
+  
+  // Volumen de riego por evento: 5% del volumen de maceta (Coco For Cannabis)
+  const volumenPorEventoLitros = volumenMacetaLitros * 0.05;
+  
+  // Frecuencia según fase y variedad
+  const frecuenciaBase = {
+    esqueje: 1,
+    vegetativo: 2,
+    prefloracion: 3,
+    floracion: 4
+  }[faseCultivo] || 2;
+  
+  // Ajuste por variedad: Indica necesita menos frecuencia, Sativa más
+  const ajusteVariedad = {
+    indica: -0.5,
+    sativa: 0.5,
+    hibrida: 0
+  }[variedad] || 0;
+  
+  const frecuencia = Math.max(1, Math.min(6, Math.round(frecuenciaBase + ajusteVariedad)));
+  
+  // Duración por evento en minutos
+  const emitterFlowLpm = emitterFlowLph / 60; // Convertir L/h a L/min
+  const duracionMin = Math.ceil(volumenPorEventoLitros / emitterFlowLpm);
+  
+  // Volumen total por día
+  const volumenTotalDiaLitros = volumenPorEventoLitros * frecuencia * numPlantas;
+  
+  // Recomendaciones
+  const recomendaciones = [];
+  
+  if (faseCultivo === 'floracion' && frecuencia < 3) {
+    recomendaciones.push('En floración, considera aumentar frecuencia a 3-4 veces/día para mejor absorción');
+  }
+  
+  if (variedad === 'sativa' && faseCultivo === 'floracion') {
+    recomendaciones.push('Sativas en floración pueden beneficiarse de 4-5 riegos/día');
+  }
+  
+  if (variedad === 'indica' && frecuencia > 3) {
+    recomendaciones.push('Indicas pueden preferir frecuencia menor (2-3 veces/día) para evitar sobreriego');
+  }
+  
+  if (volumenTotalDiaLitros > 50) {
+    recomendaciones.push(`Volumen diario alto (${volumenTotalDiaLitros.toFixed(1)} L): verifica capacidad del reservorio`);
+  }
+  
+  return {
+    sistema: sistemaId,
+    numPlantas: numPlantas,
+    tamanoMaceta: tamanoMaceta,
+    volumenMacetaLitros: volumenMacetaLitros,
+    faseCultivo: faseCultivo,
+    variedad: variedad,
+    emitterFlowLph: emitterFlowLph,
+    frecuencia: frecuencia,
+    duracion: duracionMin,
+    volumenPorEvento: volumenPorEventoLitros,
+    volumenTotalDia: volumenTotalDiaLitros,
+    recomendaciones: recomendaciones
+  };
+}
 function listarSistemas() {
   return Object.keys(CONFIGURACION_SISTEMA).map(id => ({
     id: id,
@@ -345,7 +457,8 @@ if (typeof module !== 'undefined' && module.exports) {
     obtenerDrybackSistema,
     generarRecomendacionesSistema,
     validarConfiguracionSistema,
-    listarSistemas
+    listarSistemas,
+    calcularImpulsosMicroRiego
   };
 }
 
@@ -361,6 +474,7 @@ if (typeof window !== 'undefined') {
   window.generarRecomendacionesSistema = generarRecomendacionesSistema;
   window.validarConfiguracionSistema = validarConfiguracionSistema;
   window.listarSistemas = listarSistemas;
+  window.calcularImpulsosMicroRiego = calcularImpulsosMicroRiego;
 }
 
 console.log('[hc-asistentes-sistema] Módulo cargado correctamente');

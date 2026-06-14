@@ -157,6 +157,126 @@
   }
 
   // ════════════════════════════════════════════════
+  // VALIDACIÓN Y GUARDADO
+  // ════════════════════════════════════════════════
+
+  function applySetupCocoDripDesdeFormulario() {
+    try {
+      const numPlantas = Number(document.getElementById('setupCocoDripNumPlantas')?.value) || 0;
+      const tamanoMacetas = document.getElementById('setupCocoDripTamanoMacetas')?.value || 'medium';
+      const reservorio = Number(document.getElementById('setupCocoDripReservorioLitros')?.value) || 0;
+      const bomba = Number(document.getElementById('setupCocoDripBombaGPH')?.value) || 0;
+      const tipoDistribucion = document.getElementById('setupCocoDripTipoDistribucion')?.value || 'emitters';
+      const frecuenciaRiego = Number(document.getElementById('setupCocoDripFrecuenciaRiego')?.value) || 2;
+      const drybackObjetivo = Number(document.getElementById('setupCocoDripDrybackObjetivo')?.value) || 30;
+      const perlitaPorcentaje = Number(document.getElementById('setupCocoDripPerlitaPorcentaje')?.value) || 30;
+      const smartPots = document.getElementById('setupCocoDripSmartPots')?.checked || false;
+      const sistemaDrenaje = document.getElementById('setupCocoDripSistemaDrenaje')?.value || 'manual';
+      const faseCultivo = document.getElementById('setupCocoDripFaseCultivo')?.value || 'vegetativo';
+      const usarPlacaSolar = document.getElementById('setupCocoDripUsarPlacaSolar')?.checked || false;
+      const potenciaPlacaSolarW = Number(document.getElementById('setupCocoDripPotenciaPlacaSolarW')?.value) || 0;
+      const duracionRiegoMin = Number(document.getElementById('setupCocoDripDuracionRiegoMin')?.value) || 5;
+      const emitterFlowLph = Number(document.getElementById('setupCocoDripEmitterFlowLph')?.value) || 2;
+
+      return {
+        tipoInstalacion: 'coco_drip',
+        cocoDripNumPlantas: numPlantas,
+        cocoDripTamanoMacetas: tamanoMacetas,
+        cocoDripReservorioLitros: reservorio,
+        cocoDripBombaGPH: bomba,
+        cocoDripTipoDistribucion: tipoDistribucion,
+        cocoDripFrecuenciaRiego: frecuenciaRiego,
+        cocoDripDrybackObjetivo: drybackObjetivo,
+        cocoDripPerlitaPorcentaje: perlitaPorcentaje,
+        cocoDripSmartPots: smartPots,
+        cocoDripSistemaDrenaje: sistemaDrenaje,
+        cocoDripFaseCultivo: faseCultivo,
+        cocoDripUsarPlacaSolar: usarPlacaSolar,
+        cocoDripPotenciaPlacaSolarW: potenciaPlacaSolarW,
+        cocoDripDuracionRiegoMin: duracionRiegoMin,
+        cocoDripEmitterFlowLph: emitterFlowLph
+      };
+    } catch (e) {
+      console.error('[hc-setup-coco-drip] Error en applySetupCocoDripDesdeFormulario:', e);
+      return {};
+    }
+  }
+
+  function cocoDripSetupFormularioCompleto() {
+    try {
+      const numPlantas = Number(document.getElementById('setupCocoDripNumPlantas')?.value) || 0;
+      const reservorio = Number(document.getElementById('setupCocoDripReservorioLitros')?.value) || 0;
+      const bomba = Number(document.getElementById('setupCocoDripBombaGPH')?.value) || 0;
+      
+      return numPlantas > 0 && reservorio > 0 && bomba > 0;
+    } catch (e) {
+      console.error('[hc-setup-coco-drip] Error en cocoDripSetupFormularioCompleto:', e);
+      return false;
+    }
+  }
+
+  function cocoDripSetupValidFromConfig(cfg) {
+    if (!cfg) return false;
+    const numPlantas = cfg.cocoDripNumPlantas || 0;
+    const reservorio = cfg.cocoDripReservorioLitros || 0;
+    const bomba = cfg.cocoDripBombaGPH || 0;
+    
+    return numPlantas > 0 && reservorio > 0 && bomba > 0;
+  }
+
+  function syncSetupCocoDripFieldsDesdeConfig(cfg) {
+    try {
+      if (!cfg) return;
+      
+      const numPlantasInput = document.getElementById('setupCocoDripNumPlantas');
+      const tamanoMacetasInput = document.getElementById('setupCocoDripTamanoMacetas');
+      const reservorioInput = document.getElementById('setupCocoDripReservorioLitros');
+      const bombaInput = document.getElementById('setupCocoDripBombaGPH');
+      const tipoDistribucionInput = document.getElementById('setupCocoDripTipoDistribucion');
+      const frecuenciaRiegoInput = document.getElementById('setupCocoDripFrecuenciaRiego');
+      const drybackObjetivoInput = document.getElementById('setupCocoDripDrybackObjetivo');
+      const perlitaPorcentajeInput = document.getElementById('setupCocoDripPerlitaPorcentaje');
+      const smartPotsInput = document.getElementById('setupCocoDripSmartPots');
+      const sistemaDrenajeInput = document.getElementById('setupCocoDripSistemaDrenaje');
+      const faseCultivoInput = document.getElementById('setupCocoDripFaseCultivo');
+      const usarPlacaSolarInput = document.getElementById('setupCocoDripUsarPlacaSolar');
+      const potenciaPlacaSolarWInput = document.getElementById('setupCocoDripPotenciaPlacaSolarW');
+      const duracionRiegoMinInput = document.getElementById('setupCocoDripDuracionRiegoMin');
+      const emitterFlowLphInput = document.getElementById('setupCocoDripEmitterFlowLph');
+
+      if (numPlantasInput && cfg.cocoDripNumPlantas) numPlantasInput.value = cfg.cocoDripNumPlantas;
+      if (tamanoMacetasInput && cfg.cocoDripTamanoMacetas) tamanoMacetasInput.value = cfg.cocoDripTamanoMacetas;
+      if (reservorioInput && cfg.cocoDripReservorioLitros) reservorioInput.value = cfg.cocoDripReservorioLitros;
+      if (bombaInput && cfg.cocoDripBombaGPH) bombaInput.value = cfg.cocoDripBombaGPH;
+      if (tipoDistribucionInput && cfg.cocoDripTipoDistribucion) tipoDistribucionInput.value = cfg.cocoDripTipoDistribucion;
+      if (frecuenciaRiegoInput && cfg.cocoDripFrecuenciaRiego) frecuenciaRiegoInput.value = cfg.cocoDripFrecuenciaRiego;
+      if (drybackObjetivoInput && cfg.cocoDripDrybackObjetivo) drybackObjetivoInput.value = cfg.cocoDripDrybackObjetivo;
+      if (perlitaPorcentajeInput && cfg.cocoDripPerlitaPorcentaje) perlitaPorcentajeInput.value = cfg.cocoDripPerlitaPorcentaje;
+      if (smartPotsInput && typeof cfg.cocoDripSmartPots === 'boolean') smartPotsInput.checked = cfg.cocoDripSmartPots;
+      if (sistemaDrenajeInput && cfg.cocoDripSistemaDrenaje) sistemaDrenajeInput.value = cfg.cocoDripSistemaDrenaje;
+      if (faseCultivoInput && cfg.cocoDripFaseCultivo) faseCultivoInput.value = cfg.cocoDripFaseCultivo;
+      if (usarPlacaSolarInput && typeof cfg.cocoDripUsarPlacaSolar === 'boolean') usarPlacaSolarInput.checked = cfg.cocoDripUsarPlacaSolar;
+      if (potenciaPlacaSolarWInput && cfg.cocoDripPotenciaPlacaSolarW) potenciaPlacaSolarWInput.value = cfg.cocoDripPotenciaPlacaSolarW;
+      if (duracionRiegoMinInput && cfg.cocoDripDuracionRiegoMin) duracionRiegoMinInput.value = cfg.cocoDripDuracionRiegoMin;
+      if (emitterFlowLphInput && cfg.cocoDripEmitterFlowLph) emitterFlowLphInput.value = cfg.cocoDripEmitterFlowLph;
+    } catch (e) {
+      console.error('[hc-setup-coco-drip] Error en syncSetupCocoDripFieldsDesdeConfig:', e);
+    }
+  }
+
+  function hcCompletarCocoDripSetupDefaultsAntesGuardar() {
+    try {
+      const cfg = applySetupCocoDripDesdeFormulario();
+      if (typeof cocoDripEnsureConfigDefaults === 'function') {
+        cocoDripEnsureConfigDefaults(cfg);
+      }
+      syncSetupCocoDripFieldsDesdeConfig(cfg);
+    } catch (e) {
+      console.error('[hc-setup-coco-drip] Error en hcCompletarCocoDripSetupDefaultsAntesGuardar:', e);
+    }
+  }
+
+  // ════════════════════════════════════════════════
   // FUNCIÓN PARA MANEJAR INPUTS DE COCO DRIP
   // ════════════════════════════════════════════════
 
@@ -280,7 +400,12 @@
       hcFreshCocoDripSetupBare,
       hcFreshCocoDripSetupDefaults,
       cocoDripEnsureConfigDefaults,
-      onSetupCocoDripInput
+      onSetupCocoDripInput,
+      applySetupCocoDripDesdeFormulario,
+      cocoDripSetupFormularioCompleto,
+      cocoDripSetupValidFromConfig,
+      syncSetupCocoDripFieldsDesdeConfig,
+      hcCompletarCocoDripSetupDefaultsAntesGuardar
     };
   }
 
@@ -293,6 +418,11 @@
     window.calcularFrecuenciaRiegoRecomendadaCocoDrip = calcularFrecuenciaRiegoRecomendada;
     window.calcularDuracionRiegoCocoDrip = calcularDuracionRiegoMin;
     window.calcularPotenciaPlacaSolarCocoDrip = calcularPotenciaPlacaSolarRecomendada;
+    window.applySetupCocoDripDesdeFormulario = applySetupCocoDripDesdeFormulario;
+    window.cocoDripSetupFormularioCompleto = cocoDripSetupFormularioCompleto;
+    window.cocoDripSetupValidFromConfig = cocoDripSetupValidFromConfig;
+    window.syncSetupCocoDripFieldsDesdeConfig = syncSetupCocoDripFieldsDesdeConfig;
+    window.hcCompletarCocoDripSetupDefaultsAntesGuardar = hcCompletarCocoDripSetupDefaultsAntesGuardar;
   }
 
   console.log('[hc-setup-coco-drip] Módulo cargado correctamente');

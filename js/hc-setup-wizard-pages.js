@@ -310,8 +310,8 @@ function setupNextCore() {
     }
   }
   if (setupPagina === SETUP_PAGE_PREMIUM_END) {
-    if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc') {
-      showToast('Elige DWC o RDWC antes de continuar a geometría', true);
+    if (setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'coco_drip') {
+      showToast('Elige DWC, RDWC o Coco + Drip antes de continuar a geometría', true);
       return;
     }
   }
