@@ -165,8 +165,12 @@
       pasos[0].current = true;
     } else if (
       typeof getCaminoCultivo === 'function' &&
-      getCaminoCultivo(cfg) === 'semilla_propagador' &&
-      propagadorGermSinHidro(cfg)
+      (getCaminoCultivo(cfg) === 'semilla_propagador' ||
+        getCaminoCultivo(cfg) === 'semilla_coco_drip') &&
+      (propagadorGermSinHidro(cfg) ||
+        (getCaminoCultivo(cfg) === 'semilla_coco_drip' &&
+          typeof hidrogrowSemillaCocoDripEnFaseGermSinDtw === 'function' &&
+          hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg)))
     ) {
       return getInstalacionLifecyclePropagadorGerm(cfg, st, legacy);
     } else if (legacy) {
@@ -1107,7 +1111,7 @@
       var camGerm =
         typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
       var propagadorTrasSetup =
-        camGerm === 'semilla_propagador' &&
+        (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip') &&
         typeof window !== 'undefined' &&
         window._hcPropagadorChecklistTrasSetup;
       var delayEntrada = propagadorTrasSetup ? 0 : 300;
@@ -1163,6 +1167,27 @@
           } catch (_) {}
         }, propagadorTrasSetup ? 80 : camGerm === 'semilla_hidro' ? 120 : 280);
       }, delayEntrada);
+      return;
+    }
+    if (
+      typeof getCaminoCultivo === 'function' &&
+      getCaminoCultivo(cfgGerm) === 'semilla_coco_drip' &&
+      cfgGerm.hcSetupFase === 'hidro'
+    ) {
+      setTimeout(function () {
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        if (typeof refreshDashGerminacionHub === 'function') refreshDashGerminacionHub();
+        refreshInstalacionLifecycleUi();
+        if (typeof showToast === 'function') {
+          showToast(
+            '✅ Sistema coco+goteo DTW guardado. Traslada al rejilla cuando completes las 6 fases en propagador.',
+            false,
+            { durationMs: 7200, prominent: true }
+          );
+        }
+      }, 300);
       return;
     }
     setTimeout(function () {

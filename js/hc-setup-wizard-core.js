@@ -2107,6 +2107,16 @@ function abrirSetup() {
       return;
     }
   }
+  var cfgPre =
+    typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+  var camPre =
+    typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgPre) : '';
+  if (camPre === 'semilla_coco_drip' && cfgPre.hcSetupFase === 'hidro') {
+    if (typeof abrirSetupFaseHidro === 'function') {
+      abrirSetupFaseHidro();
+      return;
+    }
+  }
   // Reconfigurar instalación existente (no crear ranura nueva) salvo que se abra «Nuevo sistema»
   try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();
@@ -2115,7 +2125,6 @@ function abrirSetup() {
     hcSetSetupSlidersBlankMode(false);
   } catch (_) {}
   setupEsNuevaTorre = false;
-  setupPagina = SETUP_PAGE_ORIGEN;
   const sh = (state.configTorre && state.configTorre.sensoresHardware) || {};
   setupData.sensoresHardware = {
     ec: !!sh.ec,
@@ -2135,6 +2144,21 @@ function abrirSetup() {
     c.hcSetupFase === 'hidro'
   ) {
     c.hcSetupFase = 'germinacion';
+  }
+  if (
+    camReab === 'semilla_coco_drip' &&
+    c.hcSetupFase === 'germinacion' &&
+    typeof hcSetupEnFaseGerminacion === 'function' &&
+    hcSetupEnFaseGerminacion()
+  ) {
+    setupPagina =
+      typeof getSetupUltimoPasoIndice === 'function'
+        ? getSetupUltimoPasoIndice()
+        : typeof SETUP_PAGE_PREMIUM_6 !== 'undefined'
+          ? SETUP_PAGE_PREMIUM_6
+          : 7;
+  } else {
+    setupPagina = SETUP_PAGE_ORIGEN;
   }
   syncSetupEquipamientoDesdeConfig(c);
   setupTipoInstalacion = tipoInstalacionNormalizado(c);

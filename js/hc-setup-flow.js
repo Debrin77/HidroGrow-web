@@ -74,6 +74,12 @@
     ) {
       return true;
     }
+    if (
+      typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+      hcCaminoSemillaCocoDripSetupGerm()
+    ) {
+      return true;
+    }
     if (typeof getSetupSkippedPagesForCamino === 'function') {
       const skip = getSetupSkippedPagesForCamino();
       const eq = typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10;

@@ -845,8 +845,19 @@
     if (asistenteEnBloquePremiumGerm()) return true;
     try {
       var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : null;
-      if (cfg && cfg.hcSetupFase === 'hidro') return false;
       if (cfg && cfg.hcSetupFase === 'sala_pre_germ') return false;
+      if (cfg && cfg.hcSetupFase === 'hidro') return false;
+      if (cfg && cfg.hcSetupFase === 'germinacion') {
+        if (cam === 'semilla_coco_drip') {
+          if (
+            typeof hcCocoDripInstalacionCerrada === 'function' &&
+            hcCocoDripInstalacionCerrada(cfg)
+          ) {
+            return false;
+          }
+        }
+        return true;
+      }
     } catch (_) {}
     return false;
   }
@@ -1722,6 +1733,16 @@
     }
     if (cam === 'semilla_coco_drip') {
       skip.add(end);
+      [
+        typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
+        typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
+        typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
+        typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
+        typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
+        typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
+      ].forEach(function (p) {
+        skip.add(p);
+      });
     }
     return skip;
   }
@@ -1754,6 +1775,20 @@
   function getSetupUltimoPasoIndice() {
     if (hcSetupEnFaseSalaPreGerm()) {
       return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    }
+    if (hcSetupEnFaseHidroPostGerm()) {
+      if (getCaminoCultivo() === 'semilla_coco_drip') {
+        return typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+      }
+    }
+    if (hcSetupEnFaseGerminacion()) {
+      if (typeof getSetupVisiblePages === 'function') {
+        var visGerm = getSetupVisiblePages();
+        if (visGerm.length) return visGerm[visGerm.length - 1];
+      }
+      if (getCaminoCultivo() === 'semilla_coco_drip') {
+        return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      }
     }
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && hcSetupEnFaseGerminacion()) {
       if (typeof getSetupVisiblePages === 'function') {
@@ -1873,6 +1908,12 @@
     cfg = cfg || {};
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var tipo = String(cfg.tipoInstalacion || '').trim().toLowerCase();
+    if (cam === 'semilla_coco_drip') {
+      if (typeof hcCocoDripInstalacionCerrada === 'function') {
+        return hcCocoDripInstalacionCerrada(cfg);
+      }
+      return tipo === 'coco_drip' && cfg.checklistInstalacionConfirmada === true;
+    }
     if (cam === 'semilla_propagador') {
       if (typeof germinacionConcluida === 'function' && !germinacionConcluida(cfg)) {
         return false;

@@ -24,23 +24,27 @@ function hcSetupRedirectSiPaginaOmitida() {
   return true;
 }
 
+/** Redirige al paso pedido; si está omitido en este camino/fase, salta al visible más cercano. */
+function hcSetupIrAPaginaWizard(targetPage) {
+  setupPagina = targetPage;
+  hcSetupRedirectSiPaginaOmitida();
+  renderSetupPage();
+  if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') {
+    hcScrollSetupWizardAlFalloGuardado();
+  }
+}
+
 var _hcSetupPagesCache = null;
 
 function renderSetupPage() {
   if (
-    typeof setupEsNuevaTorre !== 'undefined' &&
-    setupEsNuevaTorre &&
-    typeof SETUP_PAGE_ORIGEN !== 'undefined' &&
-    setupPagina !== SETUP_PAGE_ORIGEN &&
-    typeof getSetupSkippedPages === 'function'
+    typeof getSetupSkippedPages === 'function' &&
+    getSetupSkippedPages().has(setupPagina)
   ) {
-    try {
-      if (getSetupSkippedPages().has(setupPagina)) setupPagina = SETUP_PAGE_ORIGEN;
-    } catch (_) {}
-  }
-  if (hcSetupRedirectSiPaginaOmitida()) {
-    renderSetupPage();
-    return;
+    if (hcSetupRedirectSiPaginaOmitida()) {
+      renderSetupPage();
+      return;
+    }
   }
   // Instalación nueva: el último paso es cultivos (6); nunca mostrar spage7 (resumen/«varias torres»).
   const ultimoPasoRender =
@@ -421,7 +425,15 @@ function setupBack() {
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;
     renderSetupPage();
   } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
-    setupPagina = SETUP_PAGE_PREMIUM_END;
+    if (
+      typeof hcSetupEnFaseHidroPostGerm === 'function' &&
+      hcSetupEnFaseHidroPostGerm() &&
+      typeof setupFlowAdvancePage === 'function'
+    ) {
+      setupPagina = setupFlowAdvancePage(-1);
+    } else {
+      setupPagina = SETUP_PAGE_PREMIUM_END;
+    }
     renderSetupPage();
   } else if (setupPagina > SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
     setupPagina =

@@ -2133,6 +2133,8 @@ function guardarSetupYContinuarCore() {
     typeof hcSetupEnFaseGerminacion === 'function' &&
     hcSetupEnFaseGerminacion() &&
     !wizardHidroGermCompleto;
+  const faseHidroPostGerm =
+    typeof hcSetupEnFaseHidroPostGerm === 'function' && hcSetupEnFaseHidroPostGerm();
   if (setupEsNuevaTorre) {
     const inpNom = document.getElementById('setupNombreInstalacionInput');
     const fromInp = inpNom ? (inpNom.value || '').trim().slice(0, 40) : '';
@@ -2145,8 +2147,12 @@ function guardarSetupYContinuarCore() {
         setupNombreNuevaTorre = (def && def.short ? def.short + ' · ' : '') + 'Germinación';
       } else {
         showToast('Escribe un nombre para esta instalación (paso de dimensiones)', true);
-        setupPagina = SETUP_PAGE_GEOMETRY;
-        renderSetupPage();
+        if (typeof hcSetupIrAPaginaWizard === 'function') {
+          hcSetupIrAPaginaWizard(SETUP_PAGE_GEOMETRY);
+        } else {
+          setupPagina = SETUP_PAGE_GEOMETRY;
+          renderSetupPage();
+        }
         if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
         document.getElementById('setupNombreInstalacionInput')?.focus();
         return false;
@@ -2286,8 +2292,12 @@ function guardarSetupYContinuarCore() {
         'Completa número de plantas, tamaño de macetas, reservorio y bomba en el bloque Coco + Drip.',
         true
       );
-      setupPagina = SETUP_PAGE_GEOMETRY;
-      renderSetupPage();
+      if (typeof hcSetupIrAPaginaWizard === 'function') {
+        hcSetupIrAPaginaWizard(SETUP_PAGE_GEOMETRY);
+      } else {
+        setupPagina = SETUP_PAGE_GEOMETRY;
+        renderSetupPage();
+      }
       return false;
     }
     var nPlantasCoco = Math.max(1, Math.round(Number(cC.cocoDripNumPlantas || 4)));
@@ -2449,6 +2459,7 @@ function guardarSetupYContinuarCore() {
   if (
     ubicEffGuardar === 'interior' &&
     !faseSalaPreGerm &&
+    !faseHidroPostGerm &&
     !salaPreGermEquipMin &&
     !(typeof window.salaTieneMedidasDesdeEquipamiento === 'function' &&
       window.salaTieneMedidasDesdeEquipamiento(cfgSalaParaGuardar)) &&
@@ -2456,8 +2467,12 @@ function guardarSetupYContinuarCore() {
     typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' &&
     !validarPremiumSetupPaso(SETUP_PAGE_PREMIUM_3)
   ) {
-    setupPagina = SETUP_PAGE_PREMIUM_3;
-    renderSetupPage();
+    if (typeof hcSetupIrAPaginaWizard === 'function') {
+      hcSetupIrAPaginaWizard(SETUP_PAGE_PREMIUM_3);
+    } else {
+      setupPagina = SETUP_PAGE_PREMIUM_3;
+      renderSetupPage();
+    }
     if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
     if (typeof showToast === 'function') {
       showToast('Revisa ancho y largo de la sala o elige carpa/armario en el catálogo.', true);
@@ -2470,8 +2485,12 @@ function guardarSetupYContinuarCore() {
         'En exterior indica la ciudad del mapa en el paso de luz y ubicación: cada instalación usa el clima de su municipio.',
         true
       );
-      setupPagina = SETUP_PAGE_UBICACION;
-      renderSetupPage();
+      if (typeof hcSetupIrAPaginaWizard === 'function') {
+        hcSetupIrAPaginaWizard(SETUP_PAGE_UBICACION);
+      } else {
+        setupPagina = SETUP_PAGE_UBICACION;
+        renderSetupPage();
+      }
       return false;
     }
   }
@@ -2627,6 +2646,25 @@ function guardarSetupYContinuarCore() {
             return instH[k] && (instH[k].marca || instH[k].id);
           });
         if (salaEnWizard && !state.configTorre.salaPreGermConfigAt) {
+          state.configTorre.salaPreGermConfigAt = new Date().toISOString();
+        }
+      }
+      if (
+        faseGermSetup &&
+        camPersist === 'semilla_coco_drip' &&
+        state.configTorre &&
+        !state.configTorre.salaPreGermConfigAt
+      ) {
+        var premC = state.configTorre.premiumSetup || {};
+        var instC = state.configTorre.equipamientoInstalado || {};
+        var salaCoco =
+          (Number(premC.anchoM) > 0 && Number(premC.largoM) > 0) ||
+          (Number(state.configTorre.growRoomAnchoM) > 0 &&
+            Number(state.configTorre.growRoomLargoM) > 0) ||
+          Object.keys(instC).some(function (k) {
+            return instC[k] && (instC[k].marca || instC[k].id);
+          });
+        if (salaCoco) {
           state.configTorre.salaPreGermConfigAt = new Date().toISOString();
         }
       }
@@ -2888,7 +2926,14 @@ function guardarSetupYContinuarCore() {
     delete state.configTorre.germinacionEnPropagador;
     state.configTorre.hcDwcGeomFilas = niveles;
     state.configTorre.hcDwcGeomCestas = cestas;
-  } else if (!faseSalaPreGerm) {
+  } else if (
+    isCocoDrip &&
+    !faseGermSetup &&
+    !faseSalaPreGerm &&
+    typeof redimensionarMatrizTorreDwcPreservando === 'function'
+  ) {
+    redimensionarMatrizTorreDwcPreservando(state.configTorre, niveles, cestas);
+  } else if (!faseSalaPreGerm && !faseGermSetup) {
     state.torre = [];
     for (let n = 0; n < niveles; n++) {
       state.torre.push([]);
@@ -3050,6 +3095,8 @@ function guardarSetupYContinuarCore() {
   } catch (_) {}
   const transicionPropagadorChecklist =
     faseGermSetup && !faseSalaPreGerm && camPersist === 'semilla_propagador';
+  const transicionCocoGermChecklist =
+    faseGermSetup && !faseSalaPreGerm && camPersist === 'semilla_coco_drip';
   const transicionHidroPrepChecklist =
     wizardHidroGermCompleto &&
     camPersist === 'semilla_hidro' &&
@@ -3100,7 +3147,7 @@ function guardarSetupYContinuarCore() {
   }
 
   // Checklist propagador encima del asistente → al cerrar no se ve Inicio un instante.
-  if (transicionPropagadorChecklist) {
+  if (transicionPropagadorChecklist || transicionCocoGermChecklist) {
     try {
       window._hcPropagadorChecklistTrasSetup = true;
       if (typeof hcOpenPropagadorMontajeChecklist === 'function') {
@@ -3218,7 +3265,9 @@ function guardarSetupYContinuarCore() {
       var msgGerm =
         camGuardado === 'semilla_hidro'
           ? '✅ Guardado · checklist prep hidro → sala → sistema → 6 fases'
-          : '✅ Guardado · checklist propagador → registro en Inicio (sala cuando quieras)';
+          : camGuardado === 'semilla_coco_drip'
+            ? '✅ Guardado · propagador → 6 fases → rejilla DTW coco tras germinar'
+            : '✅ Guardado · checklist propagador → registro en Inicio (sala cuando quieras)';
       showToast(
         salaPreGermGuardada
           ? '✅ Sala guardada · checklist de montaje y luego las 6 fases'
