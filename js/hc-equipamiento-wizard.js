@@ -625,7 +625,9 @@
     const esExt = resolveSetupEntorno() === 'exterior';
     const cats = resolveEquipCategorias();
     const omitCircuitoHidro =
-      typeof hcPropagadorEquipSalaSinHidro === 'function' && hcPropagadorEquipSalaSinHidro(cfg);
+      (typeof hcPropagadorEquipSalaSinHidro === 'function' && hcPropagadorEquipSalaSinHidro(cfg)) ||
+      (typeof hcCocoDripEquipSalaSinFertigacion === 'function' &&
+        hcCocoDripEquipSalaSinFertigacion(cfg));
     const falt = [];
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];

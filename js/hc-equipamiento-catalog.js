@@ -560,7 +560,7 @@ const EQUIP_GERMINACION_GROUP = {
   id: 'germinacion',
   label: 'Germinación (semilla)',
   icon: '🌱',
-  keys: ['propagador', 'higrometro_germ', 'mat_termica_germ'],
+  keys: ['propagador', 'higrometro_germ', 'mat_termica_germ', 'medidor'],
 };
 
 const EQUIP_ENRAIZADO_GROUP = {
@@ -667,6 +667,33 @@ function hcEquipCatalogModoSalaPropagador() {
   return true;
 }
 
+function equipCatalogGroupsCocoDrip(entorno, enGerm) {
+  var sala = equipCatalogGroupsSalaPropagador(entorno);
+  var fert = {
+    id: 'coco_fertigacion',
+    label: enGerm ? 'Prep coco + reservorio' : 'Reservorio y goteo',
+    icon: '🥥',
+    required: true,
+    keys: ['medidor', 'bomba_recirc', 'temporizador', 'calentador', 'bomba_aire'],
+    hint:
+      'Coco coir DTW (Grow Diaries / Coco For Cannabis): medidor EC/pH, bomba de riego (GPH), temporizador, ' +
+      'calentador si T° reservorio <18 °C, aireación del tanque. Fertigar siempre con nutrientes; 10–20 % runoff por evento.',
+  };
+  if (enGerm) {
+    return [
+      Object.assign({}, EQUIP_GERMINACION_GROUP, {
+        label: 'Germinación en cubo/copa',
+        required: true,
+        keys: ['propagador', 'higrometro_germ', 'medidor'],
+        hint:
+          'Domo o vaso en coco bufferizado pH 5.5–5.8. Medidor pen para EC baja (0.3–0.8 mS/cm) en plántula.',
+      }),
+      fert,
+    ].concat(sala);
+  }
+  return sala.concat([fert]);
+}
+
 function equipCatalogGroupsSalaPropagador(entorno) {
   var salaIndisp = ['armario', 'led', 'extractor'];
   var salaOpcional = [
@@ -743,6 +770,48 @@ function getEquipCatalogGroups(entorno) {
     hcSetupEnFaseSalaPreGerm()
   ) {
     return equipCatalogGroupsSalaPropagador(entorno);
+  }
+
+  /** Pestaña Sala · propagador (fuera del asistente): solo sala, sin circuito DWC. */
+  if (
+    camino === 'semilla_propagador' &&
+    !faseSala &&
+    typeof hcPropagadorEquipSalaSinHidro === 'function'
+  ) {
+    var cfgProp =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (hcPropagadorEquipSalaSinHidro(cfgProp)) {
+      return equipCatalogGroupsSalaPropagador(entorno);
+    }
+  }
+
+  /** Pestaña Sala · coco+goteo (fuera del asistente): solo sala hasta cerrar reservorio/goteo. */
+  if (
+    camino === 'semilla_coco_drip' &&
+    !faseSala &&
+    typeof hcCocoDripEquipSalaSinFertigacion === 'function'
+  ) {
+    var cfgCoco =
+      typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (hcCocoDripEquipSalaSinFertigacion(cfgCoco)) {
+      var enGermCoco =
+        faseGerm ||
+        (typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm()) ||
+        (typeof hcCaminoSemillaCocoDripSetupGerm === 'function' && hcCaminoSemillaCocoDripSetupGerm());
+      if (!enGermCoco) {
+        return equipCatalogGroupsSalaPropagador(entorno);
+      }
+    }
+  }
+
+  /** Camino coco + goteo: sala + reservorio/goteo (sin DWC/RDWC). */
+  if (camino === 'semilla_coco_drip') {
+    if (faseSala && typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return equipCatalogGroupsSalaPropagador(entorno);
+    }
+    var enBloqueCoco =
+      typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm();
+    return equipCatalogGroupsCocoDrip(entorno, faseGerm || enBloqueCoco);
   }
 
   if (faseSala && camino === 'semilla_hidro') {

@@ -19,6 +19,7 @@ function resolveNutrienteIdInstalacionActiva(cfg) {
   const usaBandejaGerm =
     cam === 'semilla_propagador' ||
     cam === 'semilla_hidro' ||
+    cam === 'semilla_coco_drip' ||
     (typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfgEff)) ||
     (typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfgEff)) ||
     (typeof caminoUsaNutrienteBandejaPropagador === 'function' &&
@@ -67,6 +68,7 @@ function getNutrienteTorre() {
     const usaBandejaGerm =
       cam === 'semilla_propagador' ||
       cam === 'semilla_hidro' ||
+      cam === 'semilla_coco_drip' ||
       (typeof hcMostrarSistemaPropagador === 'function' && hcMostrarSistemaPropagador(cfg));
     if (!usaBandejaGerm && cfg.checklistInstalacionConfirmada !== true) return null;
     idNorm = 'canna_aqua';
@@ -1263,7 +1265,7 @@ function hcGetEcMetaArranqueCamino(cfg) {
   if (!hcCaminoUsaEcArranqueBaja(cfg)) return null;
   var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
 
-  if (cam === 'semilla_hidro' || cam === 'semilla_propagador') {
+  if (cam === 'semilla_hidro' || cam === 'semilla_propagador' || cam === 'semilla_coco_drip') {
     return hcEcMetaDesdeGerminacionRangos(cfg, cam);
   }
 
@@ -2122,7 +2124,7 @@ function guardarSetupYContinuarCore() {
     typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
   let camPersist = caminoSave;
   const wizardHidroGermCompleto =
-    caminoSave === 'semilla_hidro' &&
+    (caminoSave === 'semilla_hidro' || caminoSave === 'semilla_coco_drip') &&
     typeof setupPagina !== 'undefined' &&
     typeof SETUP_PAGE_PREMIUM_END !== 'undefined' &&
     setupPagina >= SETUP_PAGE_PREMIUM_END;

@@ -757,6 +757,9 @@
     if (typeof hcSemillaHidroHubEsPrincipal === 'function' && hcSemillaHidroHubEsPrincipal(cfg)) {
       return true;
     }
+    if (typeof hcSemillaCocoDripHubEsPrincipal === 'function' && hcSemillaCocoDripHubEsPrincipal(cfg)) {
+      return true;
+    }
     return false;
   }
 

@@ -88,15 +88,22 @@
     return false;
   }
 
-  /** Germinación en cubo (semilla_hidro) antes del registro en matriz. */
+  /** Germinación en cubo/copa (semilla_hidro o semilla_coco_drip) antes del registro en matriz. */
   function hcMedirModoGerminacionCubo(cfg) {
     cfg = cfg || cfgActiva();
-    if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) !== 'semilla_hidro') {
+    var camCubo = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (camCubo !== 'semilla_hidro' && camCubo !== 'semilla_coco_drip') return false;
+    if (
+      camCubo === 'semilla_hidro' &&
+      typeof hcSemillaHidroTrasladoCompletado === 'function' &&
+      hcSemillaHidroTrasladoCompletado(cfg)
+    ) {
       return false;
     }
     if (
-      typeof hcSemillaHidroTrasladoCompletado === 'function' &&
-      hcSemillaHidroTrasladoCompletado(cfg)
+      camCubo === 'semilla_coco_drip' &&
+      typeof hcSemillaCocoDripTrasladoCompletado === 'function' &&
+      hcSemillaCocoDripTrasladoCompletado(cfg)
     ) {
       return false;
     }

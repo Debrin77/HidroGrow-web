@@ -1119,6 +1119,12 @@
     ) {
       return true;
     }
+    if (
+      typeof hcCocoDripEquipSalaSinFertigacion === 'function' &&
+      hcCocoDripEquipSalaSinFertigacion(cfg)
+    ) {
+      return true;
+    }
     var cam =
       typeof getCaminoCultivo === 'function'
         ? getCaminoCultivo(cfg)
@@ -1126,7 +1132,10 @@
           (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
           '';
     var tipo = String(cfg.tipoInstalacion || '').toLowerCase();
-    return cam === 'semilla_hidro' && tipo !== 'dwc' && tipo !== 'rdwc';
+    return (
+      (cam === 'semilla_hidro' && tipo !== 'dwc' && tipo !== 'rdwc') ||
+      (cam === 'semilla_coco_drip' && tipo !== 'coco_drip')
+    );
   }
 
   function buildItemsForConfig(cfg) {

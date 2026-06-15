@@ -540,7 +540,9 @@
   function renderHubFechaSiembraEditor(cfg, g) {
     var camGerm =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    if (camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro') return '';
+    if (camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro' && camGerm !== 'semilla_coco_drip') {
+      return '';
+    }
     var iso = getFechaInicioGerminacion(g, cfg);
     var max = hoyIso();
     var concl =
@@ -2120,9 +2122,12 @@
       propagadorMontajeCompleto(cfg);
     var compactPropag = camGerm === 'semilla_propagador';
     var compactHidro =
-      camGerm === 'semilla_hidro' &&
-      typeof hcSemillaHidroHubEsPrincipal === 'function' &&
-      hcSemillaHidroHubEsPrincipal(cfg);
+      (camGerm === 'semilla_hidro' &&
+        typeof hcSemillaHidroHubEsPrincipal === 'function' &&
+        hcSemillaHidroHubEsPrincipal(cfg)) ||
+      (camGerm === 'semilla_coco_drip' &&
+        typeof hcSemillaCocoDripHubEsPrincipal === 'function' &&
+        hcSemillaCocoDripHubEsPrincipal(cfg));
     var propInline =
       camGerm === 'semilla_propagador' &&
       !montajeOk &&

@@ -801,6 +801,9 @@
   /** 'equip' = falta configurador · 'montaje' = falta checklist físico */
   function getSalaRecoPasoInicio(cfg) {
     cfg = cfg || getCfg();
+    if (typeof global.montajeSalaPreGermOk === 'function' && global.montajeSalaPreGermOk(cfg)) {
+      return 'done';
+    }
     if (typeof global.salaPreGermConfigurada === 'function' && !global.salaPreGermConfigurada(cfg)) {
       return 'equip';
     }
@@ -882,7 +885,6 @@
     }
     var paso = getSalaRecoPasoInicio(cfg);
     if (paso === 'equip' || paso === 'montaje') return true;
-    if (paso === 'done' && getEquipamientoSalaOpcionalPendiente(cfg).length > 0) return true;
     return false;
   }
 

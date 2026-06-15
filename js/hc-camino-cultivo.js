@@ -1,6 +1,6 @@
 /**
- * HidroGrow — cuatro caminos de cultivo (setup y post-setup).
- * semilla_propagador | semilla_hidro | esqueje_hidro | madre_hidro
+ * HidroGrow — cinco caminos de cultivo (setup y post-setup).
+ * semilla_propagador | semilla_hidro | semilla_coco_drip | esqueje_hidro | madre_hidro
  */
 (function (global) {
   'use strict';
@@ -47,6 +47,28 @@
         'Medir = agua del depósito + microclima del cubo.',
       ],
     },
+    semilla_coco_drip: {
+      id: 'semilla_coco_drip',
+      label: 'Semilla en coco + goteo',
+      short: 'Coco goteo',
+      origenPlanta: 'semilla',
+      germModo: 'coco_drip',
+      faseInicial: 'germinacion',
+      icon: '🥥',
+      visualKey: 'coco',
+      onboardingBadge: 'popular',
+      onboardingBadgeLabel: 'Coco DTW',
+      onboardingDesc:
+        'Coco coir bufferizado + fertigación por goteo (drain-to-waste). EC/pH como hidro, con runoff.',
+      onboardingHonest:
+        'CalMag y medidor de runoff; no alternes riegos solo con agua. Frecuencia alta en flor (3–5×/día).',
+      orden: [
+        'Asistente: <strong>sala + macetas coco</strong> y reservorio/goteo cuando toque.',
+        'Germinación en cubo/copa coco → checklist → montaje goteo → primer llenado reservorio.',
+        'Fertigar siempre con nutrientes; objetivo <strong>10–20 % runoff</strong> por evento.',
+        'Medir EC/pH entrada y runoff; pH <strong>5.8–6.2</strong>.',
+      ],
+    },
     esqueje_hidro: {
       id: 'esqueje_hidro',
       label: 'Esqueje al hidro',
@@ -90,6 +112,7 @@
   var CAMINO_CARD_ORDER = [
     'semilla_propagador',
     'semilla_hidro',
+    'semilla_coco_drip',
     'esqueje_hidro',
     'madre_hidro',
   ];
@@ -131,6 +154,7 @@
     var o = String(origen || 'semilla').toLowerCase();
     if (o === 'clon') return 'esqueje_hidro';
     if (o === 'madre') return 'madre_hidro';
+    if (modoPref === 'coco_drip') return 'semilla_coco_drip';
     if (modoPref === 'hidro_directo' || modoPref === 'hidro') return 'semilla_hidro';
     return 'semilla_propagador';
   }
@@ -405,6 +429,12 @@
       state.configTorre.premiumSetup.caminoCultivo = def.id;
       state.configTorre.premiumSetup.origenPlanta = def.origenPlanta;
       if (def.germModo) state.configTorre.premiumSetup.germinacionModoPreferido = def.germModo;
+      if (def.id === 'semilla_coco_drip') {
+        state.configTorre.tipoInstalacion = 'coco_drip';
+        if (typeof cocoDripEnsureConfigDefaults === 'function') {
+          cocoDripEnsureConfigDefaults(state.configTorre);
+        }
+      }
     }
     refreshCaminoCultivoUI();
     refreshSetupCaminoRecoUI();
@@ -445,7 +475,7 @@
       if (title) title.textContent = '¿Cómo empiezas el cultivo?';
       if (sub) {
         sub.innerHTML =
-          'Elige <strong>una de las cuatro rutas</strong>. El asistente adapta pasos, alertas y equipamiento; el sistema hidropónico (DWC, RDWC…) lo configuras cuando toque en tu ruta.';
+          'Elige <strong>una de las cinco rutas</strong>. El asistente adapta pasos, alertas y equipamiento; el sistema (DWC, coco+goteo…) lo configuras cuando toque en tu ruta.';
       }
     }
     if (!grid) return;
@@ -614,7 +644,7 @@
 
   function hcCaminoRequiereSalaPreGerm(cfg) {
     var cam = getCaminoCultivo(cfg);
-    return cam === 'semilla_propagador' || cam === 'semilla_hidro';
+    return cam === 'semilla_propagador' || cam === 'semilla_hidro' || cam === 'semilla_coco_drip';
   }
 
   /** Claves de equipamiento de sala (no propagador / germ / hidro). */
@@ -695,7 +725,9 @@
     if (!cfg || typeof cfg !== 'object') return cfg;
     var camActual =
       cfg.caminoCultivo || (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) || '';
-    if (camActual === 'semilla_propagador' || camActual === 'semilla_hidro') return cfg;
+    if (camActual === 'semilla_propagador' || camActual === 'semilla_hidro' || camActual === 'semilla_coco_drip') {
+      return cfg;
+    }
     if (typeof state === 'undefined' || !state || !state.torres) return cfg;
     var idx = state.torreActiva || 0;
     var slot = state.torres[idx];
@@ -704,7 +736,9 @@
       slot.config.caminoCultivo ||
       (slot.config.premiumSetup && slot.config.premiumSetup.caminoCultivo) ||
       '';
-    if (camSlot !== 'semilla_propagador' && camSlot !== 'semilla_hidro') return cfg;
+    if (camSlot !== 'semilla_propagador' && camSlot !== 'semilla_hidro' && camSlot !== 'semilla_coco_drip') {
+      return cfg;
+    }
     hcRestaurarCfgCaminoGerminacionTrasSetupSala(cfg, slot.config);
     return cfg;
   }
@@ -732,10 +766,16 @@
   /** Camino semilla durante el asistente (premium o setupData). */
   function hcResolverCaminoSetup() {
     var cam = getCaminoCultivo();
-    if (cam === 'semilla_propagador' || cam === 'semilla_hidro') return cam;
+    if (cam === 'semilla_propagador' || cam === 'semilla_hidro' || cam === 'semilla_coco_drip') return cam;
     if (typeof getCaminoElegidoEnAsistente === 'function') {
       var elegido = getCaminoElegidoEnAsistente();
-      if (elegido === 'semilla_propagador' || elegido === 'semilla_hidro') return elegido;
+      if (
+        elegido === 'semilla_propagador' ||
+        elegido === 'semilla_hidro' ||
+        elegido === 'semilla_coco_drip'
+      ) {
+        return elegido;
+      }
     }
     return cam;
   }
@@ -762,7 +802,7 @@
 
   function hcCaminoSemillaGermEnSetup() {
     var cam = hcResolverCaminoSetup();
-    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro') return false;
+    if (cam !== 'semilla_propagador' && cam !== 'semilla_hidro' && cam !== 'semilla_coco_drip') return false;
     if (hcSetupEnFaseSalaPreGerm()) return false;
     if (hcSetupEnFaseGerminacion()) return true;
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre) return true;
@@ -772,6 +812,13 @@
   /** Semilla en propagador: fase 1 del asistente = solo domo/mat, sin sala ni hidro. */
   function hcCaminoSemillaPropagadorSetupGerm() {
     if (getCaminoCultivo() !== 'semilla_propagador') return false;
+    return hcCaminoSemillaGermEnSetup();
+  }
+
+  /** Semilla en coco+goteo: asistente inicial (prep coco + sala + reservorio). */
+  function hcCaminoSemillaCocoDripSetupGerm() {
+    if (getCaminoCultivo() !== 'semilla_coco_drip') return false;
+    if (hcSetupEnFaseSalaPreGerm()) return false;
     return hcCaminoSemillaGermEnSetup();
   }
 
@@ -842,15 +889,25 @@
     return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
   }
 
-  /** Semilla en hidro: prep + sala + montaje + sistema + depósito antes de las 6 fases. */
+  /** Semilla en hidro o coco: prep + sala + montaje + sistema + depósito antes de las 6 fases. */
   function hcGerminacionBloqueadaPorPrepSistema(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
-    if (getCaminoCultivo(cfg) !== 'semilla_hidro') return '';
+    var camPrep = getCaminoCultivo(cfg);
+    if (camPrep !== 'semilla_hidro' && camPrep !== 'semilla_coco_drip') return '';
     if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
       return '';
     }
     if (!salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg)) return '';
-    if (!hidroInstalacionCerrada(cfg)) return 'hidro_config';
+    if (camPrep === 'semilla_coco_drip') {
+      if (
+        typeof hcCocoDripInstalacionCerrada === 'function' &&
+        !hcCocoDripInstalacionCerrada(cfg)
+      ) {
+        return 'hidro_config';
+      }
+    } else if (!hidroInstalacionCerrada(cfg)) {
+      return 'hidro_config';
+    }
     if (!depositoListo(cfg)) return 'deposito_llenado';
     return '';
   }
@@ -1630,7 +1687,7 @@
     }
     var cam =
       typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
-    if (cam === 'semilla_hidro') {
+    if (cam === 'semilla_hidro' || cam === 'semilla_coco_drip') {
       [
         typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
@@ -2385,6 +2442,7 @@
   global.hcCaminoSemillaGermEnSetup = hcCaminoSemillaGermEnSetup;
   global.hcCaminoSemillaPropagadorSetupGerm = hcCaminoSemillaPropagadorSetupGerm;
   global.hcCaminoSemillaHidroSetupGerm = hcCaminoSemillaHidroSetupGerm;
+  global.hcCaminoSemillaCocoDripSetupGerm = hcCaminoSemillaCocoDripSetupGerm;
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
   global.hcSiguientePasoSemillaPropagadorPostGerm = hcSiguientePasoSemillaPropagadorPostGerm;

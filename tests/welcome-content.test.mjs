@@ -21,9 +21,10 @@ test('bienvenida: mensaje app completa y pasos a rajatabla', () => {
   assert.match(html, /class="welcome-promise"/);
 });
 
-test('bienvenida: cuatro caminos y primer llenado EC', () => {
+test('bienvenida: cinco caminos y primer llenado EC', () => {
   const html = read('index.html');
-  assert.match(html, /Cuatro formas de empezar/);
+  assert.match(html, /Cinco formas de empezar/);
+  assert.match(html, /Coco \+ goteo/);
   assert.match(html, /Semilla en propagador/);
   assert.match(html, /Semilla en el hidro/);
   assert.match(html, /Esqueje \/ clon/);

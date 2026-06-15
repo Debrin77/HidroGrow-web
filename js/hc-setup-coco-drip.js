@@ -109,11 +109,14 @@
    * Basado en: Coco For Cannabis - 3-5 veces/día en floración, 1-2 en vegetativo
    */
   function calcularFrecuenciaRiegoRecomendada(fase) {
+    if (typeof getCocoDripFertigacionEventosDia === 'function') {
+      return getCocoDripFertigacionEventosDia(fase, fase === 'floracion' ? 12 : 18, 'auto');
+    }
     const frecuencias = {
-      vegetativo: 2, // 2 veces por día
-      prefloracion: 3, // 3 veces por día
-      floracion: 4, // 4 veces por día (rango 3-5)
-      esqueje: 1 // 1 vez por día
+      vegetativo: 4,
+      prefloracion: 4,
+      floracion: 5,
+      esqueje: 1,
     };
     return frecuencias[fase] || 2;
   }
@@ -347,6 +350,23 @@
       }
       
       recoEl.textContent = recomendaciones.length > 0 ? recomendaciones.join(' | ') : 'Configura los parámetros para ver recomendaciones';
+
+      var schedEl = document.getElementById('setupCocoDripScheduleBlock');
+      if (schedEl && typeof buildCocoDripProgramacion === 'function' && typeof renderCocoDripProgramacionHtml === 'function') {
+        var horasLuz = faseCultivo === 'floracion' ? 12 : 18;
+        var prog = buildCocoDripProgramacion({
+          fase: faseCultivo,
+          horasLuz: horasLuz,
+          eventos: frecuenciaRiego,
+          tamanoMaceta: tamanoMacetas,
+          duracionMin: duracionRecomendada,
+          modo: 'auto',
+        });
+        schedEl.innerHTML = renderCocoDripProgramacionHtml(prog);
+        if (typeof state !== 'undefined' && state && state.configTorre) {
+          state.configTorre.cocoDripProgramacion = prog;
+        }
+      }
       
       // Auto-ajustar bomba si está vacío
       const bombaInput = document.getElementById('setupCocoDripBombaGPH');

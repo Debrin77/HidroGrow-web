@@ -315,6 +315,21 @@
     const container = document.getElementById('dashContextualContainer');
     if (!container) return;
 
+    const config = state && state.configTorre ? state.configTorre : null;
+    if (typeof hcDashInicioGermFoco === 'function' && hcDashInicioGermFoco(config)) {
+      container.innerHTML = '';
+      container.classList.add('setup-hidden');
+      return;
+    }
+    if (
+      typeof hcMedirGermPreTrasladoActivo === 'function' &&
+      hcMedirGermPreTrasladoActivo(config)
+    ) {
+      container.innerHTML = '';
+      container.classList.add('setup-hidden');
+      return;
+    }
+
     // CRÍTICO: Sincronizar con instalación activa para evitar mezclar datos
     try {
       if (typeof sincronizarUltimaMedicionYRecargaDesdeTorreActiva === 'function') {
@@ -323,7 +338,6 @@
     } catch (_) {}
 
     const um = state && state.ultimaMedicion ? state.ultimaMedicion : null;
-    const config = state && state.configTorre ? state.configTorre : null;
 
     if (!um && !config) {
       container.innerHTML = '';
@@ -351,7 +365,7 @@
       const camino = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
       // Solo mostrar header para caminos de semilla/hidro que tienen fase de cultivo
       // NO mostrar para esqueje, madre, u otros caminos especializados
-      const caminosConFaseCultivo = ['semilla_hidro', 'semilla_propagador'];
+      const caminosConFaseCultivo = ['semilla_hidro', 'semilla_propagador', 'semilla_coco_drip'];
       mostrarHeader = caminosConFaseCultivo.includes(camino) && config && config.fechaInicio;
     } catch (_) {
       mostrarHeader = false;

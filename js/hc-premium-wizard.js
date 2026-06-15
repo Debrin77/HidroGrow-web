@@ -446,6 +446,15 @@
         'Orientado a <strong>germinación en cubo</strong> (microdomo o HR alta). Subirás intensidad en veg de sala.',
       resumenExtra: 'Cubo con domo mini: luz tenue, T° agua 20–24 °C, HR alta en el microclima.',
     },
+    semilla_coco_drip: {
+      faseSala: 'esqueje',
+      horasLuz: 18,
+      intensidadLuz: 'baja',
+      subtitle:
+        'Germinación en <strong>copa/cubo coco</strong> bufferizado (pH 5.5–5.8). Luego macetas + goteo DTW.',
+      resumenExtra:
+        'Plántula: EC baja (0.3–0.8 mS/cm). Tras trasplante: fertigar con nutrientes, runoff 10–20 %, pH 5.8–6.2.',
+    },
     esqueje_hidro: {
       faseSala: 'esqueje',
       horasLuz: 18,
