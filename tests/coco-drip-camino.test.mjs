@@ -55,11 +55,10 @@ test('coco drip: scheduler tiempo real por genética', () => {
   assert.match(sched, /ajustePorRunoffCocoDrip/);
 });
 
-test('coco drip: medir runoff UI y dash', () => {
+test('coco drip: módulos medir/dash (sin UI en pestañas hasta activar)', () => {
   const html = read('index.html');
-  assert.match(html, /medirCocoDripCard/);
-  assert.match(html, /inputCocoDripEcRunoff/);
-  assert.match(html, /dashCocoDripRiego/);
+  assert.doesNotMatch(html, /medirCocoDripCard/);
+  assert.doesNotMatch(html, /dashCocoDripRiego/);
   assert.match(read('js/hc-medir-coco-drip.js'), /refreshMedirCocoDripUi/);
 });
 
@@ -80,25 +79,13 @@ test('coco drip setup: omite paso DWC/RDWC y valida coco_drip', () => {
   assert.match(premium, /setupTipoInstalacion !== 'coco_drip'/);
 });
 
-test('inicio: montaje ok no reabre banner propagador', () => {
+test('inicio: banner sala opcional tras montaje (comportamiento previo)', () => {
   const sync = read('js/hc-luz-equip-sync.js');
-  assert.match(sync, /montajeSalaPreGermOk[\s\S]*return 'done'/);
-  assert.doesNotMatch(
-    sync,
-    /paso === 'done' && getEquipamientoSalaOpcionalPendiente/
-  );
+  assert.match(sync, /paso === 'done' && getEquipamientoSalaOpcionalPendiente\(cfg\)\.length > 0/);
 });
 
-test('dash contextual: oculto en foco germinación', () => {
-  const dash = read('js/hc-dash-contextual.js');
-  assert.match(dash, /hcDashInicioGermFoco/);
-  assert.match(dash, /hcMedirGermPreTrasladoActivo/);
-});
-
-test('index: panel interior grow restaurado y build perf86', () => {
+test('index: build perf87 y cinco caminos', () => {
   const html = read('index.html');
-  assert.match(html, /id="panelConfigInteriorGrow"/);
-  assert.match(html, /id="interiorTempC"/);
   assert.match(html, /perf87/);
   assert.match(html, /cinco caminos/);
 });

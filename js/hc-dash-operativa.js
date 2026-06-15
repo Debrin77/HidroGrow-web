@@ -390,34 +390,6 @@
       (ref.nutrienteNombre ? ' (' + ref.nutrienteNombre + ')' : '');
   }
 
-  function refreshDashCocoDripRiego() {
-    const sec = document.getElementById('dashCocoDripRiego');
-    const body = document.getElementById('dashCocoDripRiegoBody');
-    if (!sec || !body) return;
-    const cfg = state && state.configTorre ? state.configTorre : {};
-    if (
-      !operativaVisible() ||
-      typeof hcMedirEsCocoDripCamino !== 'function' ||
-      !hcMedirEsCocoDripCamino(cfg)
-    ) {
-      sec.classList.add('setup-hidden');
-      return;
-    }
-    sec.classList.remove('setup-hidden');
-    let prog = null;
-    try {
-      if (typeof refreshCocoDripProgramacionEnCfg === 'function') {
-        prog = refreshCocoDripProgramacionEnCfg(cfg);
-      } else if (typeof buildCocoDripProgramacionTiempoReal === 'function') {
-        prog = buildCocoDripProgramacionTiempoReal(cfg);
-      }
-    } catch (_) {}
-    body.innerHTML =
-      prog && typeof renderCocoDripDashHtml === 'function'
-        ? renderCocoDripDashHtml(prog)
-        : '<p>Configura plantas en la matriz para ver el programa de goteo.</p>';
-  }
-
   function refreshDashOperativaHub() {
     const hub = document.getElementById('dashOperativaHub');
     if (!hub) return;
@@ -429,7 +401,6 @@
     prefillQuickMedir();
     refreshEstadoVivo();
     refreshQueAnadir();
-    refreshDashCocoDripRiego();
     refreshResumenSemanal();
     refreshRecargaRef();
   }
