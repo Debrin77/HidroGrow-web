@@ -67,15 +67,25 @@
     return typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
   }
 
-  /** Propagador en germinación: domo (agua + HR + volumen), no depósito DWC hasta el traslado. */
+  /** Propagador o coco+goteo en germinación: domo (agua + HR), no depósito DTW hasta el traslado. */
   function hcMedirModoGerminacionPropagador(cfg) {
     cfg = cfg || cfgActiva();
-    if (typeof getCaminoCultivo === 'function' && getCaminoCultivo(cfg) !== 'semilla_propagador') {
+    var camMed =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (camMed !== 'semilla_propagador' && camMed !== 'semilla_coco_drip') {
       return false;
     }
     if (
+      camMed === 'semilla_propagador' &&
       typeof hcPropagadorTrasladoCompletado === 'function' &&
       hcPropagadorTrasladoCompletado(cfg)
+    ) {
+      return false;
+    }
+    if (
+      camMed === 'semilla_coco_drip' &&
+      typeof hcSemillaCocoDripTrasladoCompletado === 'function' &&
+      hcSemillaCocoDripTrasladoCompletado(cfg)
     ) {
       return false;
     }

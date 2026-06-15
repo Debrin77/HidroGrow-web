@@ -268,6 +268,33 @@
       return null;
     }
 
+    if (c === 'semilla_coco_drip') {
+      if (
+        typeof hcSemillaCocoDripTrasladoCompletado === 'function' &&
+        hcSemillaCocoDripTrasladoCompletado(cfg)
+      ) {
+        return null;
+      }
+      if (
+        typeof hidrogrowSemillaCocoDripEnFaseGermSinDtw === 'function' &&
+        hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg)
+      ) {
+        return 'propagador';
+      }
+      var gCoco = cfg.germinacionFlow;
+      if (
+        gCoco &&
+        !gCoco.trasladoAt &&
+        typeof germinacionConcluida === 'function' &&
+        germinacionConcluida(cfg) &&
+        typeof germChecklistCierreOk === 'function' &&
+        !germChecklistCierreOk(gCoco)
+      ) {
+        return 'propagador';
+      }
+      return null;
+    }
+
     if (c === 'esqueje_hidro') {
       if (!salaLista(cfg) || cfg.checklistInstalacionConfirmada !== true || !hidroCerrado(cfg)) {
         return null;

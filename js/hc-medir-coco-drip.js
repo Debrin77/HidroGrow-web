@@ -11,7 +11,7 @@
   function esCocoDripActivo(cfg) {
     cfg = cfg || cfgActiva();
     return (
-      typeof hcMedirEsCocoDripCamino === 'function' && hcMedirEsCocoDripCamino(cfg)
+      typeof hcCocoDripMedirRunoffVisible === 'function' && hcCocoDripMedirRunoffVisible(cfg)
     );
   }
 

@@ -124,6 +124,21 @@
     return !!(cfg.germinacionFlow && cfg.germinacionFlow.trasladoAt);
   }
 
+  /** Medir runoff DTW: solo tras checklist de traslado (no durante germinación en propagador). */
+  function hcCocoDripMedirRunoffVisible(cfg) {
+    cfg = cfg || cfgActiva();
+    if (cam(cfg) !== 'semilla_coco_drip') return false;
+    if (typeof germinacionConcluida === 'function' && !germinacionConcluida(cfg)) return false;
+    return hcSemillaCocoDripTrasladoCompletado(cfg);
+  }
+
+  /** Inicio · programa goteo: tras traslado y montaje DTW cerrado. */
+  function hcCocoDripDashGoteoVisible(cfg) {
+    cfg = cfg || cfgActiva();
+    if (!hcCocoDripMedirRunoffVisible(cfg)) return false;
+    return hcCocoDripInstalacionCerrada(cfg);
+  }
+
   function hcCaminoEsSemillaHidroOCoco(cfg) {
     var c = cam(cfg);
     return c === 'semilla_hidro' || c === 'semilla_coco_drip';
@@ -383,6 +398,8 @@
   global.hcCocoDripEquipSalaSinFertigacion = hcCocoDripEquipSalaSinFertigacion;
   global.hcSemillaCocoDripHubEsPrincipal = hcSemillaCocoDripHubEsPrincipal;
   global.hcSemillaCocoDripTrasladoCompletado = hcSemillaCocoDripTrasladoCompletado;
+  global.hcCocoDripMedirRunoffVisible = hcCocoDripMedirRunoffVisible;
+  global.hcCocoDripDashGoteoVisible = hcCocoDripDashGoteoVisible;
   global.hcCaminoEsSemillaHidroOCoco = hcCaminoEsSemillaHidroOCoco;
   global.getCocoDripEcRangoUs = getCocoDripEcRangoUs;
   global.getCocoDripFertigacionEventosDia = getCocoDripFertigacionEventosDia;

@@ -218,6 +218,9 @@
     if (typeof refreshMedirSalaAmbienteMedirUi === 'function') {
       refreshMedirSalaAmbienteMedirUi(cfg);
     }
+    if (typeof refreshMedirCocoDripUi === 'function') {
+      refreshMedirCocoDripUi();
+    }
     if (!opts.skipTabsUi && typeof refreshTabsOperativaUi === 'function') {
       refreshTabsOperativaUi();
     }

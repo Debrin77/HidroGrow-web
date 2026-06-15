@@ -511,6 +511,15 @@
           <button type="button" class="btn btn-secondary btn-sm dash-que-anadir-btn" onclick="goTab('mediciones')">Medición completa</button>
         </section>
 
+        <section id="dashCocoDripRiego" class="dash-coco-drip-riego setup-hidden" aria-label="Programa goteo coco">
+          <div class="dash-operativa-block-head">
+            <span class="dash-operativa-block-title">Goteo coco (tiempo real)</span>
+            <span class="dash-operativa-block-tag">DTW</span>
+          </div>
+          <div id="dashCocoDripRiegoBody" class="dash-coco-drip-riego-body"></div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="goTab('mediciones')">Medir runoff</button>
+        </section>
+
         <section id="dashQuickMedir" class="dash-quick-medir" aria-labelledby="dashQuickMedirTitle">
           <div class="dash-operativa-block-head">
             <span class="dash-operativa-block-title" id="dashQuickMedirTitle">Medición rápida</span>
@@ -912,6 +921,35 @@
       <div class="card medir-protocolo-card" id="medirProtocoloCard">
         <div class="card-title"><svg class="hc-ico hc-ico--title" aria-hidden="true" focusable="false"><use href="#hc-i-clipboard"/></svg> Protocolo de mediciones</div>
         <div id="medirProtocoloPanel" class="medir-protocolo-panel"></div>
+      </div>
+
+      <div class="card medir-coco-drip-card setup-hidden" id="medirCocoDripCard" role="region" aria-label="Runoff coco DTW">
+        <div class="card-title">🥥 Runoff coco (DTW)</div>
+        <p class="medir-ambiente-lead">Tras el traslado a la rejilla, mide <strong>EC reservorio</strong> y <strong>EC runoff</strong> de una maceta. El programa ajusta duración y frecuencia del siguiente pulso.</p>
+        <div id="medirCocoDripProgResumen" class="medir-coco-drip-prog-resumen setup-field-hint"></div>
+        <div class="medir-grid-2-gap-10 medir-mb-10">
+          <div class="medir-field-full">
+            <label for="inputCocoDripCeldaRunoff" class="medir-field-label">Maceta</label>
+            <select id="inputCocoDripCeldaRunoff" class="form-input medir-input-md" onchange="onMedirCocoDripInput()"></select>
+          </div>
+          <div>
+            <label for="inputCocoDripEcEntrada" class="medir-field-label">EC reservorio (µS/cm)</label>
+            <input type="number" id="inputCocoDripEcEntrada" class="form-input medir-input-md" inputmode="numeric" min="0" max="4000" placeholder="1400" oninput="onMedirCocoDripInput()">
+          </div>
+          <div>
+            <label for="inputCocoDripEcRunoff" class="medir-field-label">EC runoff (µS/cm)</label>
+            <input type="number" id="inputCocoDripEcRunoff" class="form-input medir-input-md" inputmode="numeric" min="0" max="5000" placeholder="1500" oninput="onMedirCocoDripInput()">
+          </div>
+          <div>
+            <label for="inputCocoDripPhRunoff" class="medir-field-label">pH runoff (opc.)</label>
+            <input type="number" id="inputCocoDripPhRunoff" class="form-input medir-input-md" inputmode="decimal" step="0.1" min="0" max="14" placeholder="6.0" oninput="onMedirCocoDripInput()">
+          </div>
+          <div>
+            <label for="inputCocoDripRunoffPct" class="medir-field-label">Runoff % (opc.)</label>
+            <input type="number" id="inputCocoDripRunoffPct" class="form-input medir-input-md" inputmode="numeric" min="0" max="50" step="1" placeholder="15" oninput="onMedirCocoDripInput()">
+          </div>
+        </div>
+        <p id="cocoDripRunoffAjustePreview" class="setup-field-hint medir-coco-drip-ajuste setup-hidden" role="status" aria-live="polite"></p>
       </div>
 
       <div class="card medir-iot-card" id="medirIotCard">

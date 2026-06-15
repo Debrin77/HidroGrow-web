@@ -55,11 +55,21 @@ test('coco drip: scheduler tiempo real por genética', () => {
   assert.match(sched, /ajustePorRunoffCocoDrip/);
 });
 
-test('coco drip: módulos medir/dash (sin UI en pestañas hasta activar)', () => {
+test('coco drip: módulos medir/dash con visibilidad condicionada', () => {
   const html = read('index.html');
-  assert.doesNotMatch(html, /medirCocoDripCard/);
-  assert.doesNotMatch(html, /dashCocoDripRiego/);
-  assert.match(read('js/hc-medir-coco-drip.js'), /refreshMedirCocoDripUi/);
+  assert.match(html, /medirCocoDripCard/);
+  assert.match(html, /dashCocoDripRiego/);
+  const coco = read('js/hc-camino-coco-drip.js');
+  assert.match(coco, /hcCocoDripMedirRunoffVisible/);
+  assert.match(coco, /hcCocoDripDashGoteoVisible/);
+  assert.match(read('js/hc-medir-coco-drip.js'), /hcCocoDripMedirRunoffVisible/);
+});
+
+test('coco drip post-germ: setup hidro abre geometría DTW', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /camH === 'semilla_coco_drip'[\s\S]*SETUP_PAGE_GEOMETRY/);
+  assert.match(cultivo, /function getSetupSkippedPagesForHidroFase/);
+  assert.match(cultivo, /skip\.add\(end\)/);
 });
 
 test('propagador: medidor en germ y catálogo Sala sin hidro', () => {
