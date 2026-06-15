@@ -59,14 +59,14 @@
       onboardingBadge: 'popular',
       onboardingBadgeLabel: 'Coco DTW',
       onboardingDesc:
-        'Coco coir bufferizado + fertigación por goteo (drain-to-waste). EC/pH como hidro, con runoff.',
+        'Sustrato de fibra de coco en maceta + goteo automatizado (Drain-to-Waste). No es DWC: las raíces viven en coco, no en solución.',
       onboardingHonest:
-        'CalMag y medidor de runoff; no alternes riegos solo con agua. Frecuencia alta en flor (3–5×/día).',
+        'Guía Saltón Verde: 10–20 % runoff siempre, fertigar cada riego, vaciar bandeja (sin reabsorción). Macetas 4–5 L, ~9 por m².',
       orden: [
-        'Asistente: <strong>sala + macetas coco</strong> y reservorio/goteo cuando toque.',
-        'Germinación en cubo/copa coco → checklist → montaje goteo → primer llenado reservorio.',
-        'Fertigar siempre con nutrientes; objetivo <strong>10–20 % runoff</strong> por evento.',
-        'Medir EC/pH entrada y runoff; pH <strong>5.8–6.2</strong>.',
+        'Asistente: <strong>sala + macetas coco</strong> (rejilla tipo RDWC) y goteo DTW.',
+        'Germinación en cubo/copa coco → maceta 0,3–1 L → traslado a 4–5 L con goteo.',
+        'Fertigar siempre con nutrientes; <strong>10–20 % drenaje</strong> y desechar runoff.',
+        'EC/pH por fase según guía Saltón Verde; medir entrada y runoff.',
       ],
     },
     esqueje_hidro: {

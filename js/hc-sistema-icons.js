@@ -25,6 +25,7 @@ function hcSistemaSvgSymbolId(tipo) {
   if (t === 'prep_hidro') return 'hc-i-droplet';
   if (t === 'madre') return 'hc-i-plant';
   if (t === 'dwc') return 'hc-i-sys-dwc';
+  if (t === 'coco_drip') return 'hc-i-sprout';
   return 'hc-i-sys-dwc';
 }
 
@@ -49,5 +50,6 @@ function emojiSistemaPorTipo(tipo) {
   if (t === 'germ_cubo' || t === 'enraizado') return '🌱';
   if (t === 'prep_hidro') return '💧';
   if (t === 'madre') return '👑';
+  if (t === 'coco_drip') return '🥥';
   return '🫧';
 }

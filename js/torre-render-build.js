@@ -2211,17 +2211,22 @@ function actualizarChromePanelEsquemaPorTipo() {
   const cfg = state.configTorre || {};
   const t = typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   const esRdwc = t === 'rdwc';
+  const esCoco = t === 'coco_drip';
   const intro = document.getElementById('torreEsquemaSub');
   if (intro) {
     intro.classList.remove('setup-hidden');
-    intro.innerHTML = esRdwc
+    intro.innerHTML = esCoco
+      ? '<strong>Coco + goteo (DTW)</strong>: rejilla de macetas elevadas, manifold de fertigación y bandeja de drenaje (vaciar runoff). No es DWC. EC/pH por fase Saltón Verde. <strong>Toca bolsa</strong> o <strong>Lista</strong>.'
+      : esRdwc
       ? '<strong>RDWC</strong>: <strong>recirculación continua</strong> (envío/retorno), aireación principal en los <strong>módulos/cubos</strong> y apoyo opcional en el depósito de control. Fase del cultivo <strong>encima</strong> de cada módulo. <strong>Toca módulo</strong> o <strong>Lista</strong>.'
       : '<strong>DWC</strong>: tapa arriba, depósito abajo. <strong>Toca maceta</strong> o usa <strong>Lista</strong>.';
   }
   const leg = document.getElementById('torreDiagramLegend');
   if (leg) {
     leg.classList.remove('setup-hidden');
-    leg.innerHTML = esRdwc
+    leg.innerHTML = esCoco
+      ? '<span class="k-dep">Reservorio</span><span class="k-sep">·</span><span class="k-niv">Filas</span><span class="k-sep">·</span><span class="k-ces">Bolsas</span><span class="k-hint"> · tocar</span>'
+      : esRdwc
       ? '<span class="k-dep">Depósito control</span><span class="k-sep">·</span><span class="k-niv">Filas</span><span class="k-sep">·</span><span class="k-ces">Módulos</span><span class="k-hint"> · tocar</span>'
       : '<span class="k-dep">Depósito</span><span class="k-sep">·</span><span class="k-niv">Filas</span><span class="k-sep">·</span><span class="k-ces">Macetas</span><span class="k-hint"> · tocar</span>';
   }
@@ -2229,7 +2234,10 @@ function actualizarChromePanelEsquemaPorTipo() {
   if (animLbl) animLbl.style.display = '';
   const listaVista = document.getElementById('torreListaVista');
   if (listaVista) {
-    listaVista.setAttribute('aria-label', esRdwc ? 'Lista de módulos por fila' : 'Lista de macetas por fila');
+    listaVista.setAttribute(
+      'aria-label',
+      esCoco ? 'Lista de bolsas por fila' : esRdwc ? 'Lista de módulos por fila' : 'Lista de macetas por fila'
+    );
   }
 }
 

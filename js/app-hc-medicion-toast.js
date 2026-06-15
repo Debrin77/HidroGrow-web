@@ -206,6 +206,20 @@ async function guardarMedicion(payloadOverride) {
     return;
   }
 
+  var cocoRunoffPayload =
+    typeof collectCocoDripRunoffPayload === 'function' ? collectCocoDripRunoffPayload() : null;
+  if (fromPayload && payloadOverride && payloadOverride.ecRunoff != null) {
+    cocoRunoffPayload = {
+      cocoDripCeldaKey: payloadOverride.cocoDripCeldaKey,
+      cocoDripCeldaN: payloadOverride.cocoDripCeldaN,
+      cocoDripCeldaC: payloadOverride.cocoDripCeldaC,
+      ecEntrada: payloadOverride.ecEntrada != null ? payloadOverride.ecEntrada : payloadOverride.ec,
+      ecRunoff: payloadOverride.ecRunoff,
+      phRunoff: payloadOverride.phRunoff,
+      runoffPct: payloadOverride.runoffPct,
+    };
+  }
+
   const now   = new Date();
   const dia   = String(now.getDate()).padStart(2,'0');
   const mes   = String(now.getMonth()+1).padStart(2,'0');
@@ -215,8 +229,9 @@ async function guardarMedicion(payloadOverride) {
 
   // ── 1. GUARDAR SIEMPRE EN LOCAL PRIMERO ───────────────────────────────────
   state.ultimaMedicion = { fecha, hora, ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload };
+  if (cocoRunoffPayload) Object.assign(state.ultimaMedicion, cocoRunoffPayload);
   if (!state.mediciones) state.mediciones = [];
-  state.mediciones.unshift({ fecha, hora, tipo:'medicion', ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload });
+  state.mediciones.unshift({ fecha, hora, tipo:'medicion', ec, ph, temp, vol, humSustrato: humS, notas, ...ambPayload, ...(cocoRunoffPayload || {}) });
   if (state.mediciones.length > 200)
     state.mediciones = state.mediciones.slice(0, 200);
 
@@ -236,6 +251,22 @@ async function guardarMedicion(payloadOverride) {
         if (typeof guardarEstadoTorreActual === 'function') guardarEstadoTorreActual();
       } catch (_) {}
     }
+  }
+
+  if (
+    state.configTorre &&
+    typeof hcMedirEsCocoDripCamino === 'function' &&
+    hcMedirEsCocoDripCamino(state.configTorre)
+  ) {
+    state.configTorre.ultimaMedicion = Object.assign({}, state.ultimaMedicion);
+    if (cocoRunoffPayload && typeof registrarCocoDripRunoffDesdeMedir === 'function') {
+      registrarCocoDripRunoffDesdeMedir(state.configTorre, cocoRunoffPayload);
+    }
+    try {
+      if (typeof refreshCocoDripProgramacionEnCfg === 'function') {
+        refreshCocoDripProgramacionEnCfg(state.configTorre);
+      }
+    } catch (_) {}
   }
 
   try {
@@ -381,6 +412,19 @@ async function guardarMedicion(payloadOverride) {
           if (id !== 'inputNotas') el.removeAttribute('aria-invalid');
         }
       });
+      [
+        'inputCocoDripEcRunoff',
+        'inputCocoDripPhRunoff',
+        'inputCocoDripRunoffPct',
+      ].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const previewRo = document.getElementById('cocoDripRunoffAjustePreview');
+      if (previewRo) {
+        previewRo.textContent = '';
+        previewRo.classList.add('setup-hidden');
+      }
       ['statusEC', 'statusPH', 'statusTemp', 'statusVol'].forEach(function (id) {
         const el = document.getElementById(id);
         if (el) {

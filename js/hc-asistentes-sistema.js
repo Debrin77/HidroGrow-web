@@ -1,8 +1,7 @@
 /**
  * Asistentes de Configuración Específicos por Sistema de Cultivo
- * Basado en investigación de: Coco For Cannabis, Royal Queen Seeds, Artisun Technology
- * Sistemas: Coco Coir + Drip, RDWC, DWC, Propagación
- * Versión: 1.0.0
+ * Coco + goteo: https://saltonverde.com/guia-de-cultivo-en-coco/ (Saltón Verde / Netadrip)
+ * Otros sistemas: documentación hidro estándar
  */
 
 // ════════════════════════════════════════════════
@@ -12,25 +11,30 @@
 const CONFIGURACION_SISTEMA = {
   coco_drip: {
     id: 'coco_drip',
-    nombre: 'Coco Coir + Riego por Goteo',
-    descripcion: 'Sistema de cultivo en coco coir con riego automatizado por goteo. Ideal para control preciso y alta producción.',
+    nombre: 'Coco + goteo (Drain-to-Waste)',
+    descripcion:
+      'Fibra de coco bufferizada en maceta + fertigación por goteo. No es DWC/RDWC. ' +
+      'Distribución en rejilla con bandeja de drenaje independiente (Saltón Verde).',
     medio: 'coco',
-    riego: 'goteo',
-    ec: { min: 1200, max: 2400 },
-    ph: { min: 5.5, max: 6.5 },
+    riego: 'goteo_dtw',
+    ec: { min: 800, max: 2200 },
+    ph: { min: 5.5, max: 6.4 },
     frecuenciaRiego: {
-      vegetativo: { min: 1, max: 3, unidad: 'veces/día' },
-      floracion: { min: 2, max: 4, unidad: 'veces/día' }
+      vegetativo: { min: 1, max: 4, unidad: 'veces/día' },
+      floracion: { min: 3, max: 8, unidad: 'veces/día' },
     },
-    dryback: { min: 20, max: 40, unidad: '%' },
+    dryback: { min: 30, max: 40, unidad: '%' },
+    runoff: { min: 10, max: 20, unidad: '%' },
     recomendaciones: [
-      'Usar coco coir de alta calidad pre-lavado',
-      'Añadir perlita 30% para mejor aireación',
-      'Calibrar pH del agua de riego a 5.8-6.0',
-      'EC gradual: empezar bajo en vegetativo, subir en floración',
-      'Monitorear dryback del 20-40% antes de cada riego',
-      'Usar Smart Pots o Air-Pots para mejor oxigenación radicular'
-    ]
+      'Fertigar en cada riego; no alternar con agua sola (salvo lavado final con solución muy diluida).',
+      'Siempre 10–20 % de drenaje; desechar runoff — vaciar bandeja, sin reabsorción.',
+      'Coco bufferizado pre-lavado; perlita ~30 % para aireación.',
+      'Macetas 4–5 L definitivas; ~9 plantas/m² en sala.',
+      'Smart Pots o macetas de tela para air pruning.',
+      'Medir EC de entrada y EC de runoff en cada revisión.',
+      'pH ~5,8–6,0 en crecimiento; 6,0–6,3 en floración (tabla EC por fase en setup).',
+      'Goteo automatizado (p. ej. Netadrip Hydra) para riegos múltiples uniformes.',
+    ],
   },
   rdwc: {
     id: 'rdwc',
@@ -119,7 +123,7 @@ const CHECKLIST_SISTEMA = {
     { id: 'smart_pots', texto: 'Smart Pots o Air-Pots de tamaño adecuado', completado: false, categoria: 'materiales' },
     { id: 'coco_coir', texto: 'Coco coir pre-lavado de alta calidad', completado: false, categoria: 'materiales' },
     { id: 'perlita', texto: 'Perlita (30% del volumen del sustrato)', completado: false, categoria: 'materiales' },
-    { id: 'drenaje', texto: 'Sistema de drenaje (bandejas o self-draining saucers)', completado: false, categoria: 'materiales' },
+    { id: 'drenaje', texto: 'Bandeja de drenaje con desagüe — vaciar runoff, sin reabsorción (SV)', completado: false, categoria: 'materiales' },
     { id: 'ph_ec', texto: 'Medidores de pH y EC', completado: false, categoria: 'materiales' },
     // Puesta en marcha
     { id: 'preparar_medio', texto: 'Preparar coco coir con 30% perlita, hidratar completamente', completado: false, categoria: 'puesta_marcha' },
@@ -127,17 +131,17 @@ const CHECKLIST_SISTEMA = {
     { id: 'instalar_bomba', texto: 'Instalar bomba en reservorio, conectar a timer', completado: false, categoria: 'puesta_marcha' },
     { id: 'instalar_lineas', texto: 'Conectar línea principal y distribuidores', completado: false, categoria: 'puesta_marcha' },
     { id: 'instalar_valvulas', texto: 'Instalar válvula master y válvulas por planta', completado: false, categoria: 'puesta_marcha' },
-    { id: 'posicionar_macetas', texto: 'Posicionar macetas en Smart Pots sobre elevadores', completado: false, categoria: 'puesta_marcha' },
+    { id: 'posicionar_macetas', texto: 'Rejilla tipo sala (p. ej. 3×3): macetas elevadas sobre bandeja', completado: false, categoria: 'puesta_marcha' },
     { id: 'conectar_emitters', texto: 'Conectar emitters a cada maceta', completado: false, categoria: 'puesta_marcha' },
     { id: 'calibrar_flujo', texto: 'Calibrar flujo de cada emitter con válvulas', completado: false, categoria: 'puesta_marcha' },
     { id: 'configurar_timer', texto: 'Configurar timer según frecuencia recomendada', completado: false, categoria: 'puesta_marcha' },
-    { id: 'verificar_drenaje', texto: 'Verificar drenaje adecuado (10-15% run-off)', completado: false, categoria: 'puesta_marcha' },
+    { id: 'verificar_drenaje', texto: 'Verificar runoff 10–20 % y vaciar bandeja tras cada riego', completado: false, categoria: 'puesta_marcha' },
     { id: 'ajustar_ph', texto: 'Ajustar pH del agua a 5.8-6.0', completado: false, categoria: 'puesta_marcha' },
     { id: 'preparar_solucion', texto: 'Preparar solución nutricional con EC inicial 0.8-1.0 mS/cm', completado: false, categoria: 'puesta_marcha' },
     { id: 'primer_riego', texto: 'Realizar primer riego con solución completa', completado: false, categoria: 'puesta_marcha' },
     // Seguimiento
-    { id: 'monitorear_dryback', texto: 'Monitorear dryback del 20-40% antes de cada riego', completado: false, categoria: 'seguimiento' },
-    { id: 'verificar_runoff', texto: 'Verificar run-off 10-15% del volumen aplicado', completado: false, categoria: 'seguimiento' },
+    { id: 'monitorear_dryback', texto: 'Dryback 30–40 % antes de regar (60–70 % humedad en coco)', completado: false, categoria: 'seguimiento' },
+    { id: 'verificar_runoff', texto: 'Runoff 10–20 %; medir EC entrada vs runoff', completado: false, categoria: 'seguimiento' },
     { id: 'medir_ec_ph', texto: 'Medir EC y pH del run-off regularmente', completado: false, categoria: 'seguimiento' },
     { id: 'ajustar_frecuencia', texto: 'Ajustar frecuencia según fase de cultivo', completado: false, categoria: 'seguimiento' },
     { id: 'ajustar_duracion', texto: 'Ajustar duración según tamaño de maceta y emitter flow', completado: false, categoria: 'seguimiento' },

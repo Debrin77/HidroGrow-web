@@ -11772,6 +11772,47 @@ body.hc-modo-propagador-sistema #torreSVGWrap.torre-svg-canvas--propagador {
 .propagador-svg-diagram .hc-prop-cell--on {
   cursor: default;
 }
+.coco-drip-svg-diagram {
+  display: block;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  height: auto;
+}
+.coco-drip-svg-diagram .coco-drip-bag.hc-cesta--interactive {
+  cursor: pointer;
+}
+.coco-drip-svg-diagram .coco-drip-bag.hc-cesta--interactive:hover rect:nth-of-type(3) {
+  stroke-width: 2.2;
+  filter: brightness(1.05);
+}
+.setup-coco-drip-celdas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin: 0.5rem 0;
+}
+.setup-coco-drip-celdas-table th,
+.setup-coco-drip-celdas-table td {
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  padding: 0.35rem 0.5rem;
+  text-align: left;
+}
+.medir-coco-drip-card .medir-coco-drip-ajuste {
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 6px;
+  background: var(--surface-muted, #f1f5f9);
+}
+.dash-coco-drip-riego-body ul.dash-coco-drip-celdas {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.88rem;
+}
+.dash-coco-drip-adj {
+  color: var(--text-muted, #64748b);
+  font-size: 0.82rem;
+}
 html.hc-theme-dark #torreSVGWrap.torre-svg-canvas--propagador {
   background: rgba(15, 23, 42, 0.65);
   border-color: rgba(52, 211, 153, 0.25);

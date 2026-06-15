@@ -13,6 +13,13 @@ function hcTorreRenderFingerprint(cfg) {
     cfg.numNiveles,
     cfg.numCestas,
     cfg.numPlantas,
+    cfg.cocoDripNumPlantas,
+    cfg.cocoDripTamanoMacetas,
+    cfg.cocoDripTipoDistribucion,
+    cfg.cocoDripSmartPots,
+    cfg.cocoDripFrecuenciaRiego,
+    cfg.cocoDripFaseCultivo,
+    Math.floor(Date.now() / 86400000),
     cfg.caminoCultivo,
     cfg.faseCultivoAmbiental,
     cfg.torreAnimSvg !== false ? 1 : 0,
@@ -48,13 +55,20 @@ function renderTorre() {
   const tipo =
     typeof tipoInstalacionNormalizado === 'function' ? tipoInstalacionNormalizado(cfg) : 'dwc';
   const esRdwc = tipo === 'rdwc';
-  const esDwc = tipo !== 'rdwc' && tipo !== '';
+  const esCocoDrip = tipo === 'coco_drip';
+  const esDwc = tipo !== 'rdwc' && tipo !== 'coco_drip' && tipo !== '';
 
   const chk = document.getElementById('torreChkAnimSuaves');
   if (chk) chk.checked = state.configTorre?.torreAnimSvg !== false;
 
   const wrap = document.getElementById('torreSVGWrap');
   if (!wrap) return;
+
+  if (esCocoDrip && typeof refreshCocoDripProgramacionEnCfg === 'function') {
+    try {
+      refreshCocoDripProgramacionEnCfg(cfg);
+    } catch (_) {}
+  }
 
   var fp = hcTorreRenderFingerprint(cfg);
   if (
@@ -136,11 +150,34 @@ function renderTorre() {
         console.error('bindRdwcScadaViewport', eRdwcVp);
       } catch (_) {}
     }
+  } else if (esCocoDrip) {
+    try {
+      wrap.innerHTML = typeof generarSVGCocoDrip === 'function' ? generarSVGCocoDrip() : '';
+    } catch (eCocoSvg) {
+      wrap.innerHTML =
+        '<p class="torre-svg-fallback" role="status">No se pudo cargar el esquema coco + goteo. Recarga la página (Ctrl+F5).</p>';
+      try {
+        console.error('generarSVGCocoDrip', eCocoSvg);
+      } catch (_) {}
+    }
+    if (!wrap.innerHTML || !String(wrap.innerHTML).trim()) {
+      wrap.innerHTML =
+        '<p class="torre-svg-fallback" role="status">Esquema coco vacío: configura macetas y plantas en Cultivo e instalación.</p>';
+    }
+    wrap.setAttribute(
+      'aria-label',
+      'Coco + goteo: bolsas rectangulares con perlita, reservorio, manifold y bandeja DTW. Toca una bolsa para la ficha o usa Lista.'
+    );
+    try {
+      bindTorreCestas(wrap);
+    } catch (eCocoBind) {}
   }
 
   try {
-    if (typeof disposeDwcScadaViewport === 'function') disposeDwcScadaViewport(wrap);
-    if (typeof bindDwcScadaCestaHover === 'function') bindDwcScadaCestaHover(wrap);
+    if (!esCocoDrip) {
+      if (typeof disposeDwcScadaViewport === 'function') disposeDwcScadaViewport(wrap);
+      if (typeof bindDwcScadaCestaHover === 'function') bindDwcScadaCestaHover(wrap);
+    }
   } catch (_) {}
 
   actualizarChromePanelEsquemaPorTipo();
@@ -429,7 +466,8 @@ function bindTorreCestas(wrap, opts = {}) {
       t = setTimeout(() => {
         const dat = (state.torre?.[n]?.[c]) || {};
         const _ti = tipoInstalacionNormalizado(state.configTorre);
-        const vacioLbl = _ti === 'dwc' ? 'Maceta vacía' : 'Módulo vacío';
+        const vacioLbl =
+          _ti === 'dwc' ? 'Maceta vacía' : _ti === 'coco_drip' ? 'Bolsa vacía' : 'Módulo vacío';
         const variedad = dat.variedad || vacioLbl;
         const dias = dat.fecha ? Math.max(0, Math.floor((Date.now() - new Date(dat.fecha)) / 86400000)) : null;
         const fotos = (dat.fotos || []).length;

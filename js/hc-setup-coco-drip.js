@@ -1,7 +1,6 @@
 /**
- * Configuración específica para Coco Coir + Drip Irrigation
- * Basado en investigación de: Coco For Cannabis
- * Versión: 1.0.0
+ * Configuración coco coir + goteo DTW.
+ * Referencia: https://saltonverde.com/guia-de-cultivo-en-coco/ (Saltón Verde / Netadrip).
  */
 
 (function () {
@@ -14,16 +13,16 @@
   function hcFreshCocoDripSetupBare() {
     return {
       tipoInstalacion: 'coco_drip',
-      cocoDripNumPlantas: 4,
-      cocoDripTamanoMacetas: 'medium', // small, medium, large
+      cocoDripNumPlantas: 9,
+      cocoDripTamanoMacetas: 'medium', // SV: 4–5 L (small=4, medium=5, large=11)
       cocoDripReservorioLitros: 50,
       cocoDripBombaGPH: 300,
-      cocoDripTipoDistribucion: 'emitters', // emitters, halos
-      cocoDripFrecuenciaRiego: 2, // veces por día
-      cocoDripDrybackObjetivo: 30, // porcentaje
+      cocoDripTipoDistribucion: 'emitters', // emitters, halos (Netadrip Q-RING / goteros)
+      cocoDripFrecuenciaRiego: 1,
+      cocoDripDrybackObjetivo: 35,
       cocoDripPerlitaPorcentaje: 30,
-      cocoDripSmartPots: false,
-      cocoDripSistemaDrenaje: 'manual', // manual, auto
+      cocoDripSmartPots: true,
+      cocoDripSistemaDrenaje: 'auto',
       cocoDripFaseCultivo: 'vegetativo', // vegetativo, floracion
       cocoDripUsarPlacaSolar: false,
       cocoDripPotenciaPlacaSolarW: 0,
@@ -72,11 +71,13 @@
    * Calcula el volumen de maceta en litros según tamaño
    */
   function obtenerVolumenMacetaLitros(tamano) {
-    const volumenes = {
-      small: 11.4, // 3 gal
-      medium: 18.9, // 5 gal
-      large: 56.8 // 15 gal
-    };
+    if (typeof COCO_SV_MACETA_LITROS !== 'undefined') {
+      return COCO_SV_MACETA_LITROS[tamano] || COCO_SV_MACETA_LITROS.medium || 5;
+    }
+    if (typeof getCocoDripVolumenEventoMl === 'function') {
+      return getCocoDripVolumenEventoMl(tamano) / 50;
+    }
+    var volumenes = { small: 4, medium: 5, large: 11 };
     return volumenes[tamano] || volumenes.medium;
   }
 
@@ -334,10 +335,24 @@
       
       // Smart Pots
       if (smartPots) {
-        recomendaciones.push('✅ Smart Pots seleccionados: mejor oxigenación radicular con air pruning');
+        recomendaciones.push('✅ Smart Pots / fabric pots: air pruning y oxigenación (recomendado SV)');
       } else {
-        recomendaciones.push('ℹ️ Considera Smart Pots para mejor oxigenación radicular');
+        recomendaciones.push('ℹ️ Saltón Verde: macetas de tela o perforadas mejoran oxigenación radicular');
       }
+
+      if (typeof COCO_SV_DENSIDAD !== 'undefined' && numPlantas > 0) {
+        if (numPlantas === COCO_SV_DENSIDAD.plantasPorM2) {
+          recomendaciones.push('✅ Densidad ' + numPlantas + ' plantas (guía SV: ~9/m² en macetas 4–5 L)');
+        } else if (numPlantas > COCO_SV_DENSIDAD.plantasPorM2) {
+          recomendaciones.push(
+            '⚠️ SV recomienda ~' +
+              COCO_SV_DENSIDAD.plantasPorM2 +
+              ' plantas/m²; más densidad = menos luz por planta'
+          );
+        }
+      }
+
+      recomendaciones.push('ℹ️ DTW: vaciar bandeja tras cada riego — no reabsorber runoff (Saltón Verde)');
       
       // Validación de macetas
       if (tamanoMacetas === 'small' && numPlantas > 8) {
@@ -352,19 +367,42 @@
       recoEl.textContent = recomendaciones.length > 0 ? recomendaciones.join(' | ') : 'Configura los parámetros para ver recomendaciones';
 
       var schedEl = document.getElementById('setupCocoDripScheduleBlock');
-      if (schedEl && typeof buildCocoDripProgramacion === 'function' && typeof renderCocoDripProgramacionHtml === 'function') {
-        var horasLuz = faseCultivo === 'floracion' ? 12 : 18;
-        var prog = buildCocoDripProgramacion({
-          fase: faseCultivo,
-          horasLuz: horasLuz,
-          eventos: frecuenciaRiego,
-          tamanoMaceta: tamanoMacetas,
-          duracionMin: duracionRecomendada,
-          modo: 'auto',
-        });
-        schedEl.innerHTML = renderCocoDripProgramacionHtml(prog);
-        if (typeof state !== 'undefined' && state && state.configTorre) {
-          state.configTorre.cocoDripProgramacion = prog;
+      if (schedEl && typeof state !== 'undefined' && state && state.configTorre) {
+        var cfgDraft = state.configTorre;
+        cfgDraft.cocoDripNumPlantas = numPlantas;
+        cfgDraft.cocoDripTamanoMacetas = tamanoMacetas;
+        cfgDraft.cocoDripFaseCultivo = faseCultivo;
+        cfgDraft.cocoDripEmitterFlowLph = emitterFlow;
+        cfgDraft.cocoDripDuracionRiegoMin = duracionRecomendada;
+        var prog =
+          typeof buildCocoDripProgramacionTiempoReal === 'function'
+            ? buildCocoDripProgramacionTiempoReal(cfgDraft)
+            : null;
+        if (!prog && typeof buildCocoDripProgramacion === 'function') {
+          var horasLuz = faseCultivo === 'floracion' ? 12 : 18;
+          prog = buildCocoDripProgramacion({
+            fase: faseCultivo,
+            horasLuz: horasLuz,
+            eventos: frecuenciaRiego,
+            tamanoMaceta: tamanoMacetas,
+            duracionMin: duracionRecomendada,
+            modo: 'auto',
+          });
+        }
+        if (prog) {
+          var renderFn =
+            typeof renderCocoDripProgramacionRealtimeHtml === 'function'
+              ? renderCocoDripProgramacionRealtimeHtml
+              : renderCocoDripProgramacionHtml;
+          var svTable =
+            typeof renderSaltonVerdeEcTableHtml === 'function'
+              ? renderSaltonVerdeEcTableHtml()
+              : '';
+          if (typeof renderFn === 'function') {
+            schedEl.innerHTML = svTable + renderFn(prog);
+          }
+          cfgDraft.cocoDripProgramacion = prog;
+          if (prog.eventosDia) cfgDraft.cocoDripFrecuenciaRiego = prog.eventosDia;
         }
       }
       

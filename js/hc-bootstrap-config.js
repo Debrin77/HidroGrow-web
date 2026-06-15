@@ -303,6 +303,7 @@ function hidrogrowTipoInstalacionRaw(cfg) {
     return 'dwc';
   }
   if (t === 'rdwc') return 'rdwc';
+  if (t === 'coco_drip') return 'coco_drip';
   return 'dwc';
 }
 

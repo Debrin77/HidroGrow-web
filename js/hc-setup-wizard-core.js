@@ -40,7 +40,9 @@ function tipoInstalacionNormalizado(cfg) {
     if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) return '';
     return 'dwc';
   }
-  return t === 'rdwc' ? 'rdwc' : 'dwc';
+  if (t === 'rdwc') return 'rdwc';
+  if (t === 'coco_drip') return 'coco_drip';
+  return 'dwc';
 }
 
 /** Siempre DIY/a medida (opción kit comercial retirada de la UI). */

@@ -14,7 +14,9 @@ window.HC_BOOT_CRITICAL_SCRIPTS = [
   "js/hc-setup-wizard-core.js",
   "js/hc-premium-nutriente-germ.js",
   "js/hc-camino-cultivo.js",
+  "js/hc-coco-saltonverde-ref.js",
   "js/hc-camino-coco-drip.js",
+  "js/hc-coco-drip-scheduler.js",
   "js/hc-ui-spanish-copy.js",
   "js/hc-camino-fase.js",
   "js/hc-camino-flujo-ui.js",
@@ -43,7 +45,8 @@ window.HC_BOOT_ESSENTIAL_SCRIPTS = [
   "js/hc-checklist-explicaciones.js",
   "js/hc-setup-mediciones-logic.js",
   "js/hc-setup-calc-core.js",
-  "js/hc-medir-germinacion.js"
+  "js/hc-medir-germinacion.js",
+  "js/hc-medir-coco-drip.js"
 ];
 window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/calendario-logic.js",
@@ -69,6 +72,8 @@ window.HC_BOOT_DEFERRED_SCRIPTS = [
   "js/torre-render-build.js",
   "js/torre-render-main.js",
   "js/diagrams/propagador/propagador-diagram.js",
+  "js/diagrams/coco-drip/coco-drip-scada-tokens.js",
+  "js/diagrams/coco-drip/coco-drip-diagram.js",
   "js/hc-ui-icons.js",
   "js/hc-icon-registry.js",
   "js/hc-sistema-icons.js",

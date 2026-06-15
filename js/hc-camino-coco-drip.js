@@ -1,7 +1,8 @@
 /**
- * HidroGrow — camino semilla_coco_drip (coco coir + goteo DTW).
- * Programación HFF: Coco For Cannabis, THC Farmer, Hydrobuilder, PhenoDB crop steering,
- * Grow Diaries (halo/drip), Bluelab IntelliDose (solo día / intervalos).
+ * HidroGrow — camino semilla_coco_drip (fibra de coco + goteo DTW).
+ * Referencia principal EC/pH/drenaje: Saltón Verde (Netadrip).
+ * https://saltonverde.com/guia-de-cultivo-en-coco/
+ * Programación HFF complementaria: CFC, Hydrobuilder, PhenoDB.
  */
 (function (global) {
   'use strict';
@@ -16,7 +17,10 @@
     flush: { min: 0, max: 400, label: 'Flush' },
   };
 
-  var COCO_DRIP_RUNOFF_PCT = { min: 10, max: 20 };
+  var COCO_DRIP_RUNOFF_PCT =
+    typeof COCO_SV_RUNOFF_PCT !== 'undefined'
+      ? COCO_SV_RUNOFF_PCT
+      : { min: 10, max: 20 };
 
   /**
    * Eventos/día orientativos (auto goteo, maceta 3–5 gal).
@@ -38,7 +42,27 @@
     plántula: { min: 8, max: 12 },
   };
 
-  var MACETA_LITROS = { small: 11.4, medium: 18.9, large: 56.8 };
+  function macetaLitros(tamano) {
+    var sv =
+      typeof COCO_SV_MACETA_LITROS !== 'undefined' ? COCO_SV_MACETA_LITROS : null;
+    if (sv) {
+      return sv[tamano] || sv.medium || 5;
+    }
+    var leg = { small: 11.4, medium: 18.9, large: 56.8 };
+    return leg[tamano] || leg.medium;
+  }
+
+  var MACETA_LITROS = {
+    get small() {
+      return macetaLitros('small');
+    },
+    get medium() {
+      return macetaLitros('medium');
+    },
+    get large() {
+      return macetaLitros('large');
+    },
+  };
 
   function cfgActiva() {
     return (typeof state !== 'undefined' && state && state.configTorre) || {};
@@ -57,10 +81,13 @@
       .toLowerCase()
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
-    if (f === 'plantula' || f === 'germinacion' || f === 'esqueje') return 'plántula';
+    if (f === 'plantula' || f === 'germinacion') return 'plántula';
+    if (f === 'esqueje') return 'esqueje';
     if (f === 'prefloracion') return 'prefloracion';
-    if (f === 'floracion') return 'floracion';
     if (f === 'flush') return 'flush';
+    if (f.indexOf('flor') >= 0) return 'floracion';
+    if (f.indexOf('veg') >= 0) return 'vegetativo';
+    if (f === 'floracion') return 'floracion';
     return 'vegetativo';
   }
 
@@ -103,6 +130,19 @@
   }
 
   function mapFaseCocoDripEc(fase) {
+    if (typeof getEcPhSaltonVerde === 'function') {
+      var sv = getEcPhSaltonVerde(fase);
+      if (sv && sv.ec) {
+        return {
+          min: sv.ec.min,
+          max: sv.ec.max,
+          label: sv.label,
+          phMin: sv.ph.min,
+          phMax: sv.ph.max,
+          fuente: 'saltonverde',
+        };
+      }
+    }
     var f = normFase(fase);
     if (f === 'plántula') return COCO_DRIP_EC_US.plántula;
     if (f === 'prefloracion') return COCO_DRIP_EC_US.prefloracion;
@@ -136,7 +176,7 @@
 
   /** Volumen por evento ≈ 5 % del volumen de maceta (CFC / THC Farmer). */
   function getCocoDripVolumenEventoMl(tamanoMaceta) {
-    var volL = MACETA_LITROS[tamanoMaceta] || MACETA_LITROS.medium;
+    var volL = macetaLitros(tamanoMaceta);
     return Math.round(volL * 1000 * 0.05);
   }
 
@@ -159,11 +199,18 @@
     var lightsOnHour = Number(opts.lightsOnHour);
     if (!Number.isFinite(lightsOnHour)) lightsOnHour = 6;
     var modo = opts.modo === 'hand' ? 'hand' : 'auto';
-    var eventos =
-      Number(opts.eventos) ||
-      getCocoDripFertigacionEventosDia(fase, horasLuz, modo);
+    var eventosRaw = Number(opts.eventos);
+    var eventos = Number.isFinite(eventosRaw) && eventosRaw > 0
+      ? eventosRaw
+      : getCocoDripFertigacionEventosDia(fase, horasLuz, modo);
     var meta = COCO_DRIP_EVENTS_BY_FASE[fase] || COCO_DRIP_EVENTS_BY_FASE.vegetativo;
-    eventos = Math.max(meta.min, Math.min(meta.max, Math.round(eventos)));
+    var eMin = Number(opts.eventosMin);
+    var eMax = Number(opts.eventosMax);
+    if (Number.isFinite(eMin) && Number.isFinite(eMax)) {
+      eventos = Math.max(eMin, Math.min(eMax, Math.round(eventos)));
+    } else {
+      eventos = Math.max(meta.min, Math.min(meta.max, Math.round(eventos)));
+    }
     if (modo === 'hand') eventos = Math.min(2, eventos);
 
     var bufferMin = 120;
@@ -204,8 +251,14 @@
       };
     });
 
-    var dryback = COCO_DRIP_DRYBACK_NIGHT_PCT[fase] || COCO_DRIP_DRYBACK_NIGHT_PCT.vegetativo;
-    var volMl = getCocoDripVolumenEventoMl(opts.tamanoMaceta || 'medium');
+    var dryback =
+      opts.drybackNochePct ||
+      COCO_DRIP_DRYBACK_NIGHT_PCT[fase] ||
+      COCO_DRIP_DRYBACK_NIGHT_PCT.vegetativo;
+    var volMl =
+      Number(opts.volumenMlPorMaceta) > 0
+        ? Math.round(Number(opts.volumenMlPorMaceta))
+        : getCocoDripVolumenEventoMl(opts.tamanoMaceta || 'medium');
     var runoffMl = getCocoDripRunoffMl(volMl);
 
     return {
@@ -228,7 +281,8 @@
       ],
       eventos: eventosList,
       fuentes:
-        'Coco For Cannabis · THC Farmer · Hydrobuilder · PhenoDB crop steering · Grow Diaries (halo/goteo)',
+        (typeof COCO_SV_FUENTE_LABEL !== 'undefined' ? COCO_SV_FUENTE_LABEL : 'Saltón Verde') +
+        ' · programación HFF · runoff 10–20 % DTW',
     };
   }
 
@@ -279,19 +333,25 @@
   function getCocoDripResumenRiego(cfg) {
     cfg = cfg || cfgActiva();
     if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cfg);
-    var fase = cfg.cocoDripFaseCultivo || 'vegetativo';
-    var horas =
-      Number(cfg.horasLuz) ||
-      (cfg.premiumSetup && Number(cfg.premiumSetup.horasLuz)) ||
-      (fase === 'floracion' ? 12 : 18);
-    var prog = buildCocoDripProgramacion({
-      fase: fase,
-      horasLuz: horas,
-      eventos: cfg.cocoDripFrecuenciaRiego,
-      tamanoMaceta: cfg.cocoDripTamanoMacetas,
-      duracionMin: cfg.cocoDripDuracionRiegoMin,
-      modo: 'auto',
-    });
+    var prog =
+      typeof buildCocoDripProgramacionTiempoReal === 'function'
+        ? buildCocoDripProgramacionTiempoReal(cfg)
+        : null;
+    if (!prog) {
+      var fase = cfg.cocoDripFaseCultivo || 'vegetativo';
+      var horas =
+        Number(cfg.horasLuz) ||
+        (cfg.premiumSetup && Number(cfg.premiumSetup.horasLuz)) ||
+        (String(fase).indexOf('flor') >= 0 ? 12 : 18);
+      prog = buildCocoDripProgramacion({
+        fase: fase,
+        horasLuz: horas,
+        eventos: cfg.cocoDripFrecuenciaRiego,
+        tamanoMaceta: cfg.cocoDripTamanoMacetas,
+        duracionMin: cfg.cocoDripDuracionRiegoMin,
+        modo: 'auto',
+      });
+    }
     var horasTxt = prog.eventos.map(function (e) {
       return e.label;
     }).join(', ');
