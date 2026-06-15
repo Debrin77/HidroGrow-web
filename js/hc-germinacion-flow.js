@@ -130,12 +130,67 @@
     { id: 'temp', label: 'T° agua 20–24 °C estable antes de sumergir más la raíz' },
   ];
 
+  var CHECKLIST_TRASLADO_COCO_DTW = [
+    { id: 'ec', label: 'Reservorio EC enraizado 400–600 µS (SV: 0,4–0,6 mS/cm)' },
+    { id: 'ph', label: 'pH fertigación 5,5–5,8 comprobado' },
+    { id: 'sustrato', label: 'Maceta 4–5 L coco bufferizado + perlita ~30 % en la rejilla DTW' },
+    { id: 'riego', label: 'Primer riego hasta 10–20 % runoff (empapar todo el sustrato — SV)' },
+    { id: 'drenaje', label: 'Bandeja con desagüe; vaciar runoff sin reabsorción' },
+    { id: 'goteo', label: 'Goteros conectados y calibrados (manual OK en maceta 0,3–1 L)' },
+    { id: 'luz', label: 'Fotoperiodo vegetativo 18/6 en sala' },
+    { id: 'celda', label: 'Bolsa/maceta asignada en la matriz DTW (Cultivo)' },
+  ];
+
+  /** Pasos del rail cuando coco+goteo germina en propagador (Saltón Verde). */
+  var PASO_COCO_PROP = {
+    semilla: {
+      titulo: 'Semilla a oscuras',
+      desc: 'Domo cerrado 22–26 °C. Germina la semilla antes del coco (domo/bandeja; SV asume semilla germinada).',
+    },
+    taproot: {
+      titulo: 'Radícula visible',
+      desc: 'Plántala en copa o cubo de coco bufferizado (pH 5,5–5,8).',
+    },
+    rockwool: {
+      titulo: 'Copa/cubo coco',
+      desc: 'Sustrato coco humedecido en el propagador; no lana de roca en este camino.',
+      icon: '🥥',
+    },
+    domo: {
+      titulo: 'Domo + luz suave',
+      desc: 'HR 70–80 %, EC baja 0,3–0,8 mS/cm. Ventila 2×/día; riego manual si hace falta.',
+    },
+    netpot: {
+      titulo: 'Maceta pequeña 0,3–1 L',
+      desc: 'Trasplante cuando la raíz colonice el cubo. Riego a mano hasta runoff; aún fuera de la rejilla DTW.',
+      icon: '🪴',
+    },
+    dwc: {
+      titulo: 'Traslado al goteo DTW',
+      desc: 'Maceta 4–5 L en rejilla sala, goteo automatizado. Vaciar bandeja tras cada riego (Saltón Verde).',
+      icon: '✅',
+    },
+  };
+
+  function getChecklistTrasladoItems(cfg) {
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_coco_drip') return CHECKLIST_TRASLADO_COCO_DTW;
+    return CHECKLIST_TRASLADO;
+  }
+
+  function caminoGerminaEnPropagador(cfg) {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg || cfgActiva()) : '';
+    return cam === 'semilla_propagador' || cam === 'semilla_coco_drip';
+  }
+
   function getCaminoGermModoFijo(cfg) {
     cfg = cfg || cfgActiva();
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     if (cam === 'semilla_hidro') return 'hidro_directo';
     if (cam === 'semilla_propagador') return 'propagador';
+    if (cam === 'semilla_coco_drip') return 'propagador';
     return null;
   }
 
@@ -159,39 +214,62 @@
     cfg = cfg || cfgActiva();
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var hidroDirecto = cam === 'semilla_hidro';
+    var cocoDtw = cam === 'semilla_coco_drip';
     var tipo =
       typeof etiquetaTipoInstalacion === 'function'
         ? etiquetaTipoInstalacion(cfg)
         : cfg.tipoInstalacion === 'rdwc'
           ? 'RDWC'
-          : 'DWC';
+          : cfg.tipoInstalacion === 'coco_drip'
+            ? 'Coco + goteo DTW'
+            : 'DWC';
     return {
       hidroDirecto: hidroDirecto,
-      checklistNombre: hidroDirecto ? 'Checklist operativa' : 'Checklist traslado',
+      checklistNombre: hidroDirecto
+        ? 'Checklist operativa'
+        : cocoDtw
+          ? 'Checklist traslado DTW'
+          : 'Checklist traslado',
       checklistTitulo: hidroDirecto
         ? 'Checklist · operativa en el cubo'
-        : 'Checklist · paso al ' + tipo,
+        : cocoDtw
+          ? 'Checklist · paso al goteo DTW'
+          : 'Checklist · paso al ' + tipo,
       checklistNota: hidroDirecto
         ? 'Germinación en el mismo ' +
           tipo +
           '. Confirma EC, pH, aireación y luz antes de registrar la plántula en la matriz.'
-        : 'Germinación completada. Confirma que el sistema hidropónico está listo para recibir la plántula (mejora o primer llenado del depósito).',
+        : cocoDtw
+          ? 'Germinación en propagador completada. Confirma maceta 4–5 L, reservorio, runoff 10–20 % y bandeja antes de la rejilla DTW.'
+          : 'Germinación completada. Confirma que el sistema hidropónico está listo para recibir la plántula (mejora o primer llenado del depósito).',
       btnContinuar: hidroDirecto ? 'Registrar en la matriz' : 'Continuar al traslado',
-      trasladoTitulo: hidroDirecto ? 'Registrar plántula en la matriz' : 'Trasladar al ' + tipo,
+      trasladoTitulo: hidroDirecto
+        ? 'Registrar plántula en la matriz'
+        : cocoDtw
+          ? 'Trasladar a maceta DTW'
+          : 'Trasladar al ' + tipo,
       trasladoNota: hidroDirecto
         ? 'La plántula ya germinó en el net pot de este ' +
           tipo +
           '. Asigna variedad y cesta en el esquema (no es un traslado desde otro propagador).'
-        : 'La plántula entra en la matriz con origen germinación propia y fecha de hoy. EC inicial baja (400–600 µS) hasta que enraice en el depósito.',
+        : cocoDtw
+          ? 'Plántula desde propagador → maceta 4–5 L en rejilla. Primer riego con nutrientes hasta runoff; vaciar bandeja (Saltón Verde).'
+          : 'La plántula entra en la matriz con origen germinación propia y fecha de hoy. EC inicial baja (400–600 µS) hasta que enraice en el depósito.',
       bloqueoBanner: hidroDirecto
         ? 'Checklist operativa pendiente: confirma que el cubo está listo para pasar a cultivo en matriz.'
-        : 'Checklist de traslado pendiente antes del asistente DWC/RDWC y el depósito.',
+        : cocoDtw
+          ? 'Checklist de traslado DTW pendiente: configura coco+goteo y reservorio antes de la matriz.'
+          : 'Checklist de traslado pendiente antes del asistente DWC/RDWC y el depósito.',
       bloqueoToast: hidroDirecto
         ? 'Marca el checklist operativa antes de registrar la planta en la matriz.'
-        : 'Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.',
+        : cocoDtw
+          ? 'Marca el checklist de traslado DTW antes de registrar en la rejilla.'
+          : 'Marca el checklist de traslado antes del depósito y del asistente DWC/RDWC.',
       fase6Toast: hidroDirecto
         ? 'Marca el checklist operativa antes de cerrar la fase 6.'
-        : 'Marca el checklist de traslado antes de cerrar la fase 6.',
+        : cocoDtw
+          ? 'Marca el checklist de traslado DTW antes de cerrar la germinación.'
+          : 'Marca el checklist de traslado antes de cerrar la fase 6.',
     };
   }
 
@@ -238,8 +316,20 @@
     dwc: 'Cerrar germinación · lista para matriz',
   };
 
-  function pasoDisplay(paso, modo) {
+  function pasoDisplay(paso, modo, cfg) {
     if (!paso) return paso;
+    cfg = cfg || cfgActiva();
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (cam === 'semilla_coco_drip' && modo === 'propagador' && PASO_COCO_PROP[paso.id]) {
+      var pc = PASO_COCO_PROP[paso.id];
+      return {
+        id: paso.id,
+        paso: paso.paso,
+        titulo: pc.titulo,
+        desc: pc.desc,
+        icon: pc.icon || paso.icon,
+      };
+    }
     if (modo === 'hidro_directo' && PASO_TITULO_HIDRO[paso.id]) {
       return {
         id: paso.id,
@@ -768,7 +858,7 @@
     var g = ensureGerminacionFlow(cfg);
     if (g.concluidaAt) return true;
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
-    if (cam === 'semilla_propagador') {
+    if (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') {
       if (!getFechaInicioGerminacion(g, cfg)) return false;
       var dias = diasDesdeInicio(g, cfg) + 1;
       return dias >= diasObjetivoConclusionGerm(cfg, g);
@@ -787,7 +877,9 @@
       showToast(
         camConc === 'semilla_hidro'
           ? '✓ Germinación marcada como concluida · sigue el checklist operativa en Inicio'
-          : '✓ Germinación marcada como concluida · configura el sistema hidropónico para el traslado',
+          : camConc === 'semilla_coco_drip'
+            ? '✓ Germinación en propagador concluida · configura coco+goteo DTW y el traslado a maceta'
+            : '✓ Germinación marcada como concluida · configura el sistema hidropónico para el traslado',
         false,
         { durationMs: 6200, prominent: true }
       );
@@ -1240,7 +1332,15 @@
   function hcGerminacionAbrirChecklistTraslado() {
     var cfg = cfgActiva();
     var g = ensureGerminacionFlow(cfg);
-    if (!fasesCompletadas(g)) {
+    var camCl = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+    if (caminoGerminaEnPropagador(cfg)) {
+      if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) {
+        if (typeof showToast === 'function') {
+          showToast('Concluye la germinación en propagador antes del traslado DTW', true);
+        }
+        return;
+      }
+    } else if (!fasesCompletadas(g)) {
       if (typeof showToast === 'function') showToast('Completa las 6 fases antes del checklist al hidro', true);
       return;
     }
@@ -1258,7 +1358,7 @@
     o.className = 'checklist-pregunta-overlay';
     o.setAttribute('role', 'dialog');
     o.setAttribute('aria-modal', 'true');
-    var items = CHECKLIST_TRASLADO.map(function (it) {
+    var items = getChecklistTrasladoItems(cfg).map(function (it) {
       var on = !!g.checklistTraslado[it.id];
       return (
         '<label class="hc-germ-check-item">' +
@@ -2044,16 +2144,18 @@
     var idx = indiceFaseActual(g);
     var camGermHub = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
     var pct =
-      camGermHub === 'semilla_propagador' ? pctProgresoPropagadorDias(cfg, g) : pctProgreso(g);
+      camGermHub === 'semilla_propagador' || camGermHub === 'semilla_coco_drip'
+        ? pctProgresoPropagadorDias(cfg, g)
+        : pctProgreso(g);
     var pctRingLbl =
-      camGermHub === 'semilla_propagador'
-        ? (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
-            ? 'OK'
-            : 'd' + (diasDesdeInicio(g, cfg) + 1))
+      camGermHub === 'semilla_propagador' || camGermHub === 'semilla_coco_drip'
+        ? typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)
+          ? 'OK'
+          : 'd' + (diasDesdeInicio(g, cfg) + 1)
         : pct + '%';
     var modo = getModoGerminacion(cfg, g);
     var pasoRaw = idx < PASOS.length ? PASOS[idx] : PASOS[PASOS.length - 1];
-    var paso = pasoDisplay(pasoRaw, modo);
+    var paso = pasoDisplay(pasoRaw, modo, cfg);
     var allDone = fasesCompletadas(g);
     var tipo =
       typeof etiquetaTipoInstalacion === 'function'
@@ -2120,20 +2222,24 @@
       camGerm === 'semilla_propagador' &&
       typeof propagadorMontajeCompleto === 'function' &&
       propagadorMontajeCompleto(cfg);
-    var compactPropag = camGerm === 'semilla_propagador';
-    var compactHidro =
-      (camGerm === 'semilla_hidro' &&
-        typeof hcSemillaHidroHubEsPrincipal === 'function' &&
-        hcSemillaHidroHubEsPrincipal(cfg)) ||
-      (camGerm === 'semilla_coco_drip' &&
-        typeof hcSemillaCocoDripHubEsPrincipal === 'function' &&
-        hcSemillaCocoDripHubEsPrincipal(cfg));
+    var compactPropag = camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip';
     var propInline =
       camGerm === 'semilla_propagador' &&
       !montajeOk &&
       typeof renderPropagadorMontajeInlineHtml === 'function'
         ? renderPropagadorMontajeInlineHtml()
-        : '';
+        : camGerm === 'semilla_coco_drip' &&
+            typeof hcGerminacionActiva === 'function' &&
+            hcGerminacionActiva(cfg) &&
+            typeof propagadorMontajeCompleto === 'function' &&
+            !propagadorMontajeCompleto(cfg) &&
+            typeof renderPropagadorMontajeInlineHtml === 'function'
+          ? renderPropagadorMontajeInlineHtml()
+          : '';
+    var compactHidro =
+      camGerm === 'semilla_hidro' &&
+      typeof hcSemillaHidroHubEsPrincipal === 'function' &&
+      hcSemillaHidroHubEsPrincipal(cfg);
     var bloqueoSala = typeof hcGerminacionBloqueada === 'function' ? hcGerminacionBloqueada(cfg) : '';
     var salaCtaHtml = '';
     if (bloqueoSala === 'hidro_config') {
@@ -2142,25 +2248,34 @@
         '<strong>' +
         (camGerm === 'semilla_propagador'
           ? 'Germinación concluida · Sistema hidropónico'
-          : 'Semilla en hidro · sistema') +
+          : camGerm === 'semilla_coco_drip'
+            ? 'Germinación concluida · Coco + goteo DTW'
+            : 'Semilla en hidro · sistema') +
         '</strong> ' +
         (camGerm === 'semilla_propagador'
           ? 'Configura DWC/RDWC para el traslado desde el propagador. La pestaña Sistema mostrará el esquema hidro al guardar.'
-          : 'Cierra DWC/RDWC en el asistente antes de las 6 fases.') +
+          : camGerm === 'semilla_coco_drip'
+            ? 'Configura la rejilla de macetas, reservorio y goteo DTW antes del traslado desde el propagador.'
+            : 'Cierra DWC/RDWC en el asistente antes de las 6 fases.') +
         ' ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupFaseHidro===\'function\'&&abrirSetupFaseHidro()">Configurar sistema</button></div>';
     } else if (bloqueoSala === 'deposito_llenado') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
-        '<strong>Primer llenado.</strong> Completa el checklist del depósito para iniciar la germinación en el cubo. ' +
+        '<strong>Primer llenado.</strong> ' +
+        (camGerm === 'semilla_coco_drip'
+          ? 'Prepara el reservorio de fertigación DTW (EC enraizado) antes del traslado a maceta. '
+          : 'Completa el checklist del depósito para iniciar la germinación en el cubo. ') +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirChecklistPrimerLlenado===\'function\'?hcAbrirChecklistPrimerLlenado({}):(typeof abrirChecklist===\'function\'&&abrirChecklist(false))">Checklist depósito</button></div>';
     } else if (bloqueoSala === 'sala_config') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>' +
-        (camGerm === 'semilla_propagador' ? 'Sala (opcional).' : 'Sala.') +
+        (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip' ? 'Sala (opcional).' : 'Sala.') +
         '</strong> Configura carpa, LED y extractor' +
-        (camGerm === 'semilla_propagador' ? ' si quieres antes del traslado' : ' antes de las 6 fases') +
+        (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip'
+          ? ' mientras germina en propagador'
+          : ' antes de las 6 fases') +
         '. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'?abrirConfiguradorEquipamientoSalaPropagador():(typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala())">Configurar sala</button></div>';
     } else if (bloqueoSala === 'sala_montaje') {
@@ -2258,21 +2373,27 @@
       esc(pctRingLbl) +
       '</span></div>' +
       '<div class="hc-germ-hub-titles">' +
-      '<h2 class="hc-germ-hub-title">Germinación · camino al cubo</h2>' +
+      '<h2 class="hc-germ-hub-title">' +
+      (camGerm === 'semilla_coco_drip'
+        ? 'Germinación · propagador → DTW'
+        : 'Germinación · camino al cubo') +
+      '</h2>' +
       '<p class="hc-germ-hub-sub">' +
       (camGerm === 'semilla_propagador'
         ? '<strong>App de propagador:</strong> ~2–3 mm agua+nutrientes en bandeja (no seca) · registro diario (T°, HR) → hidro → traslado'
-        : 'Prep + sala + ' +
-          esc(tipo || 'DWC/RDWC') +
-          ' + depósito → <strong>6 fases</strong> en el cubo → ' +
-          (camGerm === 'semilla_hidro'
-            ? 'checklist operativa y registro en matriz'
-            : 'traslado al ' + esc(tipo || 'DWC/RDWC'))) +
+        : camGerm === 'semilla_coco_drip'
+          ? '<strong>Propagador primero:</strong> domo y bandeja → maceta 0,3–1 L coco → <strong>traslado a rejilla goteo DTW</strong> (4–5 L, Saltón Verde)'
+          : 'Prep + sala + ' +
+            esc(tipo || 'DWC/RDWC') +
+            ' + depósito → <strong>6 fases</strong> en el cubo → ' +
+            (camGerm === 'semilla_hidro'
+              ? 'checklist operativa y registro en matriz'
+              : 'traslado al ' + esc(tipo || 'DWC/RDWC'))) +
       '</p>' +
-      (cultNombre || (camGerm === 'semilla_propagador' && nSemHub >= 1)
+      (cultNombre || ((camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip') && nSemHub >= 1)
         ? '<p class="hc-germ-hub-var">' +
           (cultNombre ? 'Variedad: ' + esc(cultNombre) : '') +
-          (camGerm === 'semilla_propagador' && nSemHub >= 1
+          ((camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip') && nSemHub >= 1
             ? (cultNombre ? ' · ' : '') + '<strong>' + nSemHub + ' semilla' + (nSemHub === 1 ? '' : 's') + '</strong>'
             : '') +
           '</p>'
@@ -2302,11 +2423,13 @@
         ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
           '<strong>1 semilla por cubo</strong> de sustrato en cada cesta. N semillas del plan = N net pots.</p>'
         : '') +
-      (camGerm === 'semilla_propagador'
+      (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip'
         ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
           '<strong>Guía de 6 fases (opcional):</strong> el cierre de germinación va por <strong>días según genética</strong> (~' +
           diasObjetivoConclusionGerm(cfg, g) +
-          ') o el botón «Dar por concluida» más abajo. No hace falta marcar todas las fases del rail.</p>'
+          ') o el botón «Dar por concluida» más abajo. No germines en la rejilla DTW: primero propagador' +
+          (camGerm === 'semilla_coco_drip' ? ', luego maceta pequeña y traslado a goteo.' : '.') +
+          '</p>'
         : camGerm === 'semilla_hidro'
           ? '<p class="hc-germ-prop-hint setup-field-hint" role="note">' +
             '<strong>6 fases obligatorias:</strong> marca cada paso del rail antes del checklist operativa y el registro en matriz. El anillo muestra el % de fases completadas.</p>'

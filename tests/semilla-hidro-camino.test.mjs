@@ -60,7 +60,7 @@ test('checklist 3: sistema prep hidro e ITEMS_PREP_HIDRO', () => {
 
 test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
   const germ = read('js/hc-germinacion-flow.js');
-  assert.match(germ, /camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro'/);
+  assert.match(germ, /camGerm !== 'semilla_propagador' && camGerm !== 'semilla_hidro' && camGerm !== 'semilla_coco_drip'/);
   assert.match(germ, /6 fases obligatorias/);
   assert.match(germ, /function renderGermHubSemillaHidroCompactHtml/);
   assert.match(germ, /compactHidro/);
@@ -68,7 +68,7 @@ test('checklist 4-5: hub 6 fases obligatorias y anillo por fases', () => {
   assert.match(germ, /Semilla a oscuras/);
   assert.match(
     germ,
-    /camGermHub === 'semilla_propagador' \? pctProgresoPropagadorDias\(cfg, g\) : pctProgreso\(g\)/
+    /camGermHub === 'semilla_propagador' \|\| camGermHub === 'semilla_coco_drip'/
   );
   assert.match(germ, /function germinacionConcluida/);
   assert.match(germ, /return fasesCompletadas\(g\)/);
@@ -297,7 +297,7 @@ test('semilla_hidro: cierre sin segundo asistente DWC ni copy de traslado', () =
   const life = read('js/hc-instalacion-lifecycle.js');
   assert.match(cultivo, /if \(cam === 'semilla_hidro'\) return false;/);
   assert.match(germ, /function labelsCierreGerminacion/);
-  assert.match(germ, /checklistNombre: hidroDirecto \? 'Checklist operativa'/);
+  assert.match(germ, /checklistNombre: hidroDirecto/);
   assert.match(germ, /Registrar en la matriz/);
   assert.doesNotMatch(
     germ,

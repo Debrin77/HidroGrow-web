@@ -451,9 +451,9 @@
       horasLuz: 18,
       intensidadLuz: 'baja',
       subtitle:
-        'Germinación en <strong>copa/cubo coco</strong> bufferizado (pH 5.5–5.8). Luego macetas + goteo DTW.',
+        'Germinación en <strong>propagador</strong> (domo). Luego maceta 0,3–1 L → traslado a rejilla goteo DTW 4–5 L.',
       resumenExtra:
-        'Plántula: EC baja (0.3–0.8 mS/cm). Tras trasplante: fertigar con nutrientes, runoff 10–20 %, pH 5.8–6.2.',
+        'Plántula en propagador: EC baja. Tras traslado: fertigar con nutrientes, runoff 10–20 %, vaciar bandeja (SV).',
     },
     esqueje_hidro: {
       faseSala: 'esqueje',

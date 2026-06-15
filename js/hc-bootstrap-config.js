@@ -294,9 +294,31 @@ function hidrogrowPropagadorEnFaseGermSinHidro(cfg) {
   return true;
 }
 
+/** Coco+goteo: germina en propagador; rejilla DTW solo tras concluir germinación. */
+function hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg) {
+  if (!cfg || typeof cfg !== 'object') return false;
+  const cam =
+    (typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '') ||
+    cfg.caminoCultivo ||
+    (cfg.premiumSetup && cfg.premiumSetup.caminoCultivo) ||
+    '';
+  if (cam !== 'semilla_coco_drip') return false;
+  if (cfg.germinacionFlow && cfg.germinacionFlow.trasladoAt) return false;
+  if (typeof germinacionConcluida === 'function' && !germinacionConcluida(cfg)) {
+    return true;
+  }
+  if (cfg.hcSetupFase !== 'hidro') return true;
+  const t = String(cfg.tipoInstalacion || '').toLowerCase();
+  if (t === 'coco_drip' && cfg.checklistInstalacionConfirmada === true) {
+    return false;
+  }
+  return true;
+}
+
 /** Normaliza tipo: DWC/RDWC; en propagador sin hidro el tipo queda vacío (no forzar DWC). */
 function hidrogrowTipoInstalacionRaw(cfg) {
   if (hidrogrowPropagadorEnFaseGermSinHidro(cfg)) return '';
+  if (typeof hidrogrowSemillaCocoDripEnFaseGermSinDtw === 'function' && hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg)) return '';
   const t = cfg && cfg.tipoInstalacion;
   if (!t || String(t).trim() === '') {
     if (typeof getSistemaFaseCamino === 'function' && getSistemaFaseCamino(cfg)) return '';
@@ -343,6 +365,18 @@ function hidrogrowMigrarConfigInstalacion(cfg) {
   if (!cfg || typeof cfg !== 'object') return false;
   let changed = false;
   if (hidrogrowPropagadorEnFaseGermSinHidro(cfg)) {
+    if (cfg.tipoInstalacion !== '') {
+      cfg.tipoInstalacion = '';
+      changed = true;
+    }
+    if (cfg.checklistInstalacionConfirmada === true && cfg.hcSetupFase !== 'hidro') {
+      cfg.checklistInstalacionConfirmada = false;
+      changed = true;
+    }
+    if (hidrogrowPurgarClavesLegacyInstalacion(cfg)) changed = true;
+    return changed;
+  }
+  if (typeof hidrogrowSemillaCocoDripEnFaseGermSinDtw === 'function' && hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg)) {
     if (cfg.tipoInstalacion !== '') {
       cfg.tipoInstalacion = '';
       changed = true;

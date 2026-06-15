@@ -50,7 +50,20 @@ test('saltonverde: tabla HTML y diagrama 3×3', () => {
   assert.match(html, /Floración media/);
   assert.match(html, /saltonverde\.com/);
 
+  const fases = w.renderCocoDripFasesInicialesHtml();
+  assert.match(fases, /propagador/i);
+  assert.match(fases, /0,3–1 L/);
+
   const diag = readFileSync(join(root, 'js/diagrams/coco-drip/coco-drip-diagram.js'), 'utf8');
   assert.match(diag, /nPlant === 9/);
   assert.match(diag, /no reabsorber runoff/i);
+});
+
+test('coco drip: germinación en propagador (modo fijo)', () => {
+  const germ = readFileSync(join(root, 'js/hc-germinacion-flow.js'), 'utf8');
+  assert.match(germ, /semilla_coco_drip.*propagador/s);
+  assert.match(germ, /CHECKLIST_TRASLADO_COCO_DTW/);
+  const camino = readFileSync(join(root, 'js/hc-camino-cultivo.js'), 'utf8');
+  assert.match(camino, /hcSiguientePasoSemillaCocoDripPostGerm/);
+  assert.match(readFileSync(join(root, 'js/hc-bootstrap-config.js'), 'utf8'), /hidrogrowSemillaCocoDripEnFaseGermSinDtw/);
 });

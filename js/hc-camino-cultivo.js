@@ -59,14 +59,14 @@
       onboardingBadge: 'popular',
       onboardingBadgeLabel: 'Coco DTW',
       onboardingDesc:
-        'Sustrato de fibra de coco en maceta + goteo automatizado (Drain-to-Waste). No es DWC: las raíces viven en coco, no en solución.',
+        'Germinación en propagador → maceta coco 4–5 L con goteo DTW. No es DWC: sustrato inerte + fertigación, no raíces en solución.',
       onboardingHonest:
-        'Guía Saltón Verde: 10–20 % runoff siempre, fertigar cada riego, vaciar bandeja (sin reabsorción). Macetas 4–5 L, ~9 por m².',
+        'Primero propagador (domo). Luego maceta pequeña y traslado a rejilla goteo. SV: 10–20 % runoff, vaciar bandeja.',
       orden: [
-        'Asistente: <strong>sala + macetas coco</strong> (rejilla tipo RDWC) y goteo DTW.',
-        'Germinación en cubo/copa coco → maceta 0,3–1 L → traslado a 4–5 L con goteo.',
-        'Fertigar siempre con nutrientes; <strong>10–20 % drenaje</strong> y desechar runoff.',
-        'EC/pH por fase según guía Saltón Verde; medir entrada y runoff.',
+        'Propagador: germina la semilla en domo/bandeja (no en la rejilla DTW).',
+        'Trasplante: maceta 0,3–1 L coco → maceta 4–5 L en rejilla goteo DTW.',
+        'Configura sala + reservorio + goteo tras germinar (o mientras germina).',
+        'Fertigar siempre; EC/pH por fase Saltón Verde; medir entrada y runoff.',
       ],
     },
     esqueje_hidro: {
@@ -644,7 +644,7 @@
 
   function hcCaminoRequiereSalaPreGerm(cfg) {
     var cam = getCaminoCultivo(cfg);
-    return cam === 'semilla_propagador' || cam === 'semilla_hidro' || cam === 'semilla_coco_drip';
+    return cam === 'semilla_hidro';
   }
 
   /** Claves de equipamiento de sala (no propagador / germ / hidro). */
@@ -882,30 +882,34 @@
     if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
       return false;
     }
-    if (cam === 'semilla_propagador') {
+    if (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') {
       if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) return false;
       return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
     }
     return !salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg);
   }
 
-  /** Semilla en hidro o coco: prep + sala + montaje + sistema + depósito antes de las 6 fases. */
+  /** Semilla hidro: prep antes de 6 fases. Coco DTW: sistema solo tras germinación en propagador. */
   function hcGerminacionBloqueadaPorPrepSistema(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var camPrep = getCaminoCultivo(cfg);
-    if (camPrep !== 'semilla_hidro' && camPrep !== 'semilla_coco_drip') return '';
-    if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
-      return '';
-    }
-    if (!salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg)) return '';
     if (camPrep === 'semilla_coco_drip') {
+      if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) return '';
       if (
         typeof hcCocoDripInstalacionCerrada === 'function' &&
         !hcCocoDripInstalacionCerrada(cfg)
       ) {
         return 'hidro_config';
       }
-    } else if (!hidroInstalacionCerrada(cfg)) {
+      if (!depositoListo(cfg)) return 'deposito_llenado';
+      return '';
+    }
+    if (camPrep !== 'semilla_hidro') return '';
+    if (typeof propagadorMontajeCompleto === 'function' && !propagadorMontajeCompleto(cfg)) {
+      return '';
+    }
+    if (!salaPreGermConfigurada(cfg) || !montajeSalaPreGermOk(cfg)) return '';
+    if (!hidroInstalacionCerrada(cfg)) {
       return 'hidro_config';
     }
     if (!depositoListo(cfg)) return 'deposito_llenado';
@@ -966,10 +970,20 @@
             break;
           }
         }
-        if (camGerm === 'semilla_propagador') {
+        if (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip') {
           if (
             typeof germinacionConcluida === 'function' &&
             germinacionConcluida(cfg) &&
+            camGerm === 'semilla_coco_drip' &&
+            typeof hcCocoDripInstalacionCerrada === 'function' &&
+            !hcCocoDripInstalacionCerrada(cfg)
+          ) {
+            return 'hidro_config';
+          }
+          if (
+            typeof germinacionConcluida === 'function' &&
+            germinacionConcluida(cfg) &&
+            camGerm === 'semilla_propagador' &&
             typeof hidroInstalacionCerrada === 'function' &&
             !hidroInstalacionCerrada(cfg)
           ) {
@@ -998,7 +1012,7 @@
   function germinacionListaParaConfigHidro(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
     var cam = getCaminoCultivo(cfg);
-    if (cam === 'semilla_propagador') {
+    if (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') {
       return typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
     }
     var g = cfg.germinacionFlow;
@@ -1019,6 +1033,12 @@
     if (cam === 'semilla_propagador') {
       if (!germinacionListaParaConfigHidro(cfg)) return false;
       return !hidroInstalacionCerrada(cfg);
+    }
+    if (cam === 'semilla_coco_drip') {
+      if (!germinacionListaParaConfigHidro(cfg)) return false;
+      return (
+        typeof hcCocoDripInstalacionCerrada === 'function' && !hcCocoDripInstalacionCerrada(cfg)
+      );
     }
     /** Hidro directo: DWC/RDWC solo en el asistente inicial (antes de las 6 fases). */
     if (cam === 'semilla_hidro') return false;
@@ -1922,6 +1942,68 @@
           },
         ]);
       }
+    } else if (cam === 'semilla_coco_drip') {
+      var germConclCoco =
+        typeof germinacionConcluida === 'function' && germinacionConcluida(cfg);
+      var gCoco = cfg.germinacionFlow || {};
+      pasos = [
+        {
+          id: 'prep',
+          label: 'Montaje propagador',
+          done: typeof propagadorMontajeCompleto === 'function' && propagadorMontajeCompleto(cfg),
+          action: 'irPropagadorMontaje',
+        },
+        {
+          id: 'sala_cfg',
+          label: 'Sala configurada',
+          done: salaPreGermConfigurada(cfg),
+          action: 'abrirSetupFaseSala',
+          hint: !salaPreGermConfigurada(cfg) ? 'Opcional mientras germina' : '',
+        },
+        {
+          id: 'sala_mont',
+          label: 'Montaje de sala',
+          done: montajeSalaPreGermOk(cfg),
+          action: 'irMontaje',
+          hint: salaPreGermConfigurada(cfg) && !montajeSalaPreGermOk(cfg) ? 'Puesta en marcha' : '',
+        },
+        {
+          id: 'germ',
+          label: 'Germinación propagador',
+          done: germConclCoco,
+          action: 'irGerminacion',
+        },
+      ];
+      if (germConclCoco) {
+        pasos = pasos.concat([
+          {
+            id: 'coco_dtw',
+            label: 'Coco + goteo DTW',
+            done:
+              typeof hcCocoDripInstalacionCerrada === 'function' &&
+              hcCocoDripInstalacionCerrada(cfg),
+            action: 'abrirSetupFaseHidro',
+          },
+          {
+            id: 'traslado',
+            label: 'Traslado a maceta DTW',
+            done: checklistCierreGermOk(gCoco),
+            action: 'irGerminacion',
+          },
+          {
+            id: 'cultivo',
+            label: 'Plantas en rejilla',
+            done: cultivoMatrizListo(),
+            action: 'irCultivo',
+          },
+          {
+            id: 'deposito',
+            label: 'Reservorio listo',
+            done: depositoListo(cfg),
+            action: 'abrirChecklist',
+          },
+        ]);
+      }
     } else if (cam === 'esqueje_hidro') {
       pasos = [
         {
@@ -2328,6 +2410,57 @@
   }
 
   /**
+   * Tras germinación en propagador: coco+goteo DTW → traslado → matriz → reservorio.
+   */
+  function hcSiguientePasoSemillaCocoDripPostGerm(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    if (getCaminoCultivo(cfg) !== 'semilla_coco_drip') return null;
+    if (typeof germinacionConcluida !== 'function' || !germinacionConcluida(cfg)) return null;
+    if (
+      typeof hidrogrowSemillaCocoDripEnFaseGermSinDtw === 'function' &&
+      hidrogrowSemillaCocoDripEnFaseGermSinDtw(cfg)
+    ) {
+      return null;
+    }
+    if (
+      typeof hcCaminoRequiereConfigHidroPendiente === 'function' &&
+      hcCaminoRequiereConfigHidroPendiente(cfg)
+    ) {
+      return {
+        label: 'Configurar coco+goteo DTW',
+        action: 'abrirSetupFaseHidro',
+        etapa: 'hidro_config',
+      };
+    }
+    var g = cfg.germinacionFlow;
+    if (typeof checklistCierreGermOk === 'function' && g && !checklistCierreGermOk(g)) {
+      return {
+        label: 'Checklist traslado DTW',
+        action: 'irGerminacion',
+        etapa: 'traslado',
+      };
+    }
+    if (
+      typeof hcSemillaCocoDripTrasladoCompletado === 'function' &&
+      !hcSemillaCocoDripTrasladoCompletado(cfg)
+    ) {
+      return {
+        label: 'Registrar plántula en rejilla',
+        action: 'irGerminacion',
+        etapa: 'traslado',
+      };
+    }
+    if (typeof depositoListo === 'function' && !depositoListo(cfg)) {
+      return {
+        label: 'Preparar reservorio DTW',
+        action: 'abrirChecklist',
+        etapa: 'deposito_llenado',
+      };
+    }
+    return null;
+  }
+
+  /**
    * Cadena prep → sala → montaje → DWC/RDWC → depósito en semilla_hidro (sin exigir germinación activa).
    */
   function hcSiguientePasoSemillaHidro(cfg) {
@@ -2446,6 +2579,7 @@
   global.hcSetupWizardEnBloquePremiumGerm = hcSetupWizardEnBloquePremiumGerm;
   global.hcSiguientePasoSemillaHidro = hcSiguientePasoSemillaHidro;
   global.hcSiguientePasoSemillaPropagadorPostGerm = hcSiguientePasoSemillaPropagadorPostGerm;
+  global.hcSiguientePasoSemillaCocoDripPostGerm = hcSiguientePasoSemillaCocoDripPostGerm;
   global.hcSiguientePasoEsquejeHidro = hcSiguientePasoEsquejeHidro;
   global.hcSiguientePasoMadreHidro = hcSiguientePasoMadreHidro;
   global.asistenteEnBloquePremiumGerm = asistenteEnBloquePremiumGerm;

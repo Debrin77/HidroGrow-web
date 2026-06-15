@@ -161,6 +161,20 @@
     };
   }
 
+  function renderCocoDripFasesInicialesHtml() {
+    return (
+      '<div class="coco-sv-fases-iniciales-wrap setup-mb-12">' +
+      '<p class="setup-dwc-help"><strong>Ruta Saltón Verde:</strong> la guía asume <strong>semilla ya germinada</strong>. En HidroGrow: <strong>propagador</strong> (domo) → copa/cubo coco → maceta <strong>0,3–1 L</strong> → traslado a <strong>4–5 L</strong> en rejilla goteo DTW. No germines en la bandeja de drenaje definitiva.</p>' +
+      '<ol class="setup-checklist-preview coco-sv-fases-ol">' +
+      '<li>Propagador: germinar semilla (domo, 22–26 °C, HR alta)</li>' +
+      '<li>Plantar en copa/cubo coco bufferizado; primer riego hasta runoff</li>' +
+      '<li>Maceta pequeña 0,3–1 L; riego manual mientras coloniza raíces</li>' +
+      '<li>Trasplante a maceta 4–5 L en rejilla DTW + goteo automatizado</li>' +
+      '<li>Vaciar bandeja tras cada riego — sin reabsorber runoff</li>' +
+      '</ol></div>'
+    );
+  }
+
   function renderSaltonVerdeEcTableHtml() {
     var rows = Object.keys(FASES_EC_PH)
       .map(function (key) {
@@ -206,5 +220,6 @@
   global.getEcPhSaltonVerde = getEcPhSaltonVerde;
   global.ecRangoUsDesdeFaseSv = ecRangoUsDesdeFaseSv;
   global.ecFlushDesdeEcFlorMs = ecFlushDesdeEcFlorMs;
+  global.renderCocoDripFasesInicialesHtml = renderCocoDripFasesInicialesHtml;
   global.renderSaltonVerdeEcTableHtml = renderSaltonVerdeEcTableHtml;
 })(typeof window !== 'undefined' ? window : globalThis);

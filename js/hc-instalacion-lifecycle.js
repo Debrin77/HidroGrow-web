@@ -278,6 +278,13 @@
         var pasoPropPost = hcSiguientePasoSemillaPropagadorPostGerm(cfg);
         if (pasoPropPost) return pasoPropPost;
       }
+      if (
+        cam === 'semilla_coco_drip' &&
+        typeof hcSiguientePasoSemillaCocoDripPostGerm === 'function'
+      ) {
+        var pasoCocoPost = hcSiguientePasoSemillaCocoDripPostGerm(cfg);
+        if (pasoCocoPost) return pasoCocoPost;
+      }
       if (cam === 'esqueje_hidro' && typeof hcSiguientePasoEsquejeHidro === 'function') {
         var pasoEsqueje = hcSiguientePasoEsquejeHidro(cfg);
         if (pasoEsqueje) return pasoEsqueje;

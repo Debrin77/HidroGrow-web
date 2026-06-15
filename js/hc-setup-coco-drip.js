@@ -263,6 +263,11 @@
       if (potenciaPlacaSolarWInput && cfg.cocoDripPotenciaPlacaSolarW) potenciaPlacaSolarWInput.value = cfg.cocoDripPotenciaPlacaSolarW;
       if (duracionRiegoMinInput && cfg.cocoDripDuracionRiegoMin) duracionRiegoMinInput.value = cfg.cocoDripDuracionRiegoMin;
       if (emitterFlowLphInput && cfg.cocoDripEmitterFlowLph) emitterFlowLphInput.value = cfg.cocoDripEmitterFlowLph;
+
+      var fasesEl = document.getElementById('setupCocoDripFasesInicialesBlock');
+      if (fasesEl && typeof renderCocoDripFasesInicialesHtml === 'function') {
+        fasesEl.innerHTML = renderCocoDripFasesInicialesHtml();
+      }
     } catch (e) {
       console.error('[hc-setup-coco-drip] Error en syncSetupCocoDripFieldsDesdeConfig:', e);
     }
