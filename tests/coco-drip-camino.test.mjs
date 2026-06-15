@@ -68,6 +68,16 @@ test('propagador: medidor en germ y catálogo Sala sin hidro', () => {
   assert.match(cat, /keys: \['propagador', 'higrometro_germ', 'mat_termica_germ', 'medidor'\]/);
   assert.match(cat, /semilla_propagador[\s\S]*hcPropagadorEquipSalaSinHidro/);
   assert.match(cat, /function equipCatalogGroupsCocoDrip/);
+  assert.match(cat, /keys: \['propagador', 'higrometro_germ'\]/);
+  assert.match(cat, /equipFilterKeysAlreadyListed/);
+});
+
+test('coco drip setup: omite paso DWC/RDWC y valida coco_drip', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /cam === 'semilla_coco_drip'[\s\S]*SETUP_PAGE_PREMIUM_END/);
+  const premium = read('js/hc-premium-wizard.js');
+  assert.match(premium, /camEnd === 'semilla_coco_drip'/);
+  assert.match(premium, /setupTipoInstalacion !== 'coco_drip'/);
 });
 
 test('inicio: montaje ok no reabre banner propagador', () => {

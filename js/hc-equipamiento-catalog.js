@@ -585,6 +585,27 @@ const EQUIP_PREP_HIDRO_GROUP = {
 /** Claves ya cubiertas en Prep cubo (no repetir en «Circuito hidro» del mismo paso). */
 var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire', 'calentador'];
 
+/** Claves del bloque reservorio/goteo coco: no repetir en sala del mismo paso. */
+var EQUIP_COCO_FERT_KEYS_DEDUP = ['medidor', 'temporizador', 'bomba_aire', 'calentador', 'bomba_recirc'];
+
+function equipFilterKeysAlreadyListed(groups, priorKeys) {
+  var used = {};
+  (priorKeys || []).forEach(function (k) {
+    used[k] = true;
+  });
+  return (groups || [])
+    .map(function (g) {
+      var keys = (g.keys || []).filter(function (k) {
+        return !used[k];
+      });
+      if (!keys.length) return null;
+      return Object.assign({}, g, { keys: keys });
+    })
+    .filter(function (g) {
+      return g && g.keys && g.keys.length;
+    });
+}
+
 /**
  * Semilla en hidro: el paso de equipamiento (premium 3) va antes de elegir DWC/RDWC (premium END).
  * Hasta entonces no debe pedirse bomba de recirculación (solo RDWC).
@@ -668,26 +689,29 @@ function hcEquipCatalogModoSalaPropagador() {
 }
 
 function equipCatalogGroupsCocoDrip(entorno, enGerm) {
-  var sala = equipCatalogGroupsSalaPropagador(entorno);
+  var fertKeys = ['medidor', 'bomba_recirc', 'temporizador', 'calentador', 'bomba_aire'];
   var fert = {
     id: 'coco_fertigacion',
     label: enGerm ? 'Prep coco + reservorio' : 'Reservorio y goteo',
     icon: '🥥',
     required: true,
-    keys: ['medidor', 'bomba_recirc', 'temporizador', 'calentador', 'bomba_aire'],
+    keys: fertKeys.slice(),
     hint:
-      'Coco coir DTW (Grow Diaries / Coco For Cannabis): medidor EC/pH, bomba de riego (GPH), temporizador, ' +
+      'Coco coir DTW (Saltón Verde / Coco For Cannabis): medidor EC/pH, bomba de riego (GPH), temporizador, ' +
       'calentador si T° reservorio <18 °C, aireación del tanque. Fertigar siempre con nutrientes; 10–20 % runoff por evento.',
   };
+  var sala = equipFilterKeysAlreadyListed(equipCatalogGroupsSalaPropagador(entorno), fertKeys);
   if (enGerm) {
     return [
-      Object.assign({}, EQUIP_GERMINACION_GROUP, {
-        label: 'Germinación en cubo/copa',
+      {
+        id: 'germinacion',
+        label: 'Propagador → maceta pequeña',
+        icon: '🌱',
         required: true,
-        keys: ['propagador', 'higrometro_germ', 'medidor'],
+        keys: ['propagador', 'higrometro_germ'],
         hint:
-          'Domo o vaso en coco bufferizado pH 5.5–5.8. Medidor pen para EC baja (0.3–0.8 mS/cm) en plántula.',
-      }),
+          'Domo o bandeja en coco bufferizado pH 5.5–5.8 (Saltón Verde). Tras raíz, traslado a maceta 4–5 L en rejilla DTW; el medidor EC/pH va en el bloque de reservorio.',
+      },
       fert,
     ].concat(sala);
   }

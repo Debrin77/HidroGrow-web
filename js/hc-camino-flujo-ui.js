@@ -37,6 +37,14 @@
       7: '<strong>Detalle:</strong> método SOG/SCROG, variedad, plan de semillas y fecha de siembra. Semillero opcional.',
       8: '<strong>DWC/RDWC:</strong> tipo de sistema; siguiente pantalla = medidas del cubo o circuito.',
     },
+    semilla_coco_drip: {
+      1: '<strong>Camino:</strong> propagador → maceta pequeña → rejilla DTW 4–5 L (coco + goteo, sin recirculación).',
+      2: '<strong>Objetivo:</strong> semilla en coco; fertigación con runoff 10–20 % según fase (Saltón Verde).',
+      3: '<strong>Entorno:</strong> interior/exterior y municipio para meteo.',
+      4: '<strong>Espacio:</strong> sala (carpa, LED, extractor), propagador y prep de reservorio/goteo.',
+      5: '<strong>Clima y luz:</strong> fotoperiodo de la sala antes de germinar.',
+      7: '<strong>Detalle:</strong> variedad, plan de semillas y fecha de siembra en propagador.',
+    },
     esqueje_hidro: {
       1: '<strong>Esqueje:</strong> enraizado en domo → matriz → mismo DWC/RDWC que semilla.',
       4: '<strong>Equipamiento:</strong> propagador, sala y circuito hidro en un solo asistente.',
@@ -65,6 +73,15 @@
       5: 'Clima y luz',
       6: 'Genética y método',
       7: 'Detalle origen',
+    },
+    semilla_coco_drip: {
+      1: 'Camino',
+      2: 'Objetivo',
+      3: 'Entorno',
+      4: 'Espacio y equipamiento',
+      5: 'Clima y luz',
+      6: 'Genética y método',
+      7: 'Plan germinación',
     },
   };
 

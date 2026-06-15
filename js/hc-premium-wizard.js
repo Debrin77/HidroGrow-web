@@ -1118,10 +1118,25 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_END) {
-      if (typeof setupTipoInstalacion !== 'undefined' &&
-          setupTipoInstalacion !== 'dwc' &&
-          setupTipoInstalacion !== 'rdwc') {
-        if (typeof showToast === 'function') showToast('Elige DWC o RDWC antes de continuar', true);
+      const camEnd =
+        typeof hcResolverCaminoSetup === 'function'
+          ? hcResolverCaminoSetup()
+          : typeof getCaminoCultivo === 'function'
+            ? getCaminoCultivo()
+            : '';
+      if (camEnd === 'semilla_coco_drip') {
+        if (typeof setupTipoInstalacion !== 'undefined') setupTipoInstalacion = 'coco_drip';
+        return true;
+      }
+      if (
+        typeof setupTipoInstalacion !== 'undefined' &&
+        setupTipoInstalacion !== 'dwc' &&
+        setupTipoInstalacion !== 'rdwc' &&
+        setupTipoInstalacion !== 'coco_drip'
+      ) {
+        if (typeof showToast === 'function') {
+          showToast('Elige DWC, RDWC o Coco + Drip antes de continuar', true);
+        }
         return false;
       }
     }

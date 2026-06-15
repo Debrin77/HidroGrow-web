@@ -2310,9 +2310,10 @@ function iniciarConfiguracionTorre() {
     setupEsNuevaTorre &&
     !germSinHidro &&
     setupTipoInstalacion !== 'dwc' &&
-    setupTipoInstalacion !== 'rdwc'
+    setupTipoInstalacion !== 'rdwc' &&
+    setupTipoInstalacion !== 'coco_drip'
   ) {
-    showToast('Elige DWC o RDWC antes de continuar', true);
+    showToast('Elige DWC, RDWC o Coco + Drip antes de continuar', true);
     return;
   }
   setupTipoTorre = 'custom';
@@ -2391,9 +2392,33 @@ function seleccionarTipoInstalacionSetup(tipo) {
 }
 
 function refrescarSetupTipoInstalacionUI() {
+  const camTipo =
+    typeof hcResolverCaminoSetup === 'function'
+      ? hcResolverCaminoSetup()
+      : typeof getCaminoCultivo === 'function'
+        ? getCaminoCultivo()
+        : '';
+  if (camTipo === 'semilla_coco_drip') setupTipoInstalacion = 'coco_drip';
   const esDwc = setupTipoInstalacion === 'dwc';
   const esRdwc = setupTipoInstalacion === 'rdwc';
   const esCocoDrip = setupTipoInstalacion === 'coco_drip';
+  const cocoCaminoFijado = camTipo === 'semilla_coco_drip';
+  const tipoPanel = document.getElementById('setupTipoInstalacionPanel');
+  const cocoLock = document.getElementById('setupTipoCaminoCocoBloque');
+  const premium7Title = document.querySelector('#spagePremium7 .setup-title');
+  const premium7Sub = document.querySelector('#spagePremium7 .setup-subtitle');
+  if (tipoPanel) tipoPanel.classList.toggle('setup-hidden', cocoCaminoFijado);
+  if (cocoLock) cocoLock.classList.toggle('setup-hidden', !cocoCaminoFijado);
+  if (premium7Title) {
+    premium7Title.textContent = cocoCaminoFijado
+      ? 'Coco + goteo DTW (ya elegido en el camino)'
+      : '¿DWC, RDWC o Coco Coir + Drip?';
+  }
+  if (premium7Sub) {
+    premium7Sub.innerHTML = cocoCaminoFijado
+      ? 'Elegiste <strong>semilla en coco + goteo</strong> al inicio: propagador → maceta pequeña → rejilla DTW 4–5 L. La geometría del montaje la configuras tras concluir la germinación.'
+      : 'Elige el <strong>sistema hidropónico</strong> que montarás. Siguiente: medidas del cubo, circuito RDWC o configuración coco.';
+  }
   const sinElegir = !esDwc && !esRdwc && !esCocoDrip;
   if (sinElegir && setupEsNuevaTorre) {
     ['setupCardTipoDwc', 'setupCardTipoRdwc', 'setupCardTipoCocoDrip', 'setupInlineTipoDwc', 'setupInlineTipoRdwc', 'setupInlineTipoCocoDrip'].forEach((id) => {

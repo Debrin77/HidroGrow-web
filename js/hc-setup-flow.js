@@ -246,11 +246,16 @@
       const inline = document.getElementById('setupTipoInstalacionInline');
       const tipoOk =
         typeof setupTipoInstalacion !== 'undefined' &&
-        (setupTipoInstalacion === 'dwc' || setupTipoInstalacion === 'rdwc');
+        (setupTipoInstalacion === 'dwc' ||
+          setupTipoInstalacion === 'rdwc' ||
+          setupTipoInstalacion === 'coco_drip');
       if (page === pageGeom && inline && tipoOk) {
         inline.classList.add('setup-flow-tipo-done');
         if (hint) {
-          hint.textContent = 'DWC/RDWC ya elegido en el paso anterior — cambia aquí solo si te equivocaste.';
+          hint.textContent =
+            setupTipoInstalacion === 'coco_drip'
+              ? 'Coco + goteo ya elegido en el camino — cambia aquí solo si te equivocaste.'
+              : 'DWC/RDWC ya elegido en el paso anterior — cambia aquí solo si te equivocaste.';
           hint.classList.remove('setup-hidden');
         }
       } else {

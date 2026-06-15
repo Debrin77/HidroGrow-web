@@ -434,6 +434,12 @@
         if (typeof cocoDripEnsureConfigDefaults === 'function') {
           cocoDripEnsureConfigDefaults(state.configTorre);
         }
+        if (typeof setupTipoInstalacion !== 'undefined') setupTipoInstalacion = 'coco_drip';
+        if (typeof refrescarSetupTipoInstalacionUI === 'function') {
+          try {
+            refrescarSetupTipoInstalacionUI();
+          } catch (_) {}
+        }
       }
     }
     refreshCaminoCultivoUI();
@@ -1682,6 +1688,9 @@
       if (getCaminoCultivo() === 'semilla_hidro') {
         return typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
       }
+      if (getCaminoCultivo() === 'semilla_coco_drip') {
+        return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      }
       return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
     }
     var total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
@@ -1707,12 +1716,28 @@
     }
     var cam =
       typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
-    if (cam === 'semilla_hidro' || cam === 'semilla_coco_drip') {
+    if (cam === 'semilla_hidro') {
       [
         typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
         typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
         typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
+        typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
+        typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
+      ].forEach(function (p) {
+        skip.add(p);
+      });
+      return skip;
+    }
+    if (cam === 'semilla_coco_drip') {
+      [
+        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
+        typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8,
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9,
+        typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
+        typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
+        typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
+        typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
         typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
         typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
       ].forEach(function (p) {
