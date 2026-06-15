@@ -212,7 +212,10 @@
     cfg = cfg || cfgActiva();
     var vpd = NaN;
     try {
-      if (cfg.ultimaMedicion && Number.isFinite(Number(cfg.ultimaMedicion.vpd))) {
+      if (typeof resolveCocoDripVpdKpa === 'function') {
+        var vRes = resolveCocoDripVpdKpa(cfg);
+        if (vRes && Number.isFinite(vRes.vpd)) vpd = vRes.vpd;
+      } else if (cfg.ultimaMedicion && Number.isFinite(Number(cfg.ultimaMedicion.vpd))) {
         vpd = Number(cfg.ultimaMedicion.vpd);
       } else if (typeof state !== 'undefined' && state.ultimaMedicion) {
         vpd = Number(state.ultimaMedicion.vpd);
@@ -724,6 +727,7 @@
   global.registrarCocoDripRunoffDesdeMedir = registrarCocoDripRunoffDesdeMedir;
   global.refreshCocoDripProgramacionEnCfg = refreshCocoDripProgramacionEnCfg;
   global.resolveProximoEventoCoco = resolveProximoEventoCoco;
+  global.ajusteEventosPorVpdCocoDrip = ajusteEventosPorVpd;
   global.renderCocoDripProgramacionRealtimeHtml = renderCocoDripProgramacionRealtimeHtml;
   global.renderCocoDripDashHtml = renderCocoDripDashHtml;
   global.renderCocoDripCeldasTableHtml = renderCocoDripCeldasTableHtml;

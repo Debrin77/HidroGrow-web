@@ -268,6 +268,9 @@
       if (fasesEl && typeof renderCocoDripFasesInicialesHtml === 'function') {
         fasesEl.innerHTML = renderCocoDripFasesInicialesHtml();
       }
+      if (typeof renderCocoDripSalaPlantasHint === 'function') {
+        renderCocoDripSalaPlantasHint(cfg);
+      }
     } catch (e) {
       console.error('[hc-setup-coco-drip] Error en syncSetupCocoDripFieldsDesdeConfig:', e);
     }
@@ -292,6 +295,15 @@
   function onSetupCocoDripInput() {
     try {
       const numPlantas = Number(document.getElementById('setupCocoDripNumPlantas')?.value) || 0;
+      if (
+        numPlantas > 0 &&
+        typeof state !== 'undefined' &&
+        state &&
+        state.configTorre &&
+        !window._hcCocoDripSkipManualPlantas
+      ) {
+        state.configTorre.cocoDripPlantasManual = true;
+      }
       const tamanoMacetas = document.getElementById('setupCocoDripTamanoMacetas')?.value || 'medium';
       const reservorio = Number(document.getElementById('setupCocoDripReservorioLitros')?.value) || 0;
       const bomba = Number(document.getElementById('setupCocoDripBombaGPH')?.value) || 0;
@@ -353,6 +365,21 @@
             '⚠️ SV recomienda ~' +
               COCO_SV_DENSIDAD.plantasPorM2 +
               ' plantas/m²; más densidad = menos luz por planta'
+          );
+        }
+      }
+
+      if (typeof sugerirCocoDripPlantasDesdeSala === 'function' && typeof state !== 'undefined' && state && state.configTorre) {
+        var salaSug = sugerirCocoDripPlantasDesdeSala(state.configTorre);
+        if (salaSug && salaSug.areaM2) {
+          recomendaciones.push(
+            'ℹ️ Sala ~' +
+              salaSug.areaM2.toFixed(1) +
+              ' m² → capacidad ~' +
+              salaSug.numPlantas +
+              ' plantas (' +
+              salaSug.plantasPorM2 +
+              '/m² SV)'
           );
         }
       }
@@ -445,8 +472,17 @@
         cfg.cocoDripEmitterFlowLph = emitterFlow;
         cfg.cocoDripDuracionRiegoMin = duracionRecomendada;
         cfg.cocoDripPotenciaPlacaSolarW = usarPlacaSolar ? potenciaSolarRecomendada : 0;
+        if (typeof calcularCocoDripGridDesdePlantas === 'function' && numPlantas > 0) {
+          var gridC = calcularCocoDripGridDesdePlantas(numPlantas);
+          cfg.numNiveles = gridC.rows;
+          cfg.numCestas = gridC.cols;
+        }
         
         if (typeof saveState === 'function') saveState();
+      }
+
+      if (typeof renderCocoDripSalaPlantasHint === 'function' && typeof state !== 'undefined' && state && state.configTorre) {
+        renderCocoDripSalaPlantasHint(state.configTorre);
       }
       
     } catch (e) {

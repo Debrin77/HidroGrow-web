@@ -99,3 +99,16 @@ test('index: build perf87 y cinco caminos', () => {
   assert.match(html, /perf87/);
   assert.match(html, /cinco caminos/);
 });
+
+test('coco drip: integración sala m² → plantas y VPD', () => {
+  const mod = read('js/hc-camino-coco-drip.js');
+  assert.match(mod, /resolveCocoDripSalaAreaM2/);
+  assert.match(mod, /sugerirCocoDripPlantasDesdeSala/);
+  assert.match(mod, /calcularCocoDripGridDesdePlantas/);
+  assert.match(mod, /resolverCocoDripNumPlantasEfectivo/);
+  assert.match(mod, /resolveCocoDripVpdKpa/);
+  assert.match(mod, /hcAplicarCocoDripGeometriaDesdeSala/);
+  assert.match(read('js/hc-camino-cultivo.js'), /hcAplicarCocoDripGeometriaDesdeSala/);
+  assert.match(read('js/hc-setup-calc-core.js'), /calcularCocoDripGridDesdePlantas/);
+  assert.match(read('js/hc-coco-drip-scheduler.js'), /resolveCocoDripVpdKpa/);
+});

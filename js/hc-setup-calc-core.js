@@ -2290,8 +2290,13 @@ function guardarSetupYContinuarCore() {
       renderSetupPage();
       return false;
     }
-    niveles = Math.max(1, Math.round(Number(cC.cocoDripNumPlantas || 4)));
-    cestas = 1; // Coco Drip usa macetas individuales, no cestas
+    var nPlantasCoco = Math.max(1, Math.round(Number(cC.cocoDripNumPlantas || 4)));
+    var gridCoco =
+      typeof calcularCocoDripGridDesdePlantas === 'function'
+        ? calcularCocoDripGridDesdePlantas(nPlantasCoco)
+        : { rows: nPlantasCoco, cols: 1 };
+    niveles = gridCoco.rows;
+    cestas = gridCoco.cols;
     vol = Math.max(1, Math.round(Number(cC.cocoDripReservorioLitros || 50)));
   }
 

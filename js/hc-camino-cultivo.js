@@ -1161,6 +1161,13 @@
   /** Pre-rellena cubos/cestas del asistente hidro según semillas en germinación. */
   function hcAplicarGeometriaSugeridaGerminacion(cfg) {
     cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var camGeo = getCaminoCultivo(cfg);
+    if (
+      camGeo === 'semilla_coco_drip' &&
+      typeof hcAplicarCocoDripGeometriaDesdeSala === 'function'
+    ) {
+      return hcAplicarCocoDripGeometriaDesdeSala(cfg);
+    }
     var sug = hcSugerirGeometriaDesdeGerminacion(cfg);
     if (!sug) return false;
     var n = sug.numPlantas;
@@ -1655,11 +1662,25 @@
     var sug = hcSugerirGeometriaDesdeGerminacion(state && state.configTorre);
     if (typeof showToast === 'function') {
       if (camH === 'semilla_coco_drip') {
+        var nCoco =
+          typeof resolverCocoDripNumPlantasEfectivo === 'function'
+            ? resolverCocoDripNumPlantasEfectivo(state && state.configTorre)
+            : sug && sug.numPlantas;
+        var salaCoco =
+          typeof sugerirCocoDripPlantasDesdeSala === 'function'
+            ? sugerirCocoDripPlantasDesdeSala(state && state.configTorre)
+            : null;
         showToast(
-          sug
-            ? 'Rejilla DTW coco: orientativo ' +
-              sug.numPlantas +
-              ' maceta(s) según germinación (ajusta rejilla al guardar)'
+          nCoco
+            ? 'Rejilla DTW coco: ' +
+              nCoco +
+              ' maceta(s)' +
+              (salaCoco && salaCoco.areaM2
+                ? ' (sala ~' + salaCoco.areaM2.toFixed(1) + ' m² · min germ/sala)'
+                : sug
+                  ? ' según germinación'
+                  : '') +
+              ' — ajusta al guardar'
             : 'Configura rejilla DTW, macetas 4–5 L, reservorio y goteo',
           false,
           { durationMs: 6200 }

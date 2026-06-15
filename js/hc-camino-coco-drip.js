@@ -345,6 +345,194 @@
     );
   }
 
+  /** m² útiles de la sala (carpa / armario / premium setup). */
+  function resolveCocoDripSalaAreaM2(cfg) {
+    cfg = cfg || cfgActiva();
+    var p = cfg.premiumSetup || {};
+    var ancho = Number(cfg.growRoomAnchoM || p.anchoM);
+    var largo = Number(cfg.growRoomLargoM || p.largoM);
+    if (Number.isFinite(ancho) && Number.isFinite(largo) && ancho > 0 && largo > 0) {
+      return ancho * largo;
+    }
+    var inst = cfg.equipamientoInstalado || {};
+    var arm = inst.armario && inst.armario.specs;
+    if (arm) {
+      var aa = Number(arm.anchoM);
+      var al = Number(arm.largoM);
+      if (Number.isFinite(aa) && Number.isFinite(al) && aa > 0 && al > 0) return aa * al;
+    }
+    if (typeof calcularPremiumSalaInterno === 'function') {
+      try {
+        var r = calcularPremiumSalaInterno();
+        if (r && !r.error && Number.isFinite(r.area) && r.area > 0) return r.area;
+      } catch (_) {}
+    }
+    return NaN;
+  }
+
+  function cocoDripPlantasPorM2Sv() {
+    return (
+      (typeof COCO_SV_DENSIDAD !== 'undefined' && COCO_SV_DENSIDAD.plantasPorM2) || 9
+    );
+  }
+
+  /** Capacidad orientativa según área de sala (Saltón Verde ~9 plantas/m²). */
+  function sugerirCocoDripPlantasDesdeSala(cfg) {
+    cfg = cfg || cfgActiva();
+    var area = resolveCocoDripSalaAreaM2(cfg);
+    if (!Number.isFinite(area) || area <= 0) return null;
+    var ppm2 = cocoDripPlantasPorM2Sv();
+    var maxPl = 16;
+    var numPlantas = Math.max(1, Math.min(maxPl, Math.round(area * ppm2)));
+    return {
+      numPlantas: numPlantas,
+      areaM2: area,
+      plantasPorM2: ppm2,
+      fuente: 'sala',
+    };
+  }
+
+  /** Rejilla cenital N×M (p. ej. 9 plantas → 3×3). */
+  function calcularCocoDripGridDesdePlantas(numPlantas) {
+    var n = Math.max(1, Math.min(16, Math.round(Number(numPlantas) || 1)));
+    if (n === 9) return { rows: 3, cols: 3, total: 9 };
+    var cols = Math.max(1, Math.ceil(Math.sqrt(n)));
+    var rows = Math.max(1, Math.ceil(n / cols));
+    return { rows: rows, cols: cols, total: rows * cols };
+  }
+
+  /**
+   * Plantas efectivas: min(semillas germinadas, capacidad sala) si hay datos;
+   * respeta cocoDripPlantasManual tras edición del usuario.
+   */
+  function resolverCocoDripNumPlantasEfectivo(cfg, opts) {
+    opts = opts || {};
+    cfg = cfg || cfgActiva();
+    var maxPl = 16;
+    if (
+      cfg.cocoDripPlantasManual === true &&
+      typeof cfg.cocoDripNumPlantas === 'number' &&
+      cfg.cocoDripNumPlantas > 0
+    ) {
+      return Math.max(1, Math.min(maxPl, Math.round(cfg.cocoDripNumPlantas)));
+    }
+    var germN =
+      typeof hcNumSemillasGermConfig === 'function' ? hcNumSemillasGermConfig(cfg) : 0;
+    var sala = sugerirCocoDripPlantasDesdeSala(cfg);
+    var salaN = sala && sala.numPlantas ? sala.numPlantas : 0;
+    var n;
+    if (germN > 0 && salaN > 0) n = Math.min(germN, salaN);
+    else if (germN > 0) n = germN;
+    else if (salaN > 0) n = salaN;
+    else if (typeof cfg.cocoDripNumPlantas === 'number' && cfg.cocoDripNumPlantas > 0) {
+      n = cfg.cocoDripNumPlantas;
+    } else {
+      n = 9;
+    }
+    return Math.max(1, Math.min(maxPl, Math.round(n)));
+  }
+
+  /**
+   * VPD para scheduler: medición reciente → T°/HR medición → T°/HR sala (setup).
+   */
+  function resolveCocoDripVpdKpa(cfg) {
+    cfg = cfg || cfgActiva();
+    try {
+      if (cfg.ultimaMedicion && Number.isFinite(Number(cfg.ultimaMedicion.vpd))) {
+        return { vpd: Number(cfg.ultimaMedicion.vpd), fuente: 'medicion' };
+      }
+      if (
+        typeof state !== 'undefined' &&
+        state.ultimaMedicion &&
+        Number.isFinite(Number(state.ultimaMedicion.vpd))
+      ) {
+        return { vpd: Number(state.ultimaMedicion.vpd), fuente: 'state_medicion' };
+      }
+      var m =
+        (cfg.ultimaMedicion && typeof cfg.ultimaMedicion === 'object' && cfg.ultimaMedicion) ||
+        (typeof state !== 'undefined' && state.ultimaMedicion) ||
+        {};
+      var t = Number(m.tempAire);
+      var h = Number(m.humSala);
+      if (Number.isFinite(t) && Number.isFinite(h) && typeof calcVPDkPa === 'function') {
+        var vMed = calcVPDkPa(t, h);
+        if (Number.isFinite(vMed)) return { vpd: vMed, fuente: 'medicion_temp_hr' };
+      }
+      t = Number(cfg.interiorTempC);
+      h = Number(cfg.interiorHumedadAmbPct);
+      if (Number.isFinite(t) && Number.isFinite(h) && typeof calcVPDkPa === 'function') {
+        var vSala = calcVPDkPa(t, h);
+        if (Number.isFinite(vSala)) return { vpd: vSala, fuente: 'sala_setup' };
+      }
+    } catch (_) {}
+    return { vpd: NaN, fuente: '' };
+  }
+
+  function renderCocoDripSalaPlantasHint(cfg) {
+    var el = document.getElementById('setupCocoDripCompatStatus');
+    if (!el) return;
+    cfg = cfg || cfgActiva();
+    var sala = sugerirCocoDripPlantasDesdeSala(cfg);
+    if (!sala || !Number.isFinite(sala.areaM2)) {
+      el.textContent = '';
+      return;
+    }
+    var n = resolverCocoDripNumPlantasEfectivo(cfg);
+    var grid = calcularCocoDripGridDesdePlantas(n);
+    el.textContent =
+      'Sala ~' +
+      sala.areaM2.toFixed(1) +
+      ' m² → hasta ' +
+      sala.numPlantas +
+      ' plantas (' +
+      sala.plantasPorM2 +
+      '/m² SV). Rejilla sugerida: ' +
+      grid.rows +
+      '×' +
+      grid.cols +
+      ' (' +
+      n +
+      ' macetas).';
+  }
+
+  /** Pre-rellena plantas/rejilla DTW desde m² sala y semillas en germinación. */
+  function hcAplicarCocoDripGeometriaDesdeSala(cfg, opts) {
+    opts = opts || {};
+    cfg = cfg || cfgActiva();
+    if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cfg);
+    var n = resolverCocoDripNumPlantasEfectivo(cfg, opts);
+    if (!n || n < 1) return false;
+    var grid = calcularCocoDripGridDesdePlantas(n);
+    cfg.cocoDripNumPlantas = n;
+    cfg.numNiveles = grid.rows;
+    cfg.numCestas = grid.cols;
+    try {
+      if (typeof state !== 'undefined' && state && state.configTorre && state.configTorre !== cfg) {
+        state.configTorre.cocoDripNumPlantas = n;
+        state.configTorre.numNiveles = grid.rows;
+        state.configTorre.numCestas = grid.cols;
+      }
+      if (!cfg.cocoDripPlantasManual) {
+        var elPlant = document.getElementById('setupCocoDripNumPlantas');
+        if (elPlant) {
+          if (typeof window !== 'undefined') window._hcCocoDripSkipManualPlantas = true;
+          try {
+            elPlant.value = String(n);
+          } finally {
+            if (typeof window !== 'undefined') window._hcCocoDripSkipManualPlantas = false;
+          }
+        }
+      }
+      var slN = document.getElementById('sliderNiveles');
+      if (slN) slN.value = String(grid.rows);
+      var slC = document.getElementById('sliderCestas');
+      if (slC) slC.value = String(grid.cols);
+      renderCocoDripSalaPlantasHint(cfg);
+      if (typeof onSetupCocoDripInput === 'function') onSetupCocoDripInput();
+    } catch (_) {}
+    return true;
+  }
+
   function getCocoDripResumenRiego(cfg) {
     cfg = cfg || cfgActiva();
     if (typeof cocoDripEnsureConfigDefaults === 'function') cocoDripEnsureConfigDefaults(cfg);
@@ -407,4 +595,11 @@
   global.buildCocoDripProgramacion = buildCocoDripProgramacion;
   global.renderCocoDripProgramacionHtml = renderCocoDripProgramacionHtml;
   global.getCocoDripResumenRiego = getCocoDripResumenRiego;
+  global.resolveCocoDripSalaAreaM2 = resolveCocoDripSalaAreaM2;
+  global.sugerirCocoDripPlantasDesdeSala = sugerirCocoDripPlantasDesdeSala;
+  global.calcularCocoDripGridDesdePlantas = calcularCocoDripGridDesdePlantas;
+  global.resolverCocoDripNumPlantasEfectivo = resolverCocoDripNumPlantasEfectivo;
+  global.resolveCocoDripVpdKpa = resolveCocoDripVpdKpa;
+  global.renderCocoDripSalaPlantasHint = renderCocoDripSalaPlantasHint;
+  global.hcAplicarCocoDripGeometriaDesdeSala = hcAplicarCocoDripGeometriaDesdeSala;
 })(typeof window !== 'undefined' ? window : globalThis);

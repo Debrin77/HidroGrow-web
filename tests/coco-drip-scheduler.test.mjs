@@ -127,3 +127,51 @@ test('scheduler: próximo evento en ventana 24 h', () => {
   assert.ok(prox.enMinutos >= 0 && prox.enMinutos <= 24 * 60);
   assert.match(prox.label, /^\d{2}:\d{2}$/);
 });
+
+test('scheduler: VPD desde T°/HR sala sin medición manual', () => {
+  const ctx = loadCocoStack({
+    calcVPDkPa: function (t, h) {
+      if (t >= 29 && h <= 40) return 1.7;
+      if (t <= 22 && h >= 70) return 0.7;
+      return 1.0;
+    },
+  });
+  ctx.state.configTorre.interiorTempC = 26;
+  ctx.state.configTorre.interiorHumedadAmbPct = 55;
+  delete ctx.state.configTorre.ultimaMedicion;
+  const vRes = ctx.resolveCocoDripVpdKpa(ctx.state.configTorre);
+  assert.strictEqual(vRes.fuente, 'sala_setup');
+  assert.ok(Number.isFinite(vRes.vpd));
+  assert.strictEqual(ctx.ajusteEventosPorVpdCocoDrip(ctx.state.configTorre), 0);
+  ctx.state.configTorre.interiorTempC = 30;
+  ctx.state.configTorre.interiorHumedadAmbPct = 35;
+  assert.strictEqual(ctx.ajusteEventosPorVpdCocoDrip(ctx.state.configTorre), 1);
+});
+
+test('coco drip: m² sala y rejilla 3×3 para 9 plantas', () => {
+  const ctx = vm.createContext({
+    console,
+    window: {},
+    globalThis: {},
+    COCO_SV_DENSIDAD: { plantasPorM2: 9 },
+    state: { configTorre: {} },
+    Math,
+    Number,
+    JSON,
+    hcNumSemillasGermConfig: function () {
+      return 6;
+    },
+  });
+  vm.runInContext(readFileSync(join(root, 'js/hc-camino-coco-drip.js'), 'utf8'), ctx);
+  Object.assign(ctx, ctx.window);
+  ctx.state.configTorre.premiumSetup = { anchoM: 1.2, largoM: 1.0 };
+  const sala = ctx.sugerirCocoDripPlantasDesdeSala(ctx.state.configTorre);
+  assert.ok(sala);
+  assert.strictEqual(sala.areaM2, 1.2);
+  assert.strictEqual(sala.numPlantas, 11);
+  assert.strictEqual(ctx.resolverCocoDripNumPlantasEfectivo(ctx.state.configTorre), 6);
+  const grid = ctx.calcularCocoDripGridDesdePlantas(9);
+  assert.strictEqual(grid.rows, 3);
+  assert.strictEqual(grid.cols, 3);
+  assert.strictEqual(grid.total, 9);
+});
