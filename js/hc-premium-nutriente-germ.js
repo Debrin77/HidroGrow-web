@@ -36,6 +36,18 @@
       }
       return true;
     }
+    if (cam === 'semilla_coco_drip') {
+      if (typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function') {
+        return hidrogrowPropagadorEnFaseGermSinHidro(cfg);
+      }
+      if (typeof hcCaminoSemillaCocoDripSetupGerm === 'function' && hcCaminoSemillaCocoDripSetupGerm()) {
+        return true;
+      }
+      if (typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion()) {
+        return true;
+      }
+      return typeof germinacionConcluida === 'function' ? !germinacionConcluida(cfg) : true;
+    }
     if (cam === 'semilla_hidro') {
       return typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
     }
@@ -55,12 +67,10 @@
 
   function isPremiumNutrienteGermActivo(cfg) {
     var cam = caminoRequiereNutrienteBandeja(cfg);
-    // Solo activo para semilla_propagador, no para semilla_hidro (hidroponía no usa bandeja)
-    if (cam === 'semilla_propagador') return true;
+    if (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') return true;
     if (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()) {
-      // Verificar si realmente es propagador, no hidro
       var caminoActual = getCaminoCultivo(cfg) || '';
-      if (caminoActual === 'semilla_propagador') return true;
+      if (caminoActual === 'semilla_propagador' || caminoActual === 'semilla_coco_drip') return true;
     }
     return caminoUsaNutrienteBandejaPropagador(cfg);
   }

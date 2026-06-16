@@ -2126,8 +2126,15 @@ function guardarSetupYContinuarCore() {
   const wizardHidroGermCompleto =
     (caminoSave === 'semilla_hidro' || caminoSave === 'semilla_coco_drip') &&
     typeof setupPagina !== 'undefined' &&
-    typeof SETUP_PAGE_PREMIUM_END !== 'undefined' &&
-    setupPagina >= SETUP_PAGE_PREMIUM_END;
+    (function () {
+      var ult =
+        typeof getSetupUltimoPasoIndice === 'function'
+          ? getSetupUltimoPasoIndice()
+          : typeof SETUP_PAGE_PREMIUM_END !== 'undefined'
+            ? SETUP_PAGE_PREMIUM_END
+            : 8;
+      return setupPagina >= ult;
+    })();
   const faseGermSetup =
     !faseSalaPreGerm &&
     typeof hcSetupEnFaseGerminacion === 'function' &&

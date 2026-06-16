@@ -417,8 +417,17 @@
     } catch (_) {}
 
     switch (fase) {
-      case 'sin_config':
-        return { label: 'Configurar instalación', action: 'abrirSetup', etapa: 'config' };
+      case 'sin_config': {
+        var camSin = typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : '';
+        if (cfg.hcSetupFase === 'hidro') {
+          return {
+            label: camSin === 'semilla_coco_drip' ? 'Configurar coco DTW' : 'Configurar sistema hidro',
+            action: 'abrirSetupFaseHidro',
+            etapa: 'hidro_config',
+          };
+        }
+        return { label: 'Completar asistente', action: 'abrirSetup', etapa: 'config' };
+      }
       case 'montaje_pendiente': {
         var faseSis =
           typeof getSistemaFaseCamino === 'function' ? getSistemaFaseCamino(cfg) : null;

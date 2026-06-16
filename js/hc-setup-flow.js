@@ -62,7 +62,7 @@
     var PEND = setupPageConst('SETUP_PAGE_PREMIUM_END', 8);
     cam = String(cam || '').trim();
     if (cam === 'madre_hidro') {
-      return [O, P1, P2, P5, P4, P3, PEND];
+      return [O, P1, P2, P5, P6, P4, P3, PEND];
     }
     if (
       cam === 'esqueje_hidro' ||
@@ -286,19 +286,30 @@
     syncSetupDataFromPremium();
     const p = ensurePremium();
     const origen = (p && p.origenPlanta) || 'semilla';
+    var cam =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
     const su = setupData.sustrato || inferSustratoFromOrigen(origen);
     const agua = setupData.agua || 'osmosis';
     const autoNote = setupData._sustratoAuto
       ? ' Sugerido según origen <strong>' + origenLabel(origen) + '</strong> (paso Planta).'
       : '';
+    var fijacionNote =
+      cam === 'esqueje_hidro'
+        ? ' Fijación en <strong>net pot</strong> tras enraizar en rockwool.'
+        : cam === 'madre_hidro'
+          ? ' Cubo <strong>madre</strong> en DWC 18/6 (sin domo de esquejes).'
+          : cam === 'semilla_coco_drip'
+            ? ' Sustrato <strong>coco</strong> en maceta; fertigar siempre con runoff.'
+            : ' El cubo de germinación (lana 4×4) ya lo marcaste en Germinación; aquí confirmas el medio en la cesta del sistema.';
     panel.innerHTML =
       '<p><strong>Agua de mezcla:</strong> ' +
       aguaLabel(agua) +
-      ' · <strong>Fijación en net pot:</strong> ' +
+      ' · <strong>Medio:</strong> ' +
       sustratoLabel(su) +
       '.' +
       autoNote +
-      ' El cubo de germinación (lana 4×4) ya lo marcaste en Germinación; aquí confirmas el medio en la cesta del sistema.</p>';
+      fijacionNote +
+      '</p>';
     panel.classList.remove('setup-hidden');
   }
 

@@ -1595,6 +1595,175 @@
     abrirSetupFaseSala({ duranteGerminacion: true });
   }
 
+  function hcSetupPaginaConst(name, fallback) {
+    try {
+      if (typeof window !== 'undefined' && typeof window[name] !== 'undefined') {
+        return window[name];
+      }
+    } catch (_) {}
+    return fallback;
+  }
+
+  function hcMapLifecyclePasoASetupPagina(paso) {
+    if (!paso) return null;
+    var P3 = hcSetupPaginaConst('SETUP_PAGE_PREMIUM_3', 4);
+    if (paso.action === 'abrirSetupFaseHidro' || paso.etapa === 'hidro_config') {
+      return { action: 'abrirSetupFaseHidro' };
+    }
+    if (paso.action === 'abrirSetupFaseSala' || paso.etapa === 'sala_config') {
+      return { page: P3 };
+    }
+    return null;
+  }
+
+  /**
+   * Punto único: al reabrir el asistente, qué pantalla corresponde (nunca paso 1 si hay progreso).
+   * @returns {{ page?: number, action?: string }}
+   */
+  function hcResolverPaginaReaperturaSetup(cfg) {
+    cfg = cfg || (typeof state !== 'undefined' && state && state.configTorre) || {};
+    var cam = getCaminoCultivo(cfg);
+    var PO = hcSetupPaginaConst('SETUP_PAGE_ORIGEN', 1);
+    var P3 = hcSetupPaginaConst('SETUP_PAGE_PREMIUM_3', 4);
+    var P5 = hcSetupPaginaConst('SETUP_PAGE_PREMIUM_5', 6);
+    var P6 = hcSetupPaginaConst('SETUP_PAGE_PREMIUM_6', 7);
+    var PEND = hcSetupPaginaConst('SETUP_PAGE_PREMIUM_END', 8);
+    var PG = hcSetupPaginaConst('SETUP_PAGE_GEOMETRY', 9);
+
+    if (cfg.hcSetupFase === 'hidro') {
+      if (
+        cam === 'semilla_coco_drip' ||
+        cam === 'semilla_propagador' ||
+        cam === 'semilla_hidro'
+      ) {
+        return { action: 'abrirSetupFaseHidro' };
+      }
+      if (cam === 'esqueje_hidro' || cam === 'madre_hidro') {
+        var pasoFn =
+          cam === 'esqueje_hidro' ? hcSiguientePasoEsquejeHidro : hcSiguientePasoMadreHidro;
+        var pasoH = typeof pasoFn === 'function' ? pasoFn(cfg) : null;
+        if (
+          pasoH &&
+          (pasoH.action === 'abrirSetupFaseHidro' || pasoH.etapa === 'hidro_config') &&
+          typeof hidroInstalacionCerrada === 'function' &&
+          hidroInstalacionCerrada(cfg)
+        ) {
+          return { action: 'abrirSetupFaseHidro' };
+        }
+        var mapped = hcMapLifecyclePasoASetupPagina(pasoH);
+        if (mapped) return mapped;
+      }
+    }
+
+    if (cam === 'semilla_coco_drip' && cfg.hcSetupFase === 'germinacion') {
+      var planCocoIncompleto = false;
+      try {
+        if (typeof validarPlanGerminacionCompleto === 'function') {
+          planCocoIncompleto = !validarPlanGerminacionCompleto(cfg, { requierePropagador: false }).ok;
+        }
+      } catch (_) {}
+      return { page: planCocoIncompleto ? P6 : P3 };
+    }
+
+    if (cam === 'semilla_propagador') {
+      if (cfg.hcSetupFase === 'hidro') {
+        return { action: 'abrirSetupFaseHidro' };
+      }
+      var planPropIncompleto = false;
+      try {
+        if (typeof validarPlanGerminacionCompleto === 'function') {
+          planPropIncompleto = !validarPlanGerminacionCompleto(cfg, { requierePropagador: true }).ok;
+        }
+      } catch (_) {}
+      if (planPropIncompleto) return { page: P6 };
+      if (typeof germinacionConcluida === 'function' && germinacionConcluida(cfg)) {
+        return { action: 'abrirSetupFaseHidro' };
+      }
+      return { page: P3 };
+    }
+
+    if (cam === 'semilla_hidro') {
+      if (cfg.hcSetupFase === 'hidro') {
+        return { action: 'abrirSetupFaseHidro' };
+      }
+      var planHidroIncompleto = false;
+      try {
+        if (typeof validarPlanGerminacionCompleto === 'function') {
+          planHidroIncompleto = !validarPlanGerminacionCompleto(cfg, { requierePropagador: false }).ok;
+        }
+      } catch (_) {}
+      if (planHidroIncompleto) return { page: P6 };
+      if (!cfg.tipoInstalacion && !cfg.checklistInstalacionConfirmada) {
+        return { page: PEND };
+      }
+      if (cfg.checklistInstalacionConfirmada && cfg.tipoInstalacion) {
+        return { page: PG };
+      }
+      var pasoHi = typeof hcSiguientePasoSemillaHidro === 'function' ? hcSiguientePasoSemillaHidro(cfg) : null;
+      var mapHi = hcMapLifecyclePasoASetupPagina(pasoHi);
+      if (mapHi) return mapHi;
+      return { page: P5 };
+    }
+
+    if (cam === 'esqueje_hidro') {
+      if (
+        typeof hcSetupTieneVariedadEsqueje === 'function' &&
+        !hcSetupTieneVariedadEsqueje()
+      ) {
+        return { page: P5 };
+      }
+      if (
+        !(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada)
+      ) {
+        return { page: PEND };
+      }
+      var pasoE = typeof hcSiguientePasoEsquejeHidro === 'function' ? hcSiguientePasoEsquejeHidro(cfg) : null;
+      if (pasoE && pasoE.action === 'abrirSetup' && pasoE.etapa === 'config') {
+        if (typeof salaPreGermConfigurada === 'function' && !salaPreGermConfigurada(cfg)) {
+          return { page: P3 };
+        }
+        if (
+          typeof hidroInstalacionCerrada === 'function' &&
+          hidroInstalacionCerrada(cfg)
+        ) {
+          return { action: 'abrirSetupFaseHidro' };
+        }
+        return { page: PEND };
+      }
+      var mapE = hcMapLifecyclePasoASetupPagina(pasoE);
+      if (mapE) return mapE;
+      return { page: P5 };
+    }
+
+    if (cam === 'madre_hidro') {
+      var vidMadre = String(
+        (cfg.premiumSetup && cfg.premiumSetup.variedadGerminacion) ||
+          cfg.variedadGerminacion ||
+          ''
+      ).trim();
+      if (!vidMadre) return { page: P5 };
+      if (
+        !(cfg.tipoInstalacion === 'dwc' || cfg.tipoInstalacion === 'rdwc' || cfg.checklistInstalacionConfirmada)
+      ) {
+        return { page: PEND };
+      }
+      var pasoM = typeof hcSiguientePasoMadreHidro === 'function' ? hcSiguientePasoMadreHidro(cfg) : null;
+      if (
+        pasoM &&
+        (pasoM.action === 'abrirSetupFaseHidro' || pasoM.etapa === 'hidro_config') &&
+        typeof hidroInstalacionCerrada === 'function' &&
+        hidroInstalacionCerrada(cfg)
+      ) {
+        return { action: 'abrirSetupFaseHidro' };
+      }
+      var mapM = hcMapLifecyclePasoASetupPagina(pasoM);
+      if (mapM) return mapM;
+      return { page: P3 };
+    }
+
+    return { page: PO };
+  }
+
   function abrirSetupFaseHidro() {
     var cfgH =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
@@ -1831,7 +2000,17 @@
         typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
         hcCaminoSemillaPropagadorSetupGerm()
       ) {
-        skip.add(typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7);
+        var cfgSkip =
+          typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+        var planYaOk = false;
+        try {
+          if (typeof validarPlanGerminacionCompleto === 'function') {
+            planYaOk = validarPlanGerminacionCompleto(cfgSkip, { requierePropagador: true }).ok;
+          }
+        } catch (_) {}
+        if (planYaOk) {
+          skip.add(typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7);
+        }
       }
       return skip;
     }
@@ -2762,6 +2941,7 @@
   global.getSetupSkippedPagesForHidroFase = getSetupSkippedPagesForHidroFase;
   global.hcSetupEnFaseHidroPostGerm = hcSetupEnFaseHidroPostGerm;
   global.abrirSetupFaseHidro = abrirSetupFaseHidro;
+  global.hcResolverPaginaReaperturaSetup = hcResolverPaginaReaperturaSetup;
   global.getSetupUltimoPasoIndice = getSetupUltimoPasoIndice;
   global.getSetupSkippedPagesForCamino = getSetupSkippedPagesForCamino;
   global.getSetupSkippedPagesForSalaPreGerm = getSetupSkippedPagesForSalaPreGerm;

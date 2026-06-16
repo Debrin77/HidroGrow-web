@@ -898,6 +898,45 @@ function getPremiumOrigenPlanta() {
   return 'semilla';
 }
 
+/** Madre: sala + depósito/circuito madre. Sin domo enraizado ni propagador semilla. */
+function equipCatalogGroupsMadreHidro(entorno) {
+  var sala = equipCatalogGroupsSalaPropagador(entorno);
+  var base =
+    entorno === 'exterior'
+      ? EQUIP_CATALOG_GROUPS.exterior.slice()
+      : EQUIP_CATALOG_GROUPS.interior.slice();
+  var germKeys = ['propagador', 'higrometro_germ', 'mat_termica_germ', 'cupula_maceta'];
+  var used = {};
+  sala.forEach(function (g) {
+    (g.keys || []).forEach(function (k) {
+      used[k] = true;
+    });
+  });
+  var hidro = base
+    .filter(function (g) {
+      return g.id === 'hidro' || g.id === 'sala_indispensable';
+    })
+    .map(function (g) {
+      var keys = (g.keys || []).filter(function (k) {
+        return germKeys.indexOf(k) < 0 && !used[k];
+      });
+      if (!keys.length) return null;
+      return Object.assign({}, g, {
+        label: g.id === 'hidro' ? 'Depósito madre (DWC)' : g.label,
+        keys: keys,
+        required: g.id === 'hidro',
+        hint:
+          g.id === 'hidro'
+            ? 'Medidor, oxigenador y bomba del cubo madre 18/6. Sin domo de esquejes.'
+            : g.hint,
+      });
+    })
+    .filter(function (g) {
+      return g && g.keys && g.keys.length;
+    });
+  return sala.concat(hidro);
+}
+
 function getEquipCatalogGroups(entorno) {
   const origen = getPremiumOrigenPlanta();
   const camino =
@@ -1084,6 +1123,9 @@ function getEquipCatalogGroups(entorno) {
   }
   if (origen === 'clon' || camino === 'esqueje_hidro') {
     return equipCatalogGroupsEsquejeHidro(entorno);
+  }
+  if (camino === 'madre_hidro') {
+    return equipCatalogGroupsMadreHidro(entorno);
   }
   return equipApplyBombaRecircFilter(base);
 }

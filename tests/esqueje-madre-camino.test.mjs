@@ -112,20 +112,22 @@ test('esqueje: genética antes de domo y reapertura sin volver a origen', () => 
   const gen = read('js/hc-premium-genetics-germ.js');
   const wiz = read('js/hc-premium-wizard.js');
   const core = read('js/hc-setup-wizard-core.js');
+  const cultivo = read('js/hc-camino-cultivo.js');
   assert.match(cat, /function equipCatalogGroupsEsquejeHidro/);
   assert.match(cat, /function hcSetupTieneVariedadEsqueje/);
   assert.match(cat, /pag <= p3 && !tieneVariedad/);
   assert.match(gen, /function validarGeneticaEsquejeObligatoria/);
   assert.match(gen, /function requiereGeneticaEsquejeEnSetup/);
   assert.match(wiz, /validarGeneticaEsquejeObligatoria/);
-  assert.match(core, /camReab === 'esqueje_hidro'/);
-  assert.match(core, /hcSiguientePasoEsquejeHidro/);
+  assert.match(cultivo, /function hcResolverPaginaReaperturaSetup/);
+  assert.match(core, /hcResolverPaginaReaperturaSetup/);
   assert.doesNotMatch(wiz, /cuatro rutas de cultivo/);
 });
 
-test('madre: sin checklist propagador ni grupo enraizado', () => {
+test('madre: catálogo madre sin grupo enraizado semilla', () => {
   const cat = read('js/hc-equipamiento-catalog.js');
   const mont = read('js/hc-propagador-montaje.js');
-  assert.doesNotMatch(cat, /madre_hidro[\s\S]{0,400}EQUIP_ENRAIZADO_GROUP/);
+  assert.match(cat, /function equipCatalogGroupsMadreHidro/);
+  assert.doesNotMatch(cat, /equipCatalogGroupsMadreHidro[\s\S]{0,300}EQUIP_ENRAIZADO_GROUP/);
   assert.match(mont, /esRutaEsqueje\(cfg\)[\s\S]{0,40}ITEMS_ENRAIZADO/);
 });

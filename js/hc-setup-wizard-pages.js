@@ -260,11 +260,15 @@ function renderSetupPage() {
             ? '✅ Guardar sala → checklist montaje'
             : germBtn && camBtn === 'semilla_hidro' && setupPagina === ultimoPaso
               ? '✅ Guardar → prep hidro y germinación'
-              : germBtn && camBtn === 'semilla_hidro'
-                ? 'Siguiente →'
-                : germBtn
+              : germBtn && camBtn === 'semilla_coco_drip' && setupPagina === ultimoPaso
+                ? '✅ Guardar → propagador y plan coco'
+                : germBtn && camBtn === 'semilla_propagador' && setupPagina === ultimoPaso
                   ? '✅ Guardar → checklist propagador'
-                  : '✅ Guardar y empezar';
+                  : germBtn && (camBtn === 'esqueje_hidro' || camBtn === 'madre_hidro') && setupPagina === ultimoPaso
+                    ? '✅ Guardar → continuar camino'
+                    : germBtn
+                      ? '✅ Guardar → checklist propagador'
+                      : '✅ Guardar y empezar';
         next.setAttribute('aria-label', 'Guardar configuración y empezar');
       } else {
         next.textContent = 'Siguiente →';
@@ -393,17 +397,36 @@ function setupNextCore() {
     const inst = (state.configTorre && state.configTorre.equipamientoInstalado) || {};
     const cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     if (
-      (cam === 'semilla_propagador' || cam === 'semilla_hidro') &&
-      !(inst.propagador && inst.propagador.id) &&
-      cam === 'semilla_propagador'
+      (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') &&
+      !(inst.propagador && inst.propagador.id)
     ) {
-      showToast('Recomendado: registra propagador, higrómetro y mat térmica en Espacio y equipamiento', true);
+      showToast(
+        cam === 'semilla_coco_drip'
+          ? 'Recomendado: registra propagador en Espacio y equipamiento (coco germina en domo)'
+          : 'Recomendado: registra propagador, higrómetro y mat térmica en Espacio y equipamiento',
+        true
+      );
     }
   }
   if (setupPagina < ultimoPaso) {
     var prevPag = setupPagina;
     setupPagina =
       typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(1) : setupPagina + 1;
+    if (setupPagina === prevPag) {
+      var visSnap =
+        typeof getSetupOrderedVisiblePages === 'function'
+          ? getSetupOrderedVisiblePages()
+          : typeof getSetupVisiblePages === 'function'
+            ? getSetupVisiblePages()
+            : [];
+      var idxSnap = visSnap.indexOf(prevPag);
+      if (idxSnap >= 0 && idxSnap < visSnap.length - 1) {
+        setupPagina = visSnap[idxSnap + 1];
+      } else if (typeof showToast === 'function') {
+        showToast('No hay siguiente paso en este camino. Recarga la app e inténtalo de nuevo.', true);
+        return false;
+      }
+    }
     if (setupPagina === prevPag) {
       if (typeof showToast === 'function') {
         showToast('No hay siguiente paso en este camino. Recarga la app e inténtalo de nuevo.', true);
@@ -424,11 +447,15 @@ function setupNextCore() {
     if (ok !== true) {
       if (typeof hcScrollSetupWizardAlFalloGuardado === 'function') hcScrollSetupWizardAlFalloGuardado();
       if (typeof showToast === 'function' && !window._hcSetupSaveToastShown) {
-        showToast(
-          'No se pudo guardar. Revisa geometría (paso Hidro), sala (Espacio) o depósito.',
-          true,
-          { zIndex: 10550, prominent: true, durationMs: 6200 }
-        );
+        var camSave = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+        var germSave =
+          typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+        var msgSave = germSave
+          ? 'No se pudo guardar. Revisa genética, plan de semillas o equipamiento del paso actual.'
+          : camSave === 'semilla_coco_drip'
+            ? 'No se pudo guardar. Revisa rejilla coco, reservorio DTW o macetas.'
+            : 'No se pudo guardar. Revisa geometría (DWC/RDWC), sala o depósito.';
+        showToast(msgSave, true, { zIndex: 10550, prominent: true, durationMs: 6200 });
       }
       try {
         window._hcSetupSaveToastShown = false;

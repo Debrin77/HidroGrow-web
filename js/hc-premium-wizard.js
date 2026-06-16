@@ -1189,6 +1189,30 @@
         return true;
       }
     }
+    if (pagina === SETUP_PAGE_PREMIUM_5) {
+      if (
+        typeof requiereGeneticaEsquejeEnSetup === 'function' &&
+        requiereGeneticaEsquejeEnSetup()
+      ) {
+        if (
+          typeof validarGeneticaEsquejeObligatoria === 'function' &&
+          !validarGeneticaEsquejeObligatoria()
+        ) {
+          return false;
+        }
+      }
+      if (
+        typeof requiereGeneticaMadreEnSetup === 'function' &&
+        requiereGeneticaMadreEnSetup()
+      ) {
+        if (
+          typeof validarGeneticaMadreObligatoria === 'function' &&
+          !validarGeneticaMadreObligatoria()
+        ) {
+          return false;
+        }
+      }
+    }
     if (pagina === SETUP_PAGE_PREMIUM_6) {
       if (
         typeof requiereGeneticaEsquejeEnSetup === 'function' &&

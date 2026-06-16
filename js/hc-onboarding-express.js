@@ -184,7 +184,25 @@
               <div class="onboarding-express-camino-icon">✂️</div>
               <h3 class="onboarding-express-camino-title">Esqueje Hidro</h3>
               <p class="onboarding-express-camino-desc">
-                Clonación en DWC/RDWC. Para cultivadores con experiencia.
+                Clonación en DWC/RDWC. Genética → domo → circuito.
+              </p>
+            </div>
+
+            <div class="onboarding-express-camino-card" 
+                 data-camino="semilla_coco_drip" onclick="onboardingExpressSeleccionarCamino('semilla_coco_drip')">
+              <div class="onboarding-express-camino-icon">🥥</div>
+              <h3 class="onboarding-express-camino-title">Coco + Goteo DTW</h3>
+              <p class="onboarding-express-camino-desc">
+                Propagador → maceta coco → goteo con runoff (Saltón Verde).
+              </p>
+            </div>
+
+            <div class="onboarding-express-camino-card" 
+                 data-camino="madre_hidro" onclick="onboardingExpressSeleccionarCamino('madre_hidro')">
+              <div class="onboarding-express-camino-icon">👑</div>
+              <h3 class="onboarding-express-camino-title">Planta madre</h3>
+              <p class="onboarding-express-camino-desc">
+                Cubo madre 18/6 permanente; esquejes al camino clon.
               </p>
             </div>
           </div>

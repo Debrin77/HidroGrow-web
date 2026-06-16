@@ -81,6 +81,36 @@
     return true;
   }
 
+  function requiereGeneticaMadreEnSetup() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (cam !== 'madre_hidro') return false;
+    if (typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return false;
+    }
+    return true;
+  }
+
+  function validarGeneticaMadreObligatoria() {
+    if (!requiereGeneticaMadreEnSetup()) return true;
+    persistVariedadGermFromUI();
+    var vid = String(ensurePremium().variedadGerminacion || '').trim();
+    var req = el('setupPremiumGeneticaGermReq');
+    if (!vid) {
+      if (req) {
+        req.classList.remove('setup-hidden');
+        req.setAttribute('role', 'alert');
+        req.textContent =
+          'Indica la genética de la planta madre. Sin variedad no tiene sentido dimensionar cubo ni sala.';
+      }
+      if (typeof showToast === 'function') {
+        showToast('Elige la variedad de la madre antes de continuar', true);
+      }
+      return false;
+    }
+    if (req) req.classList.add('setup-hidden');
+    return true;
+  }
+
   function validarGeneticaGermObligatoria() {
     if (!requiereGeneticaGermEnSetup()) return true;
     persistVariedadGermFromUI();
@@ -270,7 +300,9 @@
   window.syncVariedadGermATorre = syncVariedadGermATorre;
   window.requiereGeneticaGermEnSetup = requiereGeneticaGermEnSetup;
   window.requiereGeneticaEsquejeEnSetup = requiereGeneticaEsquejeEnSetup;
+  window.requiereGeneticaMadreEnSetup = requiereGeneticaMadreEnSetup;
   window.validarGeneticaGermObligatoria = validarGeneticaGermObligatoria;
   window.validarGeneticaEsquejeObligatoria = validarGeneticaEsquejeObligatoria;
+  window.validarGeneticaMadreObligatoria = validarGeneticaMadreObligatoria;
   window.paginaGeneticaGermSetup = paginaGeneticaGermSetup;
 })();

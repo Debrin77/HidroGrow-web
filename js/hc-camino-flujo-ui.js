@@ -38,7 +38,7 @@
       3: '<strong>Entorno:</strong> interior/exterior para dimensionar sala y meteo.',
       6: '<strong>Genética primero:</strong> foto/auto y SOG/SCROG antes de elegir equipamiento.',
       7: '<strong>Plan germinación:</strong> variedad, semillas, sustrato y fecha de siembra.',
-      5: '<strong>Clima:</strong> fotoperiodo de sala y nutriente propagador.',
+      5: '<strong>Clima:</strong> fotoperiodo de sala y nutriente del cubo de germinación (no bandeja propagador).',
       4: '<strong>Equipamiento:</strong> sala + prep cubo (domo, medidor, oxigenador). Sin repetir si ya está ✓.',
       8: '<strong>DWC/RDWC:</strong> tipo de sistema; siguiente = medidas del cubo.',
     },
@@ -61,7 +61,8 @@
     },
     madre_hidro: {
       1: '<strong>Madre:</strong> 18/6 permanente; esquejes con el camino de clon.',
-      6: '<strong>Genética:</strong> variedad de la madre y método de poda/cortes.',
+      6: '<strong>Genética:</strong> variedad de la madre (obligatoria).',
+      7: '<strong>Detalle:</strong> método de poda y plan de cortes escalonados.',
       5: '<strong>Clima:</strong> 18 h luz, veg permanente, sin floración de cosecha.',
       4: '<strong>Sala + depósito:</strong> carpa, LED, extractor y cubo madre (sin domo esqueje).',
       8: '<strong>DWC madre:</strong> cubo dedicado; siguiente = geometría del depósito.',
@@ -88,6 +89,16 @@
       4: 'Espacio y prep',
       8: 'Tipo DWC/RDWC',
     },
+    madre_hidro: {
+      1: 'Camino',
+      2: 'Objetivo',
+      3: 'Entorno',
+      6: 'Genética madre',
+      7: 'Detalle madre',
+      5: 'Clima 18/6',
+      4: 'Sala y depósito',
+      8: 'Cubo madre',
+    },
     semilla_coco_drip: {
       1: 'Camino',
       2: 'Objetivo',
@@ -96,6 +107,8 @@
       7: 'Plan germinación',
       5: 'Clima y luz',
       4: 'Propagador y sala',
+      8: 'Coco + goteo DTW',
+      9: 'Rejilla y macetas',
     },
     esqueje_hidro: {
       1: 'Camino',
@@ -106,15 +119,6 @@
       5: 'Clima enraizado',
       4: 'Sala y domo',
       8: 'Tipo DWC/RDWC',
-    },
-    madre_hidro: {
-      1: 'Camino',
-      2: 'Objetivo',
-      3: 'Entorno',
-      6: 'Genética madre',
-      5: 'Clima 18/6',
-      4: 'Sala y depósito',
-      8: 'Cubo madre',
     },
   };
 
@@ -172,6 +176,8 @@
       state.configTorre.hcSetupFase === 'hidro' &&
       page === (typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8)
     ) {
+      var camLbl = getCam(cfgActiva());
+      if (camLbl === 'semilla_coco_drip') return 'Coco + goteo DTW';
       return 'DWC/RDWC';
     }
     var cam = getCam();
