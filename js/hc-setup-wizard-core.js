@@ -2151,12 +2151,24 @@ function abrirSetup() {
     typeof hcSetupEnFaseGerminacion === 'function' &&
     hcSetupEnFaseGerminacion()
   ) {
-    setupPagina =
-      typeof getSetupUltimoPasoIndice === 'function'
-        ? getSetupUltimoPasoIndice()
-        : typeof SETUP_PAGE_PREMIUM_6 !== 'undefined'
+    if (c.caminoCultivo === 'semilla_coco_drip') {
+      var planIncompleto = false;
+      try {
+        if (typeof validarPlanGerminacionCompleto === 'function') {
+          var vCoco = validarPlanGerminacionCompleto(c, { requierePropagador: false });
+          planIncompleto = !vCoco.ok;
+        }
+      } catch (_) {}
+      setupPagina = planIncompleto
+        ? typeof SETUP_PAGE_PREMIUM_6 !== 'undefined'
           ? SETUP_PAGE_PREMIUM_6
-          : 7;
+          : 7
+        : typeof SETUP_PAGE_PREMIUM_1 !== 'undefined'
+          ? SETUP_PAGE_PREMIUM_1
+          : 2;
+    } else {
+      setupPagina = SETUP_PAGE_ORIGEN;
+    }
   } else {
     setupPagina = SETUP_PAGE_ORIGEN;
   }

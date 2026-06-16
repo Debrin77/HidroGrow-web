@@ -263,7 +263,7 @@
       if (host) host.classList.add('setup-hidden');
       var planSec = el('setupPremiumGermPlanSection');
       if (
-        getCam() === 'semilla_hidro' &&
+        (getCam() === 'semilla_hidro' || getCam() === 'semilla_coco_drip') &&
         planSec &&
         typeof hcCaminoSemillaGermEnSetup === 'function' &&
         hcCaminoSemillaGermEnSetup()

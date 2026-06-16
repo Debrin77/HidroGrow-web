@@ -684,6 +684,9 @@
     const enGermHidro =
       typeof hcCaminoSemillaHidroSetupGerm === 'function' &&
       hcCaminoSemillaHidroSetupGerm();
+    const enGermCoco =
+      typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+      hcCaminoSemillaCocoDripSetupGerm();
     const sub6 = el('setupPremium6Subtitle');
     if (enGermProp) {
       host.classList.add('setup-hidden');
@@ -694,16 +697,18 @@
       }
       if (typeof refreshPremiumMetodoHint === 'function') refreshPremiumMetodoHint();
       if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
-    } else if (enGermHidro) {
+    } else if (enGermHidro || enGermCoco) {
       host.classList.remove('setup-hidden');
       if (bundle.parentNode !== host) {
         host.appendChild(bundle);
       }
       if (sub6) {
         sub6.classList.remove('setup-hidden');
-        sub6.innerHTML =
-          'Método (SOG/SCROG) y genética concreta para <strong>Inicio → Germinación</strong>. ' +
-          'El plan de semillas y la fecha de siembra van debajo.';
+        sub6.innerHTML = enGermCoco
+          ? 'Método (SOG/SCROG), genética y <strong>plan de semillas</strong> para propagador. ' +
+            'La rejilla DTW 4–5 L se configura tras germinar.'
+          : 'Método (SOG/SCROG) y genética concreta para <strong>Inicio → Germinación</strong>. ' +
+            'El plan de semillas y la fecha de siembra van debajo.';
       }
       if (typeof refreshPremiumMetodoHint === 'function') refreshPremiumMetodoHint();
       if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
@@ -1004,6 +1009,12 @@
       ) {
         refreshPremiumMetodoUI();
       }
+      if (
+        typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+        hcCaminoSemillaCocoDripSetupGerm()
+      ) {
+        refreshPremiumMetodoUI();
+      }
       refreshPremiumGerminacionUI();
       seleccionarPremiumGenetica(p.geneticaPref || 'foto');
       if (typeof renderSemillerosGrid === 'function') renderSemillerosGrid();
@@ -1194,7 +1205,8 @@
         typeof hcCaminoSemillaGermEnSetup === 'function' &&
         hcCaminoSemillaGermEnSetup() &&
         typeof getCaminoCultivo === 'function' &&
-        getCaminoCultivo() === 'semilla_hidro' &&
+        (getCaminoCultivo() === 'semilla_hidro' ||
+          getCaminoCultivo() === 'semilla_coco_drip') &&
         typeof validarPremiumGermPlan === 'function' &&
         !validarPremiumGermPlan()
       ) {

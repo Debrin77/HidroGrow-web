@@ -279,8 +279,13 @@
   }
 
   function hcGermPlanEnPasoDetalleHidro() {
+    return hcGermPlanEnPasoDetalleSemillaCamino('semilla_hidro');
+  }
+
+  /** Plan semillas en paso 6 (hidro y coco+goteo; paso 5 omitido en coco). */
+  function hcGermPlanEnPasoDetalleSemillaCamino(camObjetivo) {
     var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
-    if (cam !== 'semilla_hidro') return false;
+    if (cam !== camObjetivo) return false;
     if (
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()
@@ -290,13 +295,18 @@
     return typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup();
   }
 
+  function hcGermPlanEnPasoDetalleCocoDrip() {
+    return hcGermPlanEnPasoDetalleSemillaCamino('semilla_coco_drip');
+  }
+
   function ensureGermPlanHost() {
     var propagAhora =
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm();
-    var detalleHidro = hcGermPlanEnPasoDetalleHidro();
+    var detalleSemilla =
+      hcGermPlanEnPasoDetalleHidro() || hcGermPlanEnPasoDetalleCocoDrip();
     var host = propagAhora ? el('setupPremiumGermAhoraHost') : null;
-    if (!host && detalleHidro) host = el('spagePremium6');
+    if (!host && detalleSemilla) host = el('spagePremium6');
     if (!host) host = el('setupPremiumGermAhoraHost');
     if (!host) return null;
     if (propagAhora && host.id === 'setupPremiumGermAhoraHost') {
@@ -310,7 +320,7 @@
       sec.setAttribute('role', 'group');
       sec.setAttribute('aria-label', 'Plan de germinación');
     }
-    if (detalleHidro && host.id === 'spagePremium6') {
+    if (detalleSemilla && host.id === 'spagePremium6') {
       var genSec = el('setupPremiumGeneticaGermSection');
       if (sec.parentNode !== host) {
         if (genSec && genSec.parentNode === host && genSec.nextSibling) {
@@ -386,10 +396,14 @@
     }
     var camPlan = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
     var esHidroPlan = camPlan === 'semilla_hidro';
+    var esCocoPlan = camPlan === 'semilla_coco_drip';
     var capHtml = '';
     if (esHidroPlan) {
       capHtml =
         '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint"><strong>1 semilla = 1 cubo/net pot</strong> en el DWC/RDWC. Indica cuántas cestas vas a germinar.</p>';
+    } else if (esCocoPlan) {
+      capHtml =
+        '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint"><strong>Propagador primero</strong> (Saltón Verde): indica cuántas semillas germinarás; tras las 6 fases pasarás a maceta pequeña y rejilla DTW 4–5 L.</p>';
     } else if (!cap) {
       capHtml =
         '<p class="setup-field-hint setup-mb-8" id="setupPremiumGermCapHint">Elige domo arriba para sugerir semillas.</p>';
@@ -1138,7 +1152,9 @@
         showToast(
           cam === 'semilla_hidro'
             ? 'Indica cuántas semillas germinarás en el cubo'
-            : 'Indica cuántas semillas vas a germinar en el propagador',
+            : cam === 'semilla_coco_drip'
+              ? 'Indica cuántas semillas germinarás en el propagador (coco+goteo)'
+              : 'Indica cuántas semillas vas a germinar en el propagador',
           true
         );
       }

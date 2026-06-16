@@ -116,3 +116,12 @@ test('setup: estático hcSetupIrAPaginaWizard y render sin snap ORIGEN', () => {
   assert.match(pages, /function hcSetupIrAPaginaWizard/);
   assert.doesNotMatch(pages, /setupPagina = SETUP_PAGE_ORIGEN[\s\S]{0,80}getSetupSkippedPages\(\)\.has\(setupPagina\)/);
 });
+
+test('setup: plan semillas coco en paso 6 (no host oculto)', () => {
+  const germ = readFileSync(join(root, 'js/hc-premium-germ-plan.js'), 'utf8');
+  assert.match(germ, /hcGermPlanEnPasoDetalleCocoDrip/);
+  assert.match(germ, /semilla_coco_drip/);
+  const wiz = readFileSync(join(root, 'js/hc-premium-wizard.js'), 'utf8');
+  assert.match(wiz, /enGermCoco/);
+  assert.match(wiz, /semilla_coco_drip.*validarPremiumGermPlan/s);
+});
