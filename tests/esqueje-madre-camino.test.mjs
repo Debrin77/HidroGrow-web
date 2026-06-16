@@ -131,3 +131,11 @@ test('madre: catálogo madre sin grupo enraizado semilla', () => {
   assert.doesNotMatch(cat, /equipCatalogGroupsMadreHidro[\s\S]{0,300}EQUIP_ENRAIZADO_GROUP/);
   assert.match(mont, /esRutaEsqueje\(cfg\)[\s\S]{0,40}ITEMS_ENRAIZADO/);
 });
+
+test('esqueje: post-setup debe abrir checklist de enraizado', () => {
+  const lc = read('js/hc-instalacion-lifecycle.js');
+  assert.match(
+    lc,
+    /camPost === 'esqueje_hidro'[\s\S]{0,250}hcEjecutarAccionInstalacion\('irPropagadorMontaje'\)/
+  );
+});

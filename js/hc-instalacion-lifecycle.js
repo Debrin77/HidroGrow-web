@@ -1025,6 +1025,27 @@
     var cfgGerm = cfgActiva();
     var camPost =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
+    // Esqueje al hidro: tras cerrar el asistente, la siguiente pantalla lógica es
+    // el checklist de enraizado (domo/rockwool), no el “montaje de sala”.
+    // Esto evita que el usuario “no finalice” porque se queda en un estado incorrecto.
+    if (
+      camPost === 'esqueje_hidro' &&
+      cfgGerm &&
+      cfgGerm.hcSetupFase === 'hidro'
+    ) {
+      setTimeout(function () {
+        try {
+          hcEjecutarAccionInstalacion('irPropagadorMontaje');
+        } catch (_) {}
+        refreshInstalacionLifecycleUi();
+        try {
+          if (typeof actualizarPostSetupChecklistRail === 'function') {
+            actualizarPostSetupChecklistRail();
+          }
+        } catch (_) {}
+      }, 300);
+      return;
+    }
     if (
       camPost === 'semilla_hidro' &&
       typeof hcGerminacionActiva === 'function' &&
