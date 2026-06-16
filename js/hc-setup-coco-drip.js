@@ -329,7 +329,7 @@
       if (numPlantas > 0) {
         const maxPlantas = Math.floor(bomba / 60); // 60 GPH por planta
         if (numPlantas > maxPlantas) {
-          recomendaciones.push(`⚠️ Bomba insuficiente: ${bomba} GPH soporta hasta ${maxPlantas} plantas (60 GPH/planta). Recomendado: ${bombaRecomendada} GPH`);
+          recomendaciones.push(`⚠️ Bomba de goteo insuficiente: ${bomba} GPH soporta hasta ${maxPlantas} plantas (~60 GPH/planta, Saltón Verde). Recomendado: ${bombaRecomendada} GPH`);
         } else {
           recomendaciones.push(`✅ Bomba adecuada para ${numPlantas} plantas`);
         }

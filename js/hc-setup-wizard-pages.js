@@ -10,17 +10,32 @@ function hcSetupRedirectSiPaginaOmitida() {
   }
   const skip = getSetupSkippedPages();
   if (!skip.has(setupPagina)) return false;
-  const vis = getSetupVisiblePages();
+  const vis =
+    typeof getSetupOrderedVisiblePages === 'function'
+      ? getSetupOrderedVisiblePages()
+      : getSetupVisiblePages();
   if (!vis.length) return false;
-  const mayor = vis.filter(function (p) {
-    return p < setupPagina;
-  });
-  const menor = vis.filter(function (p) {
-    return p > setupPagina;
-  });
-  if (menor.length) setupPagina = menor[0];
-  else if (mayor.length) setupPagina = mayor[mayor.length - 1];
-  else setupPagina = vis[vis.length - 1];
+  const fullSeq =
+    typeof getSetupFullPageSequence === 'function' ? getSetupFullPageSequence() : vis;
+  var targetIdx = fullSeq.indexOf(setupPagina);
+  if (targetIdx < 0) {
+    setupPagina = vis[0];
+    return true;
+  }
+  var i;
+  for (i = targetIdx + 1; i < fullSeq.length; i++) {
+    if (!skip.has(fullSeq[i])) {
+      setupPagina = fullSeq[i];
+      return true;
+    }
+  }
+  for (i = targetIdx - 1; i >= 0; i--) {
+    if (!skip.has(fullSeq[i])) {
+      setupPagina = fullSeq[i];
+      return true;
+    }
+  }
+  setupPagina = vis[vis.length - 1];
   return true;
 }
 
@@ -177,6 +192,13 @@ function renderSetupPage() {
   // Dots de progreso (ocultar pasos saltados)
   const skipDots =
     typeof getSetupSkippedPages === 'function' ? getSetupSkippedPages() : new Set();
+  const visDots =
+    typeof getSetupOrderedVisiblePages === 'function'
+      ? getSetupOrderedVisiblePages()
+      : typeof getSetupVisiblePages === 'function'
+        ? getSetupVisiblePages()
+        : [];
+  const curDotIdx = visDots.indexOf(setupPagina);
   for (let i = 0; i < SETUP_TOTAL_PAGES; i++) {
     const dot = document.getElementById('sdot' + i);
     if (!dot) continue;
@@ -186,8 +208,15 @@ function renderSetupPage() {
     }
     dot.style.display = '';
     dot.className = 'setup-step-dot';
-    if (i < setupPagina) dot.classList.add('done');
-    else if (i === setupPagina) dot.classList.add('active');
+    const logicalIdx = visDots.indexOf(i);
+    if (logicalIdx >= 0 && curDotIdx >= 0) {
+      if (logicalIdx < curDotIdx) dot.classList.add('done');
+      else if (logicalIdx === curDotIdx) dot.classList.add('active');
+    } else if (i < setupPagina) {
+      dot.classList.add('done');
+    } else if (i === setupPagina) {
+      dot.classList.add('active');
+    }
   }
 
   const labelEl = document.getElementById('setupStepLabel');

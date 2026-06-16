@@ -42,6 +42,81 @@
     }
   }
 
+  function setupPageConst(name, fallback) {
+    try {
+      if (typeof window !== 'undefined' && typeof window[name] !== 'undefined') return window[name];
+      if (typeof global !== 'undefined' && typeof global[name] !== 'undefined') return global[name];
+    } catch (_) {}
+    return fallback;
+  }
+
+  /** Orden agronómico del bloque premium por camino (genética antes de equipamiento). */
+  function getSetupPremiumLogicalSequence(cam) {
+    var O = setupPageConst('SETUP_PAGE_ORIGEN', 1);
+    var P1 = setupPageConst('SETUP_PAGE_PREMIUM_1', 2);
+    var P2 = setupPageConst('SETUP_PAGE_PREMIUM_2', 3);
+    var P3 = setupPageConst('SETUP_PAGE_PREMIUM_3', 4);
+    var P4 = setupPageConst('SETUP_PAGE_PREMIUM_4', 5);
+    var P5 = setupPageConst('SETUP_PAGE_PREMIUM_5', 6);
+    var P6 = setupPageConst('SETUP_PAGE_PREMIUM_6', 7);
+    var PEND = setupPageConst('SETUP_PAGE_PREMIUM_END', 8);
+    cam = String(cam || '').trim();
+    if (cam === 'madre_hidro') {
+      return [O, P1, P2, P5, P4, P3, PEND];
+    }
+    if (
+      cam === 'esqueje_hidro' ||
+      cam === 'semilla_propagador' ||
+      cam === 'semilla_hidro' ||
+      cam === 'semilla_coco_drip'
+    ) {
+      return [O, P1, P2, P5, P6, P4, P3, PEND];
+    }
+    return [O, P1, P2, P3, P4, P5, P6, PEND];
+  }
+
+  function resolveSetupCaminoForOrder() {
+    try {
+      if (typeof hcResolverCaminoSetup === 'function') {
+        var r = String(hcResolverCaminoSetup() || '').trim();
+        if (r) return r;
+      }
+    } catch (_) {}
+    try {
+      if (typeof getCaminoCultivo === 'function') {
+        var g = String(getCaminoCultivo() || '').trim();
+        if (g) return g;
+      }
+    } catch (_) {}
+    try {
+      var p = ensurePremium();
+      if (p && p.caminoCultivo) return String(p.caminoCultivo).trim();
+    } catch (_) {}
+    return '';
+  }
+
+  /** Secuencia completa del asistente (premium reordenado + pasos técnicos en orden numérico). */
+  function getSetupFullPageSequence() {
+    var welcome = setupPageConst('SETUP_PAGE_WELCOME', 0);
+    var geom = setupPageConst('SETUP_PAGE_GEOMETRY', 9);
+    var total = setupPageConst('SETUP_TOTAL_PAGES', 16);
+    var cam = resolveSetupCaminoForOrder();
+    var seq = [welcome].concat(getSetupPremiumLogicalSequence(cam));
+    for (var i = geom; i < total; i++) {
+      seq.push(i);
+    }
+    return seq;
+  }
+
+  function getSetupOrderedVisiblePages() {
+    var skip = getSetupSkippedPages();
+    var out = [];
+    getSetupFullPageSequence().forEach(function (p) {
+      if (!skip.has(p) && out.indexOf(p) < 0) out.push(p);
+    });
+    return out;
+  }
+
   function getSetupSkippedPages() {
     const skip = new Set();
     // spage0 solo «Empezar asistente»; la elección de camino es spagePremiumOrigen (paso 1).
@@ -108,13 +183,7 @@
   }
 
   function getSetupVisiblePages() {
-    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
-    const skip = getSetupSkippedPages();
-    const out = [];
-    for (let i = 0; i < total; i++) {
-      if (!skip.has(i)) out.push(i);
-    }
-    return out;
+    return getSetupOrderedVisiblePages();
   }
 
   function getSetupDisplayStepInfo(page) {
@@ -128,16 +197,34 @@
   }
 
   function setupFlowAdvancePage(delta) {
-    const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
-    const skip = getSetupSkippedPages();
-    let p = typeof setupPagina !== 'undefined' ? setupPagina : 0;
-    const step = delta > 0 ? 1 : -1;
-    for (let guard = 0; guard < total + 2; guard++) {
-      p += step;
-      if (p < 0 || p >= total) return p;
-      if (!skip.has(p)) return p;
+    const vis = getSetupOrderedVisiblePages();
+    if (!vis.length) {
+      const total = typeof SETUP_TOTAL_PAGES !== 'undefined' ? SETUP_TOTAL_PAGES : 16;
+      let p = typeof setupPagina !== 'undefined' ? setupPagina : 0;
+      p += delta > 0 ? 1 : -1;
+      return Math.max(0, Math.min(total - 1, p));
     }
-    return p;
+    let cur = typeof setupPagina !== 'undefined' ? setupPagina : vis[0];
+    let idx = vis.indexOf(cur);
+    if (idx < 0) {
+      const full = getSetupFullPageSequence();
+      const pos = full.indexOf(cur);
+      if (pos >= 0) {
+        if (delta > 0) {
+          for (let i = pos + 1; i < full.length; i++) {
+            if (vis.indexOf(full[i]) >= 0) return full[i];
+          }
+        } else {
+          for (let j = pos - 1; j >= 0; j--) {
+            if (vis.indexOf(full[j]) >= 0) return full[j];
+          }
+        }
+      }
+      idx = delta > 0 ? -1 : vis.length;
+    }
+    const nextIdx = idx + (delta > 0 ? 1 : -1);
+    if (nextIdx >= 0 && nextIdx < vis.length) return vis[nextIdx];
+    return cur;
   }
 
   function hasExteriorCiudadCompleta() {
@@ -351,6 +438,9 @@
   global.setupFlowAdvancePage = setupFlowAdvancePage;
   global.getSetupSkippedPages = getSetupSkippedPages;
   global.getSetupVisiblePages = getSetupVisiblePages;
+  global.getSetupOrderedVisiblePages = getSetupOrderedVisiblePages;
+  global.getSetupFullPageSequence = getSetupFullPageSequence;
+  global.getSetupPremiumLogicalSequence = getSetupPremiumLogicalSequence;
   global.getSetupDisplayStepInfo = getSetupDisplayStepInfo;
   global.applySetupFlowCondensedUI = applySetupFlowCondensedUI;
   global.renderSetupAguaRecap = renderSetupAguaRecap;

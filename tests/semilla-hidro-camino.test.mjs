@@ -22,7 +22,11 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   assert.match(cultivo, /SETUP_PAGE_PREMIUM_END/);
   assert.match(
     cultivo,
-    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_PREMIUM_5[\s\S]*SETUP_PAGE_EQUIP[\s\S]*SETUP_PAGE_AGUA[\s\S]*SETUP_PAGE_NUTRIENTES[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
+    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_EQUIP[\s\S]*SETUP_PAGE_AGUA[\s\S]*SETUP_PAGE_NUTRIENTES[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
+  );
+  assert.doesNotMatch(
+    cultivo,
+    /if \(cam === 'semilla_hidro'\) \{[\s\S]{0,500}SETUP_PAGE_PREMIUM_5/
   );
   assert.match(
     cultivo,

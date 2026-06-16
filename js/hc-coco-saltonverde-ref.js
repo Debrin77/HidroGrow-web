@@ -111,7 +111,7 @@
     'No dejar secar el coco por completo; regar al ~30–40 % de seco (60–70 % humedad).',
     'Medir EC de entrada y EC de runoff en cada revisión.',
     'pH riego: ~5,8–6,0 en crecimiento; 6,0–6,3 en floración.',
-    'Goteo automatizado recomendado (p. ej. Netadrip Hydra) para riegos múltiples uniformes.',
+    'Goteo automatizado recomendado (p. ej. Netadrip Hydra): bomba en reservorio + programador de impulsos cortos.',
   ];
 
   var SISTEMA_DESCRIPCION =

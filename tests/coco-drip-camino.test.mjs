@@ -77,7 +77,11 @@ test('propagador: medidor en germ y catálogo Sala sin hidro', () => {
   assert.match(cat, /keys: \['propagador', 'higrometro_germ', 'mat_termica_germ', 'medidor'\]/);
   assert.match(cat, /semilla_propagador[\s\S]*hcPropagadorEquipSalaSinHidro/);
   assert.match(cat, /function equipCatalogGroupsCocoDrip/);
-  assert.match(cat, /keys: \['propagador', 'higrometro_germ'\]/);
+  assert.match(cat, /keys: \['propagador', 'higrometro_germ', 'mat_termica_germ'\]/);
+  assert.match(cat, /programador_riego/);
+  assert.match(cat, /Reservorio \+ goteo DTW/);
+  assert.doesNotMatch(cat, /Prep coco \+ reservorio/);
+  assert.match(cat, /germinacionConcluida/);
   assert.match(cat, /equipFilterKeysAlreadyListed/);
 });
 
@@ -98,6 +102,18 @@ test('index: build perf87 y cinco caminos', () => {
   const html = read('index.html');
   assert.match(html, /perf87/);
   assert.match(html, /cinco caminos/);
+});
+
+test('coco drip: copy bomba goteo y programador en asistente', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  const wizard = read('js/hc-equipamiento-wizard.js');
+  const flujo = read('js/hc-camino-flujo-ui.js');
+  assert.match(cat, /Bomba de goteo \(reservorio\)/);
+  assert.match(cat, /Programador de riego \(impulsos\)/);
+  assert.match(wizard, /semilla_coco_drip/);
+  assert.match(wizard, /programador de impulsos/);
+  assert.match(flujo, /Sala y propagador/);
+  assert.match(read('index.html'), /Bomba de goteo en reservorio/);
 });
 
 test('coco drip: integración sala m² → plantas y VPD', () => {

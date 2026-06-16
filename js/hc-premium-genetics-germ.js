@@ -45,6 +45,42 @@
     return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
   }
 
+  /** Esqueje: variedad obligatoria en paso Genética y método (antes de domo en equipamiento). */
+  function requiereGeneticaEsquejeEnSetup() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (cam !== 'esqueje_hidro') return false;
+    var orig =
+      typeof getPremiumOrigenPlanta === 'function'
+        ? getPremiumOrigenPlanta()
+        : ensurePremium().origenPlanta || 'semilla';
+    if (orig !== 'clon') return false;
+    if (typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
+      return false;
+    }
+    return true;
+  }
+
+  function validarGeneticaEsquejeObligatoria() {
+    if (!requiereGeneticaEsquejeEnSetup()) return true;
+    persistVariedadGermFromUI();
+    var vid = String(ensurePremium().variedadGerminacion || '').trim();
+    var req = el('setupPremiumGeneticaGermReq');
+    if (!vid) {
+      if (req) {
+        req.classList.remove('setup-hidden');
+        req.setAttribute('role', 'alert');
+        req.textContent =
+          'Indica qué genética vas a enraizar (esqueje madre). Sin variedad no tiene sentido elegir domo ni cubos.';
+      }
+      if (typeof showToast === 'function') {
+        showToast('Elige la variedad del esqueje antes de continuar', true);
+      }
+      return false;
+    }
+    if (req) req.classList.add('setup-hidden');
+    return true;
+  }
+
   function validarGeneticaGermObligatoria() {
     if (!requiereGeneticaGermEnSetup()) return true;
     persistVariedadGermFromUI();
@@ -233,6 +269,8 @@
   window.persistVariedadGermFromUI = persistVariedadGermFromUI;
   window.syncVariedadGermATorre = syncVariedadGermATorre;
   window.requiereGeneticaGermEnSetup = requiereGeneticaGermEnSetup;
+  window.requiereGeneticaEsquejeEnSetup = requiereGeneticaEsquejeEnSetup;
   window.validarGeneticaGermObligatoria = validarGeneticaGermObligatoria;
+  window.validarGeneticaEsquejeObligatoria = validarGeneticaEsquejeObligatoria;
   window.paginaGeneticaGermSetup = paginaGeneticaGermSetup;
 })();

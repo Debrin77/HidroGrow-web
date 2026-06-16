@@ -150,6 +150,17 @@ const EQUIP_CATEGORIAS = {
     campos: [{ key: 'canales', label: 'Canales', type: 'number' }],
     hint: 'Fotoperiodo 18/6 veg · 12/12 flor. Un canal por panel LED.',
   },
+  programador_riego: {
+    id: 'programador_riego',
+    label: 'Programador de riego (impulsos)',
+    icon: '⏱️',
+    entorno: 'both',
+    indispensable: false,
+    recommended: true,
+    campos: [{ key: 'canales', label: 'Programas / salidas', type: 'number' }],
+    hint:
+      'Timer digital con intervalos de 1 s (Saltón Verde): bomba de goteo sumergida en reservorio → impulsos cortos varias veces al día. No es recirculación ni fotoperiodo LED.',
+  },
   toldo_malla: {
     id: 'toldo_malla',
     label: 'Toldo / malla sombreo',
@@ -444,6 +455,15 @@ const EQUIPAMIENTO_CATALOG = [
   { id: 'titan_timer', categoria: 'temporizador', marca: 'Titan Controls', modelo: 'Apollo 9', top_es: true, rank: 4,
     specs: { canales: 2 }, nota: '2 salidas · veg/flor con backup.' },
 
+  { id: 'titan_apollo9_riego', categoria: 'programador_riego', marca: 'Titan Controls', modelo: 'Apollo 9', top_es: true, rank: 1,
+    specs: { canales: 2 }, nota: 'Intervalos de 1 s · bomba goteo + auxiliar (SV / Netadrip).' },
+  { id: 'gse_timer_riego', categoria: 'programador_riego', marca: 'GSE', modelo: 'Timer digital 1 s', top_es: true, rank: 2,
+    specs: { canales: 1 }, nota: 'Impulsos cortos varias veces al día · reservorio DTW.' },
+  { id: 'netadrip_hydra', categoria: 'programador_riego', marca: 'Netadrip', modelo: 'Hydra / programador', top_es: true, rank: 3,
+    specs: { canales: 1 }, nota: 'Referencia Saltón Verde · goteo automatizado uniforme.' },
+  { id: 'grasslin_riego', categoria: 'programador_riego', marca: 'Grasslin', modelo: 'Minutero digital', top_es: true, rank: 4,
+    specs: { canales: 1 }, nota: 'Ciclos ON/OFF por minuto · riego por goteo en coco.' },
+
   { id: 'ghp_malla_70', categoria: 'toldo_malla', marca: 'Garden Highpro', modelo: 'Malla 70 %', top_es: true, rank: 1,
     specs: { sombreoPct: 70 }, nota: 'Verano mediterráneo · terraza/jardín.' },
   { id: 'ghp_malla_50', categoria: 'toldo_malla', marca: 'Garden Highpro', modelo: 'Malla 50 %', top_es: true, rank: 2,
@@ -586,7 +606,13 @@ const EQUIP_PREP_HIDRO_GROUP = {
 var EQUIP_PREP_HIDRO_KEYS_DEDUP = ['medidor', 'bomba_aire', 'calentador'];
 
 /** Claves del bloque reservorio/goteo coco: no repetir en sala del mismo paso. */
-var EQUIP_COCO_FERT_KEYS_DEDUP = ['medidor', 'temporizador', 'bomba_aire', 'calentador', 'bomba_recirc'];
+var EQUIP_COCO_FERT_KEYS_DEDUP = [
+  'medidor',
+  'programador_riego',
+  'bomba_aire',
+  'calentador',
+  'bomba_recirc',
+];
 
 function equipFilterKeysAlreadyListed(groups, priorKeys) {
   var used = {};
@@ -688,17 +714,105 @@ function hcEquipCatalogModoSalaPropagador() {
   return true;
 }
 
+function hcSetupTieneVariedadEsqueje() {
+  try {
+    if (typeof ensurePremiumSetup === 'function') {
+      var p = ensurePremiumSetup();
+      if (String(p.variedadGerminacion || '').trim()) return true;
+    }
+  } catch (_) {}
+  try {
+    var cfg = typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
+    if (cfg.premiumSetup && String(cfg.premiumSetup.variedadGerminacion || '').trim()) return true;
+    if (String(cfg.variedadGerminacion || '').trim()) return true;
+  } catch (_) {}
+  return false;
+}
+
+/** Esqueje: domo/enraizado solo tras genética (paso 6) y antes no circuito hidro completo. */
+function hcEquipPaginaEsquejeHidro() {
+  try {
+    return typeof setupPagina !== 'undefined' ? setupPagina : 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function equipCatalogGroupsEsquejeHidro(entorno) {
+  var pag = hcEquipPaginaEsquejeHidro();
+  var p3 = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+  var p8 = typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+  var tieneVariedad = hcSetupTieneVariedadEsqueje();
+  var sala = equipCatalogGroupsSalaPropagador(entorno);
+  if (pag <= p3 && !tieneVariedad) {
+    return sala.map(function (g) {
+      if (g.id !== 'sala_indispensable') return g;
+      return Object.assign({}, g, {
+        hint:
+          'Carpa, LED y extractor. El <strong>domo de enraizado</strong> aparece tras indicar la ' +
+          '<strong>variedad del esqueje</strong> (paso Genética y método).',
+      });
+    });
+  }
+  var groups = sala.slice();
+  if (tieneVariedad) {
+    groups.unshift(
+      Object.assign({}, EQUIP_ENRAIZADO_GROUP, {
+        label: 'Enraizado (esqueje)',
+        required: true,
+        hint:
+          'Domo 22–26 °C, HR 70–80 %, rockwool/jiffy. Variedad ya indicada en Genética y método.',
+      })
+    );
+  } else {
+    return sala.map(function (g) {
+      if (g.id !== 'sala_indispensable') return g;
+      return Object.assign({}, g, {
+        hint:
+          'Indica primero la <strong>variedad del esqueje</strong> en el paso Genética y método; después aparece el catálogo del domo.',
+      });
+    });
+  }
+  if (pag >= p8) {
+    var base =
+      entorno === 'exterior'
+        ? EQUIP_CATALOG_GROUPS.exterior.slice()
+        : EQUIP_CATALOG_GROUPS.interior.slice();
+    var used = {};
+    groups.forEach(function (g) {
+      (g.keys || []).forEach(function (k) {
+        used[k] = true;
+      });
+    });
+    base = base
+      .map(function (g) {
+        var keys = (g.keys || []).filter(function (k) {
+          return !used[k];
+        });
+        if (!keys.length) return null;
+        return Object.assign({}, g, { keys: keys });
+      })
+      .filter(function (g) {
+        return g && g.keys && g.keys.length;
+      });
+    groups = groups.concat(base);
+  }
+  return equipApplyBombaRecircFilter(groups);
+}
+
 function equipCatalogGroupsCocoDrip(entorno, enGerm) {
-  var fertKeys = ['medidor', 'bomba_recirc', 'temporizador', 'calentador', 'bomba_aire'];
+  var fertKeys = ['medidor', 'bomba_recirc', 'programador_riego', 'calentador', 'bomba_aire'];
   var fert = {
     id: 'coco_fertigacion',
-    label: enGerm ? 'Prep coco + reservorio' : 'Reservorio y goteo',
+    label: 'Reservorio + goteo DTW',
     icon: '🥥',
     required: true,
     keys: fertKeys.slice(),
     hint:
-      'Coco coir DTW (Saltón Verde / Coco For Cannabis): medidor EC/pH, bomba de riego (GPH), temporizador, ' +
-      'calentador si T° reservorio <18 °C, aireación del tanque. Fertigar siempre con nutrientes; 10–20 % runoff por evento.',
+      'Tras traslado a macetas 4–5 L en rejilla (Saltón Verde): medidor EC/pH, ' +
+      '<strong>bomba de goteo sumergida en el reservorio</strong> (GPH, sin recirculación), ' +
+      '<strong>programador de impulsos</strong> (intervalos de 1 s), calentador si T° reservorio &lt;18 °C y aireación opcional. ' +
+      'Fertigar siempre; 10–20 % runoff por evento.',
   };
   var sala = equipFilterKeysAlreadyListed(equipCatalogGroupsSalaPropagador(entorno), fertKeys);
   if (enGerm) {
@@ -708,12 +822,21 @@ function equipCatalogGroupsCocoDrip(entorno, enGerm) {
         label: 'Propagador → maceta pequeña',
         icon: '🌱',
         required: true,
-        keys: ['propagador', 'higrometro_germ'],
+        keys: ['propagador', 'higrometro_germ', 'mat_termica_germ'],
         hint:
-          'Domo o bandeja en coco bufferizado pH 5.5–5.8 (Saltón Verde). Tras raíz, traslado a maceta 4–5 L en rejilla DTW; el medidor EC/pH va en el bloque de reservorio.',
+          'Fase actual (Saltón Verde): domo 22–26 °C, HR alta, coco bufferizado pH 5,5–5,8. ' +
+          'Germina aquí; <strong>no</strong> instales aún bomba de goteo, programador ni rejilla DTW definitiva.',
       },
-      fert,
-    ].concat(sala);
+    ].concat(
+      sala.map(function (g) {
+        if (g.id !== 'sala_indispensable') return g;
+        return Object.assign({}, g, {
+          hint:
+            'Carpa, LED y extractor para la sala. El temporizador LED (fotoperiodo) va en «Sala · opcional». ' +
+            'Bomba de goteo y programador de impulsos se registran <strong>tras germinar</strong>, al montar la rejilla DTW.',
+        });
+      })
+    );
   }
   return sala.concat([fert]);
 }
@@ -809,7 +932,7 @@ function getEquipCatalogGroups(entorno) {
     }
   }
 
-  /** Pestaña Sala · coco+goteo (fuera del asistente): solo sala hasta cerrar reservorio/goteo. */
+  /** Pestaña Sala · coco+goteo durante germinación activa: solo sala (sin reservorio/goteo). */
   if (
     camino === 'semilla_coco_drip' &&
     !faseSala &&
@@ -822,7 +945,9 @@ function getEquipCatalogGroups(entorno) {
         faseGerm ||
         (typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm()) ||
         (typeof hcCaminoSemillaCocoDripSetupGerm === 'function' && hcCaminoSemillaCocoDripSetupGerm());
-      if (!enGermCoco) {
+      var germActiva =
+        typeof germinacionConcluida === 'function' && !germinacionConcluida(cfgCoco);
+      if (!enGermCoco && germActiva) {
         return equipCatalogGroupsSalaPropagador(entorno);
       }
     }
@@ -957,10 +1082,8 @@ function getEquipCatalogGroups(entorno) {
       [Object.assign({}, germGrp, { label: 'Germinación (semilla) — recomendado' })].concat(base)
     );
   }
-  if (origen === 'clon') {
-    return equipApplyBombaRecircFilter(
-      [Object.assign({}, EQUIP_ENRAIZADO_GROUP, { label: 'Enraizado (esqueje) — imprescindible' })].concat(base)
-    );
+  if (origen === 'clon' || camino === 'esqueje_hidro') {
+    return equipCatalogGroupsEsquejeHidro(entorno);
   }
   return equipApplyBombaRecircFilter(base);
 }
@@ -1003,6 +1126,7 @@ window.getEquipCategorias = getEquipCategorias;
 window.getEquipamientoByCategoria = getEquipamientoByCategoria;
 window.getEquipamientoById = getEquipamientoById;
 window.getEquipTopPorCategoria = getEquipTopPorCategoria;
+window.hcSetupTieneVariedadEsqueje = hcSetupTieneVariedadEsqueje;
 
 /** Hint de categoría según camino/origen (esqueje ≠ propagador semilla; hidro ≠ bandeja). */
 function equipCategoriaHintContextual(catId, ctx) {
@@ -1044,7 +1168,28 @@ function equipCategoriaHintContextual(catId, ctx) {
     if (cam === 'semilla_hidro') {
       return 'Opcional junto a cada cúpula/net pot. HR bajo mini cúpula ≠ HR del aire de la sala.';
     }
+    if (cam === 'semilla_coco_drip') {
+      return 'HR bajo el domo del propagador (70–80 %). Registra en Medir durante la germinación; no confundir con HR de sala.';
+    }
     return cat.hint;
+  }
+  if (catId === 'bomba_recirc' && cam === 'semilla_coco_drip') {
+    return (
+      'Bomba sumergida en el <strong>reservorio</strong> que impulsa el goteo a las macetas DTW (~60 GPH/planta, Saltón Verde). ' +
+      'No es recirculación RDWC: el agua sale por goteros y el runoff se desecha.'
+    );
+  }
+  if (catId === 'programador_riego') {
+    return (
+      'Programa impulsos cortos de la bomba de goteo (varias veces al día, solo con luz encendida). ' +
+      'Timer digital con intervalos de 1 s (Saltón Verde / Netadrip). Distinto del temporizador LED de fotoperiodo.'
+    );
+  }
+  if (catId === 'bomba_aire' && cam === 'semilla_coco_drip') {
+    return 'Opcional en reservorio DTW: mezcla la solución nutritiva. No oxigena raíces en coco (viven en sustrato).';
+  }
+  if (catId === 'medidor' && cam === 'semilla_coco_drip') {
+    return 'Medidor pen o combo para EC/pH del reservorio y runoff. Imprescindible al montar la rejilla DTW tras germinar.';
   }
   return cat.hint || '';
 }
@@ -1062,6 +1207,12 @@ function equipCategoriaLabelContextual(catId, ctx) {
   }
   if (catId === 'mat_termica_germ' && (origen === 'clon' || cam === 'esqueje_hidro')) {
     return 'Mat térmica (domo esquejes)';
+  }
+  if (catId === 'bomba_recirc' && cam === 'semilla_coco_drip') {
+    return 'Bomba de goteo (reservorio)';
+  }
+  if (catId === 'propagador' && cam === 'semilla_coco_drip') {
+    return 'Propagador / domo (germinación)';
   }
   return cat.label || catId;
 }

@@ -107,6 +107,22 @@ test('esqueje: textos domo de enraizado, no propagador semilla', () => {
   assert.doesNotMatch(sis, /domo y la bandeja/);
 });
 
+test('esqueje: genética antes de domo y reapertura sin volver a origen', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  const gen = read('js/hc-premium-genetics-germ.js');
+  const wiz = read('js/hc-premium-wizard.js');
+  const core = read('js/hc-setup-wizard-core.js');
+  assert.match(cat, /function equipCatalogGroupsEsquejeHidro/);
+  assert.match(cat, /function hcSetupTieneVariedadEsqueje/);
+  assert.match(cat, /pag <= p3 && !tieneVariedad/);
+  assert.match(gen, /function validarGeneticaEsquejeObligatoria/);
+  assert.match(gen, /function requiereGeneticaEsquejeEnSetup/);
+  assert.match(wiz, /validarGeneticaEsquejeObligatoria/);
+  assert.match(core, /camReab === 'esqueje_hidro'/);
+  assert.match(core, /hcSiguientePasoEsquejeHidro/);
+  assert.doesNotMatch(wiz, /cuatro rutas de cultivo/);
+});
+
 test('madre: sin checklist propagador ni grupo enraizado', () => {
   const cat = read('js/hc-equipamiento-catalog.js');
   const mont = read('js/hc-propagador-montaje.js');

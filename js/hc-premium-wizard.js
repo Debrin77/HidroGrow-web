@@ -1124,7 +1124,7 @@
       const def =
         cam && typeof getCaminoDef === 'function' ? getCaminoDef(cam) : null;
       if (!cam || !def || def.id !== cam) {
-        if (typeof showToast === 'function') showToast('Elige una de las cuatro rutas de cultivo', true);
+        if (typeof showToast === 'function') showToast('Elige una de las cinco rutas de cultivo', true);
         return false;
       }
     }
@@ -1190,6 +1190,17 @@
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_6) {
+      if (
+        typeof requiereGeneticaEsquejeEnSetup === 'function' &&
+        requiereGeneticaEsquejeEnSetup()
+      ) {
+        if (
+          typeof validarGeneticaEsquejeObligatoria === 'function' &&
+          !validarGeneticaEsquejeObligatoria()
+        ) {
+          return false;
+        }
+      }
       if (
         typeof requiereGeneticaGermEnSetup === 'function' &&
         requiereGeneticaGermEnSetup()

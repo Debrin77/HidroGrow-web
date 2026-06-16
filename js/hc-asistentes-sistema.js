@@ -115,8 +115,8 @@ const CHECKLIST_SISTEMA = {
   coco_drip: [
     // Materiales
     { id: 'reservorio', texto: 'Reservorio (14+ galones), preferiblemente oscuro', completado: false, categoria: 'materiales' },
-    { id: 'bomba', texto: 'Bomba de riego (300+ GPH, 60 GPH por planta)', completado: false, categoria: 'materiales' },
-    { id: 'timer', texto: 'Timer digital con intervalos de 1 segundo', completado: false, categoria: 'materiales' },
+    { id: 'bomba', texto: 'Bomba de goteo sumergida en reservorio (300+ GPH, ~60 GPH/planta)', completado: false, categoria: 'materiales' },
+    { id: 'timer', texto: 'Programador de riego con intervalos de 1 segundo (impulsos de goteo)', completado: false, categoria: 'materiales' },
     { id: 'linea_principal', texto: 'Línea principal de 1/2" desde bomba a tent', completado: false, categoria: 'materiales' },
     { id: 'distribuidor', texto: 'Distribuidores (emitters o Hydro Halos)', completado: false, categoria: 'materiales' },
     { id: 'valvulas', texto: 'Válvulas de control (master + por planta)', completado: false, categoria: 'materiales' },
@@ -128,13 +128,13 @@ const CHECKLIST_SISTEMA = {
     // Puesta en marcha
     { id: 'preparar_medio', texto: 'Preparar coco coir con 30% perlita, hidratar completamente', completado: false, categoria: 'puesta_marcha' },
     { id: 'llenar_macetas', texto: 'Llenar macetas con medio, compactar ligeramente', completado: false, categoria: 'puesta_marcha' },
-    { id: 'instalar_bomba', texto: 'Instalar bomba en reservorio, conectar a timer', completado: false, categoria: 'puesta_marcha' },
+    { id: 'instalar_bomba', texto: 'Instalar bomba de goteo en reservorio y conectarla al programador de impulsos', completado: false, categoria: 'puesta_marcha' },
     { id: 'instalar_lineas', texto: 'Conectar línea principal y distribuidores', completado: false, categoria: 'puesta_marcha' },
     { id: 'instalar_valvulas', texto: 'Instalar válvula master y válvulas por planta', completado: false, categoria: 'puesta_marcha' },
     { id: 'posicionar_macetas', texto: 'Rejilla tipo sala (p. ej. 3×3): macetas elevadas sobre bandeja', completado: false, categoria: 'puesta_marcha' },
     { id: 'conectar_emitters', texto: 'Conectar emitters a cada maceta', completado: false, categoria: 'puesta_marcha' },
     { id: 'calibrar_flujo', texto: 'Calibrar flujo de cada emitter con válvulas', completado: false, categoria: 'puesta_marcha' },
-    { id: 'configurar_timer', texto: 'Configurar timer según frecuencia recomendada', completado: false, categoria: 'puesta_marcha' },
+    { id: 'configurar_timer', texto: 'Programar impulsos de goteo según frecuencia recomendada (solo con luz encendida)', completado: false, categoria: 'puesta_marcha' },
     { id: 'verificar_drenaje', texto: 'Verificar runoff 10–20 % y vaciar bandeja tras cada riego', completado: false, categoria: 'puesta_marcha' },
     { id: 'ajustar_ph', texto: 'Ajustar pH del agua a 5.8-6.0', completado: false, categoria: 'puesta_marcha' },
     { id: 'preparar_solucion', texto: 'Preparar solución nutricional con EC inicial 0.8-1.0 mS/cm', completado: false, categoria: 'puesta_marcha' },

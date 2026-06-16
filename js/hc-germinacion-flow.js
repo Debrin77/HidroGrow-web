@@ -2271,18 +2271,39 @@
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
         '<strong>' +
-        (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip' ? 'Sala (opcional).' : 'Sala.') +
+        (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip'
+          ? 'Sala (opcional).'
+          : camGerm === 'semilla_hidro'
+            ? 'Sala obligatoria.'
+            : 'Sala.') +
         '</strong> Configura carpa, LED y extractor' +
         (camGerm === 'semilla_propagador' || camGerm === 'semilla_coco_drip'
           ? ' mientras germina en propagador'
-          : ' antes de las 6 fases') +
+          : ' antes de las 6 fases en el cubo') +
         '. ' +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirConfiguradorEquipamientoSalaPropagador===\'function\'?abrirConfiguradorEquipamientoSalaPropagador():(typeof abrirSetupFaseSala===\'function\'&&abrirSetupFaseSala())">Configurar sala</button></div>';
     } else if (bloqueoSala === 'sala_montaje') {
       salaCtaHtml =
         '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner">' +
-        '<strong>Montaje de sala.</strong> Verifica el checklist en la pestaña Sala. ' +
+        '<strong>Montaje de sala.</strong> ' +
+        (camGerm === 'semilla_hidro'
+          ? 'Sin montaje verificado no puedes iniciar las 6 fases de germinación en el cubo. '
+          : 'Verifica el checklist en la pestaña Sala. ') +
         '<button type="button" class="btn btn-primary btn-sm" onclick="typeof hcAbrirMontajeSalaChecklist===\'function\'?hcAbrirMontajeSalaChecklist():(typeof hcIrMontajeSala===\'function\'&&hcIrMontajeSala())">Ir a montaje</button></div>';
+    } else if (bloqueoSala === 'propagador') {
+      var prepLbl =
+        camGerm === 'semilla_hidro'
+          ? '<strong>Prep hidro pendiente.</strong> Completa el checklist del cubo de germinación (domo, rockwool, medidor) en Inicio antes de las 6 fases.'
+          : '<strong>Checklist propagador.</strong> Verifica domo, bandeja y condiciones antes de registrar germinación.';
+      salaCtaHtml =
+        '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner hc-germ-sala-cta--warn">' +
+        prepLbl +
+        ' <button type="button" class="btn btn-primary btn-sm" onclick="typeof hcOpenPropagadorMontajeChecklist===\'function\'&&hcOpenPropagadorMontajeChecklist()">Abrir checklist</button></div>';
+    } else if (bloqueoSala === 'plan_germ') {
+      salaCtaHtml =
+        '<div class="hc-germ-sala-cta setup-field-hint setup-field-hint--banner hc-germ-sala-cta--warn">' +
+        '<strong>Plan de germinación incompleto.</strong> Indica variedad, semillas, sustrato y fecha en el asistente (paso Genética y plan). ' +
+        '<button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetup===\'function\'&&abrirSetup()">Completar asistente</button></div>';
     } else if (bloqueoSala === 'traslado') {
       var lblBan = labelsCierreGerminacion(cfg);
       salaCtaHtml =

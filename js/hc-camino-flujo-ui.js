@@ -26,33 +26,45 @@
 
   var STEP_BANNERS = {
     semilla_propagador: {
-      3: '<strong>Entorno:</strong> interior o exterior. En ambos casos confirma el <strong>municipio</strong> para la pestaña Meteo (previsión de tu zona).',
+      3: '<strong>Entorno:</strong> interior o exterior. Confirma el <strong>municipio</strong> para Meteo.',
+      6: '<strong>Primero genética:</strong> foto/auto, SOG/SCROG y <strong>variedad</strong> antes del propagador.',
+      7: '<strong>Plan:</strong> cuántas semillas, sustrato y fecha de siembra en domo.',
+      5: '<strong>Clima domo:</strong> nutriente bandeja, 18 h luz, HR objetivo bajo tapa.',
+      4: '<strong>Propagador:</strong> domo y mat térmica. La sala grande va después en <strong>Configurar sala</strong>.',
     },
     semilla_hidro: {
       1: '<strong>Camino:</strong> prep hidro → sala y montaje → DWC/RDWC → 6 fases en el cubo.',
-      2: '<strong>Objetivo:</strong> semilla en net pot desde el inicio; el depósito se cierra antes de las 6 fases.',
-      3: '<strong>Entorno:</strong> define interior/exterior para dimensionar sala y meteo.',
-      4: '<strong>Espacio:</strong> sala (carpa, LED, extractor) y prep del cubo de germinación.',
-      5: '<strong>Clima y luz:</strong> fotoperiodo de la sala antes de germinar en el hidro.',
-      7: '<strong>Detalle:</strong> método SOG/SCROG, variedad, plan de semillas y fecha de siembra. Semillero opcional.',
-      8: '<strong>DWC/RDWC:</strong> tipo de sistema; siguiente pantalla = medidas del cubo o circuito.',
+      2: '<strong>Objetivo:</strong> semilla en net pot; el depósito se cierra antes de las 6 fases.',
+      3: '<strong>Entorno:</strong> interior/exterior para dimensionar sala y meteo.',
+      6: '<strong>Genética primero:</strong> foto/auto y SOG/SCROG antes de elegir equipamiento.',
+      7: '<strong>Plan germinación:</strong> variedad, semillas, sustrato y fecha de siembra.',
+      5: '<strong>Clima:</strong> fotoperiodo de sala y nutriente propagador.',
+      4: '<strong>Equipamiento:</strong> sala + prep cubo (domo, medidor, oxigenador). Sin repetir si ya está ✓.',
+      8: '<strong>DWC/RDWC:</strong> tipo de sistema; siguiente = medidas del cubo.',
     },
     semilla_coco_drip: {
-      1: '<strong>Camino:</strong> propagador → maceta pequeña → rejilla DTW 4–5 L (coco + goteo, sin recirculación).',
-      2: '<strong>Objetivo:</strong> semilla en coco; fertigación con runoff 10–20 % según fase (Saltón Verde).',
+      1: '<strong>Camino:</strong> propagador → maceta pequeña → rejilla DTW 4–5 L (coco + goteo DTW).',
+      2: '<strong>Objetivo:</strong> semilla en coco; runoff 10–20 % (Saltón Verde).',
       3: '<strong>Entorno:</strong> interior/exterior y municipio para meteo.',
-      4: '<strong>Espacio:</strong> sala (carpa, LED, extractor), propagador y prep de reservorio/goteo.',
-      5: '<strong>Clima y luz:</strong> fotoperiodo de la sala antes de germinar.',
-      7: '<strong>Detalle:</strong> variedad, plan de semillas y fecha de siembra en propagador.',
+      6: '<strong>Genética primero:</strong> variedad y método antes del equipamiento.',
+      7: '<strong>Plan:</strong> semillas, sustrato y fecha en propagador.',
+      5: '<strong>Clima:</strong> fotoperiodo de sala antes de germinar.',
+      4: '<strong>Espacio:</strong> propagador + sala. <strong>Bomba goteo y programador solo tras germinar</strong>.',
     },
     esqueje_hidro: {
-      1: '<strong>Esqueje:</strong> enraizado en domo → matriz → mismo DWC/RDWC que semilla.',
-      4: '<strong>Equipamiento:</strong> propagador, sala y circuito hidro en un solo asistente.',
-      7: '<strong>Checklists</strong> de corte y domo en este bloque.',
+      1: '<strong>Esqueje:</strong> genética → domo enraizado → DWC/RDWC (sin germinar semilla).',
+      6: '<strong>Genética obligatoria:</strong> indica qué esqueje clonas antes de domo y circuito.',
+      7: '<strong>Detalle:</strong> variedad madre, método SOG/SCROG y checklist de corte.',
+      5: '<strong>Clima domo:</strong> 22–26 °C, HR 70–80 %, luz suave 18/6.',
+      4: '<strong>Equipamiento:</strong> sala; domo aparece tras genética. Sin repetir grupos ✓.',
+      8: '<strong>DWC/RDWC:</strong> elige circuito; luego geometría y matriz de esquejes.',
     },
     madre_hidro: {
-      1: '<strong>Madre:</strong> cubo 18/6 permanente; esquejes con el camino de clon.',
-      4: '<strong>Sala y depósito</strong> para la planta madre.',
+      1: '<strong>Madre:</strong> 18/6 permanente; esquejes con el camino de clon.',
+      6: '<strong>Genética:</strong> variedad de la madre y método de poda/cortes.',
+      5: '<strong>Clima:</strong> 18 h luz, veg permanente, sin floración de cosecha.',
+      4: '<strong>Sala + depósito:</strong> carpa, LED, extractor y cubo madre (sin domo esqueje).',
+      8: '<strong>DWC madre:</strong> cubo dedicado; siguiente = geometría del depósito.',
     },
   };
 
@@ -61,27 +73,48 @@
       1: 'Camino',
       2: 'Objetivo',
       3: 'Entorno',
-      4: 'Germinación ahora',
-      5: 'Nutriente y domo',
-      7: 'Plan cultivo',
+      6: 'Genética y método',
+      7: 'Plan germinación',
+      5: 'Clima y nutriente',
+      4: 'Propagador',
     },
     semilla_hidro: {
       1: 'Camino',
       2: 'Objetivo',
       3: 'Entorno',
-      4: 'Espacio y prep',
-      5: 'Clima y luz',
       6: 'Genética y método',
-      7: 'Detalle origen',
+      7: 'Plan germinación',
+      5: 'Clima y luz',
+      4: 'Espacio y prep',
+      8: 'Tipo DWC/RDWC',
     },
     semilla_coco_drip: {
       1: 'Camino',
       2: 'Objetivo',
       3: 'Entorno',
-      4: 'Espacio y equipamiento',
-      5: 'Clima y luz',
       6: 'Genética y método',
       7: 'Plan germinación',
+      5: 'Clima y luz',
+      4: 'Propagador y sala',
+    },
+    esqueje_hidro: {
+      1: 'Camino',
+      2: 'Objetivo',
+      3: 'Entorno',
+      6: 'Genética esqueje',
+      7: 'Detalle clon',
+      5: 'Clima enraizado',
+      4: 'Sala y domo',
+      8: 'Tipo DWC/RDWC',
+    },
+    madre_hidro: {
+      1: 'Camino',
+      2: 'Objetivo',
+      3: 'Entorno',
+      6: 'Genética madre',
+      5: 'Clima 18/6',
+      4: 'Sala y depósito',
+      8: 'Cubo madre',
     },
   };
 
@@ -304,7 +337,12 @@
     }
     var t3 = document.querySelector('#spagePremium3 .setup-title');
     if (t3) {
-      t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
+      var camT3 = getCam();
+      if (camT3 === 'semilla_coco_drip' && showGerm) {
+        t3.textContent = 'Sala y propagador';
+      } else {
+        t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
+      }
     }
     applyGermAhoraMinimalChrome(showGerm);
     applySalaPreGermEquipMinimalChrome();

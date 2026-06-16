@@ -65,7 +65,7 @@
       orden: [
         'Propagador: germina la semilla en domo/bandeja (no en la rejilla DTW).',
         'Trasplante: maceta 0,3–1 L coco → maceta 4–5 L en rejilla goteo DTW.',
-        'Configura sala + reservorio + goteo tras germinar (o mientras germina).',
+        'Tras germinar: reservorio + bomba de goteo + programador de impulsos (Saltón Verde / Netadrip).',
         'Fertigar siempre; EC/pH por fase Saltón Verde; medir entrada y runoff.',
       ],
     },
@@ -1839,7 +1839,6 @@
       typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
     if (cam === 'semilla_hidro') {
       [
-        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
         typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
         typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
@@ -1852,7 +1851,6 @@
     }
     if (cam === 'semilla_coco_drip') {
       [
-        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6,
         typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8,
         typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
@@ -1875,10 +1873,6 @@
       typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
       typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
     ];
-    if (cam === 'semilla_propagador') {
-      pages.push(typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6);
-      pages.push(typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7);
-    }
     pages.forEach(function (p) {
       skip.add(p);
     });

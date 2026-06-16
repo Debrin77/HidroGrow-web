@@ -232,11 +232,41 @@
     return 'interior';
   }
 
+  function equipGrupoRegistrado(inst, keys) {
+    if (!inst || !keys || !keys.length) return false;
+    return keys.every(function (key) {
+      var cur = inst[key];
+      return !!(cur && (cur.id || cur.marca));
+    });
+  }
+
+  function equipGrupoResumenRegistrado(inst, keys, cats) {
+    return (keys || [])
+      .map(function (key) {
+        var cur = inst[key];
+        if (!cur || !(cur.id || cur.marca)) return '';
+        var cat = cats && cats[key];
+        var lbl =
+          typeof equipCategoriaLabelContextual === 'function'
+            ? equipCategoriaLabelContextual(key, {
+                origen: typeof getPremiumOrigenPlanta === 'function' ? getPremiumOrigenPlanta() : '',
+                camino: typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '',
+              })
+            : (cat && cat.label) || key;
+        return lbl + ': ' + cur.marca + (cur.modelo ? ' ' + cur.modelo : '');
+      })
+      .filter(Boolean)
+      .join(' · ');
+  }
+
   function renderEquipCatalogCard(host, cat, key, inst, prefix, group) {
     const cur = inst[key];
+    const yaReg = !!(cur && cur.marca);
     const selId = prefix + key;
     const card = document.createElement('div');
-    card.className = 'equip-catalog-card' + (cur && cur.marca ? ' equip-catalog-card--picked' : '');
+    card.className =
+      'equip-catalog-card' +
+      (yaReg ? ' equip-catalog-card--picked equip-catalog-card--registrado' : '');
     if (key === 'cupula_maceta' || cat.perMaceta) {
       card.classList.add('equip-catalog-card--per-maceta');
     }
@@ -339,19 +369,35 @@
       return;
     }
     groups.forEach(function (group) {
+      const groupKeys = group.keys || [];
+      const grupoOk = equipGrupoRegistrado(inst, groupKeys);
       const section = document.createElement('section');
       section.className =
         'equip-catalog-group' +
         (group.required ? ' equip-catalog-group--required' : '') +
-        (group.optional ? ' equip-catalog-group--optional' : '');
+        (group.optional ? ' equip-catalog-group--optional' : '') +
+        (grupoOk ? ' equip-catalog-group--registrado' : '');
       section.setAttribute('data-equip-group', group.id || 'all');
       const head = document.createElement('div');
       head.className = 'equip-catalog-group-head';
       head.innerHTML =
         '<span class="equip-catalog-group-title">' + (group.label || '') + '</span>' +
-        (group.required ? '<span class="equip-catalog-group-req">Ahora</span>' : '') +
-        (group.optional ? '<span class="equip-catalog-group-opt">Opcional</span>' : '');
+        (grupoOk
+          ? '<span class="equip-catalog-group-done">✓ Registrado</span>'
+          : group.required
+            ? '<span class="equip-catalog-group-req">Ahora</span>'
+            : '') +
+        (!grupoOk && group.optional ? '<span class="equip-catalog-group-opt">Opcional</span>' : '');
       section.appendChild(head);
+      if (grupoOk) {
+        const sum = equipGrupoResumenRegistrado(inst, groupKeys, cats);
+        if (sum) {
+          const sumP = document.createElement('p');
+          sumP.className = 'equip-catalog-group-summary';
+          sumP.textContent = sum;
+          section.appendChild(sumP);
+        }
+      }
       if (group.hint) {
         const hintP = document.createElement('p');
         hintP.className = 'equip-catalog-group-hint';
@@ -359,7 +405,9 @@
         section.appendChild(hintP);
       }
       const grid = document.createElement('div');
-      grid.className = 'equip-catalog-grid equip-catalog-grid--group';
+      grid.className =
+        'equip-catalog-grid equip-catalog-grid--group' +
+        (grupoOk ? ' equip-catalog-grid--registrado' : '');
       (group.keys || []).forEach(function (key) {
         const cat = cats[key];
         if (!cat) return;
@@ -456,6 +504,37 @@
         ' Seguimiento en <strong>Inicio → Germinación</strong>.';
       return;
     }
+    if (origen === 'semilla' && typeof getCaminoCultivo === 'function' && getCaminoCultivo() === 'semilla_coco_drip') {
+      banner.classList.remove('setup-hidden');
+      const tieneProp = !!(inst.propagador && inst.propagador.id);
+      banner.className = tieneProp ? 'setup-box-info setup-mb-8' : 'setup-box-warn setup-mb-8';
+      var pCoco = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : {};
+      var resCoco =
+        typeof planGermResumenListo === 'function' ? planGermResumenListo(pCoco) : null;
+      var planCoco = resCoco
+        ? ' Plan: <strong>' +
+          resCoco.num +
+          ' semilla(s)</strong> en <strong>' +
+          (typeof etiquetaSustratoGerm === 'function'
+            ? etiquetaSustratoGerm(resCoco.sustrato)
+            : resCoco.sustrato) +
+          '</strong> (bloque de abajo).'
+        : ' Indica <strong>cuántas semillas</strong> y <strong>sustrato</strong> en el bloque de abajo.';
+      var enGermCoco =
+        typeof hcSetupEnFaseGerminacion === 'function' && hcSetupEnFaseGerminacion();
+      var dtwNote = enGermCoco
+        ? ' La <strong>bomba de goteo</strong> (reservorio) y el <strong>programador de impulsos</strong> se registran <strong>después de germinar</strong>, al montar la rejilla DTW 4–5 L (Saltón Verde).'
+        : ' Registra abajo la bomba de goteo en reservorio y el programador de impulsos para la rejilla DTW.';
+      banner.innerHTML = tieneProp
+        ? '<strong>Coco + goteo (Saltón Verde):</strong> ahora solo <strong>propagador y sala</strong>.' +
+          planCoco +
+          dtwNote +
+          ' Seguimiento en <strong>Inicio → Germinación</strong>.'
+        : '<strong>Coco + goteo:</strong> marca un <strong>domo / propagador</strong> arriba.' +
+          planCoco +
+          dtwNote;
+      return;
+    }
     if (origen === 'semilla') {
       banner.classList.remove('setup-hidden');
       const tieneProp = !!(inst.propagador && inst.propagador.id);
@@ -478,9 +557,16 @@
     if (origen === 'clon') {
       banner.classList.remove('setup-hidden');
       banner.className = 'setup-box-info setup-mb-8';
-      banner.innerHTML =
-        '<strong>Esqueje/clon:</strong> <strong>domo de enraizado</strong> (no bandeja de semillas) en el grupo de abajo. ' +
-        'Tras raíz en rockwool → net pot en el DWC/RDWC. El protocolo día a día está en <strong>Inicio → Enraizado</strong>.';
+      var pagEq =
+        typeof setupPagina !== 'undefined' ? setupPagina : 0;
+      var p3Eq =
+        typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+      var earlyEsqueje = pagEq <= p3Eq;
+      banner.innerHTML = earlyEsqueje
+        ? '<strong>Esqueje en hidro:</strong> en este paso solo <strong>sala</strong> (carpa, LED, extractor). ' +
+          'El <strong>domo de enraizado</strong> aparece tras indicar la <strong>variedad del esqueje</strong> (paso Genética y método).'
+        : '<strong>Esqueje/clon:</strong> <strong>domo de enraizado</strong> (no bandeja de semillas) en el grupo de abajo. ' +
+          'Tras raíz en rockwool → net pot en el DWC/RDWC. El protocolo día a día está en <strong>Inicio → Enraizado</strong>.';
       return;
     }
     banner.classList.add('setup-hidden');
@@ -597,7 +683,9 @@
     }
     if (!falt.length && !sinPropagador) {
       hint.classList.add('setup-box-info');
-      hint.innerHTML = '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado para monitorización.</span>';
+      hint.innerHTML =
+        '<span class="equip-faltantes-ok">✓ Equipamiento indispensable registrado.</span> ' +
+        'Puedes cambiar marca/modelo abajo si lo necesitas; no hace falta repetir pasos ya cerrados.';
       return;
     }
     if (!falt.length && sinPropagador) {
@@ -632,7 +720,7 @@
     Object.keys(cats).forEach(function (key) {
       const cat = cats[key];
       if (!cat.indispensable) return;
-      if (omitCircuitoHidro && (key === 'medidor' || key === 'bomba_aire' || key === 'bomba_recirc')) {
+      if (omitCircuitoHidro && (key === 'medidor' || key === 'bomba_aire' || key === 'bomba_recirc' || key === 'programador_riego')) {
         return;
       }
       if (cat.entorno === 'interior' && esExt) return;

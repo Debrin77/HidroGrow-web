@@ -2117,6 +2117,16 @@ function abrirSetup() {
       return;
     }
   }
+  if (
+    (camPre === 'esqueje_hidro' || camPre === 'madre_hidro') &&
+    cfgPre.hcSetupFase === 'hidro' &&
+    cfgPre.checklistInstalacionConfirmada
+  ) {
+    if (typeof abrirSetupFaseHidro === 'function') {
+      abrirSetupFaseHidro();
+      return;
+    }
+  }
   // Reconfigurar instalación existente (no crear ranura nueva) salvo que se abra «Nuevo sistema»
   try {
     if (typeof hcResetSetupWizardSession === 'function') hcResetSetupWizardSession();
@@ -2152,23 +2162,104 @@ function abrirSetup() {
     hcSetupEnFaseGerminacion()
   ) {
     if (c.caminoCultivo === 'semilla_coco_drip') {
-      var planIncompleto = false;
+      var planIncompletoCoco = false;
       try {
         if (typeof validarPlanGerminacionCompleto === 'function') {
           var vCoco = validarPlanGerminacionCompleto(c, { requierePropagador: false });
-          planIncompleto = !vCoco.ok;
+          planIncompletoCoco = !vCoco.ok;
         }
       } catch (_) {}
-      setupPagina = planIncompleto
+      setupPagina = planIncompletoCoco
         ? typeof SETUP_PAGE_PREMIUM_6 !== 'undefined'
           ? SETUP_PAGE_PREMIUM_6
           : 7
-        : typeof SETUP_PAGE_PREMIUM_1 !== 'undefined'
-          ? SETUP_PAGE_PREMIUM_1
-          : 2;
+        : typeof SETUP_PAGE_PREMIUM_3 !== 'undefined'
+          ? SETUP_PAGE_PREMIUM_3
+          : 4;
     } else {
       setupPagina = SETUP_PAGE_ORIGEN;
     }
+  } else if (
+    camReab === 'esqueje_hidro' &&
+    c.hcSetupFase === 'hidro'
+  ) {
+    setupPagina =
+      typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+  } else if (camReab === 'esqueje_hidro') {
+    var pasoEsqueje =
+      typeof hcSiguientePasoEsquejeHidro === 'function'
+        ? hcSiguientePasoEsquejeHidro(c)
+        : null;
+    if (pasoEsqueje && pasoEsqueje.action === 'abrirSetupFaseHidro') {
+      if (typeof abrirSetupFaseHidro === 'function') {
+        abrirSetupFaseHidro();
+        return;
+      }
+      setupPagina =
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+    } else if (
+      pasoEsqueje &&
+      (pasoEsqueje.action === 'abrirSetupFaseSala' || pasoEsqueje.etapa === 'sala_config')
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    } else if (
+      typeof hcSetupTieneVariedadEsqueje === 'function' &&
+      !hcSetupTieneVariedadEsqueje()
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6;
+    } else if (
+      !(c.tipoInstalacion === 'dwc' || c.tipoInstalacion === 'rdwc' || c.checklistInstalacionConfirmada)
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+    } else if (
+      typeof salaPreGermConfigurada === 'function' &&
+      !salaPreGermConfigurada(c)
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    } else {
+      setupPagina =
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+    }
+  } else if (camReab === 'madre_hidro') {
+    var pasoMadre =
+      typeof hcSiguientePasoMadreHidro === 'function' ? hcSiguientePasoMadreHidro(c) : null;
+    if (pasoMadre && pasoMadre.action === 'abrirSetupFaseHidro') {
+      if (typeof abrirSetupFaseHidro === 'function') {
+        abrirSetupFaseHidro();
+        return;
+      }
+      setupPagina =
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+    } else if (
+      pasoMadre &&
+      (pasoMadre.action === 'abrirSetupFaseSala' || pasoMadre.etapa === 'sala_config')
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    } else if (
+      !(c.tipoInstalacion === 'dwc' || c.tipoInstalacion === 'rdwc' || c.checklistInstalacionConfirmada)
+    ) {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+    } else if (c.hcSetupFase === 'hidro') {
+      setupPagina =
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
+    } else {
+      setupPagina =
+        typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6;
+    }
+  } else if (
+    camReab === 'semilla_hidro' &&
+    c.hcSetupFase === 'germinacion' &&
+    c.checklistInstalacionConfirmada &&
+    c.tipoInstalacion
+  ) {
+    setupPagina =
+      typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
   } else {
     setupPagina = SETUP_PAGE_ORIGEN;
   }
