@@ -1436,9 +1436,6 @@
 
   function renderPuestaMarchaInlinePreview() {
     var cfg = getCfg();
-    if (typeof refreshMontajeInicioHubVisibility === 'function') {
-      refreshMontajeInicioHubVisibility(cfg);
-    }
     var vistaMinSala =
       typeof hcSalaPropagadorVistaMinimaSoloMontaje === 'function' &&
       hcSalaPropagadorVistaMinimaSoloMontaje(cfg);
@@ -1447,8 +1444,6 @@
         ? renderMontajeInicioHubPropagador(cfg)
         : '';
     if (hubHtml) {
-      var inicioHost = document.getElementById('hcMontajeInicioBody');
-      if (inicioHost) inicioHost.innerHTML = hubHtml;
       var salaHost = document.getElementById('sistemaMontajeChecksBody');
       if (salaHost) {
         var pasoSala =
@@ -1482,10 +1477,8 @@
         '<p class="hc-pm-inline-lead">Configura una instalación con el asistente para ver el checklist de montaje.</p>' +
         '<p class="hc-pm-inline-actions"><button type="button" class="btn btn-primary btn-sm" onclick="typeof abrirSetupNuevaTorre===\'function\'?abrirSetupNuevaTorre():abrirSetup()">Configurar instalación</button></p>';
     }
-    ['sistemaMontajeChecksBody', 'hcMontajeInicioBody'].forEach(function (id) {
-      var host = document.getElementById(id);
-      if (host) host.innerHTML = html;
-    });
+    var salaHost = document.getElementById('sistemaMontajeChecksBody');
+    if (salaHost) salaHost.innerHTML = html;
   }
 
   function refreshPuestaMarchaUi() {
@@ -1536,22 +1529,6 @@
         resumen.textContent = '✓ Editable';
       } else {
         resumen.textContent = prog.done + '/' + prog.total + ' esenciales';
-      }
-    }
-    var inicioSub = document.getElementById('hcMontajeInicioSub');
-    if (inicioSub) {
-      var subHub =
-        typeof renderMontajeInicioHubSubtitulo === 'function'
-          ? renderMontajeInicioHubSubtitulo(cfg)
-          : '';
-      if (subHub) {
-        inicioSub.textContent = subHub;
-      } else if (bloqueada) {
-        inicioSub.textContent = '✓ Cerrado tras depósito';
-      } else if (verificada) {
-        inicioSub.textContent = '✓ Editable hasta depósito';
-      } else {
-        inicioSub.textContent = prog.done + '/' + prog.total + ' esenciales';
       }
     }
     var modalTitle = document.getElementById('puestaMarchaTitle');

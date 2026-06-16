@@ -875,7 +875,6 @@
     if (inicioActivo && typeof refreshDashSalaEquipRecoBanner === 'function') {
       refreshDashSalaEquipRecoBanner();
     }
-    var rutina = document.getElementById('dashRutinaDia');
     var pctEl = document.getElementById('dashInstLifecyclePct');
     var trackEl = document.getElementById('dashInstLifecycleTrack');
     var nextEl = document.getElementById('dashInstLifecycleNext');
@@ -923,34 +922,6 @@
       germHub && !germHub.classList.contains('setup-hidden') && !!germHub.innerHTML.trim();
     if (box && germHubVisible) {
       box.classList.add('setup-hidden');
-    }
-
-    if (rutina) {
-      var opHub = document.getElementById('dashOperativaHub');
-      var opHubVisible = opHub && !opHub.classList.contains('setup-hidden');
-      var showRut = lc.operativaDiaria && !germHubVisible && !opHubVisible;
-      rutina.classList.toggle('setup-hidden', !showRut);
-      if (showRut) {
-        var badge = document.getElementById('dashRutinaTareasBadge');
-        var sub = document.getElementById('dashRutinaSub');
-        try {
-          if (typeof getEstadoControlSistema === 'function') {
-            var est = getEstadoControlSistema();
-            if (est && est.resumen && badge) {
-              var tot = est.resumen.diarioTotal + est.resumen.semanalTotal;
-              var ok = est.resumen.diarioOk + est.resumen.semanalOk;
-              badge.textContent = ok + '/' + tot;
-              badge.classList.toggle('medir-tareas-badge--ok', tot > 0 && ok >= tot);
-              badge.classList.toggle('medir-tareas-badge--pend', tot > 0 && ok < tot);
-              if (sub) {
-                sub.textContent = tot > 0 && ok >= tot
-                  ? 'Tareas completadas. Los valores en Medir alimentan calendario, historial y meteo.'
-                  : 'Marca tareas en Medir, registra EC/pH (manual o IoT) y revisa el historial.';
-              }
-            }
-          }
-        } catch (_) {}
-      }
     }
 
     try {

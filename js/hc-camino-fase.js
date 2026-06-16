@@ -868,10 +868,8 @@
       }
     });
     var idsOcultarPropag = [
-      'dashRutinaDia',
       'dashCaminoResumen',
       'hcPlantasInstalacionInicioDetails',
-      'hcMontajeInicioDetails',
       'dashRecargaCard',
       'dashSalaEquipReco',
     ];
@@ -884,9 +882,7 @@
       } else if (
         soloPropag &&
         !ocultarCuadroGermPropag &&
-        (id === 'hcMontajeInicioDetails' ||
-          id === 'dashPropagadorRutaHost' ||
-          id === 'dashCaminoResumen')
+        (id === 'dashPropagadorRutaHost' || id === 'dashCaminoResumen')
       ) {
         hide = false;
       } else if (ocultarCuadroGermPropag && id !== 'dashSalaEquipReco') {
@@ -917,20 +913,6 @@
     if (typeof refreshDashPropagadorOscuridadBanner === 'function') {
       try {
         refreshDashPropagadorOscuridadBanner(cfg);
-      } catch (_) {}
-    }
-    if (
-      soloPropag &&
-      !ocultarCuadroGermPropag &&
-      typeof renderMontajeInicioHubPropagador === 'function'
-    ) {
-      try {
-        var montBody = document.getElementById('hcMontajeInicioBody');
-        if (montBody) montBody.innerHTML = renderMontajeInicioHubPropagador(cfg) || '';
-        if (typeof renderMontajeInicioHubSubtitulo === 'function') {
-          var montSub = document.getElementById('hcMontajeInicioSub');
-          if (montSub) montSub.textContent = renderMontajeInicioHubSubtitulo(cfg) || '';
-        }
       } catch (_) {}
     }
     if (esPropagFoco && !ocultarCuadroGermPropag && typeof refreshDashCaminoResumen === 'function') {

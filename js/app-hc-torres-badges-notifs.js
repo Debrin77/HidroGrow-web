@@ -754,7 +754,6 @@ function hcRefreshDashSinInstalacionUi() {
   const btnEl = cta && cta.querySelector('.dash-sin-instalacion-btn');
   const opRow = document.querySelector('.dash-operativa-row');
   const lifecycle = document.getElementById('dashInstalacionLifecycle');
-  const rutina = document.getElementById('dashRutinaDia');
   const copy = hcCopyDashSinInstalacion();
   if (banner) banner.classList.toggle('setup-hidden', !hay);
   if (label) {
@@ -772,7 +771,6 @@ function hcRefreshDashSinInstalacionUi() {
     typeof hcSistemaPropagadorSinHidro === 'function' && hcSistemaPropagadorSinHidro(cfgDashUi);
   if (opRow) opRow.classList.toggle('setup-hidden', !hay || ocultarOpPropag);
   if (lifecycle && !hay) lifecycle.classList.add('setup-hidden');
-  if (rutina && !hay) rutina.classList.add('setup-hidden');
   try {
     if (typeof refreshDashSalaEquipRecoBanner === 'function') refreshDashSalaEquipRecoBanner();
   } catch (_) {}
