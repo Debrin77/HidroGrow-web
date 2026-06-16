@@ -1959,6 +1959,17 @@
         return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
       }
     }
+    var camUlt = getCaminoCultivo();
+    if (
+      camUlt === 'esqueje_hidro' ||
+      camUlt === 'madre_hidro' ||
+      (camUlt === 'semilla_hidro' && !hcSetupEnFaseGerminacion())
+    ) {
+      if (typeof getSetupOrderedVisiblePages === 'function') {
+        var visCam = getSetupOrderedVisiblePages();
+        if (visCam.length) return visCam[visCam.length - 1];
+      }
+    }
     if (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre && hcSetupEnFaseGerminacion()) {
       if (typeof getSetupVisiblePages === 'function') {
         var vis = getSetupVisiblePages();

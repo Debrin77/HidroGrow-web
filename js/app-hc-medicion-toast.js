@@ -563,6 +563,12 @@ function hcNotifyInstalacionGuardada(opts) {
     msg += ' · Prep hidro → sala → 6 fases en Inicio';
   } else if (faseGerm && cam === 'semilla_propagador') {
     msg += ' · Checklist propagador → registro en Inicio (sala cuando quieras)';
+  } else if (faseGerm && cam === 'semilla_coco_drip') {
+    msg += ' · Propagador → 6 fases → rejilla DTW tras germinar';
+  } else if (!faseGerm && cam === 'esqueje_hidro') {
+    msg += ' · Enraizado → matriz → primer llenado';
+  } else if (!faseGerm && cam === 'madre_hidro') {
+    msg += ' · Montaje sala → matriz madre → primer llenado';
   } else if (!faseGerm) {
     msg += ' · Continúa en Sala o Cultivo';
   }

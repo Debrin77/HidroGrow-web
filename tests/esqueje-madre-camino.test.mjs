@@ -134,8 +134,18 @@ test('madre: catálogo madre sin grupo enraizado semilla', () => {
 
 test('esqueje: post-setup debe abrir checklist de enraizado', () => {
   const lc = read('js/hc-instalacion-lifecycle.js');
-  assert.match(
+  assert.match(lc, /function hcDespacharPostSetupSegunCamino/);
+  assert.match(lc, /hcDespacharPostSetupSegunCamino\(cfgGerm\)/);
+  assert.match(lc, /hcEjecutarAccionInstalacion\(paso\.action\)/);
+  assert.match(lc, /irPropagadorMontaje.*esqueje_hidro/s);
+  assert.doesNotMatch(
     lc,
-    /camPost === 'esqueje_hidro'[\s\S]{0,250}hcEjecutarAccionInstalacion\('irPropagadorMontaje'\)/
+    /camPost === 'esqueje_hidro'[\s\S]{0,80}hcSetupFase === 'hidro'/
   );
+});
+
+test('madre: post-setup usa despachador unificado, no montaje genérico ciego', () => {
+  const lc = read('js/hc-instalacion-lifecycle.js');
+  assert.match(lc, /global\.hcDespacharPostSetupSegunCamino/);
+  assert.match(lc, /madre_hidro[\s\S]{0,200}irCultivo/);
 });

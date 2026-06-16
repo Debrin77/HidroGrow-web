@@ -1020,32 +1020,90 @@
     else tab.insertBefore(ban, tab.firstChild);
   }
 
+  function hcRefrescarUiPostSetup() {
+    refreshInstalacionLifecycleUi();
+    try {
+      if (typeof actualizarPostSetupChecklistRail === 'function') {
+        actualizarPostSetupChecklistRail();
+      }
+    } catch (_) {}
+    try {
+      if (typeof refreshTabsOperativaCamino === 'function') {
+        refreshTabsOperativaCamino({ full: true, inmediato: true, allTabs: true });
+      }
+    } catch (_) {}
+  }
+
+  /**
+   * Tras guardar el asistente: siguiente paso real del camino (hcSiguientePasoInstalacion).
+   * Evita bucles (reabrir paso 1) y CTAs incorrectos (p. ej. montaje sala cuando toca enraizado).
+   */
+  function hcDespacharPostSetupSegunCamino(cfgGerm, opts) {
+    opts = opts || {};
+    cfgGerm = cfgGerm || cfgActiva();
+    var paso =
+      typeof hcSiguientePasoInstalacion === 'function'
+        ? hcSiguientePasoInstalacion(cfgGerm)
+        : null;
+    var delayMs = opts.delayMs != null ? opts.delayMs : 300;
+    if (!paso || !paso.action) {
+      if (opts.fallbackMontaje !== false) {
+        setTimeout(function () {
+          hcIrMontajeSala();
+          hcRefrescarUiPostSetup();
+        }, delayMs);
+      }
+      return false;
+    }
+    if (paso.action === 'abrirSetup' && paso.etapa === 'config') {
+      setTimeout(function () {
+        try {
+          if (typeof goTab === 'function') goTab('inicio');
+        } catch (_) {}
+        if (typeof showToast === 'function') {
+          showToast(
+            '✅ Guardado. Si falta DWC/RDWC, continúa con «' +
+              (paso.label || 'Completar asistente') +
+              '» en Inicio.',
+            false,
+            { durationMs: 7200, prominent: true }
+          );
+        }
+        hcRefrescarUiPostSetup();
+      }, delayMs);
+      return true;
+    }
+    setTimeout(function () {
+      try {
+        hcEjecutarAccionInstalacion(paso.action);
+      } catch (_) {}
+      hcRefrescarUiPostSetup();
+      if (opts.toast !== false && typeof showToast === 'function') {
+        var cam =
+          typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
+        var msg = '';
+        if (paso.action === 'irPropagadorMontaje' && cam === 'esqueje_hidro') {
+          msg = '✅ Sistema guardado. Checklist de enraizado (domo) abierto.';
+        } else if (paso.action === 'irPropagadorMontaje' && cam === 'semilla_hidro') {
+          msg = '✅ Guardado. Completa el checklist prep hidro.';
+        } else if (paso.action === 'irMontaje' && (cam === 'esqueje_hidro' || cam === 'madre_hidro')) {
+          msg = '✅ Guardado. Verifica montaje de sala antes del depósito.';
+        } else if (paso.action === 'irCultivo' && cam === 'madre_hidro') {
+          msg = '✅ Guardado. Asigna la planta madre en Cultivo.';
+        } else if (paso.action === 'abrirChecklist') {
+          msg = '✅ Guardado. Prepara el primer llenado del depósito.';
+        }
+        if (msg) showToast(msg, false, { durationMs: 6800, prominent: true });
+      }
+    }, delayMs);
+    return true;
+  }
+
   function iniciarFlujoInstalacionPostSetup() {
     activarInstalacionGuidadaPostSetup();
     var cfgGerm = cfgActiva();
     var camPost =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfgGerm) : '';
-    // Esqueje al hidro: tras cerrar el asistente, la siguiente pantalla lógica es
-    // el checklist de enraizado (domo/rockwool), no el “montaje de sala”.
-    // Esto evita que el usuario “no finalice” porque se queda en un estado incorrecto.
-    if (
-      camPost === 'esqueje_hidro' &&
-      cfgGerm &&
-      cfgGerm.hcSetupFase === 'hidro'
-    ) {
-      setTimeout(function () {
-        try {
-          hcEjecutarAccionInstalacion('irPropagadorMontaje');
-        } catch (_) {}
-        refreshInstalacionLifecycleUi();
-        try {
-          if (typeof actualizarPostSetupChecklistRail === 'function') {
-            actualizarPostSetupChecklistRail();
-          }
-        } catch (_) {}
-      }, 300);
-      return;
-    }
     if (
       camPost === 'semilla_hidro' &&
       typeof hcGerminacionActiva === 'function' &&
@@ -1191,29 +1249,11 @@
       }, 300);
       return;
     }
-    setTimeout(function () {
-      try {
-        if (typeof hcRefreshSalaTab === 'function') hcRefreshSalaTab({ force: true });
-        else if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
-      } catch (_) {}
-      hcIrMontajeSala();
-      setTimeout(function () {
-        try {
-          if (typeof salaSubTab === 'function') salaSubTab('agua');
-          if (typeof hcRefreshPuestaMarchaUi === 'function') hcRefreshPuestaMarchaUi();
-          var det = document.getElementById('sistemaMontajeChecksDetails');
-          if (det) det.open = true;
-          if (typeof hcOpenPuestaMarchaChecklist === 'function') hcOpenPuestaMarchaChecklist();
-        } catch (_) {}
-        refreshInstalacionLifecycleUi();
-        try {
-          if (typeof actualizarPostSetupChecklistRail === 'function') actualizarPostSetupChecklistRail();
-        } catch (_) {}
-      }, 420);
-    }, 300);
+    hcDespacharPostSetupSegunCamino(cfgGerm);
   }
 
   global.hcSiguientePasoInstalacion = hcSiguientePasoInstalacion;
+  global.hcDespacharPostSetupSegunCamino = hcDespacharPostSetupSegunCamino;
   global.getInstalacionLifecycle = getInstalacionLifecycle;
   global.instalacionGuidadaActiva = instalacionGuidadaActiva;
   global.hcGateChecklistDeposito = hcGateChecklistDeposito;

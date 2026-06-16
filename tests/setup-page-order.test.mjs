@@ -68,3 +68,10 @@ test('equip wizard: grupos registrados sin repetir', () => {
   assert.match(wiz, /equip-catalog-group--registrado/);
   assert.match(wiz, /equip-catalog-group-done/);
 });
+
+test('ultimo paso: esqueje y madre usan páginas visibles ordenadas', () => {
+  const cultivo = read('js/hc-camino-cultivo.js');
+  assert.match(cultivo, /camUlt === 'esqueje_hidro'/);
+  assert.match(cultivo, /camUlt === 'madre_hidro'/);
+  assert.match(cultivo, /getSetupOrderedVisiblePages/);
+});
