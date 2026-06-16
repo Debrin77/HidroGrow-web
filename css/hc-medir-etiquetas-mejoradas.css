@@ -1,502 +1,379 @@
 /**
- * Estilos Mejorados para Etiquetas de Mediciones
- * Mejora sustancial: Diseño unificado y barras de rango visuales
- * Versión: 1.0.0
+ * Medir — tiles de parámetros (instrument panel)
+ * Estilo grow-monitor: tipografía fuerte, acento por sensor, sin pastels planos.
+ * Solo aplica a .medir-param-lab-grid (no pisa tarjetas legacy fuera del flujo).
  */
 
-/* ═══════════════════════════════════════════════════════════════
-   Grid de Parámetros - Simetría
-   ═══════════════════════════════════════════════════════════════ */
-
-#tab-mediciones .medir-solucion-grid,
-#tab-mediciones .medir-ambiente-grid,
-.medir-solucion-grid,
-.medir-ambiente-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important;
-  gap: 16px !important;
-  align-items: stretch !important;
+/* ── Rejilla ── */
+.medir-solucion-grid--premium.medir-param-lab-grid,
+.medir-ambiente-grid--premium.medir-param-lab-grid {
+  gap: 14px;
 }
 
-/* Asegurar que todas las tarjetas tengan la misma altura */
-#tab-mediciones .param-card,
-.medir-ambiente-grid .param-card {
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 180px !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Tarjetas de Parámetros - Diseño Moderno
-   ═══════════════════════════════════════════════════════════════ */
-
-#tab-mediciones .param-card,
-.medir-ambiente-grid .param-card {
-  background: white !important;
-  border-radius: 16px !important;
-  padding: 20px !important;
-  margin-bottom: 0 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-  border: 2px solid #e5e0d8 !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-#tab-mediciones .param-card:hover,
-.medir-ambiente-grid .param-card:hover {
-  transform: translateY(-2px) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* Barra superior con gradiente según estado */
-#tab-mediciones .param-card::before,
-.medir-ambiente-grid .param-card::before {
-  content: '' !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  height: 4px !important;
-  border-radius: 16px 16px 0 0 !important;
-  background: linear-gradient(90deg, #10B981 0%, #34D399 100%) !important;
-}
-
-#tab-mediciones .param-card.warn::before,
-.medir-ambiente-grid .param-card.warn::before {
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%) !important;
-}
-
-#tab-mediciones .param-card.alert::before,
-.medir-ambiente-grid .param-card.alert::before {
-  background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%) !important;
-}
-
-/* Estados de las tarjetas */
-#tab-mediciones .param-card.ok,
-.medir-ambiente-grid .param-card.ok {
-  border-color: #10B981 !important;
-  background: linear-gradient(135deg, #F0FDF4 0%, #ffffff 100%) !important;
-}
-
-#tab-mediciones .param-card.warn,
-.medir-ambiente-grid .param-card.warn {
-  border-color: #F59E0B !important;
-  background: linear-gradient(135deg, #FFFBEB 0%, #ffffff 100%) !important;
-}
-
-#tab-mediciones .param-card.alert,
-.medir-ambiente-grid .param-card.alert {
-  border-color: #DC2626 !important;
-  background: linear-gradient(135deg, #FEF2F2 0%, #ffffff 100%) !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Header de Parámetro
-   ═══════════════════════════════════════════════════════════════ */
-
-#tab-mediciones .param-header,
-.medir-ambiente-grid .param-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin-bottom: 16px !important;
-  gap: 12px !important;
-}
-
-#tab-mediciones .param-label,
-.medir-ambiente-grid .param-label {
-  font-family: 'Syne', sans-serif !important;
-  font-size: 1rem !important;
-  font-weight: 700 !important;
-  color: #1f2937 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
-}
-
-#tab-mediciones .param-label .hc-ico,
-.medir-ambiente-grid .param-label .hc-ico {
-  width: 24px !important;
-  height: 24px !important;
-  flex-shrink: 0 !important;
-  color: #10B981 !important;
-}
-
-/* Colores específicos de iconos por parámetro */
-#cardEC .param-label .hc-ico { color: #2563eb !important; }
-#cardPH .param-label .hc-ico { color: #7c3aed !important; }
-#cardTemp .param-label .hc-ico { color: #ea580c !important; }
-#cardVol .param-label .hc-ico { color: #0891b2 !important; }
-#cardTempAire .param-label .hc-ico { color: #ea580c !important; }
-#cardHumSala .param-label .hc-ico { color: #3b82f6 !important; }
-#cardVPD .param-label .hc-ico { color: #8b5cf6 !important; }
-#cardPPFD .param-label .hc-ico { color: #f59e0b !important; }
-#cardTempExt .param-label .hc-ico { color: #ef4444 !important; }
-#cardCO2 .param-label .hc-ico { color: #10b981 !important; }
-
-/* Rango objetivo */
-#tab-mediciones .param-range,
-.medir-ambiente-grid .param-range {
-  font-family: 'Inconsolata', monospace !important;
-  font-size: 0.85rem !important;
-  font-weight: 600 !important;
-  color: #6b7280 !important;
-  background: #f3f4f6 !important;
-  padding: 4px 10px !important;
-  border-radius: 6px !important;
-  white-space: nowrap !important;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   Barra de Rango Visual
-   ═══════════════════════════════════════════════════════════════ */
-
-.param-range-bar {
-  width: 100%;
-  height: 8px;
-  background: #e5e0d8;
-  border-radius: 4px;
-  margin: 12px 0;
+/* ── Tile base ── */
+.medir-param-lab-grid .param-card {
+  --tile-accent: #3b82f6;
+  --tile-accent-soft: color-mix(in srgb, var(--tile-accent) 14%, #ffffff);
+  --tile-bg: linear-gradient(155deg, #ffffff 0%, #f8fafc 48%, #f1f5f9 100%);
+  --tile-border: rgba(15, 23, 42, 0.1);
+  --tile-label: #475569;
+  --tile-value: #0f172a;
+  --tile-range: #64748b;
+  --tile-bar-bg: rgba(15, 23, 42, 0.08);
+  --tile-bar-fill: var(--tile-accent);
+  --tile-status: #334155;
+  --tile-input-bg: rgba(255, 255, 255, 0.72);
+  --tile-input-border: rgba(15, 23, 42, 0.12);
   position: relative;
+  isolation: isolate;
+  min-height: 208px;
+  max-height: none;
+  height: auto;
+  padding: 0;
+  border-radius: 16px;
+  border: 1px solid var(--tile-border);
+  background: var(--tile-bg);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 8px 28px rgba(15, 23, 42, 0.07),
+    0 2px 6px rgba(15, 23, 42, 0.04);
   overflow: hidden;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.22s ease;
 }
 
-.param-range-bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #10B981 0%, #34D399 100%);
-  border-radius: 4px;
-  transition: width 0.3s ease;
+.medir-param-lab-grid .param-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 14px;
+  bottom: 14px;
+  width: 4px;
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(180deg, var(--tile-accent) 0%, color-mix(in srgb, var(--tile-accent) 55%, #0f172a) 100%);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--tile-accent) 45%, transparent);
+  z-index: 1;
 }
 
-.param-range-bar-fill.warn {
-  background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+.medir-param-lab-grid .param-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 120% 80% at 100% 0%, var(--tile-accent-soft) 0%, transparent 58%);
+  pointer-events: none;
+  opacity: 0.85;
+  z-index: 0;
 }
 
-.param-range-bar-fill.alert {
-  background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+.medir-param-lab-grid .param-card:focus-within {
+  border-color: color-mix(in srgb, var(--tile-accent) 42%, #cbd5e1);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 10px 32px rgba(15, 23, 42, 0.1),
+    0 0 0 3px color-mix(in srgb, var(--tile-accent) 18%, transparent);
+  transform: translateY(-1px);
 }
 
-/* Marcadores de rango */
-.param-range-markers {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.75rem;
-  color: #9ca3af;
-  margin-top: 4px;
+/* Acento por parámetro (estilo monitor / Bluelab / Pulse) */
+.medir-param-lab-grid #cardEC { --tile-accent: #2563eb; }
+.medir-param-lab-grid #cardPH { --tile-accent: #7c3aed; }
+.medir-param-lab-grid #cardTemp { --tile-accent: #ea580c; }
+.medir-param-lab-grid #cardVol { --tile-accent: #0891b2; }
+.medir-param-lab-grid #cardTempAire { --tile-accent: #f97316; }
+.medir-param-lab-grid #cardHumSala { --tile-accent: #0ea5e9; }
+.medir-param-lab-grid #cardVPD { --tile-accent: #8b5cf6; }
+.medir-param-lab-grid #cardPPFD { --tile-accent: #eab308; }
+.medir-param-lab-grid #cardTempExt { --tile-accent: #ef4444; }
+.medir-param-lab-grid #cardCO2 { --tile-accent: #16a34a; }
+
+/* Estados — borde y barra, no fondo pastel completo */
+.medir-param-lab-grid .param-card.ok {
+  --tile-border: color-mix(in srgb, #22c55e 38%, #e2e8f0);
+  --tile-label: #166534;
+  --tile-value: #14532d;
+  --tile-range: #15803d;
+  --tile-bar-fill: #22c55e;
+  --tile-status: #15803d;
+  --tile-accent-soft: color-mix(in srgb, #22c55e 12%, #ffffff);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Input Row
-   ═══════════════════════════════════════════════════════════════ */
-
-#tab-mediciones .param-input-row,
-.medir-ambiente-grid .param-input-row {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  margin-bottom: 12px !important;
+.medir-param-lab-grid .param-card.warn {
+  --tile-border: color-mix(in srgb, #f97316 42%, #fed7aa);
+  --tile-label: #9a3412;
+  --tile-value: #7c2d12;
+  --tile-range: #c2410c;
+  --tile-bar-fill: #f97316;
+  --tile-status: #c2410c;
+  --tile-accent-soft: color-mix(in srgb, #f97316 14%, #ffffff);
 }
 
-#tab-mediciones .param-input,
-.medir-ambiente-grid .param-input {
-  flex: 1 !important;
-  padding: 12px 16px !important;
-  font-family: 'Inconsolata', monospace !important;
-  font-size: 1.25rem !important;
-  font-weight: 600 !important;
-  color: #1f2937 !important;
-  background: white !important;
-  border: 2px solid #e5e0d8 !important;
-  border-radius: 10px !important;
-  transition: all 0.2s ease !important;
+.medir-param-lab-grid .param-card.alert {
+  --tile-border: color-mix(in srgb, #ef4444 45%, #fecaca);
+  --tile-label: #991b1b;
+  --tile-value: #7f1d1d;
+  --tile-range: #b91c1c;
+  --tile-bar-fill: #ef4444;
+  --tile-status: #b91c1c;
+  --tile-accent-soft: color-mix(in srgb, #ef4444 12%, #ffffff);
 }
 
-#tab-mediciones .param-input:focus,
-.medir-ambiente-grid .param-input:focus {
-  outline: none !important;
-  border-color: #10B981 !important;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
+/* Cabecera */
+.medir-param-lab-grid .param-header {
+  position: relative;
+  z-index: 2;
+  padding: 14px 16px 6px 18px;
 }
 
-#tab-mediciones .param-input::placeholder,
-.medir-ambiente-grid .param-input::placeholder {
-  color: #d1d5db !important;
-  font-weight: 400 !important;
+.medir-param-lab-grid .param-header .param-label {
+  gap: 10px;
+  font-family: var(--font-sans), "Plus Jakarta Sans", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--tile-label);
 }
 
-#tab-mediciones .param-unit,
-.medir-ambiente-grid .param-unit {
-  font-family: 'Syne', sans-serif !important;
-  font-size: 0.9rem !important;
-  font-weight: 600 !important;
-  color: #6b7280 !important;
-  min-width: 50px !important;
+.medir-param-lab-grid .param-header .param-label .hc-ico {
+  width: 32px;
+  height: 32px;
+  padding: 7px;
+  border-radius: 11px;
+  box-sizing: border-box;
+  background: var(--tile-accent-soft);
+  color: var(--tile-accent);
+  opacity: 1;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.65) inset,
+    0 2px 8px color-mix(in srgb, var(--tile-accent) 22%, transparent);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Status y Corrección
-   ═══════════════════════════════════════════════════════════════ */
-
-#tab-mediciones .param-status,
-.medir-ambiente-grid .param-status {
-  font-size: 0.85rem !important;
-  font-weight: 600 !important;
-  color: #10B981 !important;
-  margin-bottom: 8px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
+/* Valor principal */
+.medir-param-lab-grid .param-input-row {
+  position: relative;
+  z-index: 2;
+  margin: 0 14px 0 18px;
+  padding: 10px 14px;
+  min-height: 58px;
+  border-radius: 12px;
+  border: 1px solid var(--tile-input-border);
+  background: var(--tile-input-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.75),
+    inset 0 -1px 0 rgba(15, 23, 42, 0.04);
 }
 
-#tab-mediciones .param-status::before,
-.medir-ambiente-grid .param-status::before {
-  content: '✓' !important;
-  font-weight: 900 !important;
+.medir-param-lab-grid .param-input-row:focus-within {
+  border-color: color-mix(in srgb, var(--tile-accent) 50%, var(--tile-input-border));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 0 0 3px color-mix(in srgb, var(--tile-accent) 16%, transparent);
 }
 
-#tab-mediciones .param-status.warn,
-.medir-ambiente-grid .param-status.warn {
-  color: #F59E0B !important;
+.medir-param-lab-grid .param-input {
+  font-family: "Inconsolata", var(--font-mono), ui-monospace, monospace;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
 }
 
-#tab-mediciones .param-status.warn::before,
-.medir-ambiente-grid .param-status.warn::before {
-  content: '⚠️' !important;
-  font-weight: normal !important;
+.medir-param-lab-grid .param-unit {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tile-accent) 10%, rgba(255, 255, 255, 0.9));
+  color: var(--tile-label);
+  border: 1px solid color-mix(in srgb, var(--tile-accent) 18%, transparent);
 }
 
-#tab-mediciones .param-status.alert,
-.medir-ambiente-grid .param-status.alert {
-  color: #DC2626 !important;
+/* Rango + barra */
+.medir-param-lab-grid .param-range-inline {
+  position: relative;
+  z-index: 2;
+  padding: 4px 16px 0 18px;
+  font-family: "Inconsolata", var(--font-mono), monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tile-range);
+  letter-spacing: 0.02em;
 }
 
-#tab-mediciones .param-status.alert::before,
-.medir-ambiente-grid .param-status.alert::before {
-  content: '✗' !important;
-  font-weight: 900 !important;
+.medir-param-lab-grid .param-range-bar {
+  position: relative;
+  z-index: 2;
+  margin: 8px 16px 0 18px;
+  width: calc(100% - 34px);
+  height: 7px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--tile-bar-fill) 18%, #e2e8f0) 0%,
+      color-mix(in srgb, var(--tile-bar-fill) 32%, #e2e8f0) 35%,
+      color-mix(in srgb, var(--tile-bar-fill) 32%, #e2e8f0) 65%,
+      color-mix(in srgb, var(--tile-bar-fill) 18%, #e2e8f0) 100%
+    );
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.12);
 }
 
-#tab-mediciones .param-status.empty,
-.medir-ambiente-grid .param-status.empty {
-  color: #9ca3af !important;
+.medir-param-lab-grid .param-range-bar-fill {
+  border-radius: inherit;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--tile-bar-fill) 55%, transparent);
 }
 
-#tab-mediciones .param-status.empty::before,
-.medir-ambiente-grid .param-status.empty::before {
-  content: '' !important;
+/* Estado compacto (pie) */
+.medir-param-lab-grid .param-status {
+  position: relative;
+  z-index: 2;
+  min-height: 28px;
+  max-height: none;
+  padding: 6px 16px 14px 18px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
-#tab-mediciones .correccion-box,
-.medir-ambiente-grid .correccion-box {
-  background: #f3f4f6 !important;
-  padding: 12px !important;
-  border-radius: 8px !important;
-  font-size: 0.85rem !important;
-  color: #4b5563 !important;
-  line-height: 1.5 !important;
-  border-left: 3px solid #10B981 !important;
+.medir-param-lab-grid .param-status:not(.empty) .param-status-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tile-bar-fill) 12%, rgba(255, 255, 255, 0.92));
+  border: 1px solid color-mix(in srgb, var(--tile-bar-fill) 22%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-#tab-mediciones .correccion-box.warn,
-.medir-ambiente-grid .correccion-box.warn {
-  border-left-color: #F59E0B !important;
-  background: #FFFBEB !important;
+.medir-param-lab-grid .param-status.ok .param-status-txt::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tile-bar-fill);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--tile-bar-fill) 70%, transparent);
+  flex-shrink: 0;
 }
 
-#tab-mediciones .correccion-box.alert,
-.medir-ambiente-grid .correccion-box.alert {
-  border-left-color: #DC2626 !important;
-  background: #FEF2F2 !important;
+.medir-param-lab-grid .param-status.warn .param-status-txt::before,
+.medir-param-lab-grid .param-status.bad .param-status-txt::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tile-bar-fill);
+  flex-shrink: 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Dark Mode - DESACTIVADO (usuario prefiere modo claro)
-   ═══════════════════════════════════════════════════════════════ */
-
-/*
-@media (prefers-color-scheme: dark) {
-  #tab-mediciones .param-card,
-  .medir-ambiente-grid .param-card {
-    background: #1f2937 !important;
-    border-color: #374151 !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  #tab-mediciones .param-card:hover,
-  .medir-ambiente-grid .param-card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  #tab-mediciones .param-card.ok,
-  .medir-ambiente-grid .param-card.ok {
-    background: linear-gradient(135deg, #064E3B 0%, #1f2937 100%) !important;
-    border-color: #059669 !important;
-  }
-
-  #tab-mediciones .param-card.warn,
-  .medir-ambiente-grid .param-card.warn {
-    background: linear-gradient(135deg, #78350F 0%, #1f2937 100%) !important;
-    border-color: #D97706 !important;
-  }
-
-  #tab-mediciones .param-card.alert,
-  .medir-ambiente-grid .param-card.alert {
-    background: linear-gradient(135deg, #7F1D1D 0%, #1f2937 100%) !important;
-    border-color: #DC2626 !important;
-  }
-
-  #tab-mediciones .param-label,
-  .medir-ambiente-grid .param-label {
-    color: #f9fafb !important;
-  }
-
-  #tab-mediciones .param-range,
-  .medir-ambiente-grid .param-range {
-    background: #374151 !important;
-    color: #9ca3af !important;
-  }
-
-  .param-range-bar {
-    background: #374151 !important;
-  }
-
-  .param-range-markers {
-    color: #6b7280 !important;
-  }
-
-  #tab-mediciones .param-input,
-  .medir-ambiente-grid .param-input {
-    background: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #f9fafb !important;
-  }
-
-  #tab-mediciones .param-input:focus,
-  .medir-ambiente-grid .param-input:focus {
-    border-color: #10B981 !important;
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2) !important;
-  }
-
-  #tab-mediciones .param-input::placeholder,
-  .medir-ambiente-grid .param-input::placeholder {
-    color: #6b7280 !important;
-  }
-
-  #tab-mediciones .param-unit,
-  .medir-ambiente-grid .param-unit {
-    color: #9ca3af !important;
-  }
-
-  #tab-mediciones .param-status,
-  .medir-ambiente-grid .param-status {
-    color: #10B981 !important;
-  }
-
-  #tab-mediciones .param-status.warn,
-  .medir-ambiente-grid .param-status.warn {
-    color: #F59E0B !important;
-  }
-
-  #tab-mediciones .param-status.alert,
-  .medir-ambiente-grid .param-status.alert {
-    color: #DC2626 !important;
-  }
-
-  #tab-mediciones .param-status.empty,
-  .medir-ambiente-grid .param-status.empty {
-    color: #6b7280 !important;
-  }
-
-  #tab-mediciones .correccion-box,
-  .medir-ambiente-grid .correccion-box {
-    background: #374151 !important;
-    color: #e5e7eb !important;
-    border-left-color: #10B981 !important;
-  }
-
-  #tab-mediciones .correccion-box.warn,
-  .medir-ambiente-grid .correccion-box.warn {
-    background: #78350F !important;
-    border-left-color: #F59E0B !important;
-  }
-
-  #tab-mediciones .correccion-box.alert,
-  .medir-ambiente-grid .correccion-box.alert {
-    background: #7F1D1D !important;
-    border-left-color: #DC2626 !important;
-  }
-}
-*/
-
-/* ═══════════════════════════════════════════════════════════════
-   Responsive
-   ═══════════════════════════════════════════════════════════════ */
-
-@media (max-width: 768px) {
-  #tab-mediciones .param-card,
-  .medir-ambiente-grid .param-card {
-    padding: 16px !important;
-    border-radius: 12px !important;
-  }
-
-  #tab-mediciones .param-header,
-  .medir-ambiente-grid .param-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 8px !important;
-  }
-
-  #tab-mediciones .param-label,
-  .medir-ambiente-grid .param-label {
-    font-size: 0.95rem !important;
-  }
-
-  #tab-mediciones .param-input,
-  .medir-ambiente-grid .param-input {
-    font-size: 1.1rem !important;
-    padding: 10px 14px !important;
-  }
-
-  #tab-mediciones .param-unit,
-  .medir-ambiente-grid .param-unit {
-    font-size: 0.85rem !important;
-  }
+/* PPFD — segunda fila lux */
+.medir-param-lab-grid #cardPPFD {
+  min-height: 232px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   Animaciones
-   ═══════════════════════════════════════════════════════════════ */
+.medir-param-lab-grid #cardPPFD .medir-lux-row {
+  position: relative;
+  z-index: 2;
+  margin: 0 14px 0 18px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px dashed color-mix(in srgb, var(--tile-accent) 28%, #cbd5e1);
+  background: rgba(255, 255, 255, 0.55);
+}
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+.medir-param-lab-grid #cardPPFD .medir-lux-row .param-input {
+  font-size: 1.15rem;
+}
+
+/* Panel solución — marco tipo consola */
+.medir-step-panel--solucion,
+.medir-step-panel--unificado {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(241, 245, 249, 0.88) 100%);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+  padding: 14px;
+}
+
+/* Tarjeta ambiente (contenedor) */
+#tab-mediciones .medir-ambiente-card {
+  border-radius: 18px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 10px 36px rgba(15, 23, 42, 0.06);
+}
+
+#tab-mediciones .medir-ambiente-lead {
+  font-size: 13px;
+  line-height: 1.55;
+  color: #475569;
+  margin-bottom: 14px;
+}
+
+/* ── Modo oscuro ── */
+html.hc-theme-dark .medir-param-lab-grid .param-card {
+  --tile-bg: linear-gradient(155deg, #111827 0%, #0f172a 52%, #0b1220 100%);
+  --tile-border: rgba(148, 163, 184, 0.18);
+  --tile-label: #94a3b8;
+  --tile-value: #f8fafc;
+  --tile-range: #64748b;
+  --tile-bar-bg: rgba(15, 23, 42, 0.65);
+  --tile-input-bg: rgba(15, 23, 42, 0.55);
+  --tile-input-border: rgba(148, 163, 184, 0.22);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 10px 32px rgba(0, 0, 0, 0.35);
+}
+
+html.hc-theme-dark .medir-param-lab-grid .param-card::after {
+  opacity: 0.55;
+}
+
+html.hc-theme-dark .medir-param-lab-grid .param-card.ok {
+  --tile-label: #86efac;
+  --tile-value: #ecfdf5;
+  --tile-range: #4ade80;
+  --tile-status: #86efac;
+}
+
+html.hc-theme-dark .medir-param-lab-grid .param-card.warn {
+  --tile-label: #fdba74;
+  --tile-value: #ffedd5;
+  --tile-range: #fb923c;
+  --tile-status: #fdba74;
+}
+
+html.hc-theme-dark .medir-param-lab-grid .param-card.alert {
+  --tile-label: #fca5a5;
+  --tile-value: #fee2e2;
+  --tile-range: #f87171;
+  --tile-status: #fca5a5;
+}
+
+html.hc-theme-dark .medir-param-lab-grid .param-input-row {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+html.hc-theme-dark .medir-step-panel--solucion,
+html.hc-theme-dark .medir-step-panel--unificado {
+  background: linear-gradient(165deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.92) 100%);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+html.hc-theme-dark #tab-mediciones .medir-ambiente-lead {
+  color: #94a3b8;
+}
+
+@media (max-width: 380px) {
+  .medir-param-lab-grid .param-input {
+    font-size: 1.75rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-#tab-mediciones .param-card,
-.medir-ambiente-grid .param-card {
-  animation: fadeInUp 0.3s ease-out !important;
-}
-
-#tab-mediciones .param-card:nth-child(2),
-.medir-ambiente-grid .param-card:nth-child(2) {
-  animation-delay: 0.05s !important;
-}
-
-#tab-mediciones .param-card:nth-child(3),
-.medir-ambiente-grid .param-card:nth-child(3) {
-  animation-delay: 0.1s !important;
-}
-
-#tab-mediciones .param-card:nth-child(4),
-.medir-ambiente-grid .param-card:nth-child(4) {
-  animation-delay: 0.15s !important;
 }
