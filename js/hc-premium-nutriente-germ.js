@@ -25,11 +25,12 @@
       : {};
   }
 
-  /** Semilla en propagador (o prep hidro en germ): abono de bandeja, no depósito DWC. */
+  /** Semilla en propagador o coco (domo/bandeja). Semilla_hidro germina en el cubo DWC — sin bandeja. */
   function caminoUsaNutrienteBandejaPropagador(cfg) {
     cfg = cfg || getCfgNutriente();
     var cam =
       typeof getCaminoCultivo === 'function' ? getCaminoCultivo(cfg) : cfg.caminoCultivo || '';
+    if (cam === 'semilla_hidro') return false;
     if (cam === 'semilla_propagador') {
       if (typeof hidrogrowPropagadorEnFaseGermSinHidro === 'function') {
         return hidrogrowPropagadorEnFaseGermSinHidro(cfg);
@@ -48,9 +49,6 @@
       }
       return typeof germinacionConcluida === 'function' ? !germinacionConcluida(cfg) : true;
     }
-    if (cam === 'semilla_hidro') {
-      return typeof hcGerminacionActiva === 'function' && hcGerminacionActiva(cfg);
-    }
     return false;
   }
 
@@ -66,7 +64,9 @@
   }
 
   function isPremiumNutrienteGermActivo(cfg) {
+    cfg = cfg || getCfgNutriente();
     var cam = caminoRequiereNutrienteBandeja(cfg);
+    if (cam === 'semilla_hidro') return false;
     if (cam === 'semilla_propagador' || cam === 'semilla_coco_drip') return true;
     if (typeof hcCaminoSemillaGermEnSetup === 'function' && hcCaminoSemillaGermEnSetup()) {
       var caminoActual = getCaminoCultivo(cfg) || '';
@@ -689,7 +689,17 @@
   function refreshPremiumNutrienteGermSection() {
     var sec = el('setupPremiumNutrienteGermSection');
     var page4 = el('spagePremium4');
-    var show = isPremiumNutrienteGermActivo(getCfgNutriente());
+    var cfg = getCfgNutriente();
+    var cam = caminoRequiereNutrienteBandeja(cfg);
+    if (cam === 'semilla_hidro') {
+      if (sec) {
+        sec.classList.add('setup-hidden');
+        sec.setAttribute('aria-hidden', 'true');
+      }
+      if (page4) page4.classList.remove('hc-prop-nutriente-page');
+      return;
+    }
+    var show = isPremiumNutrienteGermActivo(cfg);
     if (sec) {
       sec.classList.toggle('setup-hidden', !show);
       if (show) {
@@ -761,6 +771,8 @@
   }
 
   function validarPremiumNutrienteGerm() {
+    var cam = caminoRequiereNutrienteBandeja(getCfgNutriente());
+    if (cam === 'semilla_hidro') return true;
     if (!isPremiumNutrienteGermActivo(getCfgNutriente())) return true;
     if (typeof persistVariedadGermFromUI === 'function') persistVariedadGermFromUI();
     var cfg = getCfgNutriente();

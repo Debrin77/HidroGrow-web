@@ -697,8 +697,12 @@ test('semilla_hidro: checklist prep no importa propagadorMontajeChecks', () => {
 test('semilla_hidro: modal plan y wizard sin textos de bandeja propagador', () => {
   const plan = read('js/hc-premium-germ-plan.js');
   const wiz = read('js/hc-premium-wizard.js');
+  const nut = read('js/hc-premium-nutriente-germ.js');
   assert.match(plan, /esHidroModal[\s\S]{0,400}depósito DWC\/RDWC/);
   assert.match(wiz, /hcCaminoSemillaHidroSetupGerm\(\)\)[\s\S]{0,80}sec\.innerHTML = ''/);
+  assert.match(nut, /cam === 'semilla_hidro'\) return false/);
+  assert.doesNotMatch(nut, /cam === 'semilla_hidro'[\s\S]{0,100}hcGerminacionActiva/);
+  assert.match(nut, /refreshPremiumNutrienteGermSection[\s\S]{0,400}semilla_hidro/);
 });
 
 test('checklist depósito: checklistTieneCalentador definido en getCLPasos', () => {
