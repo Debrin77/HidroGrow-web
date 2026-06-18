@@ -113,12 +113,18 @@ test('esqueje: genética antes de domo y reapertura sin volver a origen', () => 
   const wiz = read('js/hc-premium-wizard.js');
   const core = read('js/hc-setup-wizard-core.js');
   const cultivo = read('js/hc-camino-cultivo.js');
+  const esq = read('js/hc-esquejes-madre.js');
   assert.match(cat, /function equipCatalogGroupsEsquejeHidro/);
   assert.match(cat, /function hcSetupTieneVariedadEsqueje/);
   assert.match(cat, /pag <= p3 && !tieneVariedad/);
   assert.match(gen, /function validarGeneticaEsquejeObligatoria/);
   assert.match(gen, /function requiereGeneticaEsquejeEnSetup/);
+  assert.match(gen, /function syncPremiumGeneticaEsquejePlacement/);
+  assert.match(gen, /showEsqueje/);
   assert.match(wiz, /validarGeneticaEsquejeObligatoria/);
+  assert.match(wiz, /SETUP_PAGE_PREMIUM_5[\s\S]{0,400}syncPremiumGeneticaEsquejePlacement/);
+  assert.match(esq, /soloInformativoSetup/);
+  assert.match(esq, /Inicio → Enraizado/);
   assert.match(cultivo, /function hcResolverPaginaReaperturaSetup/);
   assert.match(core, /hcResolverPaginaReaperturaSetup/);
   assert.doesNotMatch(wiz, /cuatro rutas de cultivo/);

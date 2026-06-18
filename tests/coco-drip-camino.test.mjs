@@ -116,6 +116,15 @@ test('coco drip: copy bomba goteo y programador en asistente', () => {
   assert.match(read('index.html'), /Bomba de goteo en reservorio/);
 });
 
+test('coco drip: equipamiento P3 no bloquea por catálogo completo en fase germ', () => {
+  const wiz = read('js/hc-premium-wizard.js');
+  assert.match(
+    wiz,
+    /semilla_coco_drip[\s\S]{0,200}hcAsegurarMedidasSalaInteriorAntesGuardar/
+  );
+  assert.match(wiz, /hcCaminoSemillaGermEnSetup[\s\S]{0,400}return true/);
+});
+
 test('coco drip: integración sala m² → plantas y VPD', () => {
   const mod = read('js/hc-camino-coco-drip.js');
   assert.match(mod, /resolveCocoDripSalaAreaM2/);

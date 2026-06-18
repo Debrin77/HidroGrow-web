@@ -37,6 +37,11 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   assert.match(setup, /wizardHidroGermCompleto/);
   assert.match(setup, /salaPreGermConfigAt/);
   assert.match(setup, /transicionHidroPrepChecklist/);
+  assert.match(setup, /hcCompletarGermPlanCaminoDefaults/);
+  assert.match(read('js/hc-premium-germ-plan.js'), /function hcCompletarGermPlanCaminoDefaults/);
+  assert.match(cultivo, /cfg\.hcSetupFase === 'germinacion'/);
+  assert.match(cultivo, /hcCompletarGermPlanCaminoDefaults/);
+  assert.match(cultivo, /planHidroGermIncompleto/);
 });
 
 test('checklist 2: sala visible en hidro (sin banner oculta)', () => {

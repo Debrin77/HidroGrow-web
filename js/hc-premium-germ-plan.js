@@ -1103,11 +1103,29 @@
     return !validarPlanGerminacionCompleto(cfg, hcOptsValidacionPlanGerm(cfg)).ok;
   }
 
-  function hcCompletarGermPlanPropagadorDefaults() {
-    if (
-      typeof esSetupPropagadorGermPaso3 !== 'function' ||
-      !esSetupPropagadorGermPaso3()
-    ) {
+  /** Defaults de plan (semillas, sustrato, fecha) en propagador, hidro y coco+goteo. */
+  function hcCompletarGermPlanCaminoDefaults() {
+    var cam =
+      typeof hcResolverCaminoSetup === 'function'
+        ? hcResolverCaminoSetup()
+        : typeof getCaminoCultivo === 'function'
+          ? getCaminoCultivo()
+          : '';
+    if (cam === 'semilla_propagador') {
+      if (
+        typeof esSetupPropagadorGermPaso3 !== 'function' ||
+        !esSetupPropagadorGermPaso3()
+      ) {
+        return;
+      }
+    } else if (cam === 'semilla_hidro' || cam === 'semilla_coco_drip') {
+      if (
+        typeof hcCaminoSemillaGermEnSetup === 'function' &&
+        !hcCaminoSemillaGermEnSetup()
+      ) {
+        return;
+      }
+    } else {
       return;
     }
     var p = typeof ensurePremiumSetup === 'function' ? ensurePremiumSetup() : null;
@@ -1118,13 +1136,23 @@
     }
     if (!p.sustratoGerm) p.sustratoGerm = 'lana';
     if (!p.fechaSiembraGerm) p.fechaSiembraGerm = hoyIsoGerm();
+    if (cam === 'semilla_hidro' || cam === 'semilla_coco_drip') {
+      p.numSemillasGermManual = true;
+      p.sustratoGermManual = true;
+    }
+  }
+
+  function hcCompletarGermPlanPropagadorDefaults() {
+    hcCompletarGermPlanCaminoDefaults();
   }
 
   function validarPremiumGermPlan() {
     if (typeof hcCaminoSemillaGermEnSetup !== 'function' || !hcCaminoSemillaGermEnSetup()) {
       return true;
     }
-    if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
+    if (typeof hcCompletarGermPlanCaminoDefaults === 'function') {
+      hcCompletarGermPlanCaminoDefaults();
+    } else if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
       hcCompletarGermPlanPropagadorDefaults();
     }
     persistPremiumGermPlanFromUIImmediate(true);
@@ -1207,6 +1235,7 @@
   global.syncPremiumGermPlanFromConfig = syncPremiumGermPlanFromConfig;
   global.seleccionarPremiumSustratoGerm = seleccionarPremiumSustratoGerm;
   global.validarPremiumGermPlan = validarPremiumGermPlan;
+  global.hcCompletarGermPlanCaminoDefaults = hcCompletarGermPlanCaminoDefaults;
   global.hcCompletarGermPlanPropagadorDefaults = hcCompletarGermPlanPropagadorDefaults;
   global.onPropagadorEquipSeleccionado = onPropagadorEquipSeleccionado;
   global.etiquetaSustratoGerm = etiquetaSustratoGerm;

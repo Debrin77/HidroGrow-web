@@ -1686,6 +1686,35 @@
       if (cfg.hcSetupFase === 'hidro') {
         return { action: 'abrirSetupFaseHidro' };
       }
+      if (cfg.hcSetupFase === 'germinacion') {
+        try {
+          if (typeof hcCompletarGermPlanCaminoDefaults === 'function') {
+            hcCompletarGermPlanCaminoDefaults();
+          }
+          if (typeof persistPremiumGermPlanToConfig === 'function') {
+            persistPremiumGermPlanToConfig(cfg, { adjustTorre: false });
+          }
+        } catch (_) {}
+        var planHidroGermIncompleto = false;
+        try {
+          if (typeof validarPlanGerminacionCompleto === 'function') {
+            planHidroGermIncompleto = !validarPlanGerminacionCompleto(cfg, {
+              requierePropagador: false,
+            }).ok;
+          }
+        } catch (_) {}
+        if (planHidroGermIncompleto) return { page: P6 };
+        if (!cfg.tipoInstalacion && !cfg.checklistInstalacionConfirmada) {
+          return { page: PEND };
+        }
+        var pasoHiGerm =
+          typeof hcSiguientePasoSemillaHidro === 'function'
+            ? hcSiguientePasoSemillaHidro(cfg)
+            : null;
+        var mapHiGerm = hcMapLifecyclePasoASetupPagina(pasoHiGerm);
+        if (mapHiGerm) return mapHiGerm;
+        return { page: P3 };
+      }
       var planHidroIncompleto = false;
       try {
         if (typeof validarPlanGerminacionCompleto === 'function') {

@@ -400,6 +400,13 @@
     const secEnra = el('setupPremiumEsquejesEnraizar');
     const secDomo = el('setupPremiumEsquejesDomo');
     const secMadre = el('setupPremiumEsquejesMadre');
+    const pEnd =
+      typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
+    const soloInformativoSetup =
+      (typeof asistenteSetupActivo === 'function' && asistenteSetupActivo()) ||
+      (typeof setupEsNuevaTorre !== 'undefined' && setupEsNuevaTorre);
+    const enPasoConfig =
+      typeof setupPagina !== 'undefined' && setupPagina <= pEnd;
     const show = origen === 'clon' || origen === 'madre';
     [secPrep, secCorte, secEnra, secDomo, secMadre].forEach(function (s) {
       if (s) s.classList.toggle('setup-hidden', !show);
@@ -407,14 +414,45 @@
     if (hint) {
       hint.classList.toggle('setup-hidden', !show);
       if (show) {
-        hint.innerHTML = origen === 'madre'
-          ? '<strong>Modo madre:</strong> mantén 1 planta en cubo DWC/RDWC bajo 18/6 y toma esquejes cada 10–14 d. ' +
-            'Es la forma más productiva de repetir genética en hidro (docenas de clones por ciclo).'
-          : '<strong>Esqueje al hidro:</strong> enraizado en domo (7–14 d) → net pot → depósito. ' +
+        if (soloInformativoSetup && enPasoConfig && origen === 'clon') {
+          hint.innerHTML =
+            '<strong>Esqueje al hidro:</strong> aquí solo configuras <strong>genética</strong> y el equipo de sala/enraizado. ' +
+            'El protocolo operativo (corte, domo día a día, traslado al cubo) lo marcarás en <strong>Inicio → Enraizado</strong> cuando toque.';
+        } else if (origen === 'madre') {
+          hint.innerHTML =
+            soloInformativoSetup && enPasoConfig
+              ? '<strong>Modo madre:</strong> indica genética y notas. El calendario de cortes y mantenimiento va en <strong>Inicio → Madre</strong> tras el asistente.'
+              : '<strong>Modo madre:</strong> mantén 1 planta en cubo DWC/RDWC bajo 18/6 y toma esquejes cada 10–14 d. ' +
+                'Es la forma más productiva de repetir genética en hidro (docenas de clones por ciclo).';
+        } else {
+          hint.innerHTML =
+            '<strong>Esqueje al hidro:</strong> enraizado en domo (7–14 d) → net pot → depósito. ' +
             'No uses el bloque de preparación de madre; solo corte, domo y traslado.';
+        }
       }
     }
     if (!show) return;
+    if (soloInformativoSetup && enPasoConfig) {
+      if (secPrep) secPrep.classList.add('setup-hidden');
+      if (secCorte) secCorte.classList.add('setup-hidden');
+      if (secEnra) secEnra.classList.add('setup-hidden');
+      if (secDomo) secDomo.classList.add('setup-hidden');
+      if (secMadre && origen === 'clon') secMadre.classList.add('setup-hidden');
+      if (origen === 'madre' && secMadre) {
+        secMadre.classList.remove('setup-hidden');
+        if (secPrep) secPrep.classList.add('setup-hidden');
+        var madreGrid = el('setupPremiumEsquejesMadreGrid');
+        if (madreGrid) madreGrid.innerHTML = '';
+        if (secMadre.querySelector('.setup-block-title')) {
+          secMadre.querySelector('.setup-block-title').textContent = 'Notas de la madre';
+        }
+        const notasMadre = el('setupPremiumNotasMadre');
+        if (notasMadre && document.activeElement !== notasMadre) {
+          notasMadre.value = ep.notasMadre || '';
+        }
+      }
+      return;
+    }
     if (secPrep) secPrep.classList.toggle('setup-hidden', origen !== 'madre');
     if (origen === 'madre') {
       renderPasoGrid(el('setupPremiumEsquejesPrepGrid'), PREP_MADRE_PASOS, 'prep', ep.prepMadre);

@@ -2631,7 +2631,9 @@ function guardarSetupYContinuarCore() {
   }
   if (faseGermSetup || wizardHidroGermCompleto) {
     try {
-      if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
+      if (typeof hcCompletarGermPlanCaminoDefaults === 'function') {
+        hcCompletarGermPlanCaminoDefaults();
+      } else if (typeof hcCompletarGermPlanPropagadorDefaults === 'function') {
         hcCompletarGermPlanPropagadorDefaults();
       }
       if (typeof persistPremiumGermPlanFromUI === 'function') persistPremiumGermPlanFromUI(true);

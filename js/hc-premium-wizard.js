@@ -1001,6 +1001,18 @@
       return;
     }
 
+    if (pagina === SETUP_PAGE_PREMIUM_5) {
+      syncPremiumMetodoGenPlacement();
+      if (typeof syncPremiumGeneticaEsquejePlacement === 'function') {
+        syncPremiumGeneticaEsquejePlacement();
+      }
+      refreshPremiumMetodoUI();
+      seleccionarPremiumGenetica(p.geneticaPref || 'foto');
+      if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
+      if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
+      return;
+    }
+
     if (pagina === SETUP_PAGE_PREMIUM_6) {
       syncPremiumMetodoGenPlacement();
       if (
@@ -1218,12 +1230,7 @@
         typeof requiereGeneticaEsquejeEnSetup === 'function' &&
         requiereGeneticaEsquejeEnSetup()
       ) {
-        if (
-          typeof validarGeneticaEsquejeObligatoria === 'function' &&
-          !validarGeneticaEsquejeObligatoria()
-        ) {
-          return false;
-        }
+        return true;
       }
       if (
         typeof requiereGeneticaGermEnSetup === 'function' &&
@@ -1252,6 +1259,22 @@
       var camP3Interior =
         typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : '';
       if (camP3Interior === 'semilla_propagador') {
+        return true;
+      }
+      if (
+        typeof hcCaminoSemillaGermEnSetup === 'function' &&
+        hcCaminoSemillaGermEnSetup() &&
+        (camP3Interior === 'semilla_hidro' || camP3Interior === 'semilla_coco_drip')
+      ) {
+        if (typeof hcAsegurarMedidasSalaInteriorAntesGuardar === 'function') {
+          hcAsegurarMedidasSalaInteriorAntesGuardar();
+        }
+        return true;
+      }
+      if (camP3Interior === 'esqueje_hidro' || camP3Interior === 'madre_hidro') {
+        if (typeof hcAsegurarMedidasSalaInteriorAntesGuardar === 'function') {
+          hcAsegurarMedidasSalaInteriorAntesGuardar();
+        }
         return true;
       }
       if (

@@ -261,6 +261,22 @@
     }
   }
 
+  function syncPremiumGeneticaEsquejePlacement() {
+    var cam = typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : '';
+    if (cam !== 'esqueje_hidro' && cam !== 'madre_hidro') return;
+    var sec = el('setupPremiumGeneticaGermSection');
+    var page5 = el('spagePremium5');
+    if (!sec || !page5) return;
+    if (sec.parentNode !== page5) {
+      var bundle = el('setupPremiumMetodoGenBundle');
+      if (bundle && bundle.parentNode === page5) {
+        page5.insertBefore(sec, bundle.nextSibling);
+      } else {
+        page5.appendChild(sec);
+      }
+    }
+  }
+
   function refreshPremiumGeneticaGermVis() {
     const sec = el('setupPremiumGeneticaGermSection');
     if (!sec) return;
@@ -268,12 +284,20 @@
       typeof getPremiumOrigenPlanta === 'function'
         ? getPremiumOrigenPlanta()
         : ensurePremium().origenPlanta || 'semilla';
-    const show = orig === 'semilla';
+    const showEsqueje = orig === 'clon' && requiereGeneticaEsquejeEnSetup();
+    const showMadre = orig === 'madre' && requiereGeneticaMadreEnSetup();
+    const show = orig === 'semilla' || showEsqueje || showMadre;
+    if (showEsqueje || showMadre) {
+      syncPremiumGeneticaEsquejePlacement();
+    }
     sec.classList.toggle('setup-hidden', !show);
     if (!show) return;
 
     var reqTag = el('setupPremiumGeneticaGermRequiredTag');
-    var oblig = requiereGeneticaGermEnSetup();
+    var oblig =
+      requiereGeneticaGermEnSetup() ||
+      requiereGeneticaEsquejeEnSetup() ||
+      requiereGeneticaMadreEnSetup();
     if (reqTag) reqTag.classList.toggle('setup-hidden', !oblig);
 
     const p = ensurePremium();
@@ -295,6 +319,7 @@
 
   window.seleccionarPremiumVariedadGerminacion = seleccionarPremiumVariedadGerminacion;
   window.renderSetupPremiumGeneticaGerm = renderSetupPremiumGeneticaGerm;
+  window.syncPremiumGeneticaEsquejePlacement = syncPremiumGeneticaEsquejePlacement;
   window.refreshPremiumGeneticaGermVis = refreshPremiumGeneticaGermVis;
   window.persistVariedadGermFromUI = persistVariedadGermFromUI;
   window.syncVariedadGermATorre = syncVariedadGermATorre;
