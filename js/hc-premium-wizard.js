@@ -672,7 +672,21 @@
     refreshPremiumMetodoHint();
   }
 
-  /** Paso 5 (SOG/SCROG + foto/auto) se omite o fusiona en paso 6 según camino semilla. */
+  function restorePremiumMetodoGenBundleToPage5() {
+    const bundle = el('setupPremiumMetodoGenBundle');
+    const page5 = el('spagePremium5');
+    if (!bundle || !page5 || bundle.parentNode === page5) return;
+    const anchor = el('setupPremiumMetodoGenBundleAnchor');
+    if (anchor && anchor.parentNode === page5) {
+      page5.insertBefore(bundle, anchor.nextSibling);
+    } else {
+      const sub = page5.querySelector('.setup-subtitle');
+      if (sub && sub.nextSibling) page5.insertBefore(bundle, sub.nextSibling);
+      else page5.appendChild(bundle);
+    }
+  }
+
+  /** Paso 5: SOG/SCROG + foto/auto. Paso 6 (hidro/coco): plan y genética concreta. */
   function syncPremiumMetodoGenPlacement() {
     const bundle = el('setupPremiumMetodoGenBundle');
     const host = el('setupPremiumMetodoGenGermHost');
@@ -698,17 +712,22 @@
       if (typeof refreshPremiumMetodoHint === 'function') refreshPremiumMetodoHint();
       if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
     } else if (enGermHidro || enGermCoco) {
-      host.classList.remove('setup-hidden');
-      if (bundle.parentNode !== host) {
-        host.appendChild(bundle);
+      host.classList.add('setup-hidden');
+      host.innerHTML = '';
+      restorePremiumMetodoGenBundleToPage5();
+      const sub5 = page5.querySelector('.setup-subtitle');
+      if (sub5) {
+        sub5.classList.remove('setup-hidden');
+        sub5.innerHTML = enGermCoco
+          ? 'Elige <strong>SOG/SCROG</strong> y foto/auto. En el <strong>siguiente paso</strong>: variedad, semillas y sustrato del propagador.'
+          : 'Elige <strong>SOG/SCROG</strong> y foto/auto. En el <strong>siguiente paso</strong>: variedad, plan de siembra y fecha.';
       }
       if (sub6) {
         sub6.classList.remove('setup-hidden');
         sub6.innerHTML = enGermCoco
-          ? 'Método (SOG/SCROG), genética y <strong>plan de semillas</strong> para propagador. ' +
+          ? 'Variedad, <strong>plan de semillas</strong> y sustrato para propagador. ' +
             'La rejilla DTW 4–5 L se configura tras germinar.'
-          : 'Método (SOG/SCROG) y genética concreta para <strong>Inicio → Germinación</strong>. ' +
-            'El plan de semillas y la fecha de siembra van debajo.';
+          : 'Variedad concreta, <strong>plan de semillas</strong> y fecha para <strong>Inicio → Germinación</strong>.';
       }
       if (typeof refreshPremiumMetodoHint === 'function') refreshPremiumMetodoHint();
       if (typeof refreshPremiumMetodoOrigenHint === 'function') refreshPremiumMetodoOrigenHint();
@@ -719,16 +738,7 @@
           'Ya elegiste el camino en el <strong>paso 1</strong>. Aquí: genética, semillero (semilla) o checklist de esquejes/madre. ' +
           'Con <strong>semilla</strong>, el día a día de las 6 fases va en <strong>Inicio → Germinación</strong>.';
       }
-      if (bundle.parentNode !== page5) {
-        const anchor = el('setupPremiumMetodoGenBundleAnchor');
-        if (anchor && anchor.parentNode === page5) {
-          page5.insertBefore(bundle, anchor.nextSibling);
-        } else {
-          const sub = page5.querySelector('.setup-subtitle');
-          if (sub && sub.nextSibling) page5.insertBefore(bundle, sub.nextSibling);
-          else page5.appendChild(bundle);
-        }
-      }
+      restorePremiumMetodoGenBundleToPage5();
       host.classList.add('setup-hidden');
     }
   }
@@ -1015,6 +1025,9 @@
 
     if (pagina === SETUP_PAGE_PREMIUM_6) {
       syncPremiumMetodoGenPlacement();
+      if (typeof syncPremiumGermSectionPlacement === 'function') {
+        syncPremiumGermSectionPlacement();
+      }
       if (
         typeof hcCaminoSemillaHidroSetupGerm === 'function' &&
         hcCaminoSemillaHidroSetupGerm()

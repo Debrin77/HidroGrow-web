@@ -465,6 +465,43 @@ function setupNextCore() {
   return true;
 }
 
+function hcSetupRetrocederPaginaVisible() {
+  var prevPag = setupPagina;
+  var vis =
+    typeof getSetupOrderedVisiblePages === 'function'
+      ? getSetupOrderedVisiblePages()
+      : typeof getSetupVisiblePages === 'function'
+        ? getSetupVisiblePages()
+        : [];
+  if (vis.length) {
+    var idx = vis.indexOf(prevPag);
+    if (idx < 0 && typeof getSetupFullPageSequence === 'function') {
+      var full = getSetupFullPageSequence();
+      var pos = full.indexOf(prevPag);
+      if (pos > 0) {
+        for (var j = pos - 1; j >= 0; j--) {
+          if (vis.indexOf(full[j]) >= 0) {
+            setupPagina = full[j];
+            return setupPagina !== prevPag;
+          }
+        }
+      }
+    } else if (idx > 0) {
+      setupPagina = vis[idx - 1];
+      return setupPagina !== prevPag;
+    }
+  }
+  if (typeof setupFlowAdvancePage === 'function') {
+    setupPagina = setupFlowAdvancePage(-1);
+    if (setupPagina !== prevPag) return true;
+  }
+  if (prevPag > 0) {
+    setupPagina = prevPag - 1;
+    return setupPagina !== prevPag;
+  }
+  return false;
+}
+
 function setupBack() {
   var salaPreGerm =
     typeof window !== 'undefined' &&
@@ -477,8 +514,7 @@ function setupBack() {
     return;
   }
   if (setupPagina > SETUP_PAGE_GEOMETRY) {
-    setupPagina =
-      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;
+    hcSetupRetrocederPaginaVisible();
     renderSetupPage();
   } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
     if (
@@ -492,8 +528,7 @@ function setupBack() {
     }
     renderSetupPage();
   } else if (setupPagina > SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
-    setupPagina =
-      typeof setupFlowAdvancePage === 'function' ? setupFlowAdvancePage(-1) : setupPagina - 1;
+    hcSetupRetrocederPaginaVisible();
     renderSetupPage();
   }
 }

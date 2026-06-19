@@ -34,6 +34,8 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   );
   assert.match(cultivo, /function hcCaminoSemillaHidroSetupGerm/);
   assert.match(cultivo, /SETUP_PAGE_GEOMETRY[\s\S]*semilla_hidro/);
+  assert.match(read('js/hc-premium-wizard.js'), /restorePremiumMetodoGenBundleToPage5/);
+  assert.match(read('js/hc-premium-wizard.js'), /enGermHidro \|\| enGermCoco[\s\S]{0,400}restorePremiumMetodoGenBundleToPage5/);
   assert.match(setup, /wizardHidroGermCompleto/);
   assert.match(setup, /salaPreGermConfigAt/);
   assert.match(setup, /transicionHidroPrepChecklist/);
