@@ -681,6 +681,25 @@
         '<span class="equip-faltantes-ok">✓ Germinación registrada.</span> La sala (carpa, LED, extractor…) la completarás en <strong>Configurar sala</strong>, no aquí.';
       return;
     }
+    if (
+      (cam === 'semilla_coco_drip' &&
+        typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+        hcCaminoSemillaCocoDripSetupGerm()) ||
+      (cam === 'semilla_hidro' &&
+        typeof hcCaminoSemillaHidroSetupGerm === 'function' &&
+        hcCaminoSemillaHidroSetupGerm())
+    ) {
+      if (!sinPropagador) {
+        hint.classList.remove('setup-hidden');
+        hint.classList.add('setup-box-info');
+        hint.innerHTML =
+          '<span class="equip-faltantes-ok">✓ Propagador registrado.</span> ' +
+          (cam === 'semilla_coco_drip'
+            ? 'La sala (carpa, LED…) es orientativa ahora; el goteo DTW se configura tras germinar.'
+            : 'La sala y el circuito hidro se completan en los siguientes pasos del camino.');
+        return;
+      }
+    }
     if (!falt.length && !sinPropagador) {
       hint.classList.add('setup-box-info');
       hint.innerHTML =

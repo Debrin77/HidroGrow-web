@@ -2138,8 +2138,7 @@ function guardarSetupYContinuarCore() {
   const faseGermSetup =
     !faseSalaPreGerm &&
     typeof hcSetupEnFaseGerminacion === 'function' &&
-    hcSetupEnFaseGerminacion() &&
-    !wizardHidroGermCompleto;
+    hcSetupEnFaseGerminacion();
   const faseHidroPostGerm =
     typeof hcSetupEnFaseHidroPostGerm === 'function' && hcSetupEnFaseHidroPostGerm();
   if (setupEsNuevaTorre) {
@@ -2165,7 +2164,13 @@ function guardarSetupYContinuarCore() {
         return false;
       }
     }
-    if (!faseGermSetup && setupTipoInstalacion !== 'dwc' && setupTipoInstalacion !== 'rdwc' && setupTipoInstalacion !== 'coco_drip') {
+    if (
+      !faseGermSetup &&
+      !wizardHidroGermCompleto &&
+      setupTipoInstalacion !== 'dwc' &&
+      setupTipoInstalacion !== 'rdwc' &&
+      setupTipoInstalacion !== 'coco_drip'
+    ) {
       showToast('Elige DWC, RDWC o Coco + Drip en el paso de tipo de instalación del asistente', true);
       setupPagina = typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8;
       renderSetupPage();

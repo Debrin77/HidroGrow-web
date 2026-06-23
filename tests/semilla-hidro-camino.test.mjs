@@ -18,11 +18,11 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
   const setup = read('js/hc-setup-calc-core.js');
   assert.match(cultivo, /function hcCaminoSemillaGermEnSetup/);
   assert.match(cultivo, /global\.hcCaminoSemillaGermEnSetup/);
-  assert.match(cultivo, /getCaminoCultivo\(\) === 'semilla_hidro'/);
+  assert.match(cultivo, /cam === 'semilla_hidro'/);
   assert.match(cultivo, /SETUP_PAGE_PREMIUM_END/);
   assert.match(
     cultivo,
-    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_EQUIP[\s\S]*SETUP_PAGE_AGUA[\s\S]*SETUP_PAGE_NUTRIENTES[\s\S]*SETUP_PAGE_CULTIVOS[\s\S]*SETUP_PAGE_RESUMEN[\s\S]*return skip/
+    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_PREMIUM_END[\s\S]*SETUP_PAGE_GEOMETRY[\s\S]*SETUP_PAGE_EQUIP[\s\S]*return skip/
   );
   assert.doesNotMatch(
     cultivo,
@@ -32,10 +32,18 @@ test('checklist 1: asistente hidro incluye DWC y germ en setup', () => {
     cultivo,
     /if \(cam === 'semilla_coco_drip'\) \{[\s\S]*SETUP_PAGE_PREMIUM_END[\s\S]*SETUP_PAGE_GEOMETRY[\s\S]*return skip/
   );
+  assert.match(
+    cultivo,
+    /if \(cam === 'semilla_hidro'\) \{[\s\S]*SETUP_PAGE_PREMIUM_END[\s\S]*SETUP_PAGE_GEOMETRY[\s\S]*return skip/
+  );
   assert.match(cultivo, /function hcCaminoSemillaHidroSetupGerm/);
-  assert.match(cultivo, /SETUP_PAGE_GEOMETRY[\s\S]*semilla_hidro/);
   assert.match(read('js/hc-premium-wizard.js'), /restorePremiumMetodoGenBundleToPage5/);
-  assert.match(read('js/hc-premium-wizard.js'), /enGermHidro \|\| enGermCoco[\s\S]{0,400}restorePremiumMetodoGenBundleToPage5/);
+  assert.match(read('js/hc-premium-wizard.js'), /function hcResetPremiumDomPlacement/);
+  assert.match(read('js/hc-setup-calc-core.js'), /hcSetupEnFaseGerminacion\(\)/);
+  assert.doesNotMatch(
+    read('js/hc-setup-calc-core.js'),
+    /hcSetupEnFaseGerminacion\(\)[\s\S]{0,40}!wizardHidroGermCompleto/
+  );
   assert.match(setup, /wizardHidroGermCompleto/);
   assert.match(setup, /salaPreGermConfigAt/);
   assert.match(setup, /transicionHidroPrepChecklist/);
@@ -706,7 +714,7 @@ test('semilla_hidro: modal plan y wizard sin textos de bandeja propagador', () =
   const wiz = read('js/hc-premium-wizard.js');
   const nut = read('js/hc-premium-nutriente-germ.js');
   assert.match(plan, /esHidroModal[\s\S]{0,400}depósito DWC\/RDWC/);
-  assert.match(wiz, /hcCaminoSemillaHidroSetupGerm\(\)\)[\s\S]{0,80}sec\.innerHTML = ''/);
+  assert.match(wiz, /hcCaminoSemillaHidroSetupGerm[\s\S]{0,200}sec\.innerHTML = ''/);
   assert.match(nut, /cam === 'semilla_hidro'\) return false/);
   assert.doesNotMatch(nut, /cam === 'semilla_hidro'[\s\S]{0,100}hcGerminacionActiva/);
   assert.match(nut, /refreshPremiumNutrienteGermSection[\s\S]{0,400}semilla_hidro/);

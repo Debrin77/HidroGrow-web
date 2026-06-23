@@ -125,6 +125,8 @@ test('esqueje: genética antes de domo y reapertura sin volver a origen', () => 
   assert.match(wiz, /SETUP_PAGE_PREMIUM_5[\s\S]{0,400}syncPremiumGeneticaEsquejePlacement/);
   assert.match(esq, /soloInformativoSetup/);
   assert.match(esq, /Inicio → Enraizado/);
+  assert.match(read('js/hc-camino-flujo-ui.js'), /esquejeOMadre/);
+  assert.match(wiz, /camGer === 'esqueje_hidro'/);
   assert.match(cultivo, /function hcResolverPaginaReaperturaSetup/);
   assert.match(core, /hcResolverPaginaReaperturaSetup/);
   assert.doesNotMatch(wiz, /cuatro rutas de cultivo/);

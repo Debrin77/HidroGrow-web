@@ -299,7 +299,15 @@
       if (sec.parentNode !== host) host.appendChild(sec);
       reorderGermAhoraHost(host);
     } else if (page6) {
+      var camPlace = getCam();
+      var esquejeOMadre = camPlace === 'esqueje_hidro' || camPlace === 'madre_hidro';
       if (host) host.classList.add('setup-hidden');
+      if (esquejeOMadre) {
+        if (typeof syncPremiumGeneticaEsquejePlacement === 'function') {
+          syncPremiumGeneticaEsquejePlacement();
+        }
+        if (typeof refreshPremiumGeneticaGermVis === 'function') refreshPremiumGeneticaGermVis();
+      } else {
       var planSec = el('setupPremiumGermPlanSection');
       if (
         (getCam() === 'semilla_hidro' || getCam() === 'semilla_coco_drip') &&
@@ -339,6 +347,7 @@
           if (sem) page6.insertBefore(sec, sem);
           else page6.appendChild(sec);
         }
+      }
       }
     }
     var t3 = document.querySelector('#spagePremium3 .setup-title');

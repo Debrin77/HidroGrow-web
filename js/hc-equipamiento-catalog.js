@@ -997,6 +997,12 @@ function getEquipCatalogGroups(entorno) {
     if (faseSala && typeof hcSetupEnFaseSalaPreGerm === 'function' && hcSetupEnFaseSalaPreGerm()) {
       return equipCatalogGroupsSalaPropagador(entorno);
     }
+    var enGermCocoSetup =
+      typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+      hcCaminoSemillaCocoDripSetupGerm();
+    if (enGermCocoSetup) {
+      return equipCatalogGroupsSalaPropagador(entorno);
+    }
     var enBloqueCoco =
       typeof asistenteEnBloquePremiumGerm === 'function' && asistenteEnBloquePremiumGerm();
     return equipCatalogGroupsCocoDrip(entorno, faseGerm || enBloqueCoco);

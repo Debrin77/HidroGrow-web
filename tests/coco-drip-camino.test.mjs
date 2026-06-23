@@ -126,6 +126,7 @@ test('coco drip: equipamiento P3 no bloquea por catálogo completo en fase germ'
   assert.match(wiz, /hcCaminoSemillaGermEnSetup[\s\S]{0,400}return true/);
   assert.match(wiz, /restorePremiumMetodoGenBundleToPage5/);
   assert.match(pages, /function hcSetupRetrocederPaginaVisible/);
+  assert.match(read('js/hc-equipamiento-catalog.js'), /enGermCocoSetup[\s\S]{0,200}equipCatalogGroupsSalaPropagador/);
 });
 
 test('coco drip: integración sala m² → plantas y VPD', () => {

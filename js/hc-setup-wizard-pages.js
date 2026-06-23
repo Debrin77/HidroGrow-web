@@ -128,6 +128,21 @@ function renderSetupPage() {
     if (typeof refreshSetupCaminoStepBanner === 'function') refreshSetupCaminoStepBanner(setupPagina);
   } catch (_) {}
   if (setupPagina >= SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
+    try {
+      if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
+      if (typeof syncPremiumGeneticaEsquejePlacement === 'function') {
+        syncPremiumGeneticaEsquejePlacement();
+      }
+      if (
+        setupPagina === SETUP_PAGE_PREMIUM_3 ||
+        setupPagina === SETUP_PAGE_PREMIUM_5 ||
+        setupPagina === SETUP_PAGE_PREMIUM_6
+      ) {
+        if (typeof syncPremiumGermSectionPlacement === 'function') {
+          syncPremiumGermSectionPlacement();
+        }
+      }
+    } catch (_) {}
     setTimeout(function () {
       if (typeof cargarPremiumSetupUI === 'function') cargarPremiumSetupUI(setupPagina);
       if (
@@ -514,21 +529,20 @@ function setupBack() {
     return;
   }
   if (setupPagina > SETUP_PAGE_GEOMETRY) {
-    hcSetupRetrocederPaginaVisible();
+    if (!hcSetupRetrocederPaginaVisible() && typeof showToast === 'function') {
+      showToast('No hay paso anterior en este camino.', true);
+    }
     renderSetupPage();
   } else if (setupPagina === SETUP_PAGE_GEOMETRY) {
-    if (
-      typeof hcSetupEnFaseHidroPostGerm === 'function' &&
-      hcSetupEnFaseHidroPostGerm() &&
-      typeof setupFlowAdvancePage === 'function'
-    ) {
-      setupPagina = setupFlowAdvancePage(-1);
-    } else {
+    if (!hcSetupRetrocederPaginaVisible()) {
       setupPagina = SETUP_PAGE_PREMIUM_END;
+      if (typeof hcSetupRedirectSiPaginaOmitida === 'function') hcSetupRedirectSiPaginaOmitida();
     }
     renderSetupPage();
   } else if (setupPagina > SETUP_PAGE_PREMIUM_START && setupPagina <= SETUP_PAGE_PREMIUM_END) {
-    hcSetupRetrocederPaginaVisible();
+    if (!hcSetupRetrocederPaginaVisible() && typeof showToast === 'function') {
+      showToast('No hay paso anterior en este camino.', true);
+    }
     renderSetupPage();
   }
 }

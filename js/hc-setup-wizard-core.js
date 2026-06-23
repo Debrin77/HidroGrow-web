@@ -2129,6 +2129,9 @@ function abrirSetup() {
       hcSyncPremiumAsistenteDesdeConfig(c);
     }
   } catch (_) {}
+  try {
+    if (typeof hcResetPremiumDomPlacement === 'function') hcResetPremiumDomPlacement();
+  } catch (_) {}
   var resume =
     typeof hcResolverPaginaReaperturaSetup === 'function'
       ? hcResolverPaginaReaperturaSetup(c)

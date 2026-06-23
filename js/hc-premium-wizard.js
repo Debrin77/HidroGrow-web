@@ -672,6 +672,20 @@
     refreshPremiumMetodoHint();
   }
 
+  function hcResetPremiumDomPlacement() {
+    restorePremiumMetodoGenBundleToPage5();
+    var host6 = el('setupPremiumMetodoGenGermHost');
+    if (host6) {
+      host6.classList.add('setup-hidden');
+      host6.innerHTML = '';
+    }
+    var host3 = el('setupPremiumGermAhoraHost');
+    if (host3) {
+      host3.classList.add('setup-hidden');
+      host3.innerHTML = '';
+    }
+  }
+
   function restorePremiumMetodoGenBundleToPage5() {
     const bundle = el('setupPremiumMetodoGenBundle');
     const page5 = el('spagePremium5');
@@ -745,6 +759,8 @@
 
   function refreshPremiumGerminacionUI() {
     const p = ensurePremiumSetup();
+    const camGer =
+      typeof getCaminoCultivo === 'function' ? getCaminoCultivo() : p.caminoCultivo || '';
     const orig = p.origenPlanta || 'semilla';
     const esSemilla = orig === 'semilla';
     const esClon = orig === 'clon';
@@ -753,6 +769,20 @@
     el('setupPremiumOrigenClon')?.classList.toggle('selected', esClon);
     el('setupPremiumOrigenMadre')?.classList.toggle('selected', esMadre);
     const sec = el('setupPremiumGerminacionPasos');
+    if (camGer === 'esqueje_hidro' || camGer === 'madre_hidro') {
+      if (sec) {
+        if (camGer === 'esqueje_hidro') {
+          sec.innerHTML =
+            '<div class="setup-box-info">El protocolo de corte y domo lo marcarás en <strong>Inicio → Enraizado</strong> cuando empieces a enraizar.</div>';
+        } else {
+          sec.innerHTML =
+            '<div class="setup-box-info">El calendario de la madre va en <strong>Inicio → Madre</strong> tras terminar el asistente.</div>';
+        }
+      }
+      if (typeof renderEsquejesSetupUI === 'function') renderEsquejesSetupUI();
+      if (typeof enhancePremiumVisualUI === 'function') enhancePremiumVisualUI(orig);
+      return;
+    }
     if (!sec) {
       if (typeof renderEsquejesSetupUI === 'function') renderEsquejesSetupUI();
       return;
@@ -769,7 +799,9 @@
       if (
         (typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
           hcCaminoSemillaPropagadorSetupGerm()) ||
-        (typeof hcCaminoSemillaHidroSetupGerm === 'function' && hcCaminoSemillaHidroSetupGerm())
+        (typeof hcCaminoSemillaHidroSetupGerm === 'function' && hcCaminoSemillaHidroSetupGerm()) ||
+        (typeof hcCaminoSemillaCocoDripSetupGerm === 'function' &&
+          hcCaminoSemillaCocoDripSetupGerm())
       ) {
         sec.innerHTML = '';
       } else {
@@ -1243,7 +1275,12 @@
         typeof requiereGeneticaEsquejeEnSetup === 'function' &&
         requiereGeneticaEsquejeEnSetup()
       ) {
-        return true;
+        if (
+          typeof validarGeneticaEsquejeObligatoria === 'function' &&
+          !validarGeneticaEsquejeObligatoria()
+        ) {
+          return false;
+        }
       }
       if (
         typeof requiereGeneticaGermEnSetup === 'function' &&
@@ -1354,6 +1391,7 @@
   window.validarPlantasVsSalaPremium = validarPlantasVsSalaPremium;
   window.ensurePremiumSetup = ensurePremiumSetup;
   window.syncPremiumMetodoGenPlacement = syncPremiumMetodoGenPlacement;
+  window.hcResetPremiumDomPlacement = hcResetPremiumDomPlacement;
   window.salaTieneMedidasDesdeEquipamiento = salaTieneMedidasDesdeEquipamiento;
   window.hcAsegurarMedidasSalaInteriorAntesGuardar = hcAsegurarMedidasSalaInteriorAntesGuardar;
 })();

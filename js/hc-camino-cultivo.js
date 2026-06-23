@@ -444,6 +444,12 @@
     }
     refreshCaminoCultivoUI();
     refreshSetupCaminoRecoUI();
+    if (typeof hcResetPremiumDomPlacement === 'function') hcResetPremiumDomPlacement();
+    if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
+    if (typeof syncPremiumGeneticaEsquejePlacement === 'function') {
+      syncPremiumGeneticaEsquejePlacement();
+    }
+    if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
     if (
       typeof setupPagina !== 'undefined' &&
       typeof SETUP_PAGE_ORIGEN !== 'undefined' &&
@@ -455,8 +461,6 @@
       return;
     }
     if (typeof renderPremiumGermPlanUI === 'function') renderPremiumGermPlanUI();
-    if (typeof syncPremiumMetodoGenPlacement === 'function') syncPremiumMetodoGenPlacement();
-    if (typeof syncPremiumGermSectionPlacement === 'function') syncPremiumGermSectionPlacement();
     if (typeof renderEquipamientoPremiumUI === 'function') renderEquipamientoPremiumUI();
     if (typeof refreshSetupEquipOrigenBanner === 'function') refreshSetupEquipOrigenBanner();
     if (typeof refreshSetupCaminoStepBanner === 'function' && typeof setupPagina !== 'undefined') {
@@ -1984,8 +1988,9 @@
         var visGerm = getSetupVisiblePages();
         if (visGerm.length) return visGerm[visGerm.length - 1];
       }
-      if (getCaminoCultivo() === 'semilla_coco_drip') {
-        return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      var camGermUlt = getCaminoCultivo();
+      if (camGermUlt === 'semilla_hidro' || camGermUlt === 'semilla_coco_drip') {
+        return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
       }
     }
     var camUlt = getCaminoCultivo();
@@ -2007,11 +2012,9 @@
       if (getCaminoCultivo() === 'semilla_propagador') {
         return typeof SETUP_PAGE_PREMIUM_4 !== 'undefined' ? SETUP_PAGE_PREMIUM_4 : 5;
       }
-      if (getCaminoCultivo() === 'semilla_hidro') {
-        return typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9;
-      }
-      if (getCaminoCultivo() === 'semilla_coco_drip') {
-        return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
+      var camNuevaGerm = getCaminoCultivo();
+      if (camNuevaGerm === 'semilla_hidro' || camNuevaGerm === 'semilla_coco_drip') {
+        return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
       }
       return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
     }
@@ -2058,9 +2061,12 @@
       typeof hcResolverCaminoSetup === 'function' ? hcResolverCaminoSetup() : getCaminoCultivo();
     if (cam === 'semilla_hidro') {
       [
+        typeof SETUP_PAGE_PREMIUM_END !== 'undefined' ? SETUP_PAGE_PREMIUM_END : 8,
+        typeof SETUP_PAGE_GEOMETRY !== 'undefined' ? SETUP_PAGE_GEOMETRY : 9,
         typeof SETUP_PAGE_EQUIP !== 'undefined' ? SETUP_PAGE_EQUIP : 10,
         typeof SETUP_PAGE_AGUA !== 'undefined' ? SETUP_PAGE_AGUA : 11,
         typeof SETUP_PAGE_NUTRIENTES !== 'undefined' ? SETUP_PAGE_NUTRIENTES : 12,
+        typeof SETUP_PAGE_UBICACION !== 'undefined' ? SETUP_PAGE_UBICACION : 13,
         typeof SETUP_PAGE_CULTIVOS !== 'undefined' ? SETUP_PAGE_CULTIVOS : 14,
         typeof SETUP_PAGE_RESUMEN !== 'undefined' ? SETUP_PAGE_RESUMEN : 15,
       ].forEach(function (p) {

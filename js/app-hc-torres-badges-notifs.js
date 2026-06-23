@@ -1842,6 +1842,9 @@ function abrirSetupNuevaTorre() {
       hcResetPremiumBorradorNuevaInstalacion();
     }
   } catch (_) {}
+  try {
+    if (typeof hcResetPremiumDomPlacement === 'function') hcResetPremiumDomPlacement();
+  } catch (_) {}
   setupPagina =
     typeof SETUP_PAGE_ORIGEN !== 'undefined' ? SETUP_PAGE_ORIGEN : 1;
   setupTipoInstalacion = '';
