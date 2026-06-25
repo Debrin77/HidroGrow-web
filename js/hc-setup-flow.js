@@ -64,9 +64,11 @@
     if (cam === 'madre_hidro') {
       return [O, P1, P2, P5, P6, P4, P3, PEND];
     }
+    if (cam === 'semilla_propagador') {
+      return [O, P1, P2, P3, P5, P6, P4, PEND];
+    }
     if (
       cam === 'esqueje_hidro' ||
-      cam === 'semilla_propagador' ||
       cam === 'semilla_hidro' ||
       cam === 'semilla_coco_drip'
     ) {

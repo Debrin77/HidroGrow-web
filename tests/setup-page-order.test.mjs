@@ -20,6 +20,7 @@ test('setup-flow: secuencia premium genética antes de equip', () => {
   assert.match(flow, /function getSetupOrderedVisiblePages/);
   assert.match(flow, /function getSetupFullPageSequence/);
   assert.match(flow, /return \[O, P1, P2, P5, P6, P4, P3, PEND\]/);
+  assert.match(flow, /if \(cam === 'semilla_propagador'\) \{[\s\S]{0,80}return \[O, P1, P2, P3, P5, P6, P4, PEND\]/);
   assert.match(flow, /return getSetupOrderedVisiblePages\(\)/);
   assert.doesNotMatch(
     cultivo,
@@ -52,7 +53,7 @@ test('madre: genética P5 y catálogo sin domo', () => {
   const cat = read('js/hc-equipamiento-catalog.js');
   assert.match(gen, /function validarGeneticaMadreObligatoria/);
   assert.match(wiz, /validarGeneticaMadreObligatoria/);
-  assert.match(wiz, /SETUP_PAGE_PREMIUM_5[\s\S]{0,400}validarGeneticaEsquejeObligatoria/);
+  assert.match(wiz, /SETUP_PAGE_PREMIUM_5[\s\S]{0,800}validarGeneticaEsquejeObligatoria/);
   assert.match(cat, /function equipCatalogGroupsMadreHidro/);
 });
 
@@ -67,6 +68,17 @@ test('equip wizard: grupos registrados sin repetir', () => {
   assert.match(wiz, /function equipGrupoRegistrado/);
   assert.match(wiz, /equip-catalog-group--registrado/);
   assert.match(wiz, /equip-catalog-group-done/);
+});
+
+test('propagador: paso 3 asistente muestra domo, no solo sala', () => {
+  const cat = read('js/hc-equipamiento-catalog.js');
+  assert.match(cat, /function hcEquipCatalogWizardPropagadorP3/);
+  assert.match(
+    cat,
+    /hcPropagadorEquipSalaSinHidro\(cfgProp\) && !hcEquipCatalogWizardPropagadorP3\(\)/
+  );
+  assert.match(cat, /if \(propagadorSoloAhora\)/);
+  assert.match(cat, /EQUIP_GERMINACION_GROUP[\s\S]{0,120}'propagador'/);
 });
 
 test('ultimo paso: esqueje y madre usan páginas visibles ordenadas', () => {

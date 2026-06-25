@@ -109,19 +109,14 @@ test('propagador: paso 3 permite avanzar tras elegir camino y entorno', async ()
     if (typeof syncPremiumGermSectionPlacement === 'function') {
       syncPremiumGermSectionPlacement();
     }
-    const sel = document.getElementById('setupPremiumVariedadGermSelect');
-    if (sel && sel.options && sel.options.length > 1) {
-      for (let i = 1; i < sel.options.length; i++) {
-        const v = String(sel.options[i].value || '').trim();
-        if (v) {
-          sel.value = v;
-          if (typeof seleccionarPremiumVariedadGerminacion === 'function') {
-            seleccionarPremiumVariedadGerminacion(v);
-          } else if (typeof syncVariedadGermATorre === 'function') {
-            syncVariedadGermATorre(v);
-          }
-          break;
-        }
+    if (typeof renderEquipamientoPremiumUI === 'function') {
+      renderEquipamientoPremiumUI();
+    }
+    const selProp = document.getElementById('setupPremiumEquip_propagador');
+    if (selProp && selProp.options && selProp.options.length > 1) {
+      selProp.value = selProp.options[1].value;
+      if (typeof seleccionarEquipamientoPremium === 'function') {
+        seleccionarEquipamientoPremium('propagador', selProp.value);
       }
     }
   });
@@ -134,9 +129,40 @@ test('propagador: paso 3 permite avanzar tras elegir camino y entorno', async ()
   assert.equal(st.esPropagadorP3, true, 'esSetupPropagadorGermPaso3');
   assert.equal(
     st.title,
-    'Germinación ahora',
+    'Propagador y domo',
     'título paso 3 propagador (actual: ' + st.title + ')'
   );
+
+  const tienePropagadorEnCatalogo = await page.evaluate(() => {
+    const sel = document.getElementById('setupPremiumEquip_propagador');
+    const groups = document.querySelectorAll('#setupPremiumEquipGrid [data-equip-group]');
+    const keys = [];
+    groups.forEach((g) => {
+      g.querySelectorAll('.equip-catalog-select').forEach((s) => {
+        if (s.id) keys.push(s.id.replace(/^setupPremiumEquip_/, ''));
+      });
+    });
+    return {
+      tieneSelect: !!sel,
+      keys,
+      wizardP3:
+        typeof hcEquipCatalogWizardPropagadorP3 === 'function'
+          ? hcEquipCatalogWizardPropagadorP3()
+          : null,
+    };
+  });
+  assert.equal(
+    tienePropagadorEnCatalogo.tieneSelect,
+    true,
+    'debe existir selector de propagador en paso 3 (keys: ' +
+      tienePropagadorEnCatalogo.keys.join(', ') +
+      ')'
+  );
+  assert.ok(
+    tienePropagadorEnCatalogo.keys.includes('propagador'),
+    'catálogo paso 3 incluye propagador, no solo sala'
+  );
+
   assert.equal(
     st.validarP3,
     true,

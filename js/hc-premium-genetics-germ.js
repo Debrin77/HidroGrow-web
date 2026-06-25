@@ -40,7 +40,7 @@
       typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
       hcCaminoSemillaPropagadorSetupGerm()
     ) {
-      return typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+      return typeof SETUP_PAGE_PREMIUM_5 !== 'undefined' ? SETUP_PAGE_PREMIUM_5 : 6;
     }
     return typeof SETUP_PAGE_PREMIUM_6 !== 'undefined' ? SETUP_PAGE_PREMIUM_6 : 7;
   }

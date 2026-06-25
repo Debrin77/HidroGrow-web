@@ -714,6 +714,30 @@ function hcEquipCatalogModoSalaPropagador() {
   return true;
 }
 
+/** Asistente abierto en paso 3 (domo/propagador) — no confundir con pestaña Sala. */
+function hcEquipCatalogWizardPropagadorP3() {
+  try {
+    if (typeof getCaminoCultivo !== 'function' || getCaminoCultivo() !== 'semilla_propagador') {
+      return false;
+    }
+    if (
+      typeof hcCaminoSemillaPropagadorSetupGerm !== 'function' ||
+      !hcCaminoSemillaPropagadorSetupGerm()
+    ) {
+      return false;
+    }
+    var p3 = typeof SETUP_PAGE_PREMIUM_3 !== 'undefined' ? SETUP_PAGE_PREMIUM_3 : 4;
+    if (typeof setupPagina === 'undefined' || setupPagina !== p3) return false;
+    var ov =
+      typeof document !== 'undefined' && document.getElementById
+        ? document.getElementById('setupOverlay')
+        : null;
+    return !!(ov && ov.classList && ov.classList.contains('open'));
+  } catch (_) {
+    return false;
+  }
+}
+
 function hcSetupTieneVariedadEsqueje() {
   try {
     if (typeof ensurePremiumSetup === 'function') {
@@ -966,7 +990,7 @@ function getEquipCatalogGroups(entorno) {
   ) {
     var cfgProp =
       typeof state !== 'undefined' && state && state.configTorre ? state.configTorre : {};
-    if (hcPropagadorEquipSalaSinHidro(cfgProp)) {
+    if (hcPropagadorEquipSalaSinHidro(cfgProp) && !hcEquipCatalogWizardPropagadorP3()) {
       return equipCatalogGroupsSalaPropagador(entorno);
     }
   }

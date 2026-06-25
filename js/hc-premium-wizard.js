@@ -1229,24 +1229,39 @@
         typeof esSetupPropagadorGermPaso3 === 'function' &&
         esSetupPropagadorGermPaso3()
       ) {
-        if (
-          typeof hcCompletarGermPlanPropagadorDefaults === 'function'
-        ) {
-          hcCompletarGermPlanPropagadorDefaults();
-        }
-        if (
-          typeof validarGeneticaGermObligatoria === 'function' &&
-          !validarGeneticaGermObligatoria()
-        ) {
-          return false;
-        }
-        if (typeof validarPremiumGermPlan === 'function' && !validarPremiumGermPlan()) {
+        var cfgPropEq =
+          typeof getWizardEquipCfg === 'function'
+            ? getWizardEquipCfg()
+            : typeof state !== 'undefined' && state && state.configTorre
+              ? state.configTorre
+              : {};
+        var instPropEq =
+          typeof ensureEquipInstalado === 'function'
+            ? ensureEquipInstalado(cfgPropEq)
+            : cfgPropEq.equipamientoInstalado || {};
+        if (!(instPropEq.propagador && instPropEq.propagador.id)) {
+          if (typeof showToast === 'function') {
+            showToast('Elige domo / propagador en el catálogo de arriba', true);
+          }
           return false;
         }
         return true;
       }
     }
     if (pagina === SETUP_PAGE_PREMIUM_5) {
+      if (
+        typeof requiereGeneticaGermEnSetup === 'function' &&
+        requiereGeneticaGermEnSetup() &&
+        typeof getCaminoCultivo === 'function' &&
+        getCaminoCultivo() === 'semilla_propagador'
+      ) {
+        if (
+          typeof validarGeneticaGermObligatoria === 'function' &&
+          !validarGeneticaGermObligatoria()
+        ) {
+          return false;
+        }
+      }
       if (
         typeof requiereGeneticaEsquejeEnSetup === 'function' &&
         requiereGeneticaEsquejeEnSetup()
@@ -1298,7 +1313,8 @@
         hcCaminoSemillaGermEnSetup() &&
         typeof getCaminoCultivo === 'function' &&
         (getCaminoCultivo() === 'semilla_hidro' ||
-          getCaminoCultivo() === 'semilla_coco_drip') &&
+          getCaminoCultivo() === 'semilla_coco_drip' ||
+          getCaminoCultivo() === 'semilla_propagador') &&
         typeof validarPremiumGermPlan === 'function' &&
         !validarPremiumGermPlan()
       ) {

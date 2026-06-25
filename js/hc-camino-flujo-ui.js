@@ -27,10 +27,10 @@
   var STEP_BANNERS = {
     semilla_propagador: {
       3: '<strong>Entorno:</strong> interior o exterior. Confirma el <strong>municipio</strong> para Meteo.',
-      6: '<strong>Primero genética:</strong> foto/auto, SOG/SCROG y <strong>variedad</strong> antes del propagador.',
+      4: '<strong>Primero propagador:</strong> elige domo y mat térmica en el catálogo. La sala grande va después en <strong>Configurar sala</strong>.',
+      6: '<strong>Genética:</strong> foto/auto, SOG/SCROG y <strong>variedad</strong>.',
       7: '<strong>Plan:</strong> cuántas semillas, sustrato y fecha de siembra en domo.',
       5: '<strong>Clima domo:</strong> nutriente bandeja, 18 h luz, HR objetivo bajo tapa.',
-      4: '<strong>Propagador:</strong> domo y mat térmica. La sala grande va después en <strong>Configurar sala</strong>.',
     },
     semilla_hidro: {
       1: '<strong>Camino:</strong> prep hidro → sala y montaje → DWC/RDWC → 6 fases en el cubo.',
@@ -123,11 +123,7 @@
   };
 
   function ocultarBannerSuperiorPropagadorSetup() {
-    return (
-      getCam() === 'semilla_propagador' &&
-      typeof hcCaminoSemillaPropagadorSetupGerm === 'function' &&
-      hcCaminoSemillaPropagadorSetupGerm()
-    );
+    return false;
   }
 
   function refreshSetupCaminoStepBanner(pagina) {
@@ -293,7 +289,8 @@
     var bundle = el('setupPremiumMetodoGenBundle');
     if (!sec) return;
     var showGerm = isGermAhoraPropagadorUi();
-    if (showGerm && host) {
+    var camGermHost = getCam();
+    if (showGerm && host && camGermHost !== 'semilla_propagador') {
       host.classList.remove('setup-hidden');
       if (genPref && genPref.parentNode !== host) host.appendChild(genPref);
       if (sec.parentNode !== host) host.appendChild(sec);
@@ -355,6 +352,8 @@
       var camT3 = getCam();
       if (camT3 === 'semilla_coco_drip' && showGerm) {
         t3.textContent = 'Sala y propagador';
+      } else if (camT3 === 'semilla_propagador' && showGerm) {
+        t3.textContent = 'Propagador y domo';
       } else {
         t3.textContent = showGerm ? 'Germinación ahora' : 'Espacio y equipamiento';
       }

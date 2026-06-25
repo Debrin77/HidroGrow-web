@@ -1673,6 +1673,10 @@
       if (cfg.hcSetupFase === 'hidro') {
         return { action: 'abrirSetupFaseHidro' };
       }
+      var instProp = cfg.equipamientoInstalado || {};
+      if (!(instProp.propagador && instProp.propagador.id)) {
+        return { page: P3 };
+      }
       var planPropIncompleto = false;
       try {
         if (typeof validarPlanGerminacionCompleto === 'function') {
